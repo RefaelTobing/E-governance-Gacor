@@ -1,0 +1,38 @@
+minggu ini rek
+
+1. bikin repo github
+2. menentukan ide
+
+
+3. core website
+Website ini adalah portal informasi transportasi publik Jabodetabek yang membantu masyarakat menemukan rute perjalanan dari satu lokasi ke lokasi lain dengan menggabungkan beberapa moda transportasi publik dalam satu informasi perjalanan.
+
+masalah & solusi
+
+masalah
+1. Transum di jabodetabek sangat beragam. (lrt, mrt, krl, jaklingo, busway)
+2. informasi transportasi umum di jabodetabek susah dimengerti
+3. tidak ada platform yang memberikan informasi tersebut
+4. masyarakat kesusahan untuk mencari perjalanan transum yang membutuhkan lebih dari satu
+
+solusi
+Website e-governance gacor sekali rek. Website ini dikembangkan sebagai portal informasi transportasi umum didalam satu website. 
+
+Fitur utama dari website ini adalah memberikan informasi dan rute perjalanan user yang mencari perjalanan menggunakan satu/lebih transportasi umum. Jadi user hanya menginput lokasi sekarang dan lokasi yang mau dituju, nanti website tersebut akan memproses inputan tersebut dan akan mengeluarkan output berupa informasi dan rute.
+
+Contohnya, Cikarang -> Perpustakaan Nasional
+
+Sebelum ada website : Kita harus mencari informasi dari Sosial media, kombinasi website(krl dan transjakarta), atau kita lihat rute transportasi umum yang dimana rute tersebut "sangat ribet" untuk dicerna.
+
+Sesudah ada website : user hanya membuka website lalu 
+
+1. Ide
+→ dampaknya paling menarik, tapi validasi dan accessibility testing paling menantang.
+
+2. Story/latar belakang (wes)
+
+3. PRD (belum)
+
+4. validation methode (gak tau gua wkwk)
+
+5. data yang digunakan (mungkin negeri/bahkan kayaknya lamongan.)
