@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight } from 'lucide-react';
 import { MOCK_LAPORAN } from '../../../config/mockData';
@@ -156,7 +156,7 @@ export const RiwayatLaporanPage = () => {
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <Button variant="primary" size="sm" onClick={() => navigate(`/laporan-saya/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/laporan-saya/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       Lihat Status Laporan <ArrowRight size={14} />
                     </Button>
                   </div>

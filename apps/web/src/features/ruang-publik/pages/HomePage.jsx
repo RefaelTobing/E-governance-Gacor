@@ -162,7 +162,9 @@ export const HomePage = () => {
               lineHeight: 1.2
             }}
           >
-            Pantau Kondisi Ruang Publik Jakarta
+            <span style={{ color: '#10B981' }}>Pantau</span>{' '}
+            <span style={{ color: '#F59E0B' }}>Kondisi</span>{' '}
+            <span>Ruang Publik Jakarta</span>
           </h1>
 
           <p
@@ -295,30 +297,50 @@ export const HomePage = () => {
                   </span>
                 </div>
 
-                <CardBody>
-                  <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{item.nama}</h3>
-                  <p className="text-caption" style={{ marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {item.deskripsi}
-                  </p>
+                <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{item.nama}</h3>
+                      <p className="text-caption" style={{ marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {item.deskripsi}
+                      </p>
+                    </div>
 
-                  {/* Facility Condition Summary Box */}
-                  <div style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)' }}>
-                    <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
-                      Kondisi Fasilitas
-                    </span>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      {item.fasilitas.slice(0, 4).map((fas) => (
-                        <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
-                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '110px' }}>{fas.nama}</span>
-                          <StatusBadge status={fas.status} />
-                        </div>
-                      ))}
+                    {/* Facility Condition Summary Box */}
+                    <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', border: '1px solid var(--color-border)' }}>
+                      <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
+                        Kondisi Fasilitas
+                      </span>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        {item.fasilitas.slice(0, 4).map((fas) => (
+                          <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
+                            <span
+                              title={fas.nama}
+                              style={{
+                                display: 'inline-block',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '110px',
+                                flex: 1,
+                                minWidth: 0,
+                                color: 'var(--color-text-main)'
+                              }}
+                            >
+                              {fas.nama}
+                            </span>
+                            <StatusBadge status={fas.status} />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <Button variant="primary" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
-                    Lihat Detail Ruang
-                  </Button>
+                  <div style={{ marginTop: 'auto' }}>
+                    <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
+                      Lihat Detail Ruang
+                    </Button>
+                  </div>
                 </CardBody>
               </Card>
             ))}

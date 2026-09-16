@@ -40,7 +40,8 @@ export const DaftarRuangPublikPage = () => {
       {/* HEADER SECTION */}
       <div
         style={{
-          backgroundColor: 'var(--color-primary-light)',
+          backgroundColor: '#FFFFFF',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-2xl)',
           marginBottom: 'var(--space-2xl)',
@@ -48,7 +49,8 @@ export const DaftarRuangPublikPage = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 'var(--space-xl)'
+          gap: 'var(--space-xl)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
         }}
       >
         <div style={{ maxWidth: '640px' }}>
@@ -68,7 +70,8 @@ export const DaftarRuangPublikPage = () => {
           style={{
             display: 'flex',
             gap: 'var(--space-xl)',
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-bg-main)',
+            border: '1px solid var(--color-border)',
             padding: 'var(--space-lg) var(--space-xl)',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-sm)'
@@ -219,7 +222,7 @@ export const DaftarRuangPublikPage = () => {
                     <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={14} color="var(--color-text-muted)" /> Jam Operasional: <strong>{item.jamOperasional}</strong>
                     </span>
-                    <Button variant="primary" size="sm" onClick={() => navigate(`/ruang-publik/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/ruang-publik/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       Lihat Detail Ruang <ArrowRight size={14} />
                     </Button>
                   </div>

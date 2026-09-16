@@ -172,12 +172,14 @@ h3, .h3 {
 }
 
 .btn-secondary {
-  background-color: var(--color-accent);
+  background-color: var(--color-accent, #F59E0B);
   color: #FFFFFF;
+  border-color: var(--color-accent, #F59E0B);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-accent-hover);
+  background-color: var(--color-accent-hover, #D97706);
+  border-color: var(--color-accent-hover, #D97706);
 }
 
 .btn-outline {
@@ -229,11 +231,14 @@ h3, .h3 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: var(--radius-pill);
-  line-height: 1;
+  line-height: 1.2;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8F0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .badge-dot {
@@ -241,47 +246,57 @@ h3, .h3 {
   height: 6px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .badge-success {
-  background-color: var(--color-success-light);
-  color: #065F46;
+  background-color: #FFFFFF;
+  color: #047857;
+  border-color: #E2E8F0;
 }
 
 .badge-success .badge-dot {
-  background-color: var(--color-success);
+  background-color: #10B981;
 }
 
 .badge-warning {
-  background-color: var(--color-warning-light);
-  color: #92400E;
+  background-color: #FFFBEB;
+  color: #B45309;
+  border-color: #FDE68A;
 }
 
 .badge-warning .badge-dot {
-  background-color: var(--color-warning);
+  background-color: #F59E0B;
 }
 
 .badge-danger {
-  background-color: var(--color-danger-light);
-  color: #991B1B;
+  background-color: #FFFFFF;
+  color: #DC2626;
+  border-color: #E2E8F0;
 }
 
 .badge-danger .badge-dot {
-  background-color: var(--color-danger);
+  background-color: #EF4444;
 }
 
 .badge-info {
-  background-color: var(--color-info-light);
-  color: #075985;
+  background-color: #FFFFFF;
+  color: #0284C7;
+  border-color: #E2E8F0;
 }
 
 .badge-info .badge-dot {
-  background-color: var(--color-info);
+  background-color: #0284C7;
 }
 
 .badge-neutral {
-  background-color: #F1F5F9;
+  background-color: #FFFFFF;
   color: var(--color-text-muted);
+  border-color: #E2E8F0;
+}
+
+.badge-neutral .badge-dot {
+  background-color: #94A3B8;
 }
 
 .badge-neutral .badge-dot {
@@ -296,6 +311,9 @@ h3, .h3 {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card-hover:hover {
@@ -305,6 +323,9 @@ h3, .h3 {
 
 .card-body {
   padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Input Fields */
