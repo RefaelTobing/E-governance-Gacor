@@ -268,7 +268,6 @@ export const HomePage = () => {
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-2xl)' }}>
             <div>
-              <span className="badge badge-info" style={{ marginBottom: 'var(--space-xs)' }}>DIREKTORI TERKINI</span>
               <h2 className="h2">Ruang Publik Pilihan di Jakarta</h2>
               <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
                 Jelajahi ruang terbuka terpopuler dengan informasi fasilitas terkini.
