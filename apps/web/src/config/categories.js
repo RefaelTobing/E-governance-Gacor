@@ -1,2 +1,4 @@
-// Kosong/placeholder - diisi saat fitur ruang-publik digarap
-export const categories = [];
+import { MOCK_CATEGORIES } from './mockData';
+
+export const categories = MOCK_CATEGORIES;
+export default MOCK_CATEGORIES;
