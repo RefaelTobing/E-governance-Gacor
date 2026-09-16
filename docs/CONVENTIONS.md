@@ -1,7 +1,7 @@
 # CONVENTIONS.md — Raku Jakarta (Frontend)
 
 > Dokumen ini adalah "aturan main" teknis untuk siapa pun (manusia atau AI agent) yang menulis kode di repo ini.
-> Untuk **apa** yang harus dibangun, baca PRD (`docs/PRD_Raku_Jakarta.docx`). Dokumen ini soal **bagaimana** menulis kodenya supaya konsisten.
+> Untuk **apa** yang harus dibangun, baca PRD (`docs/PRD.md`). Dokumen ini soal **bagaimana** menulis kodenya supaya konsisten.
 >
 > Baca file ini dulu sebelum menambah halaman, komponen, atau route baru.
 
@@ -171,7 +171,7 @@ Jangan membuat Context baru per fitur kecuali benar-benar dipakai oleh banyak ko
 
 ## 6. Styling
 
-- Pakai [pendekatan yang dipilih tim — isi di sini, mis. Tailwind utility classes / CSS Modules].
+- pakai pendekatan dari tim.
 - Style spesifik fitur tinggal di folder fitur masing-masing (co-located), style generik (`Button`, `Modal`) di `components/`.
 - Tidak ada inline style kecuali untuk nilai dinamis dari data (mis. posisi marker), bukan untuk styling statis.
 
