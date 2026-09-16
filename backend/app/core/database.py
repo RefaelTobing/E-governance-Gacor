@@ -1,6 +1,17 @@
-# Koneksi MySQL (SQLAlchemy engine/session)
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-# ENGINE = ...
-# SessionLocal = ...
+from app.core.config import settings
+
+# Menggunakan pool_pre_ping untuk reconnect secara otomatis jika koneksi terputus
+engine = create_engine(
+    settings.DATABASE_URL, pool_pre_ping=True
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
