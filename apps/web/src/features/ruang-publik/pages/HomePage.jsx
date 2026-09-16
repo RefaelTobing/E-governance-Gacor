@@ -1,13 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+
+// Import Hero Images
+import heroImg1 from '../../../slidderHero/1.jpg';
+import heroImg2 from '../../../slidderHero/2.png';
+import heroImg3 from '../../../slidderHero/3.jpg';
+import heroImg4 from '../../../slidderHero/4.jpg';
+
 import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip } from '../../../components';
+
+const HERO_SLIDES = [
+  {
+    image: heroImg1,
+    title: 'Taman Suropati',
+    location: 'Menteng, Jakarta Pusat'
+  },
+  {
+    image: heroImg2,
+    title: 'Tebet Eco Park',
+    location: 'Tebet, Jakarta Selatan'
+  },
+  {
+    image: heroImg3,
+    title: 'Hutan Kota GBK',
+    location: 'Senayan, Jakarta Pusat'
+  },
+  {
+    image: heroImg4,
+    title: 'Taman Lapangan Banteng',
+    location: 'Sawah Besar, Jakarta Pusat'
+  }
+];
 
 export const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-
   const [activeCategory, setActiveCategory] = useState(null);
 
   const handleSearch = (query) => {
@@ -25,18 +60,139 @@ export const HomePage = () => {
 
   return (
     <div>
-      {/* HERO SECTION */}
-      <section style={{ backgroundColor: 'var(--color-primary-light)', paddingTop: 'var(--space-4xl)', paddingBottom: 'var(--space-4xl)', borderBottom: '1px solid var(--color-border)' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <h1 className="text-display" style={{ color: 'var(--color-text-main)', marginBottom: 'var(--space-md)' }}>
+      {/* HERO SLIDER SECTION */}
+      <section className="hero-slider-section" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#0F172A', minHeight: '620px' }}>
+        {/* Background Swiper Carousel */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{
+              delay: 4500,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true
+            }}
+            loop={true}
+            speed={900}
+            grabCursor={true}
+            pagination={{
+              clickable: true,
+              bulletClass: 'hero-dot',
+              bulletActiveClass: 'hero-dot-active'
+            }}
+            style={{ width: '100%', height: '100%' }}
+          >
+            {HERO_SLIDES.map((slide, index) => (
+              <SwiperSlide key={index} style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center'
+                  }}
+                />
+                {/* Location indicator badge bottom right */}
+                <div
+                  className="hero-location-badge"
+                  style={{
+                    position: 'absolute',
+                    bottom: '32px',
+                    right: '32px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                    zIndex: 2
+                  }}
+                >
+                  <MapPin size={14} color="#2DD4BF" />
+                  <span>{slide.title} • {slide.location}</span>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* Dark Gradient Overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.60) 0%, rgba(15, 23, 42, 0.70) 50%, rgba(15, 23, 42, 0.88) 100%)',
+            zIndex: 2,
+            pointerEvents: 'none'
+          }}
+        />
+
+        {/* Floating Content Layer */}
+        <div
+          className="container hero-content-wrapper"
+          style={{
+            position: 'relative',
+            zIndex: 3,
+            textAlign: 'center',
+            maxWidth: '900px',
+            paddingTop: '96px',
+            paddingBottom: '104px',
+            minHeight: '620px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <h1
+            className="text-display hero-title"
+            style={{
+              color: '#FFFFFF',
+              marginBottom: '20px',
+              textShadow: '0 3px 16px rgba(0, 0, 0, 0.7)',
+              fontWeight: 800,
+              fontSize: 'clamp(2rem, 4.5vw, 3.25rem)',
+              lineHeight: 1.2
+            }}
+          >
             Pantau Kondisi Ruang Publik Jakarta
           </h1>
-          <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2xl)' }}>
+
+          <p
+            className="text-body hero-subtitle"
+            style={{
+              color: 'rgba(255, 255, 255, 0.95)',
+              marginBottom: '36px',
+              maxWidth: '720px',
+              fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+              lineHeight: 1.7,
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)'
+            }}
+          >
             Cari taman atau lapangan olahraga, lihat fasilitasnya, cek kondisinya, dan laporkan masalah jika diperlukan.
           </p>
 
-          {/* Search Bar */}
-          <div style={{ marginBottom: 'var(--space-xl)', maxWidth: '640px', margin: '0 auto var(--space-xl)' }}>
+          {/* Search Bar with enhanced container */}
+          <div
+            className="hero-search-wrapper"
+            style={{
+              marginBottom: '36px',
+              width: '100%',
+              maxWidth: '680px',
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              padding: '8px',
+              borderRadius: 'var(--radius-xl, 16px)',
+              boxShadow: '0 20px 35px -8px rgba(0, 0, 0, 0.35), 0 10px 15px -6px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}
+          >
             <SearchInput
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -47,7 +203,7 @@ export const HomePage = () => {
           </div>
 
           {/* Quick Category Tags */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             {MOCK_CATEGORIES.slice(1).map((cat) => (
               <CategoryChip
                 key={cat.id}
@@ -58,6 +214,51 @@ export const HomePage = () => {
             ))}
           </div>
         </div>
+
+        {/* Custom Styling for Swiper Pagination Dots & Responsive Behavior */}
+        <style>{`
+          .hero-slider-section {
+            min-height: 640px;
+            height: 68vh;
+            max-height: 760px;
+          }
+          .hero-content-wrapper {
+            min-height: 640px;
+            height: 68vh;
+            max-height: 760px;
+          }
+          .hero-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.45);
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .hero-dot-active {
+            background: #0F766E !important;
+            width: 32px !important;
+            box-shadow: 0 0 12px rgba(15, 118, 110, 0.9);
+          }
+          .hero-swiper .swiper-pagination,
+          .swiper-pagination {
+            bottom: 24px !important;
+          }
+          @media (max-width: 768px) {
+            .hero-slider-section,
+            .hero-content-wrapper {
+              min-height: 520px;
+              height: auto;
+              padding-top: 64px !important;
+              padding-bottom: 72px !important;
+            }
+            .hero-location-badge {
+              display: none !important;
+            }
+          }
+        `}</style>
       </section>
 
       {/* SECTION 1: RUANG PUBLIK PILIHAN */}
@@ -219,4 +420,3 @@ export const HomePage = () => {
 };
 
 export default HomePage;
-
