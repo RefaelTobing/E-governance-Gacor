@@ -11,6 +11,9 @@ export const PublicLayout = () => {
   const location = useLocation();
   const [showTentangModal, setShowTentangModal] = useState(false);
 
+  // Cek apakah halaman saat ini adalah halaman auth (login, register, login pemerintah)
+  const isAuthPage = location.pathname.startsWith('/login') || location.pathname === '/login-pemerintah';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Navbar Header */}
@@ -19,40 +22,48 @@ export const PublicLayout = () => {
           {/* Logo Branding */}
           <Logo size="md" to="/home" />
 
-          {/* Navigation Menu */}
-          <nav>
-            <ul className="navbar-menu">
-              <li>
-                <NavLink to="/home" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                  Beranda
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/ruang-publik" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                  Ruang Publik
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/laporan-saya" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                  Laporan Saya
-                </NavLink>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setShowTentangModal(true)}
-                  className="nav-link"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  Tentang
-                </button>
-              </li>
-            </ul>
-          </nav>
+          {/* Navigation Menu — Disembunyikan saat di halaman Login/Register/Login Pemerintah */}
+          {!isAuthPage && (
+            <nav>
+              <ul className="navbar-menu">
+                <li>
+                  <NavLink to="/home" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                    Beranda
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/ruang-publik" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                    Ruang Publik
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/laporan-saya" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                    Laporan Saya
+                  </NavLink>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setShowTentangModal(true)}
+                    className="nav-link"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    Tentang
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          )}
 
-          {/* Auth Actions / User Badge */}
+          {/* Auth Actions / User Badge / Back to Home on Auth Pages */}
           <div className="navbar-actions">
-            {user ? (
+            {isAuthPage ? (
+              <Link to="/home" style={{ textDecoration: 'none' }}>
+                <Button variant="ghost" size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  ← Kembali ke Beranda
+                </Button>
+              </Link>
+            ) : user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--color-bg-main)', padding: '6px 12px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)' }}>
                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
@@ -90,7 +101,7 @@ export const PublicLayout = () => {
             {/* Brand & Description */}
             <div>
               <div className="footer-brand-title">
-                <Logo size="sm" asLink={false} subtitle="Jakarta" showSubtitle={true} />
+                <Logo size="sm" asLink={false} subtitle="JAKARTA" showSubtitle={true} />
               </div>
               <p className="footer-desc">
                 Platform resmi keterbukaan informasi, pemantauan fasilitas, dan partisipasi warga untuk taman kota dan ruang terbuka hijau di wilayah Provinsi DKI Jakarta.
