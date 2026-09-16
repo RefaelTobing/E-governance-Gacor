@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 
 /**
  * Logo — Komponen reusable untuk branding RuangTerbuka.
- * Menampilkan gambar LogoRuka.png beserta teks branding.
+ * Menampilkan ikon/gambar LogoRuka.png beserta teks branding 2 baris rapi.
  *
  * Props:
  * @param {'sm' | 'md' | 'lg'} size - Ukuran logo (default: 'md')
- * @param {string} subtitle - Teks subtitle di bawah nama brand (default: 'DKI JAKARTA')
+ * @param {string} subtitle - Teks subtitle di bawah nama brand (default: 'JAKARTA')
  * @param {string} to - Link tujuan (default: '/home')
  * @param {boolean} asLink - Jika true, logo dibungkus Link. (default: true)
  * @param {boolean} showSubtitle - Tampilkan subtitle? (default: true)
@@ -16,14 +16,14 @@ import { Link } from 'react-router-dom';
  */
 
 const sizeConfig = {
-  sm: { imgSize: 28, fontSize: '14px', subtitleSize: '9px', gap: '8px', subtitleMarginTop: '-3px' },
-  md: { imgSize: 36, fontSize: '16px', subtitleSize: '10px', gap: '10px', subtitleMarginTop: '-4px' },
-  lg: { imgSize: 48, fontSize: '22px', subtitleSize: '12px', gap: '12px', subtitleMarginTop: '-4px' },
+  sm: { imgSize: 30, fontSize: '15px', subtitleSize: '9px', gap: '10px', subMarginTop: '2px' },
+  md: { imgSize: 38, fontSize: '18px', subtitleSize: '10px', gap: '12px', subMarginTop: '2px' },
+  lg: { imgSize: 48, fontSize: '24px', subtitleSize: '12px', gap: '14px', subMarginTop: '3px' },
 };
 
 export const Logo = ({
   size = 'md',
-  subtitle = 'DKI JAKARTA',
+  subtitle = 'JAKARTA',
   to = '/home',
   asLink = true,
   showSubtitle = true,
@@ -36,7 +36,7 @@ export const Logo = ({
     <div
       className={`logo-component ${className}`}
       style={{
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: config.gap,
         textDecoration: 'none',
@@ -50,31 +50,44 @@ export const Logo = ({
           width: `${config.imgSize}px`,
           height: `${config.imgSize}px`,
           objectFit: 'contain',
-          borderRadius: 'var(--radius-sm)',
+          borderRadius: 'var(--radius-sm, 6px)',
           flexShrink: 0,
         }}
       />
-      <div style={{ lineHeight: 1.2 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          lineHeight: 1.15,
+        }}
+      >
+        {/* Baris 1: Ruang (Slate 900) + Terbuka (Teal #0F766E) */}
         <span
           style={{
-            color: 'var(--color-primary)',
-            fontWeight: 800,
             fontSize: config.fontSize,
-            letterSpacing: '-0.02em',
+            fontWeight: 800,
+            letterSpacing: '-0.025em',
+            display: 'inline-flex',
+            alignItems: 'center',
+            lineHeight: 1.15,
           }}
         >
-          RuangTerbuka
+          <span style={{ color: '#0F172A' }}>Ruang</span>
+          <span style={{ color: '#0F766E' }}>Terbuka</span>
         </span>
+
+        {/* Baris 2: Sub-teks JAKARTA */}
         {showSubtitle && subtitle && (
           <span
             style={{
-              display: 'block',
               fontSize: config.subtitleSize,
-              color: 'var(--color-text-muted)',
-              fontWeight: 600,
-              marginTop: config.subtitleMarginTop,
-              letterSpacing: '0.04em',
+              color: '#64748B',
+              fontWeight: 700,
+              marginTop: config.subMarginTop,
+              letterSpacing: '0.12em',
               textTransform: 'uppercase',
+              lineHeight: 1.1,
             }}
           >
             {subtitle}
@@ -86,7 +99,16 @@ export const Logo = ({
 
   if (asLink) {
     return (
-      <Link to={to} className="navbar-brand" style={{ textDecoration: 'none' }}>
+      <Link
+        to={to}
+        className="navbar-brand"
+        style={{
+          textDecoration: 'none',
+          display: 'inline-flex',
+          alignItems: 'center',
+          marginRight: '8px',
+        }}
+      >
         {content}
       </Link>
     );
