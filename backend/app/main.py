@@ -11,7 +11,7 @@ app = FastAPI(
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Ganti dengan origin spesifik di production
+    allow_origins=[settings.FRONTEND_PUBLIC_URL, settings.FRONTEND_ADMIN_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
