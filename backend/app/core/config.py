@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     FRONTEND_PUBLIC_URL: str = "http://localhost:5173"
     FRONTEND_ADMIN_URL: str = "http://localhost:5174"
     
+    # File Uploads
+    UPLOAD_DIR: str = "storage"
+    MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024 # 5 MB
+    
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 settings = Settings()
