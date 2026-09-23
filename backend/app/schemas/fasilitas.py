@@ -27,3 +27,7 @@ class FasilitasResponse(FasilitasBase):
 
     class Config:
         from_attributes = True
+
+class FasilitasFilterOption(BaseModel):
+    nama: str
+    kategori: Optional[str] = None

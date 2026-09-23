@@ -77,3 +77,22 @@ def search_ruang_publik(
 
     stmt = stmt.add_columns(jarak.label("jarak_km"))
     return [(row[0], float(row[1])) for row in db.execute(stmt).unique().all()]
+
+
+def get_ruang_publik(db: Session, ruang_publik_id: str) -> Optional[RuangPublik]:
+    stmt = (
+        select(RuangPublik)
+        .options(joinedload(RuangPublik.kategori), joinedload(RuangPublik.fasilitas))
+        .where(RuangPublik.id == ruang_publik_id)
+    )
+    return db.scalars(stmt).unique().first()
+
+
+def list_fasilitas(db: Session) -> list[tuple[str, Optional[str]]]:
+    """Daftar fasilitas unik untuk populate filter di FE."""
+    stmt = (
+        select(Fasilitas.nama, Fasilitas.kategori)
+        .distinct()
+        .order_by(Fasilitas.nama)
+    )
+    return [(nama, kategori) for nama, kategori in db.execute(stmt).all()]

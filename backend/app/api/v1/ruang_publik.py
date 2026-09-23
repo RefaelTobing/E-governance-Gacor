@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.ruang_publik import RuangPublikListResponse
+from app.schemas.ruang_publik import RuangPublikDetailResponse, RuangPublikListResponse
 from app.services import ruang_publik as crud_ruang_publik
 
 router = APIRouter()
@@ -40,3 +40,21 @@ def read_public_spaces(
         )
         for ruang, jarak in hasil
     ]
+
+
+@router.get("/{ruang_publik_id}", response_model=RuangPublikDetailResponse)
+def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
+    """Detail satu ruang publik beserta fasilitas dan foto resminya."""
+    ruang = crud_ruang_publik.get_ruang_publik(db, ruang_publik_id)
+    if ruang is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ruang publik tidak ditemukan",
+        )
+
+    # image_url masih satu kolom tunggal di sumber data; dibungkus jadi list
+    # supaya FE bisa merender galeri tanpa perubahan kontrak saat foto bertambah.
+    foto = [ruang.image_url] if ruang.image_url else []
+    return RuangPublikDetailResponse.model_validate(ruang, from_attributes=True).model_copy(
+        update={"foto": foto}
+    )

@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 from app.schemas.category import CategoryResponse
+from app.schemas.fasilitas import FasilitasResponse
 
 class RuangPublikBase(BaseModel):
     nama: str
@@ -49,3 +50,7 @@ class RuangPublikListResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class RuangPublikDetailResponse(RuangPublikResponse):
+    fasilitas: List[FasilitasResponse] = []
+    foto: List[str] = []
