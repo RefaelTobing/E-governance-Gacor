@@ -69,3 +69,9 @@ backend/storage/laporan/*
 !backend/storage/laporan/.gitkeep
 backend/storage/ruang-publik/*
 !backend/storage/ruang-publik/.gitkeep
+
+.agents
+AGENTS.md
+data/processed/categories.csv
+data/processed/ruang_publik.csv
+data/raw/data-ruang-terbuka-hijau-(rth)-komponen-data.xls

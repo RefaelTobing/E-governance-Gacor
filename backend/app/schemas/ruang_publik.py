@@ -34,3 +34,18 @@ class RuangPublikResponse(RuangPublikBase):
 
     class Config:
         from_attributes = True
+
+class RuangPublikListResponse(BaseModel):
+    id: str
+    nama: str
+    kategori_id: Optional[str] = None
+    kategori: Optional[CategoryResponse] = None
+    wilayah: Optional[str] = None
+    alamat: Optional[str] = None
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None
+    verified: Optional[bool] = False
+    jarak_km: Optional[float] = None
+
+    class Config:
+        from_attributes = True
