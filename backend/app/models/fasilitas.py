@@ -1,8 +1,7 @@
 import uuid
-from datetime import datetime
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from app.models.base import Base
+from app.models.base import Base, utcnow
 
 class Fasilitas(Base):
     __tablename__ = "fasilitas"
@@ -14,8 +13,8 @@ class Fasilitas(Base):
     status = Column(String(50), default="baik")
     lokasi_spesifik = Column(String(255))
     deskripsi = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     ruang_publik = relationship("RuangPublik", back_populates="fasilitas")

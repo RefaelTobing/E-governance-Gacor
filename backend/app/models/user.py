@@ -1,7 +1,6 @@
 import uuid
-from datetime import datetime
 from sqlalchemy import Column, String, DateTime
-from app.models.base import Base
+from app.models.base import Base, utcnow
 
 class User(Base):
     __tablename__ = "users"
@@ -11,5 +10,5 @@ class User(Base):
     email = Column(String(255), nullable=False, unique=True, index=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), default="warga")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)

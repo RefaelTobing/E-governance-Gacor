@@ -1,8 +1,7 @@
 import uuid
-from datetime import datetime
 from sqlalchemy import Column, String, Text, DECIMAL, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from app.models.base import Base
+from app.models.base import Base, utcnow
 
 class RuangPublik(Base):
     __tablename__ = "ruang_publik"
@@ -22,8 +21,8 @@ class RuangPublik(Base):
     verified = Column(Boolean, default=False)
     status_general = Column(String(50))
     image_url = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     kategori = relationship("Category")

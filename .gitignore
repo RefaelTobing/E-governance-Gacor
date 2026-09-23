@@ -61,6 +61,11 @@ venv.bak/
 htmlcov/
 .tox/
 
+# Script testing (tidak diikutkan ke repo)
+backend/pytest.ini
+backend/tests/conftest.py
+backend/tests/unit/test_*.py
+
 # =========================
 # Application Storage
 # =========================

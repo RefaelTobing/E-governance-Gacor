@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
@@ -33,8 +33,7 @@ class RuangPublikResponse(RuangPublikBase):
     updated_at: datetime
     kategori: Optional[CategoryResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RuangPublikListResponse(BaseModel):
     id: str
@@ -48,8 +47,7 @@ class RuangPublikListResponse(BaseModel):
     verified: Optional[bool] = False
     jarak_km: Optional[float] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RuangPublikDetailResponse(RuangPublikResponse):
     fasilitas: List[FasilitasResponse] = []

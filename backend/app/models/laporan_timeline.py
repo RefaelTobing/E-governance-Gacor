@@ -1,7 +1,6 @@
-from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from app.models.base import Base
+from app.models.base import Base, utcnow
 
 class LaporanTimeline(Base):
     __tablename__ = "laporan_timeline"
@@ -11,7 +10,7 @@ class LaporanTimeline(Base):
     status = Column(String(50), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     # Relationships
     laporan = relationship("Laporan", back_populates="timeline")
