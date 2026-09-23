@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import Logo from '../components/Logo';
@@ -9,7 +8,6 @@ import Logo from '../components/Logo';
 export const PublicLayout = () => {
   const { user, role, logout } = useAuth();
   const location = useLocation();
-  const [showTentangModal, setShowTentangModal] = useState(false);
 
   // Cek apakah halaman saat ini adalah halaman auth (login, register, login pemerintah)
   const isAuthPage = location.pathname.startsWith('/login') || location.pathname === '/login-pemerintah';
@@ -42,14 +40,9 @@ export const PublicLayout = () => {
                   </NavLink>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={() => setShowTentangModal(true)}
-                    className="nav-link"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
+                  <NavLink to="/tentang" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                     Tentang
-                  </button>
+                  </NavLink>
                 </li>
               </ul>
             </nav>
@@ -144,31 +137,6 @@ export const PublicLayout = () => {
           </div>
         </div>
       </footer>
-
-      {/* Modal Tentang Platform (Modal Sederhana) */}
-      {showTentangModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 className="h3">Tentang RuangTerbuka</h3>
-              <button type="button" onClick={() => setShowTentangModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }} aria-label="Tutup">
-                <X size={20} color="var(--color-text-muted)" />
-              </button>
-            </div>
-            <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-              <strong>RuangTerbuka DKI Jakarta</strong> adalah platform direktori informasi ruang publik (taman kota, RTH, RPTRA) dan kanal pelaporan kondisi fasilitas kota berbasis keterbukaan informasi publik.
-            </p>
-            <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '24px' }}>
-              Platform ini dikembangkan untuk memudahkan warga menemukan ruang hijau terdekat dan berpartisipasi menjaga fasilitas publik demi kenyamanan bersama.
-            </p>
-            <div style={{ textAlign: 'right' }}>
-              <Button variant="primary" onClick={() => setShowTentangModal(false)}>
-                Tutup Info
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

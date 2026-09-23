@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, Trees, ClipboardCheck, Clock, Star, Quote } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 // Import Hero Images
 import heroImg1 from '../../../slidderHero/1.jpg';
@@ -40,10 +41,96 @@ const HERO_SLIDES = [
   }
 ];
 
+const TESTIMONIALS = [
+  {
+    id: 1,
+    quote: "Aplikasi ini sangat membantu! Saya bisa laporkan kerusakan lampu taman dengan mudah dan transparan. Dalam 3 hari sudah diperbaiki!",
+    name: "Budi Santoso",
+    role: "Warga Jakarta Pusat",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 2,
+    quote: "Fitur peta presisi sangat akurat untuk lokasi fasilitas rusak. Petugas langsung tahu lokasi persis tanpa perlu mencari-cari.",
+    name: "Siti Nurhaliza",
+    role: "Pengguna Aktif",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 3,
+    quote: "Saya suka bisa lapor secara anonim. Tidak perlu ribet daftar akun, langsung bisa kirim laporan fasilitas rusak di taman dekat rumah.",
+    name: "Ahmad Wijaya",
+    role: "Relawan Lingkungan",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 4,
+    quote: "Transparansi pengelolaan ruang publik meningkat drastis. Kita bisa pantau kondisi fasilitas real-time sebelum pergi ke taman.",
+    name: "Dewi Lestari",
+    role: "Ibu Rumah Tangga",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 5,
+    quote: "Platform ini memudahkan warga untuk berpartisipasi menjaga fasilitas umum. Pelaporan cepat dan prosesnya jelas!",
+    name: "Eko Prasetyo",
+    role: "Pegawai Swasta",
+    rating: 4,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 6,
+    quote: "Sebagai petugas lapangan, aplikasi ini sangat membantu koordinasi perbaikan. Laporan warga langsung masuk ke sistem kami.",
+    name: "Joko Susilo",
+    role: "Petugas Dinas Pertamanan",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 7,
+    quote: "Fitur foto bukti sangat berguna. Teknisi bisa persiapkan alat yang tepat sebelum ke lokasi berdasarkan foto kerusakan.",
+    name: "Rina Kusuma",
+    role: "Warga Jakarta Selatan",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 8,
+    quote: "Saya apresiasi bisa tracking status laporan. Tidak seperti dulu yang lapor tapi tidak tahu ditindaklanjuti atau tidak.",
+    name: "Agus Setiawan",
+    role: "Komunitas Taman",
+    rating: 4,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 9,
+    quote: "Interface-nya simpel dan mudah dipahami. Bahkan orang tua saya yang gaptek bisa pakai untuk lapor bangku rusak di RPTRA.",
+    name: "Maya Sari",
+    role: "Mahasiswa",
+    rating: 5,
+    emoji: "🇮🇩"
+  },
+  {
+    id: 10,
+    quote: "Response time dari petugas sangat cepat. Laporan saya diverifikasi dalam 1x24 jam dan perbaikan selesai dalam seminggu!",
+    name: "Fahmi Rahman",
+    role: "Warga Jakarta Timur",
+    rating: 5,
+    emoji: "🇮🇩"
+  }
+];
+
 export const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+  const marqueeTrackRef = useRef(null);
+
+  const [hoveredTestimonialId, setHoveredTestimonialId] = useState(null);
 
   const handleSearch = (query) => {
     if (query) {
@@ -56,6 +143,49 @@ export const HomePage = () => {
   const handleCategoryClick = (catId) => {
     setActiveCategory(catId);
     navigate(`/ruang-publik?kategori=${catId}`);
+  };
+
+  const handleMarqueeMouseEnter = () => {
+    if (marqueeTrackRef.current) {
+      marqueeTrackRef.current.style.animationPlayState = 'paused';
+    }
+  };
+
+  const handleMarqueeMouseLeave = () => {
+    if (marqueeTrackRef.current) {
+      marqueeTrackRef.current.style.animationPlayState = 'running';
+    }
+  };
+
+  const handleCardMouseEnter = (id) => {
+    setHoveredTestimonialId(id);
+  };
+
+  const handleCardMouseLeave = () => {
+    setHoveredTestimonialId(null);
+  };
+
+  const getCardTransform = (cardId) => {
+    if (hoveredTestimonialId === null) return 'translateY(0) scale(1)';
+    return cardId === hoveredTestimonialId ? 'translateY(-4px) scale(1.1)' : 'translateY(0) scale(1)';
+  };
+
+  const getCardOpacity = (cardId) => {
+    return '1';
+  };
+
+  const getCardZIndex = (cardId) => {
+    return hoveredTestimonialId === cardId ? '30' : '1';
+  };
+
+  const getCardShadow = (cardId) => {
+    if (hoveredTestimonialId === cardId) return '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+    return '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+  };
+
+  const getCardBorder = (cardId) => {
+    if (hoveredTestimonialId === cardId) return '1px solid rgba(20, 184, 166, 0.4)';
+    return '1px solid var(--color-border)';
   };
 
   return (
@@ -263,7 +393,114 @@ export const HomePage = () => {
         `}</style>
       </section>
 
-      {/* SECTION 1: RUANG PUBLIK PILIHAN */}
+      {/* SECTION 1: STATISTIK RAKU JAKARTA */}
+      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: '#FFFFFF' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
+            <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Raku Jakarta dalam Angka</h2>
+            <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+              Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-2xl)' }}>
+            {/* Stat 1: Ruang Publik */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(15, 118, 110, 0.08)',
+                border: '2px solid rgba(15, 118, 110, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 'var(--space-lg)',
+                transition: 'all 0.3s ease'
+              }}>
+                <Trees size={48} color="#0F766E" strokeWidth={1.5} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>150+</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Ruang Publik</div>
+            </div>
+
+            {/* Stat 2: Laporan Selesai */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                border: '2px solid rgba(245, 158, 11, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 'var(--space-lg)',
+                transition: 'all 0.3s ease'
+              }}>
+                <ClipboardCheck size={48} color="#F59E0B" strokeWidth={1.5} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>5,000+</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Selesai</div>
+            </div>
+
+            {/* Stat 3: Kecamatan */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                border: '2px solid rgba(34, 197, 94, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 'var(--space-lg)',
+                transition: 'all 0.3s ease'
+              }}>
+                <MapPin size={48} color="#22C55E" strokeWidth={1.5} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>44</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Kecamatan</div>
+            </div>
+
+            {/* Stat 4: Pemantauan 24/7 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(6, 182, 212, 0.08)',
+                border: '2px solid rgba(6, 182, 212, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 'var(--space-lg)',
+                transition: 'all 0.3s ease'
+              }}>
+                <Clock size={48} color="#06B6D4" strokeWidth={1.5} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>24/7</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Pemantauan</div>
+            </div>
+          </div>
+
+          <style>{`
+            .stat-card {
+              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .stat-card:hover {
+              transform: translateY(-8px);
+            }
+            .stat-card:hover div:first-child {
+              transform: scale(1.08);
+              box-shadow: 0 8px 24px rgba(15, 118, 110, 0.15);
+            }
+          `}</style>
+        </div>
+      </section>
+
+      {/* SECTION 2: RUANG PUBLIK PILIHAN */}
       <section style={{ padding: 'var(--space-4xl) 0' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-2xl)' }}>
@@ -347,60 +584,114 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 2: CEK KONDISI FASILITAS SEBELUM BERKUNJUNG */}
-      <section style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-4xl) 0' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h2 className="h2" style={{ marginBottom: 'var(--space-xs)' }}>Cek Kondisi Fasilitas Sebelum Berkunjung</h2>
-          <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3xl)', maxWidth: '600px', margin: '0 auto var(--space-3xl)' }}>
-            Lihat kondisi fasilitas di ruang publik sebelum menentukan tujuanmu agar kegiatan bersantai atau berolahraga tetap nyaman.
+      {/* SECTION 3: TESTIMONI WARGA RUANGTERBUKA - CONTINUOUS MARQUEE */}
+      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: '#FFFFFF', width: '100%', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="container" style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
+          <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Testimoni Warga</h2>
+          <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+            Dengarkan pengalaman mereka dalam menggunakan platform RuangTerbuka Jakarta untuk menjaga fasilitas kota.
           </p>
+        </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-lg)' }}>
-            <Card style={{ textAlign: 'left' }}>
-              <CardBody>
-                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Gamepad2 size={20} color="#0F766E" />
-                </div>
-                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Playground / Arena Bermain</h4>
-                <p className="text-caption" style={{ marginBottom: '12px' }}>Ayunan, perosotan, dan lantai peredam benturan anak.</p>
-                <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
-              </CardBody>
-            </Card>
+        <div 
+          className="testimonial-marquee-container" 
+          onMouseEnter={handleMarqueeMouseEnter}
+          onMouseLeave={handleMarqueeMouseLeave}
+          style={{ overflow: 'hidden', width: '100%', position: 'relative', padding: '40px 16px' }}
+        >
+          <div 
+            ref={marqueeTrackRef}
+            className="testimonial-marquee-track" 
+            style={{ display: 'flex', gap: '24px', animation: 'marquee 80s linear infinite', padding: '20px 0', width: 'max-content', alignItems: 'center' }}
+          >
+            {[...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
+              <div
+                key={`${t.id}-${idx}`}
+                style={{
+                  minWidth: '320px',
+                  maxWidth: '320px',
+                  position: 'relative',
+                  transform: getCardTransform(t.id),
+                  opacity: getCardOpacity(t.id),
+                  zIndex: getCardZIndex(t.id),
+                  transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                className="testimonial-card-marquee"
+                onMouseEnter={() => handleCardMouseEnter(t.id)}
+                onMouseLeave={handleCardMouseLeave}
+              >
+                <Card 
+                  className="card"
+                  style={{ 
+                    height: '100%', 
+                    border: getCardBorder(t.id), 
+                    boxShadow: getCardShadow(t.id), 
+                    borderRadius: '16px', 
+                    transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }} 
+                >
+                  <CardBody style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div style={{ display: 'flex', gap: '2px', marginBottom: '16px' }}>
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={14} 
+                          fill={i < t.rating ? "#F59E0B" : "none"} 
+                          color={i < t.rating ? "#F59E0B" : "#CBD5E1"} 
+                        />
+                      ))}
+                    </div>
 
-            <Card style={{ textAlign: 'left' }}>
-              <CardBody>
-                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Lightbulb size={20} color="#0F766E" />
-                </div>
-                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Penerangan Jalur Taman</h4>
-                <p className="text-caption" style={{ marginBottom: '12px' }}>Lampu pedestrian solar cell dan tiang penerangan utama.</p>
-                <StatusBadge status="rusak" customLabel="Status umum: Sebagian Rusak" />
-              </CardBody>
-            </Card>
+                    <div style={{ flex: 1, marginBottom: '20px', position: 'relative' }}>
+                      <Quote size={24} color="var(--color-primary)" style={{ opacity: 0.15, position: 'absolute', top: '-8px', left: '-8px' }} />
+                      <p className="text-body" style={{ 
+                        fontSize: '15px', 
+                        fontStyle: 'italic', 
+                        color: '#334155', 
+                        lineHeight: 1.6,
+                        position: 'relative',
+                        zIndex: 1
+                      }}>
+                        "{t.quote}"
+                      </p>
+                    </div>
 
-            <Card style={{ textAlign: 'left' }}>
-              <CardBody>
-                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Droplets size={20} color="#0F766E" />
-                </div>
-                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Fasilitas Sanitasi / Toilet</h4>
-                <p className="text-caption" style={{ marginBottom: '12px' }}>Kebersihan toilet umum, kran air, dan wastafel cuci tangan.</p>
-                <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
-              </CardBody>
-            </Card>
-
-            <Card style={{ textAlign: 'left' }}>
-              <CardBody>
-                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Armchair size={20} color="#0F766E" />
-                </div>
-                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Bangku & Meja Santai</h4>
-                <p className="text-caption" style={{ marginBottom: '12px' }}>Kenyamanan bangku taman kayu dan gazebo kanopi warga.</p>
-                <StatusBadge status="perlu_perhatian" customLabel="Status umum: Perlu Perhatian" />
-              </CardBody>
-            </Card>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '15px', color: '#0F172A' }}>{t.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{t.role}</div>
+                      </div>
+                      <span style={{ fontSize: '20px' }} title="Jakarta, Indonesia">{t.emoji}</span>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
+            ))}
           </div>
         </div>
+
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          
+          .testimonial-marquee-container {
+            cursor: grab;
+          }
+          
+          .testimonial-marquee-container:hover {
+            cursor: grabbing;
+          }
+
+          .testimonial-marquee-container:hover .testimonial-marquee-track {
+            animation-play-state: paused;
+          }
+
+          .testimonial-card-marquee {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+        `}</style>
       </section>
 
       {/* SECTION 4: BANNER CTA MARI JAGA RUANG BERSAMA */}
