@@ -74,6 +74,15 @@ backend/storage/laporan/*
 !backend/storage/laporan/.gitkeep
 backend/storage/ruang-publik/*
 !backend/storage/ruang-publik/.gitkeep
+AGENTS.md
+.agents/skills/antislop/SKILL.md
+.agents/skills/antislop-code/SKILL.md
+.agents/skills/antislop-copywriting/SKILL.md
+.agents/skills/antislop-ui/SKILL.md
+.agents/skills/antislop-human/SKILL.md
+.agents/skills/antislop-layoutmobile/SKILL.md
+.agents/skills/antislop-human/contrast-check.py
+.agents/skills/antislop-human/contrast-mcp.py
 
 .agents
 AGENTS.md
