@@ -8,8 +8,7 @@ export const MOCK_CATEGORIES = [
   { id: 'taman-kota', label: 'Taman Kota', iconName: 'Trees' },
   { id: 'rth', label: 'RTH & Konservasi', iconName: 'Leaf' },
   { id: 'lapangan-olahraga', label: 'Lapangan Olahraga', iconName: 'Dumbbell' },
-  { id: 'hutan-kota', label: 'Hutan Kota', iconName: 'TreePine' },
-  { id: 'jalur-pedestrian', label: 'Jalur Pedestrian', iconName: 'Footprints' }
+  { id: 'hutan-kota', label: 'Hutan Kota', iconName: 'TreePine' }
 ];
 
 export const MOCK_WILAYAH = [

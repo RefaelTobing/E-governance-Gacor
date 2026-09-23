@@ -15,7 +15,6 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nama, setNama] = useState('');
-  const [nik, setNik] = useState('');
   const [noHp, setNoHp] = useState('');
 
   const handleSubmit = (e) => {
@@ -95,13 +94,6 @@ export const LoginPage = () => {
                   placeholder="Masukkan nama lengkap Anda"
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
-                  required
-                />
-                <Input
-                  label="NIK (Nomor Induk Kependudukan)"
-                  placeholder="3171xxxxxxxxxxxx"
-                  value={nik}
-                  onChange={(e) => setNik(e.target.value)}
                   required
                 />
                 <Input
