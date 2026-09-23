@@ -2,7 +2,7 @@ import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Raku Jakarta"
+    PROJECT_NAME: str = "Ruka Jakarta"
     API_V1_STR: str = "/api/v1"
     
     # Database
