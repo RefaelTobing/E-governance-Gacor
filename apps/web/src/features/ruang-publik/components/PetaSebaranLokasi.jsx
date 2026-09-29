@@ -140,64 +140,52 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
     );
   }
 
-  // --- ERROR STATE ---
-  if (error) {
-    return (
-      <div
-        style={{
-          height: '320px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#fef2f2',
-          gap: '12px',
-          padding: 'var(--space-xl)',
-          textAlign: 'center',
-        }}
-      >
-        <AlertCircle size={32} color="#EF4444" />
-        <div>
-          <p className="text-small" style={{ fontWeight: 700, color: '#DC2626', marginBottom: '4px' }}>
-            Peta Tidak Tersedia
-          </p>
-          <p className="text-caption" style={{ color: 'var(--color-text-muted)', maxWidth: '360px' }}>
-            {error}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // --- EMPTY STATE (API berhasil tapi tidak ada data) ---
-  if (!loading && locations.length === 0) {
-    return (
-      <div
-        style={{
-          height: '320px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f8fafc',
-          gap: '12px',
-          color: 'var(--color-text-muted)',
-        }}
-      >
-        <MapPin size={32} color="#94A3B8" />
-        <p className="text-small">Tidak ada lokasi ditemukan dalam filter ini.</p>
-      </div>
-    );
-  }
-
   // --- MAP STATE ---
   return (
-    <MapContainer
-      center={mapCenter}
-      zoom={DEFAULT_ZOOM}
-      style={{ height: '320px', width: '100%', zIndex: 0 }}
-      scrollWheelZoom={false}
-    >
+    <div style={{ position: 'relative', height: '320px', width: '100%' }}>
+      {/* Overlay status (Error/Empty) */}
+      {(error || (!loading && locations.length === 0)) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            zIndex: 1000,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: '80%',
+            pointerEvents: 'none'
+          }}
+        >
+          {error ? (
+            <>
+              <AlertCircle size={16} color="#EF4444" />
+              <span style={{ fontSize: '11px', color: '#B91C1C', fontWeight: 500 }}>
+                {error} (Menampilkan peta dasar)
+              </span>
+            </>
+          ) : (
+            <>
+              <MapPin size={16} color="#64748B" />
+              <span style={{ fontSize: '11px', color: '#475569', fontWeight: 500 }}>
+                Tidak ada lokasi ditemukan dalam filter ini.
+              </span>
+            </>
+          )}
+        </div>
+      )}
+
+      <MapContainer
+        center={mapCenter}
+        zoom={DEFAULT_ZOOM}
+        style={{ height: '100%', width: '100%', zIndex: 0 }}
+        scrollWheelZoom={false}
+      >
       <RecenterMap center={mapCenter} />
 
       {/* Tile layer OpenStreetMap — gratis, no API key */}
@@ -283,7 +271,8 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
         );
       })}
     </MapContainer>
-  );
+  </div>
+);
 };
 
 export default PetaSebaranLokasi;
