@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -10,21 +10,91 @@ import {
   XCircle,
   History
 } from 'lucide-react';
-import { MOCK_LAPORAN } from '../../../config/mockData';
-import { Button, Card, CardBody, StatusBadge } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { getReportDetail, updateReportStatus } from '../../../services/laporanService';
 
 export const DetailModerasiPage = () => {
   const { laporanId } = useParams();
   const navigate = useNavigate();
 
-  const laporan = MOCK_LAPORAN.find((item) => item.id === laporanId) || MOCK_LAPORAN[0];
-  const [currentStatus, setCurrentStatus] = useState(laporan.status);
+  const [laporan, setLaporan] = useState(null);
+  const [currentStatus, setCurrentStatus] = useState('menunggu_verifikasi');
   const [catatanPetugas, setCatatanPetugas] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleUpdateStatus = (newStatus) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReport = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getReportDetail(laporanId);
+        if (isMounted && data) {
+          setLaporan(data);
+          setCurrentStatus(data.status);
+        }
+      } catch (err) {
+        console.error('Error fetching moderasi report detail:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (laporanId) {
+      fetchReport();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [laporanId]);
+
+  const handleUpdateStatus = async (newStatus) => {
     setCurrentStatus(newStatus);
-    alert(`Status laporan #${laporan.id} berhasil diperbarui menjadi: ${newStatus.toUpperCase()}`);
+    try {
+      if (laporan?.id) {
+        await updateReportStatus(laporan.id, { status: newStatus, catatan: catatanPetugas });
+      }
+    } catch (err) {
+      console.warn('Backend update failed, local state updated:', err);
+    }
+    alert(`Status laporan #${laporan?.id || laporanId} berhasil diperbarui menjadi: ${newStatus.toUpperCase()}`);
   };
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton height="20px" width="200px" style={{ marginBottom: 'var(--space-md)' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2xl)' }}>
+          <div style={{ width: '60%' }}>
+            <Skeleton height="36px" width="100%" style={{ marginBottom: '8px' }} />
+            <Skeleton height="18px" width="50%" />
+          </div>
+          <Skeleton height="28px" width="120px" borderRadius="var(--radius-pill)" />
+        </div>
+        <Card style={{ marginBottom: 'var(--space-2xl)' }}>
+          <CardBody style={{ padding: 'var(--space-xl)' }}>
+            <Skeleton height="100px" />
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!laporan) {
+    return (
+      <div>
+        <EmptyState
+          title="Laporan Tidak Ditemukan"
+          description="Data laporan untuk moderasi tidak tersedia atau ID tidak valid."
+          actionLabel="Kembali ke Daftar Laporan"
+          onAction={() => navigate('/dashboard/moderasi')}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>

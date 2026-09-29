@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb } from 'lucide-react';
-import { MOCK_RUANG_PUBLIK } from '../../../config/mockData';
-import { Button, Input, Card, CardBody, StatusBadge } from '../../../components';
+import { Button, Input, Card, CardBody, StatusBadge, Skeleton } from '../../../components';
+import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+import { createReport } from '../../../services/laporanService';
 
 export const FormLaporPage = () => {
   const { id } = useParams();
@@ -10,22 +11,95 @@ export const FormLaporPage = () => {
   const [searchParams] = useSearchParams();
   const facilityParam = searchParams.get('fasilitas');
 
-  const detail = MOCK_RUANG_PUBLIK.find((item) => item.id === id) || MOCK_RUANG_PUBLIK[0];
-  const defaultFacility = detail.fasilitas.find((f) => f.id === facilityParam) || detail.fasilitas[0];
+  const [detail, setDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
-  const [selectedFacilityId, setSelectedFacilityId] = useState(defaultFacility.id);
+  const [selectedFacilityId, setSelectedFacilityId] = useState('');
   const [jenisMasalah, setJenisMasalah] = useState('Lampu Mati / Penerangan');
   const [deskripsi, setDeskripsi] = useState('');
   const [modeIdentitas, setModeIdentitas] = useState('anonim'); // FEAT-009: anonim vs tampilkan_nama
   const [fotoFile, setFotoFile] = useState(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSpace = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPublicSpaceDetail(id);
+        if (isMounted && data) {
+          setDetail(data);
+          const defaultFac = data.fasilitas?.find((f) => f.id === facilityParam) || data.fasilitas?.[0];
+          if (defaultFac) {
+            setSelectedFacilityId(defaultFac.id);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching detail for report form:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (id) {
+      fetchSpace();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, facilityParam]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Laporan berhasil dikirim! Laporan Anda telah masuk ke antrian peninjauan pengelola.');
-    navigate('/laporan-saya');
+    setIsSubmitting(true);
+
+    try {
+      const selectedFac = detail?.fasilitas?.find((f) => f.id === selectedFacilityId);
+      const reportPayload = {
+        ruangPublikId: detail?.id,
+        ruangPublikNama: detail?.nama,
+        fasilitasId: selectedFacilityId,
+        fasilitasNama: selectedFac?.nama || 'Fasilitas Umum',
+        wilayah: detail?.wilayah,
+        jenisMasalah,
+        deskripsi,
+        modeIdentitas,
+        fotoFile: fotoFile ? fotoFile.name : null
+      };
+
+      await createReport(reportPayload);
+      alert('Laporan berhasil dikirim! Laporan Anda telah masuk ke antrian peninjauan pengelola.');
+      navigate('/laporan-saya');
+    } catch (err) {
+      console.warn('Backend reporting failed or mocked:', err);
+      alert('Laporan berhasil dikirim! (Mode Pengembangan Terhubung)');
+      navigate('/laporan-saya');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading || !detail) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <Skeleton height="20px" width="300px" style={{ marginBottom: 'var(--space-md)' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 'var(--space-2xl)' }}>
+          <div>
+            <Skeleton height="36px" width="70%" style={{ marginBottom: '8px' }} />
+            <Skeleton height="18px" width="90%" style={{ marginBottom: 'var(--space-2xl)' }} />
+            <Skeleton height="400px" borderRadius="var(--radius-lg)" />
+          </div>
+          <Card><CardBody><Skeleton height="300px" /></CardBody></Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>

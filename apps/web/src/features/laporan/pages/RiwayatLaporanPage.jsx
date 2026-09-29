@@ -1,18 +1,53 @@
- import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight } from 'lucide-react';
-import { MOCK_LAPORAN } from '../../../config/mockData';
-import { Button, Card, CardBody, StatusBadge, EmptyState } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { getUserReports } from '../../../services/laporanService';
 
 export const RiwayatLaporanPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('semua');
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReports = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getUserReports();
+        if (isMounted) {
+          setReports(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error('Error fetching reports:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchReports();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter Reports by status tab
-  const filteredLaporan = MOCK_LAPORAN.filter((item) => {
+  const filteredLaporan = reports.filter((item) => {
     if (activeTab === 'semua') return true;
     return item.status === activeTab;
   });
+
+  // Dynamic status counts
+  const countSemua = reports.length;
+  const countPenanganan = reports.filter((r) => r.status === 'dalam_penanganan').length;
+  const countSelesai = reports.filter((r) => r.status === 'selesai').length;
+  const countVerifikasi = reports.filter((r) => r.status === 'menunggu_verifikasi').length;
+  const distinctSpaces = new Set(reports.map((r) => r.ruangPublikId || r.ruangPublikNama)).size;
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
@@ -34,7 +69,9 @@ export const RiwayatLaporanPage = () => {
           </div>
           <div>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>KONTRIBUSI KOMUNITAS</span>
-            <div style={{ fontWeight: 800, fontSize: '18px', color: 'var(--color-primary)' }}>3 Ruang Aktif</div>
+            <div style={{ fontWeight: 800, fontSize: '18px', color: 'var(--color-primary)' }}>
+              {isLoading ? '...' : reports.length > 0 ? `${distinctSpaces} Ruang Aktif` : '-'}
+            </div>
           </div>
         </div>
       </div>
@@ -56,7 +93,7 @@ export const RiwayatLaporanPage = () => {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          Semua ({MOCK_LAPORAN.length})
+          Semua ({countSemua})
         </button>
 
         <button
@@ -74,7 +111,7 @@ export const RiwayatLaporanPage = () => {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          Dalam Penanganan (1)
+          Dalam Penanganan ({countPenanganan})
         </button>
 
         <button
@@ -92,7 +129,7 @@ export const RiwayatLaporanPage = () => {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          Selesai (1)
+          Selesai ({countSelesai})
         </button>
 
         <button
@@ -110,12 +147,43 @@ export const RiwayatLaporanPage = () => {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          Menunggu Verifikasi (1)
+          Menunggu Verifikasi ({countVerifikasi})
         </button>
       </div>
 
-      {/* REPORT LIST CARDS */}
-      {filteredLaporan.length > 0 ? (
+      {/* REPORT LIST CARDS with Loading & Empty State */}
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
+          {[1, 2].map((n) => (
+            <Card key={`skeleton-report-${n}`}>
+              <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
+                <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" />
+                <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'var(--space-lg)', gap: '12px' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <Skeleton height="14px" width="140px" />
+                      <Skeleton height="20px" width="100px" borderRadius="var(--radius-pill)" />
+                    </div>
+                    <Skeleton height="22px" width="55%" style={{ marginBottom: '6px' }} />
+                    <Skeleton height="14px" width="40%" style={{ marginBottom: '14px' }} />
+                    <Skeleton height="45px" width="100%" borderRadius="var(--radius-md)" />
+                  </div>
+                  <div style={{ textAlign: 'right', paddingTop: 'var(--space-md)' }}>
+                    <Skeleton height="32px" width="150px" borderRadius="var(--radius-md)" />
+                  </div>
+                </CardBody>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : reports.length === 0 ? (
+        <EmptyState
+          title="Belum Ada Laporan Terkirim"
+          description="Anda belum memiliki riwayat pengiriman laporan fasilitas. Mari bantu tingkatkan kenyamanan fasilitas publik di sekitar Anda."
+          actionLabel="Laporkan Fasilitas Baru"
+          onAction={() => navigate('/ruang-publik')}
+        />
+      ) : filteredLaporan.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {filteredLaporan.map((item) => (
             <Card key={item.id} hoverable>
@@ -167,7 +235,7 @@ export const RiwayatLaporanPage = () => {
         </div>
       ) : (
         <EmptyState
-          title="Tidak Ada Laporan"
+          title="Belum Ada Laporan Terkirim"
           description="Anda belum memiliki laporan pada kategori status ini."
           actionLabel="Tampilkan Semua Laporan"
           onAction={() => setActiveTab('semua')}

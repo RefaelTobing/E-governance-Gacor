@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Trees,
@@ -16,16 +16,79 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
-import { MOCK_RUANG_PUBLIK } from '../../../config/mockData';
-import { Button, Card, CardBody, StatusBadge } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 
 export const DetailRuangPublikPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Find detail data or fallback to Taman Suropati
-  const detail = MOCK_RUANG_PUBLIK.find((item) => item.id === id) || MOCK_RUANG_PUBLIK[0];
+  // Dynamic state for detail and loading
+  const [detail, setDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDetail = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPublicSpaceDetail(id);
+        if (isMounted) {
+          setDetail(data);
+        }
+      } catch (err) {
+        console.error('Error fetching detail ruang publik:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (id) {
+      fetchDetail();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <Skeleton height="20px" width="320px" style={{ marginBottom: 'var(--space-md)' }} />
+        <div style={{ marginBottom: 'var(--space-2xl)' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <Skeleton height="24px" width="100px" />
+            <Skeleton height="24px" width="160px" />
+            <Skeleton height="24px" width="140px" />
+          </div>
+          <Skeleton height="40px" width="50%" style={{ marginBottom: '8px' }} />
+          <Skeleton height="20px" width="70%" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-xl)', marginBottom: 'var(--space-3xl)' }}>
+          <Card><CardBody><Skeleton height="260px" /></CardBody></Card>
+          <Card><CardBody><Skeleton height="260px" /></CardBody></Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!detail) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <EmptyState
+          title="Ruang Publik Tidak Ditemukan"
+          description="Data detail ruang publik yang Anda cari tidak tersedia atau ID tidak valid."
+          actionLabel="Kembali ke Direktori Ruang Publik"
+          onAction={() => navigate('/ruang-publik')}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>

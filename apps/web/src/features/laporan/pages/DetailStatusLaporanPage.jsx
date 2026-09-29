@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Tag,
@@ -13,14 +13,79 @@ import {
   Camera,
   ArrowLeft
 } from 'lucide-react';
-import { MOCK_LAPORAN } from '../../../config/mockData';
-import { Button, Card, CardBody, StatusBadge } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { getReportDetail } from '../../../services/laporanService';
 
 export const DetailStatusLaporanPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const laporan = MOCK_LAPORAN.find((item) => item.id === id) || MOCK_LAPORAN[0];
+  const [laporan, setLaporan] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReport = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getReportDetail(id);
+        if (isMounted) {
+          setLaporan(data);
+        }
+      } catch (err) {
+        console.error('Error fetching report detail:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (id) {
+      fetchReport();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <Skeleton height="20px" width="300px" style={{ marginBottom: 'var(--space-md)' }} />
+        <Card style={{ marginBottom: 'var(--space-2xl)' }}>
+          <CardBody style={{ padding: 'var(--space-2xl)' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <Skeleton height="24px" width="120px" />
+              <Skeleton height="24px" width="100px" />
+              <Skeleton height="24px" width="140px" />
+            </div>
+            <Skeleton height="36px" width="60%" style={{ marginBottom: '8px' }} />
+            <Skeleton height="18px" width="40%" />
+          </CardBody>
+        </Card>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 'var(--space-2xl)' }}>
+          <Card><CardBody style={{ padding: 'var(--space-xl)' }}><Skeleton height="350px" /></CardBody></Card>
+          <Card><CardBody style={{ padding: 'var(--space-xl)' }}><Skeleton height="350px" /></CardBody></Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!laporan) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <EmptyState
+          title="Laporan Tidak Ditemukan"
+          description="Data detail status laporan yang Anda cari tidak tersedia."
+          actionLabel="Kembali ke Riwayat Laporan"
+          onAction={() => navigate('/laporan-saya')}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>

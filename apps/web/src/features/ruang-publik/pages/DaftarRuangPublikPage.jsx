@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Globe, RotateCcw, MapPin, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
-import { MOCK_RUANG_PUBLIK, MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../config/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState } from '../../../components';
+import { MOCK_WILAYAH, MOCK_CATEGORIES, MOCK_RUANG_PUBLIK_METRICS } from '../../../data/mockData';
+import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
+import { getPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,16 +19,73 @@ export const DaftarRuangPublikPage = () => {
   const [selectedKategori, setSelectedKategori] = useState(categoryParam);
   const [sortBy, setSortBy] = useState('relevan');
 
-  // Filter Logic
-  const filteredList = MOCK_RUANG_PUBLIK.filter((item) => {
+  // Dynamic States
+  const [spaces, setSpaces] = useState([]);
+  const [metrics, setMetrics] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch Public Spaces & Metrics from FastAPI or dev mock fallback
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSpaces = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPublicSpaces({
+          kategori: selectedKategori,
+          wilayah: selectedWilayah
+        });
+        if (isMounted) {
+          setSpaces(data);
+        }
+      } catch (err) {
+        console.error('Error fetching public spaces:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchSpaces();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedKategori, selectedWilayah]);
+
+  // Fetch overall statistics
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+        const stats = await getPublicSpacesStats();
+        if (isMounted && stats) {
+          setMetrics(stats);
+        }
+      } catch (err) {
+        console.error('Error fetching metrics:', err);
+      }
+    };
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Filter Logic over dynamic spaces state
+  const filteredList = spaces.filter((item) => {
     const matchSearch =
       item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.alamat.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchWilayah = selectedWilayah === 'Semua Wilayah' || item.wilayah === selectedWilayah;
-    const matchKategori =
-      selectedKategori === 'semua' ||
-      item.kategori.toLowerCase().replace(/ /g, '-').includes(selectedKategori);
-    return matchSearch && matchWilayah && matchKategori;
+    return matchSearch;
+  }).sort((a, b) => {
+    if (sortBy === 'kondisi') {
+      const scoreA = (a.stats?.baik || 0) - (a.stats?.rusak || 0);
+      const scoreB = (b.stats?.baik || 0) - (b.stats?.rusak || 0);
+      return scoreB - scoreA;
+    }
+    return 0;
   });
 
   const handleReset = () => {
@@ -81,15 +139,21 @@ export const DaftarRuangPublikPage = () => {
         >
           <div style={{ textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700 }}>TOTAL TERDATA</span>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)' }}>142</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)' }}>
+              {metrics?.totalTerdata ?? '-'}
+            </div>
           </div>
           <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 'var(--space-xl)', textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>STATUS PRIMA</span>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)' }}>92%</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)' }}>
+              {metrics?.statusPrima ?? '-'}
+            </div>
           </div>
           <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 'var(--space-xl)', textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning)' }}>PERHATIAN</span>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-warning)' }}>8%</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-warning)' }}>
+              {metrics?.perluPerhatian ?? '-'}
+            </div>
           </div>
         </div>
       </div>
@@ -160,8 +224,32 @@ export const DaftarRuangPublikPage = () => {
         </div>
       </div>
 
-      {/* Cards Horizontal / Grid List */}
-      {filteredList.length > 0 ? (
+      {/* Cards Horizontal / Grid List with Loading & Empty State */}
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
+          {[1, 2, 3].map((n) => (
+            <Card key={`skeleton-space-${n}`}>
+              <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '180px' }}>
+                <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" />
+                <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'var(--space-lg)', gap: '12px' }}>
+                  <div>
+                    <Skeleton height="24px" width="50%" style={{ marginBottom: '8px' }} />
+                    <Skeleton height="16px" width="70%" style={{ marginBottom: '16px' }} />
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      <Skeleton height="22px" width="60px" borderRadius="var(--radius-pill)" />
+                      <Skeleton height="22px" width="90px" borderRadius="var(--radius-pill)" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)' }}>
+                    <Skeleton height="16px" width="160px" />
+                    <Skeleton height="32px" width="130px" borderRadius="var(--radius-md)" />
+                  </div>
+                </CardBody>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : filteredList.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
           {filteredList.map((item) => (
             <Card key={item.id} hoverable>
@@ -187,14 +275,14 @@ export const DaftarRuangPublikPage = () => {
 
                     {/* Facility Summary Pills */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: 'var(--space-md)', flexWrap: 'wrap' }}>
-                      <span className="badge badge-success">{item.stats.baik} Baik</span>
-                      <span className="badge badge-warning">{item.stats.perluPerhatian} Perlu Perhatian</span>
-                      <span className="badge badge-danger">{item.stats.rusak} Rusak</span>
+                      <span className="badge badge-success">{item.stats?.baik || 0} Baik</span>
+                      <span className="badge badge-warning">{item.stats?.perluPerhatian || 0} Perlu Perhatian</span>
+                      <span className="badge badge-danger">{item.stats?.rusak || 0} Rusak</span>
                     </div>
 
                     {/* Facilities Tag List */}
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: 'var(--space-md)' }}>
-                      {item.fasilitas.map((f) => (
+                      {item.fasilitas?.map((f) => (
                         <span key={f.id} style={{ fontSize: '12px', padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-main)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
                           {f.nama}
                         </span>

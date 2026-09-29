@@ -7,4 +7,5 @@ export { default as Spinner } from './Spinner';
 export { default as EmptyState } from './EmptyState';
 export { default as Logo } from './Logo';
 export { default as CategoryChip } from './CategoryChip';
+export { default as Skeleton } from './Skeleton';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -13,14 +13,48 @@ import {
   Armchair,
   Radio
 } from 'lucide-react';
-import { MOCK_LAPORAN } from '../../../config/mockData';
-import { Button, Card, CardBody, StatusBadge, SearchInput } from '../../../components';
+import { MOCK_DASHBOARD_STATS } from '../../../data/mockData';
+import { Button, Card, CardBody, StatusBadge, SearchInput, EmptyState, Skeleton } from '../../../components';
+import { getReports, getDashboardStats } from '../../../services/laporanService';
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [laporanList, setLaporanList] = useState([]);
+  const [stats, setStats] = useState(MOCK_DASHBOARD_STATS);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredLaporan = MOCK_LAPORAN.filter((item) =>
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDashboard = async () => {
+      setIsLoading(true);
+      try {
+        const [reportsData, statsData] = await Promise.all([
+          getReports(),
+          getDashboardStats()
+        ]);
+        if (isMounted) {
+          setLaporanList(reportsData);
+          if (statsData) setStats(statsData);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredLaporan = laporanList.filter((item) =>
     item.fasilitasNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.ruangPublikNama.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -59,7 +93,9 @@ export const DashboardPage = () => {
                 <ClipboardList size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '4px' }}>148</div>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '4px' }}>
+              {isLoading ? '...' : (stats?.totalLaporan ?? laporanList.length)}
+            </div>
             <span className="text-caption">Laporan Terdata</span>
             <div style={{ marginTop: '12px' }}>
               <span className="badge badge-info">Seluruh RTH Aktif</span>
@@ -75,7 +111,9 @@ export const DashboardPage = () => {
                 <Inbox size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-info)', marginBottom: '4px' }}>12</div>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-info)', marginBottom: '4px' }}>
+              {isLoading ? '...' : (stats?.menungguVerifikasi ?? laporanList.filter(l => l.status === 'menunggu_verifikasi').length)}
+            </div>
             <span className="text-caption">Laporan Baru</span>
             <div style={{ marginTop: '12px' }}>
               <span className="badge badge-info">Perlu Tinjauan Lapangan</span>
@@ -91,7 +129,9 @@ export const DashboardPage = () => {
                 <Wrench size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-warning)', marginBottom: '4px' }}>24</div>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-warning)', marginBottom: '4px' }}>
+              {isLoading ? '...' : (stats?.dalamPenanganan ?? laporanList.filter(l => l.status === 'dalam_penanganan').length)}
+            </div>
             <span className="text-caption">Fasilitas Sedang Dikerjakan</span>
             <div style={{ marginTop: '12px' }}>
               <span className="badge badge-warning">Proses Perbaikan Fisik</span>
@@ -107,7 +147,9 @@ export const DashboardPage = () => {
                 <CheckCircle2 size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-success)', marginBottom: '4px' }}>112</div>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-success)', marginBottom: '4px' }}>
+              {isLoading ? '...' : (stats?.selesai ?? laporanList.filter(l => l.status === 'selesai').length)}
+            </div>
             <span className="text-caption">Fasilitas Normal Kembali</span>
             <div style={{ marginTop: '12px' }}>
               <span className="badge badge-success">Kondisi RTH Terverifikasi</span>
@@ -216,30 +258,54 @@ export const DashboardPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredLaporan.map((row) => (
-                  <tr key={row.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>{row.fasilitasNama}</td>
-                    <td style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <span className="badge badge-neutral">{row.jenisMasalah.split('/')[0]}</span>
-                    </td>
-                    <td style={{ padding: '12px' }}>{row.tanggal}</td>
-                    <td style={{ padding: '12px' }}>
-                      <StatusBadge status={row.status} />
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate(`/dashboard/moderasi/${row.id}`)}
-                      >
-                        Detail
-                      </Button>
+                {isLoading ? (
+                  [1, 2, 3].map((n) => (
+                    <tr key={`skeleton-row-${n}`} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: '12px' }}><Skeleton height="18px" width="140px" /></td>
+                      <td style={{ padding: '12px' }}><Skeleton height="18px" width="120px" /></td>
+                      <td style={{ padding: '12px' }}><Skeleton height="20px" width="100px" borderRadius="var(--radius-pill)" /></td>
+                      <td style={{ padding: '12px' }}><Skeleton height="18px" width="80px" /></td>
+                      <td style={{ padding: '12px' }}><Skeleton height="20px" width="90px" borderRadius="var(--radius-pill)" /></td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}><Skeleton height="28px" width="60px" borderRadius="var(--radius-md)" /></td>
+                    </tr>
+                  ))
+                ) : filteredLaporan.length > 0 ? (
+                  filteredLaporan.map((row) => (
+                    <tr key={row.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>{row.fasilitasNama}</td>
+                      <td style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <span className="badge badge-neutral">{row.jenisMasalah.split('/')[0]}</span>
+                      </td>
+                      <td style={{ padding: '12px' }}>{row.tanggal}</td>
+                      <td style={{ padding: '12px' }}>
+                        <StatusBadge status={row.status} />
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => navigate(`/dashboard/moderasi/${row.id}`)}
+                        >
+                          Detail
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '32px 12px', textAlign: 'center' }}>
+                      <EmptyState
+                        title="Tidak Ada Laporan Ditemukan"
+                        description="Tidak ada laporan fasilitas yang sesuai dengan pencarian Anda."
+                        actionLabel={searchTerm ? "Reset Pencarian" : undefined}
+                        onAction={searchTerm ? () => setSearchTerm('') : undefined}
+                      />
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

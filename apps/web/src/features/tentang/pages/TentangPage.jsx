@@ -283,7 +283,7 @@ export const TentangPage = () => {
                 color: '#0F766E',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>142</div>
+              }}>-</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
@@ -305,7 +305,7 @@ export const TentangPage = () => {
                 color: '#10B981',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>92%</div>
+              }}>-</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
@@ -327,7 +327,7 @@ export const TentangPage = () => {
                 color: '#F59E0B',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>5</div>
+              }}>-</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
@@ -348,7 +348,7 @@ export const TentangPage = () => {
                 color: '#0F766E',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>24h</div>
+              }}>-</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,

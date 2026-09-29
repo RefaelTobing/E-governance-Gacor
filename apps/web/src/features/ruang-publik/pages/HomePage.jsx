@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, Trees, ClipboardCheck, Clock, Star, Quote } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -15,114 +15,10 @@ import heroImg2 from '../../../slidderHero/2.png';
 import heroImg3 from '../../../slidderHero/3.jpg';
 import heroImg4 from '../../../slidderHero/4.jpg';
 
-import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip } from '../../../components';
-
-const HERO_SLIDES = [
-  {
-    image: heroImg1,
-    title: 'Taman Suropati',
-    location: 'Menteng, Jakarta Pusat'
-  },
-  {
-    image: heroImg2,
-    title: 'Tebet Eco Park',
-    location: 'Tebet, Jakarta Selatan'
-  },
-  {
-    image: heroImg3,
-    title: 'Hutan Kota GBK',
-    location: 'Senayan, Jakarta Pusat'
-  },
-  {
-    image: heroImg4,
-    title: 'Taman Lapangan Banteng',
-    location: 'Sawah Besar, Jakarta Pusat'
-  }
-];
-
-const TESTIMONIALS = [
-  {
-    id: 1,
-    quote: "Aplikasi ini sangat membantu! Saya bisa laporkan kerusakan lampu taman dengan mudah dan transparan. Dalam 3 hari sudah diperbaiki!",
-    name: "Budi Santoso",
-    role: "Warga Jakarta Pusat",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 2,
-    quote: "Fitur peta presisi sangat akurat untuk lokasi fasilitas rusak. Petugas langsung tahu lokasi persis tanpa perlu mencari-cari.",
-    name: "Siti Nurhaliza",
-    role: "Pengguna Aktif",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 3,
-    quote: "Saya suka bisa lapor secara anonim. Tidak perlu ribet daftar akun, langsung bisa kirim laporan fasilitas rusak di taman dekat rumah.",
-    name: "Ahmad Wijaya",
-    role: "Relawan Lingkungan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 4,
-    quote: "Transparansi pengelolaan ruang publik meningkat drastis. Kita bisa pantau kondisi fasilitas real-time sebelum pergi ke taman.",
-    name: "Dewi Lestari",
-    role: "Ibu Rumah Tangga",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 5,
-    quote: "Platform ini memudahkan warga untuk berpartisipasi menjaga fasilitas umum. Pelaporan cepat dan prosesnya jelas!",
-    name: "Eko Prasetyo",
-    role: "Pegawai Swasta",
-    rating: 4,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 6,
-    quote: "Sebagai petugas lapangan, aplikasi ini sangat membantu koordinasi perbaikan. Laporan warga langsung masuk ke sistem kami.",
-    name: "Joko Susilo",
-    role: "Petugas Dinas Pertamanan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 7,
-    quote: "Fitur foto bukti sangat berguna. Teknisi bisa persiapkan alat yang tepat sebelum ke lokasi berdasarkan foto kerusakan.",
-    name: "Rina Kusuma",
-    role: "Warga Jakarta Selatan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 8,
-    quote: "Saya apresiasi bisa tracking status laporan. Tidak seperti dulu yang lapor tapi tidak tahu ditindaklanjuti atau tidak.",
-    name: "Agus Setiawan",
-    role: "Komunitas Taman",
-    rating: 4,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 9,
-    quote: "Interface-nya simpel dan mudah dipahami. Bahkan orang tua saya yang gaptek bisa pakai untuk lapor bangku rusak di RPTRA.",
-    name: "Maya Sari",
-    role: "Mahasiswa",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 10,
-    quote: "Response time dari petugas sangat cepat. Laporan saya diverifikasi dalam 1x24 jam dan perbaikan selesai dalam seminggu!",
-    name: "Fahmi Rahman",
-    role: "Warga Jakarta Timur",
-    rating: 5,
-    emoji: "🇮🇩"
-  }
-];
+import { MOCK_CATEGORIES, HERO_SLIDES as DEFAULT_HERO_SLIDES, TESTIMONIALS as DEFAULT_TESTIMONIALS, MOCK_STATISTICS as DEFAULT_STATS } from '../../../data/mockData';
+import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
+import { getPublicSpaces } from '../../../services/ruangPublikService';
+import { getHomeStatistics, getTestimonials } from '../../../services/statsService';
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -130,7 +26,61 @@ export const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState(null);
   const marqueeTrackRef = useRef(null);
 
+  // Dynamic States for API / Mock Data
+  const [heroSlides, setHeroSlides] = useState(DEFAULT_HERO_SLIDES);
+  const [statistics, setStatistics] = useState(null);
+  const [featuredSpaces, setFeaturedSpaces] = useState([]);
+  const [testimonials, setTestimonials] = useState(DEFAULT_TESTIMONIALS);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
   const [hoveredTestimonialId, setHoveredTestimonialId] = useState(null);
+
+  // Fetch data placeholder for FastAPI integration
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHomePageData = async () => {
+      try {
+        setIsLoadingSpaces(true);
+        // Call public spaces service (limit 3 for featured cards on homepage)
+        const spacesData = await getPublicSpaces({ limit: 3 });
+        if (isMounted) {
+          setFeaturedSpaces(spacesData);
+        }
+      } catch (err) {
+        console.error('Error fetching featured spaces:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingSpaces(false);
+        }
+      }
+
+      try {
+        const statsData = await getHomeStatistics();
+        if (isMounted && statsData) {
+          setStatistics(statsData);
+        }
+      } catch (err) {
+        console.error('Error fetching statistics:', err);
+      }
+
+      try {
+        const testData = await getTestimonials();
+        if (isMounted && testData) {
+          setTestimonials(testData);
+        }
+      } catch (err) {
+        console.error('Error fetching testimonials:', err);
+      }
+    };
+
+    fetchHomePageData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSearch = (query) => {
     if (query) {
@@ -211,7 +161,7 @@ export const HomePage = () => {
             }}
             style={{ width: '100%', height: '100%' }}
           >
-            {HERO_SLIDES.map((slide, index) => (
+            {heroSlides.map((slide, index) => (
               <SwiperSlide key={index} style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <img
                   src={slide.image}
@@ -397,7 +347,7 @@ export const HomePage = () => {
       <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: '#FFFFFF' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
-            <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Raku Jakarta dalam Angka</h2>
+            <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Ruka Jakarta dalam Angka</h2>
             <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
               Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
             </p>
@@ -420,7 +370,9 @@ export const HomePage = () => {
               }}>
                 <Trees size={48} color="#0F766E" strokeWidth={1.5} />
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>150+</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                {statistics?.totalRuangPublik ?? '-'}
+              </div>
               <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Ruang Publik</div>
             </div>
 
@@ -440,7 +392,9 @@ export const HomePage = () => {
               }}>
                 <ClipboardCheck size={48} color="#F59E0B" strokeWidth={1.5} />
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>5,000+</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                {statistics?.totalLaporanSelesai ?? '-'}
+              </div>
               <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Selesai</div>
             </div>
 
@@ -460,7 +414,9 @@ export const HomePage = () => {
               }}>
                 <MapPin size={48} color="#22C55E" strokeWidth={1.5} />
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>44</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                {statistics?.totalKecamatan ?? '-'}
+              </div>
               <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Kecamatan</div>
             </div>
 
@@ -480,7 +436,9 @@ export const HomePage = () => {
               }}>
                 <Clock size={48} color="#06B6D4" strokeWidth={1.5} />
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>24/7</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                {statistics?.pemantauanLayanan ?? '-'}
+              </div>
               <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Pemantauan</div>
             </div>
           </div>
@@ -515,72 +473,101 @@ export const HomePage = () => {
             </Link>
           </div>
 
-          {/* Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-xl)' }}>
-            {MOCK_RUANG_PUBLIK.map((item) => (
-              <Card key={item.id} hoverable>
-                <div style={{ position: 'relative', height: '200px', width: '100%' }}>
-                  <img
-                    src={item.image}
-                    alt={item.nama}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                  <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
-                    {item.kategori}
-                  </span>
-                  <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <MapPin size={12} color="#FFFFFF" /> {item.wilayah}
-                  </span>
-                </div>
-
-                <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{item.nama}</h3>
-                      <p className="text-caption" style={{ marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {item.deskripsi}
-                      </p>
-                    </div>
-
-                    {/* Facility Condition Summary Box */}
-                    <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', border: '1px solid var(--color-border)' }}>
-                      <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
-                        Kondisi Fasilitas
-                      </span>
+          {/* Cards Grid with Loading and Empty State */}
+          {isLoadingSpaces ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-xl)' }}>
+              {[1, 2, 3].map((n) => (
+                <Card key={`skeleton-rp-${n}`}>
+                  <Skeleton height="200px" borderRadius="var(--radius-lg) var(--radius-lg) 0 0" />
+                  <CardBody style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: 'var(--space-lg)' }}>
+                    <Skeleton height="24px" width="70%" />
+                    <Skeleton height="16px" width="90%" />
+                    <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+                      <Skeleton height="14px" width="40%" style={{ marginBottom: '8px' }} />
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        {item.fasilitas.slice(0, 4).map((fas) => (
-                          <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
-                            <span
-                              title={fas.nama}
-                              style={{
-                                display: 'inline-block',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                maxWidth: '110px',
-                                flex: 1,
-                                minWidth: 0,
-                                color: 'var(--color-text-main)'
-                              }}
-                            >
-                              {fas.nama}
-                            </span>
-                            <StatusBadge status={fas.status} />
-                          </div>
-                        ))}
+                        <Skeleton height="16px" />
+                        <Skeleton height="16px" />
                       </div>
                     </div>
+                    <Skeleton height="38px" borderRadius="var(--radius-md)" style={{ marginTop: 'auto' }} />
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          ) : featuredSpaces.length === 0 ? (
+            <EmptyState
+              title="Belum Ada Ruang Publik Pilihan"
+              description="Data ruang publik terpopuler saat ini belum tersedia atau sedang dalam pembaruan sistem."
+              actionLabel="Jelajahi Semua Ruang Publik"
+              onAction={() => navigate('/ruang-publik')}
+            />
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-xl)' }}>
+              {featuredSpaces.map((item) => (
+                <Card key={item.id} hoverable>
+                  <div style={{ position: 'relative', height: '200px', width: '100%' }}>
+                    <img
+                      src={item.image}
+                      alt={item.nama}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
+                      {item.kategori}
+                    </span>
+                    <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={12} color="#FFFFFF" /> {item.wilayah}
+                    </span>
                   </div>
 
-                  <div style={{ marginTop: 'auto' }}>
-                    <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
-                      Lihat Detail Ruang
-                    </Button>
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
+                  <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{item.nama}</h3>
+                        <p className="text-caption" style={{ marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {item.deskripsi}
+                        </p>
+                      </div>
+
+                      {/* Facility Condition Summary Box */}
+                      <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', border: '1px solid var(--color-border)' }}>
+                        <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
+                          Kondisi Fasilitas
+                        </span>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          {item.fasilitas?.slice(0, 4).map((fas) => (
+                            <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
+                              <span
+                                title={fas.nama}
+                                style={{
+                                  display: 'inline-block',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  maxWidth: '110px',
+                                  flex: 1,
+                                  minWidth: 0,
+                                  color: 'var(--color-text-main)'
+                                }}
+                              >
+                                {fas.nama}
+                              </span>
+                              <StatusBadge status={fas.status} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 'auto' }}>
+                      <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
+                        Lihat Detail Ruang
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -604,7 +591,7 @@ export const HomePage = () => {
             className="testimonial-marquee-track" 
             style={{ display: 'flex', gap: '24px', animation: 'marquee 80s linear infinite', padding: '20px 0', width: 'max-content', alignItems: 'center' }}
           >
-            {[...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
+            {[...testimonials, ...testimonials].map((t, idx) => (
               <div
                 key={`${t.id}-${idx}`}
                 style={{
