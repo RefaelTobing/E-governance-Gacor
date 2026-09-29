@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "storage"
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024 # 5 MB
     
+    # Seed admin pertama, hanya dibaca `python -m app.etl.seed_admin`. Kosongkan
+    # atau hapus setelah admin pertama dibuat.
+    ADMIN_SEED_NAME: str = ""
+    ADMIN_SEED_EMAIL: str = ""
+    ADMIN_SEED_PASSWORD: str = ""
+    
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 settings = Settings()

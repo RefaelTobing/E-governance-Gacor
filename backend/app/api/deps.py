@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.user import User
 from app.core.config import settings
+from app.schemas.user import ROLE_ADMIN
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
@@ -28,3 +29,25 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_active_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akun dinonaktifkan. Hubungi admin.",
+        )
+    return current_user
+
+
+def get_current_admin(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    if current_user.role != ROLE_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Hanya admin yang boleh mengakses endpoint ini",
+        )
+    return current_user
