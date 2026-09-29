@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, Card, CardBody, Logo } from '../../../components';
+import { requestWithError } from '../../../utils/apiError';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -16,16 +17,72 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [nama, setNama] = useState('');
   const [noHp, setNoHp] = useState('');
+  
+  // UI States
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Call mock login
-    login({
-      name: isRegister ? nama || 'Warga Terdaftar' : 'Andi (Warga)',
-      role: 'warga',
-      email: email || 'warga@jakarta.go.id'
-    });
-    navigate('/home');
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      if (isRegister) {
+        await requestWithError(
+          'http://localhost:8000/api/v1/auth/register',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: nama, email, password, role: 'warga' })
+          },
+          'Gagal mendaftar'
+        );
+      }
+
+      // Login Call
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+
+      const loginRes = await requestWithError(
+        'http://localhost:8000/api/v1/auth/login',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        },
+        'Email atau sandi salah'
+      );
+
+      const tokenData = await loginRes.json();
+      const token = tokenData.access_token;
+      
+      // Fetch current user details
+      let meRes;
+      try {
+        meRes = await fetch('http://localhost:8000/api/v1/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } catch {
+        throw new Error('Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.');
+      }
+      
+      if (!meRes.ok) {
+         throw new Error('Gagal mengambil data pengguna');
+      }
+      
+      const userData = await meRes.json();
+      
+      login(userData, token);
+      navigate('/home');
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,7 +106,7 @@ export const LoginPage = () => {
           <div style={{ display: 'flex', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', padding: '4px', marginBottom: 'var(--space-xl)' }}>
             <button
               type="button"
-              onClick={() => setIsRegister(false)}
+              onClick={() => { setIsRegister(false); setErrorMsg(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -67,7 +124,7 @@ export const LoginPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => setIsRegister(true)}
+              onClick={() => { setIsRegister(true); setErrorMsg(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -84,6 +141,13 @@ export const LoginPage = () => {
               Daftar Baru
             </button>
           </div>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div style={{ padding: '12px', backgroundColor: '#FEE2E2', color: '#B91C1C', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
+              {errorMsg}
+            </div>
+          )}
 
           {/* Form Content */}
           <form onSubmit={handleSubmit}>
@@ -124,8 +188,8 @@ export const LoginPage = () => {
               required
             />
 
-            <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }}>
-              {isRegister ? 'Daftar Sekarang →' : 'Masuk ke Platform →'}
+            <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }} disabled={isLoading}>
+              {isLoading ? 'Memproses...' : (isRegister ? 'Daftar Sekarang' : 'Masuk ke Platform')}
             </Button>
           </form>
 

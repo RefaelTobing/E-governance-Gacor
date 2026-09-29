@@ -7,6 +7,10 @@ python-dotenv==1.0.1
 pydantic-settings==2.1.0
 PyJWT==2.8.0
 passlib[bcrypt]==1.7.4
+# passlib 1.7.4 memanggil bcrypt dengan secret >72 byte dan bcrypt 5.0.0
+# sekarang melempar ValueError, jadi setiap hashing gagal dengan 500.
+# Di-pin ke 4.x yang masih memotong diam-diam seperti passlib PersonneSeries.
+bcrypt==4.2.1
 python-multipart==0.0.9
 pandas>=2.2
 lxml>=5.0

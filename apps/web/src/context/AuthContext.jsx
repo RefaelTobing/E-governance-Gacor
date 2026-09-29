@@ -1,17 +1,41 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Skeleton context
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState('guest');
+    const [token, setToken] = useState(null);
 
-    const login = () => {};
-    const logout = () => {};
+    useEffect(() => {
+        const storedToken = localStorage.getItem('access_token');
+        const storedUser = localStorage.getItem('user');
+        if (storedToken && storedUser) {
+            setToken(storedToken);
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setRole(parsedUser.role || 'guest');
+        }
+    }, []);
+
+    const login = (userData, accessToken) => {
+        setUser(userData);
+        setRole(userData.role || 'guest');
+        setToken(accessToken);
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+    };
+
+    const logout = () => {
+        setUser(null);
+        setRole('guest');
+        setToken(null);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+    };
 
     return (
-        <AuthContext.Provider value={{ user, role, login, logout }}>
+        <AuthContext.Provider value={{ user, role, token, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
