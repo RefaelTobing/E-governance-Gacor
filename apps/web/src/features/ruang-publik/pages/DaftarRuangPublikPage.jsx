@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Globe, RotateCcw, MapPin, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { MOCK_RUANG_PUBLIK, MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../config/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState } from '../../../components';
+import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
+import 'leaflet/dist/leaflet.css';
 
 export const DaftarRuangPublikPage = () => {
   const navigate = useNavigate();
@@ -139,28 +141,10 @@ export const DaftarRuangPublikPage = () => {
           </span>
           <span className="badge badge-info">Pin Terverifikasi Pemprov</span>
         </div>
-        <div style={{ position: 'relative', height: '320px', backgroundColor: '#e5e3df', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundImage: 'radial-gradient(#CBD5E1 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}>
-          {/* Mock Interactive Map Pins */}
-          <div style={{ position: 'absolute', top: '35%', left: '42%', textAlign: 'center', cursor: 'pointer' }} onClick={() => navigate('/ruang-publik/taman-suropati')}>
-            <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '6px 12px', borderRadius: 'var(--radius-pill)', fontSize: '12px', fontWeight: 700, boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={14} color="#FFFFFF" /> Taman Suropati
-            </div>
-          </div>
-          <div style={{ position: 'absolute', top: '55%', left: '55%', textAlign: 'center', cursor: 'pointer' }} onClick={() => navigate('/ruang-publik/tebet-eco-park')}>
-            <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '6px 12px', borderRadius: 'var(--radius-pill)', fontSize: '12px', fontWeight: 700, boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={14} color="#FFFFFF" /> Tebet Eco Park
-            </div>
-          </div>
-          <div style={{ position: 'absolute', top: '25%', left: '25%', textAlign: 'center', cursor: 'pointer' }} onClick={() => navigate('/ruang-publik/rth-kalijodo')}>
-            <div style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '6px 12px', borderRadius: 'var(--radius-pill)', fontSize: '12px', fontWeight: 700, boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={14} color="#FFFFFF" /> RTH Kalijodo
-            </div>
-          </div>
-
-          <div style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 600 }}>
-            Zona Populer: <span style={{ color: 'var(--color-primary)' }}>Menteng • Kebayoran • Tebet</span>
-          </div>
-        </div>
+        <PetaSebaranLokasi
+          selectedKategori={selectedKategori}
+          selectedWilayah={selectedWilayah}
+        />
       </div>
 
       {/* LIST CONTENT SECTION */}

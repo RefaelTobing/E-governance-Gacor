@@ -172,20 +172,22 @@ export const TentangPage = () => {
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh' }}>
-      {/* 1. HERO SECTION: PURE GRADIENT CSS (NO IMAGE, NO PHOTO) */}
+      {/* 1. HERO SECTION: LIGHT GRADIENT — PUTIH → MINT → AMBER CREAM */}
       <section style={{
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #042f2e 0%, #0f172a 50%, #134e4a 100%)',
-        color: '#FFFFFF',
-        padding: '88px 24px',
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #F0FDFB 45%, #FFFBEB 100%)',
+        padding: '88px 24px 80px',
         textAlign: 'center'
       }}>
-        {/* Decorative Radial Glow Halus di Belakang Teks (Tanpa Gambar) */}
+        {/* Subtle top border accent */}
         <div style={{
           position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at center, rgba(20, 184, 166, 0.16) 0%, transparent 70%)',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: 'linear-gradient(90deg, #0F766E 0%, #14B8A6 50%, #F59E0B 100%)',
           pointerEvents: 'none'
         }} />
 
@@ -193,61 +195,29 @@ export const TentangPage = () => {
         <div style={{
           position: 'relative',
           zIndex: 2,
-          maxWidth: '768px',
+          maxWidth: '760px',
           margin: '0 auto',
           textAlign: 'center'
         }}>
-          {/* Amber Accent Tag Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            borderRadius: '9999px',
-            backgroundColor: 'rgba(245, 158, 11, 0.15)',
-            border: '1px solid rgba(245, 158, 11, 0.4)',
-            fontSize: '12px',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            color: '#FCD34D',
-            marginBottom: '24px',
-            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.12)'
-          }}>
-            <Sparkles size={14} color="#F59E0B" />
-            <span>Platform Publik DKI Jakarta</span>
-          </div>
-
           <h1 style={{
             fontSize: 'clamp(2.1rem, 4.5vw, 3.2rem)',
             fontWeight: 800,
-            color: '#FFFFFF',
+            color: '#0F172A',
             lineHeight: 1.22,
             margin: '0 0 20px',
-            letterSpacing: '-0.025em',
-            textShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+            letterSpacing: '-0.025em'
           }}>
-            Platform <span style={{ color: '#2DD4BF' }}>Keterbukaan</span> &amp; <span style={{ color: '#F59E0B' }}>Pengelolaan</span> Fasilitas Publik Jakarta
+            Platform <span style={{ color: '#0F766E' }}>Keterbukaan</span> Fasilitas Publik Jakarta
           </h1>
 
-          <p style={{
-            fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
-            color: '#E2E8F0',
-            lineHeight: 1.7,
-            margin: '0 auto 36px',
-            maxWidth: '680px',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-          }}>
-            RuangTerbuka adalah portal resmi pemantauan fasilitas kota Jakarta. Warga dapat mencari taman kota, memantau kondisi fasilitasnya secara terbuka, dan melaporkan kerusakan langsung ke petugas.
-          </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center' }}>
+          {/* CTA Buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginBottom: '52px' }}>
             <button
               type="button"
               onClick={() => navigate('/ruang-publik')}
               style={{
-                backgroundColor: '#2DD4BF',
-                color: '#042F2E',
+                backgroundColor: '#0F766E',
+                color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '12px',
                 padding: '13px 26px',
@@ -257,11 +227,11 @@ export const TentangPage = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 16px rgba(45, 212, 191, 0.35)',
+                boxShadow: '0 4px 16px rgba(15, 118, 110, 0.25)',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease'
               }}
             >
-              <MapPin size={18} />
+              <MapPin size={17} />
               Jelajahi Ruang Publik
             </button>
             <button
@@ -271,20 +241,122 @@ export const TentangPage = () => {
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                color: '#FFFFFF',
-                border: '1.5px solid rgba(255, 255, 255, 0.45)',
+                backgroundColor: 'transparent',
+                color: '#0F766E',
+                border: '1.5px solid #0F766E',
                 borderRadius: '12px',
                 padding: '13px 26px',
                 fontSize: '15px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                backdropFilter: 'blur(6px)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
                 transition: 'all 0.2s ease'
               }}
             >
+              <ChevronDown size={17} />
               Cara Kerja Platform
             </button>
+          </div>
+
+          {/* Stat Row */}
+          <div style={{
+            display: 'inline-flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '16px',
+            boxShadow: '0 2px 12px rgba(15, 23, 42, 0.06)',
+            overflow: 'hidden'
+          }}>
+            {/* Stat 1 */}
+            <div style={{
+              padding: '18px 32px',
+              textAlign: 'center',
+              borderRight: '1px solid #E2E8F0'
+            }}>
+              <div style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#0F766E',
+                lineHeight: 1,
+                marginBottom: '5px'
+              }}>142</div>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#64748B',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
+              }}>Ruang Publik</div>
+            </div>
+
+            {/* Stat 2 */}
+            <div style={{
+              padding: '18px 32px',
+              textAlign: 'center',
+              borderRight: '1px solid #E2E8F0'
+            }}>
+              <div style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#10B981',
+                lineHeight: 1,
+                marginBottom: '5px'
+              }}>92%</div>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#64748B',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
+              }}>Kondisi Prima</div>
+            </div>
+
+            {/* Stat 3 */}
+            <div style={{
+              padding: '18px 32px',
+              textAlign: 'center',
+              borderRight: '1px solid #E2E8F0'
+            }}>
+              <div style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#F59E0B',
+                lineHeight: 1,
+                marginBottom: '5px'
+              }}>5</div>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#64748B',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
+              }}>Wilayah Kota</div>
+            </div>
+
+            {/* Stat 4 */}
+            <div style={{
+              padding: '18px 32px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#0F766E',
+                lineHeight: 1,
+                marginBottom: '5px'
+              }}>24h</div>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#64748B',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
+              }}>Respons Laporan</div>
+            </div>
           </div>
         </div>
       </section>
@@ -293,19 +365,6 @@ export const TentangPage = () => {
       <section id="cara-kerja" style={{ padding: '96px 0 88px', backgroundColor: '#FFFFFF' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 60px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0F766E',
-              fontSize: '13px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '8px'
-            }}>
-              Alur Partisipasi
-            </div>
             <h2 style={{
               fontSize: 'clamp(1.75rem, 3.2vw, 2.3rem)',
               fontWeight: 800,
@@ -315,14 +374,6 @@ export const TentangPage = () => {
             }}>
               Empat Langkah Partisipasi Warga
             </h2>
-            <p style={{
-              fontSize: '15px',
-              color: '#64748B',
-              lineHeight: 1.6,
-              margin: 0
-            }}>
-              Dari menemukan lokasi hingga perbaikan dituntaskan petugas, seluruh proses berlangsung secara efisien, transparan, dan terarah.
-            </p>
           </div>
 
           {/* Horizontal Timeline Container */}
@@ -430,23 +481,10 @@ export const TentangPage = () => {
             display: 'grid',
             gridTemplateColumns: '1fr 1.35fr',
             gap: '56px',
-            alignItems: 'center'
+            alignItems: 'stretch'
           }}>
             {/* Kolom Kiri: Header & Banner Visual Keterbukaan RTH */}
-            <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: '#0F766E',
-                fontSize: '13px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                marginBottom: '8px'
-              }}>
-                Standar Kualitas
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <h2 style={{
                 fontSize: 'clamp(1.75rem, 3vw, 2.2rem)',
                 fontWeight: 800,
@@ -457,32 +495,27 @@ export const TentangPage = () => {
               }}>
                 Fasilitas yang Dipantau Secara Berkala
               </h2>
-              <p style={{
-                fontSize: '15px',
-                color: '#64748B',
-                lineHeight: 1.65,
-                margin: '0 0 28px'
-              }}>
-                Pemeriksaan rutin dan laporan masyarakat mencakup berbagai fasilitas pendukung untuk menjaga keselamatan, kebersihan, dan kenyamanan pengunjung.
-              </p>
-
-              {/* Gradient Banner Card RTH */}
+              {/* Banner Card RTH */}
               <div style={{
+                flex: 1,
                 borderRadius: '18px',
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #042f2e 0%, #115e59 100%)',
-                border: '1px solid rgba(20, 184, 166, 0.25)',
-                boxShadow: '0 12px 30px rgba(15, 118, 110, 0.12)',
-                padding: '28px 24px'
+                backgroundColor: '#F0FDFA',
+                border: '1px solid rgba(15, 118, 110, 0.2)',
+                boxShadow: '0 4px 16px rgba(15, 118, 110, 0.06)',
+                padding: '28px 24px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2DD4BF', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-                  <Trees size={18} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0F766E', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+                  <Trees size={18} color="#0F766E" />
                   <span>Ruang Terbuka Hijau DKI Jakarta</span>
                 </div>
-                <div style={{ color: '#FFFFFF', fontWeight: 800, fontSize: '18px', lineHeight: 1.4, marginBottom: '8px' }}>
+                <div style={{ color: '#0F172A', fontWeight: 800, fontSize: '18px', lineHeight: 1.4, marginBottom: '8px' }}>
                   Pengawasan Terpadu Bersama Dinas Pertamanan &amp; RPTRA
                 </div>
-                <p style={{ color: '#CCFBF1', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ color: '#475569', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>
                   Setiap fasilitas di taman dan RPTRA tercatat secara digital demi percepatan respon perbaikan teknis lapangan.
                 </p>
               </div>
@@ -561,19 +594,6 @@ export const TentangPage = () => {
       <section style={{ padding: '96px 0', backgroundColor: '#F0FDFB' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 56px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0F766E',
-              fontSize: '13px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '8px'
-            }}>
-              Arsitektur Layanan
-            </div>
             <h2 style={{
               fontSize: 'clamp(1.75rem, 3.2vw, 2.3rem)',
               fontWeight: 800,
@@ -800,19 +820,6 @@ export const TentangPage = () => {
           }}>
             {/* FAQ Kolom Kiri */}
             <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: '#0F766E',
-                fontSize: '13px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                marginBottom: '8px'
-              }}>
-                Bantuan &amp; Panduan
-              </div>
               <h2 style={{
                 fontSize: 'clamp(1.6rem, 2.8vw, 2rem)',
                 fontWeight: 800,
