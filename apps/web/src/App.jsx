@@ -12,7 +12,7 @@ import { LoginPage, LoginPemerintahPage } from './features/auth';
 import { TentangPage } from './features/tentang';
 
 // Feature Pages Imports - Admin
-import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage } from './features/moderasi';
+import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
 import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
 
 function App() {
@@ -67,6 +67,7 @@ function App() {
           <Route path="/dashboard/data-master" element={<DataMasterPage />} />
           <Route path="/dashboard/fasilitas" element={<KelolaFasilitasPage />} />
           <Route path="/dashboard/petugas" element={<PetugasLapanganPage />} />
+          <Route path="/dashboard/kelola-admin" element={<KelolaAdminPage />} />
         </Route>
 
         {/* Fallback 404 */}

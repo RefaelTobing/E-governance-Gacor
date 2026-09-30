@@ -222,8 +222,8 @@ export const HomePage = () => {
             zIndex: 3,
             textAlign: 'center',
             maxWidth: '900px',
-            paddingTop: '96px',
-            paddingBottom: '104px',
+            paddingTop: '80px',
+            paddingBottom: '88px',
             minHeight: '620px',
             display: 'flex',
             flexDirection: 'column',
@@ -235,8 +235,8 @@ export const HomePage = () => {
             className="text-display hero-title"
             style={{
               color: '#FFFFFF',
-              marginBottom: '20px',
-              textShadow: '0 3px 16px rgba(0, 0, 0, 0.7)',
+              marginBottom: '16px',
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.9)',
               fontWeight: 800,
               fontSize: 'clamp(2rem, 4.5vw, 3.25rem)',
               lineHeight: 1.2
@@ -251,11 +251,11 @@ export const HomePage = () => {
             className="text-body hero-subtitle"
             style={{
               color: 'rgba(255, 255, 255, 0.95)',
-              marginBottom: '36px',
+              marginBottom: '32px',
               maxWidth: '720px',
               fontSize: 'clamp(1rem, 2vw, 1.15rem)',
               lineHeight: 1.7,
-              textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)'
+              textShadow: '0 3px 12px rgba(0, 0, 0, 0.8)'
             }}
           >
             Cari taman atau lapangan olahraga, lihat fasilitasnya, cek kondisinya, dan laporkan masalah jika diperlukan.
@@ -265,14 +265,14 @@ export const HomePage = () => {
           <div
             className="hero-search-wrapper"
             style={{
-              marginBottom: '36px',
+              marginBottom: '24px',
               width: '100%',
               maxWidth: '680px',
-              backgroundColor: 'rgba(255, 255, 255, 0.98)',
-              padding: '8px',
-              borderRadius: 'var(--radius-xl, 16px)',
-              boxShadow: '0 20px 35px -8px rgba(0, 0, 0, 0.35), 0 10px 15px -6px rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              backgroundColor: 'rgba(255, 255, 255, 0.97)',
+              padding: '5px',
+              borderRadius: 'var(--radius-lg, 12px)',
+              boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
             }}
           >
             <SearchInput
@@ -285,7 +285,7 @@ export const HomePage = () => {
           </div>
 
           {/* Quick Category Tags */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
             {MOCK_CATEGORIES.slice(1).map((cat) => (
               <CategoryChip
                 key={cat.id}
