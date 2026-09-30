@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hutan",
+    "label": "Hutan",
+    "icon_name": "TreePine"
+  },
+  {
+    "id": "jalur-hijau",
+    "label": "Jalur Hijau",
+    "icon_name": "Route"
+  },
+  {
+    "id": "kebun-bibit",
+    "label": "Kebun Bibit",
+    "icon_name": "Sprout"
+  },
+  {
+    "id": "taman",
+    "label": "Taman",
+    "icon_name": "Trees"
+  },
+  {
+    "id": "taman-margasatwa",
+    "label": "Taman Margasatwa",
+    "icon_name": "PawPrint"
+  }
+]
