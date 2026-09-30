@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ErrorBoundary } from './components';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import RequireAuth from './routes/RequireAuth';
@@ -17,63 +18,65 @@ import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Redirect / ke /home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          {/* Redirect / ke /home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
-        {/* LAYOUT PUBLIK (Phase 5 - 12) */}
-        <Route element={<PublicLayout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
-          <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
-          <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
-          <Route path="/tentang" element={<TentangPage />} />
-          
+          {/* LAYOUT PUBLIK (Phase 5 - 12) */}
+          <Route element={<PublicLayout />}>
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
+            <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
+            <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
+            <Route path="/tentang" element={<TentangPage />} />
+            
+            <Route
+              path="/laporan-saya"
+              element={
+                <RequireAuth>
+                  <RiwayatLaporanPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/laporan-saya/:id"
+              element={
+                <RequireAuth>
+                  <DetailStatusLaporanPage />
+                </RequireAuth>
+              }
+            />
+
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login-pemerintah" element={<LoginPemerintahPage />} />
+          </Route>
+
+          {/* LAYOUT ADMIN / DASHBOARD (Phase 13 - 17) */}
           <Route
-            path="/laporan-saya"
             element={
               <RequireAuth>
-                <RiwayatLaporanPage />
+                <RequireAdmin>
+                  <AdminLayout />
+                </RequireAdmin>
               </RequireAuth>
             }
-          />
-          <Route
-            path="/laporan-saya/:id"
-            element={
-              <RequireAuth>
-                <DetailStatusLaporanPage />
-              </RequireAuth>
-            }
-          />
+          >
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/moderasi" element={<AntrianModerasiPage />} />
+            <Route path="/dashboard/moderasi/:laporanId" element={<DetailModerasiPage />} />
+            <Route path="/dashboard/data-master" element={<DataMasterPage />} />
+            <Route path="/dashboard/fasilitas" element={<KelolaFasilitasPage />} />
+            <Route path="/dashboard/petugas" element={<PetugasLapanganPage />} />
+            <Route path="/dashboard/kelola-admin" element={<KelolaAdminPage />} />
+          </Route>
 
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/login-pemerintah" element={<LoginPemerintahPage />} />
-        </Route>
-
-        {/* LAYOUT ADMIN / DASHBOARD (Phase 13 - 17) */}
-        <Route
-          element={
-            <RequireAuth>
-              <RequireAdmin>
-                <AdminLayout />
-              </RequireAdmin>
-            </RequireAuth>
-          }
-        >
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/dashboard/moderasi" element={<AntrianModerasiPage />} />
-          <Route path="/dashboard/moderasi/:laporanId" element={<DetailModerasiPage />} />
-          <Route path="/dashboard/data-master" element={<DataMasterPage />} />
-          <Route path="/dashboard/fasilitas" element={<KelolaFasilitasPage />} />
-          <Route path="/dashboard/petugas" element={<PetugasLapanganPage />} />
-          <Route path="/dashboard/kelola-admin" element={<KelolaAdminPage />} />
-        </Route>
-
-        {/* Fallback 404 */}
-        <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
-    </Router>
+          {/* Fallback 404 */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

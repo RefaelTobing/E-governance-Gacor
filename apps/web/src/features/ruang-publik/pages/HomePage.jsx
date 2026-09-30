@@ -43,13 +43,15 @@ export const HomePage = () => {
     const fetchHomePageData = async () => {
       try {
         setIsLoadingSpaces(true);
-        // Call public spaces service (limit 3 for featured cards on homepage)
         const spacesData = await getPublicSpaces({ limit: 3 });
         if (isMounted) {
-          setFeaturedSpaces(spacesData);
+          setFeaturedSpaces(Array.isArray(spacesData) ? spacesData : []);
         }
       } catch (err) {
         console.error('Error fetching featured spaces:', err);
+        if (isMounted) {
+          setFeaturedSpaces([]);
+        }
       } finally {
         if (isMounted) {
           setIsLoadingSpaces(false);
@@ -63,11 +65,14 @@ export const HomePage = () => {
         }
       } catch (err) {
         console.error('Error fetching statistics:', err);
+        if (isMounted) {
+          setStatistics(DEFAULT_STATS);
+        }
       }
 
       try {
         const testData = await getTestimonials();
-        if (isMounted && testData) {
+        if (isMounted && Array.isArray(testData) && testData.length > 0) {
           setTestimonials(testData);
         }
       } catch (err) {
@@ -512,7 +517,7 @@ export const HomePage = () => {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                     <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
-                      {item.kategori}
+                      {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
                     </span>
                     <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <MapPin size={12} color="#FFFFFF" /> {item.wilayah}

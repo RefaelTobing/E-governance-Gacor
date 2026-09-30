@@ -283,7 +283,7 @@ export const DaftarRuangPublikPage = () => {
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                   <img src={item.image} alt={item.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <span className="badge badge-info" style={{ position: 'absolute', top: '12px', left: '12px' }}>
-                    {item.kategori}
+                    {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
                   </span>
                 </div>
 
