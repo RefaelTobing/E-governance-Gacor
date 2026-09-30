@@ -21,11 +21,13 @@ export const LoginPage = () => {
   // UI States
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg('');
+    setSuccessMsg('');
 
     try {
       if (isRegister) {
@@ -38,6 +40,14 @@ export const LoginPage = () => {
           },
           'Gagal mendaftar'
         );
+        setSuccessMsg('Registrasi berhasil! Silakan masuk dengan akun Anda.');
+        setEmail('');
+        setPassword('');
+        setNama('');
+        setNoHp('');
+        setIsRegister(false);
+        setIsLoading(false);
+        return;
       }
 
       // Login Call
@@ -106,7 +116,7 @@ export const LoginPage = () => {
           <div style={{ display: 'flex', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', padding: '4px', marginBottom: 'var(--space-xl)' }}>
             <button
               type="button"
-              onClick={() => { setIsRegister(false); setErrorMsg(''); }}
+              onClick={() => { setIsRegister(false); setErrorMsg(''); setSuccessMsg(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -124,7 +134,7 @@ export const LoginPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => { setIsRegister(true); setErrorMsg(''); }}
+              onClick={() => { setIsRegister(true); setErrorMsg(''); setSuccessMsg(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -141,6 +151,13 @@ export const LoginPage = () => {
               Daftar Baru
             </button>
           </div>
+
+          {/* Success Message */}
+          {successMsg && (
+            <div style={{ padding: '12px', backgroundColor: '#D1FAE5', color: '#065F46', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
+              {successMsg}
+            </div>
+          )}
 
           {/* Error Message */}
           {errorMsg && (
