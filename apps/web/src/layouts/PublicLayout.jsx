@@ -64,9 +64,6 @@ export const PublicLayout = () => {
                   </div>
                   <span className="text-small" style={{ fontWeight: 600 }}>{user.name || 'Warga Jakarta'}</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={logout}>
-                  Keluar
-                </Button>
               </div>
             ) : (
               <>
