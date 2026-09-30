@@ -56,7 +56,7 @@ export const PublicLayout = () => {
                   ← Kembali ke Beranda
                 </Button>
               </Link>
-            ) : user ? (
+            ) : user && role !== 'admin' ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--color-bg-main)', padding: '6px 12px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)' }}>
                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
