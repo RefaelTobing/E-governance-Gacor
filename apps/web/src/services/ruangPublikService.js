@@ -30,12 +30,49 @@ export const getPublicSpaces = async (params = {}) => {
       radius: lat && lng ? radius : undefined,
       limit,
       skip,
-      kategori: kategori && kategori !== 'semua' ? kategori : undefined,
-      wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
+      category: kategori && kategori !== 'semua' ? kategori : undefined,
       q: q || undefined
     });
 
     const items = Array.isArray(data) ? data : data?.items ?? [];
+    
+    // Jika backend mengembalikan data kosong di mode dev, pakai mockData fallback
+    if (IS_DEV && items.length === 0) {
+      console.info('[ruangPublikService] Backend mengembalikan array kosong, menggunakan fallback mockData.');
+      let results = [...MOCK_RUANG_PUBLIK];
+
+      if (kategori && kategori !== 'semua') {
+        const kat = kategori.toLowerCase();
+        results = results.filter((item) => {
+          const itemKat = item.kategori.toLowerCase();
+          if (kat === 'rth') return itemKat.includes('rth') || itemKat.includes('konservasi');
+          if (kat === 'taman-kota') return itemKat.includes('taman');
+          if (kat === 'lapangan-olahraga') return itemKat.includes('olahraga');
+          if (kat === 'hutan-kota') return itemKat.includes('hutan');
+          return itemKat.replace(/ /g, '-').includes(kat);
+        });
+      }
+
+      if (wilayah && wilayah !== 'Semua Wilayah') {
+        results = results.filter((item) => item.wilayah === wilayah);
+      }
+
+      if (q) {
+        const query = q.toLowerCase();
+        results = results.filter(
+          (item) =>
+            item.nama.toLowerCase().includes(query) ||
+            item.alamat.toLowerCase().includes(query)
+        );
+      }
+
+      if (limit) {
+        results = results.slice(0, limit);
+      }
+
+      return results;
+    }
+
     return items;
   } catch (error) {
     if (IS_DEV) {

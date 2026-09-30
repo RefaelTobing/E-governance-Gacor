@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Trees,
@@ -16,17 +16,51 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+const createCustomIcon = (color = '#0F766E') =>
+  L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        background-color: ${color};
+        width: 32px;
+        height: 32px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      "></div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -36],
+  });
 
 export const DetailRuangPublikPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const mapSectionRef = useRef(null);
 
-  // Dynamic state for detail and loading
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,6 +89,22 @@ export const DetailRuangPublikPage = () => {
       isMounted = false;
     };
   }, [id]);
+
+  const handleToggleMap = () => {
+    setShowMap((prev) => {
+      const nextState = !prev;
+      if (nextState) {
+        setTimeout(() => {
+          mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+      return nextState;
+    });
+  };
+
+  const centerCoords = detail?.koordinat
+    ? [detail.koordinat.lat, detail.koordinat.lng]
+    : [-6.2088, 106.8456];
 
   if (isLoading) {
     return (
@@ -133,6 +183,53 @@ export const DetailRuangPublikPage = () => {
         </div>
       </div>
 
+      {/* INTERACTIVE LEAFLET MAP TOGGLE CONTAINER */}
+      <div ref={mapSectionRef}>
+        {showMap && (
+          <div style={{ marginBottom: 'var(--space-2xl)', animation: 'fadeIn 0.3s ease-in-out' }}>
+            <Card style={{ border: '2px solid var(--color-primary)' }}>
+              <CardBody style={{ padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Map size={20} color="var(--color-primary)" />
+                    <h3 className="h3" style={{ fontSize: '18px', margin: 0 }}>Peta Interaktif & Rute Kawasan • {detail.nama}</h3>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMap(false)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <X size={16} /> Tutup Peta
+                  </Button>
+                </div>
+                <div style={{ height: '400px', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', zIndex: 1, position: 'relative' }}>
+                  <MapContainer
+                    center={centerCoords}
+                    zoom={15}
+                    style={{ height: '100%', width: '100%', filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={centerCoords} icon={createCustomIcon()}>
+                      <Popup>
+                        <div style={{ padding: '4px' }}>
+                          <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{detail.nama}</strong>
+                          <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>{detail.alamat}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        )}
+      </div>
+
       {/* TOP ROW: PETA AKSES & JAM AKSESIBILITAS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-xl)', marginBottom: 'var(--space-3xl)' }}>
         {/* Peta Akses & Batas Kawasan */}
@@ -145,16 +242,14 @@ export const DetailRuangPublikPage = () => {
                 </h3>
                 <p className="text-caption">{detail.alamat}</p>
               </div>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(detail.nama + ' ' + detail.alamat)}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ textDecoration: 'none' }}
+              <Button
+                variant={showMap ? 'outline' : 'primary'}
+                size="sm"
+                onClick={handleToggleMap}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
-                <Button variant="primary" size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Navigation size={14} /> Petunjuk Arah / Rute
-                </Button>
-              </a>
+                <Navigation size={14} /> {showMap ? 'Sembunyikan Peta' : 'Petunjuk Arah / Rute'}
+              </Button>
             </div>
 
             <div style={{ height: '220px', borderRadius: 'var(--radius-md)', overflow: 'hidden', position: 'relative' }}>
