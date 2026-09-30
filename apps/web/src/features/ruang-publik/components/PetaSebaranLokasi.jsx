@@ -183,7 +183,7 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
       <MapContainer
         center={mapCenter}
         zoom={DEFAULT_ZOOM}
-        style={{ height: '100%', width: '100%', zIndex: 0 }}
+        style={{ height: '100%', width: '100%', zIndex: 0, filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
         scrollWheelZoom={false}
       >
       <RecenterMap center={mapCenter} />

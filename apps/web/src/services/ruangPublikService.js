@@ -30,29 +30,12 @@ export const getPublicSpaces = async (params = {}) => {
       radius: lat && lng ? radius : undefined,
       limit,
       skip,
-      kategori: kategori && kategori !== 'semua' ? kategori : undefined,
-      wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
+      category: kategori && kategori !== 'semua' ? kategori : undefined,
       q: q || undefined
     });
 
     const items = Array.isArray(data) ? data : data?.items ?? [];
-    
-    // Normalize data from backend to match frontend expectations
-    return items.map(item => ({
-      ...item,
-      // Map kategori object to string, or fallback to kategori_id
-      kategori: typeof item.kategori === 'object' && item.kategori ? item.kategori.nama : (item.kategori || item.kategori_id || 'Umum'),
-      // Map image_url to image, with a fallback
-      image: item.image_url || item.image || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80',
-      // Ensure fasilitas is an array
-      fasilitas: item.fasilitas || [],
-      // Ensure deskripsi exists
-      deskripsi: item.deskripsi || 'Belum ada deskripsi.',
-      // Ensure stats exists
-      stats: item.stats || { baik: 0, perluPerhatian: 0, rusak: 0 },
-      // Ensure jamOperasional exists
-      jamOperasional: item.jam_operasional || item.jamOperasional || 'TBA'
-    }));
+    return items;
   } catch (error) {
     if (IS_DEV) {
       console.info('[ruangPublikService] FastAPI belum terhubung, menggunakan fallback mockData.');
