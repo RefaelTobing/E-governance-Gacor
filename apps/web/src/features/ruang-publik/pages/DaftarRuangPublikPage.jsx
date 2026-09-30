@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Globe, RotateCcw, MapPin, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Globe, RotateCcw, MapPin, Clock, ArrowRight, ShieldCheck, Navigation } from 'lucide-react';
 import { MOCK_WILAYAH, MOCK_CATEGORIES, MOCK_RUANG_PUBLIK_METRICS } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
+import useGeolocation from '../../../hooks/useGeolocation';
 import 'leaflet/dist/leaflet.css';
 
 export const DaftarRuangPublikPage = () => {
@@ -23,6 +24,8 @@ export const DaftarRuangPublikPage = () => {
   const [spaces, setSpaces] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const { location, error: geoError, isLoading: isGeoLoading, requestLocation } = useGeolocation();
 
   // Fetch Public Spaces & Metrics from FastAPI or dev mock fallback
   useEffect(() => {
@@ -33,7 +36,9 @@ export const DaftarRuangPublikPage = () => {
       try {
         const data = await getPublicSpaces({
           kategori: selectedKategori,
-          wilayah: selectedWilayah
+          wilayah: selectedWilayah,
+          lat: location.lat,
+          lng: location.lng
         });
         if (isMounted) {
           setSpaces(data);
@@ -52,7 +57,7 @@ export const DaftarRuangPublikPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [selectedKategori, selectedWilayah]);
+  }, [selectedKategori, selectedWilayah, location.lat, location.lng]);
 
   // Fetch overall statistics
   useEffect(() => {
@@ -84,6 +89,11 @@ export const DaftarRuangPublikPage = () => {
       const scoreA = (a.stats?.baik || 0) - (a.stats?.rusak || 0);
       const scoreB = (b.stats?.baik || 0) - (b.stats?.rusak || 0);
       return scoreB - scoreA;
+    }
+    if (sortBy === 'terdekat') {
+      if (a.jarak_km !== undefined && b.jarak_km !== undefined) {
+        return a.jarak_km - b.jarak_km;
+      }
     }
     return 0;
   });
@@ -178,10 +188,26 @@ export const DaftarRuangPublikPage = () => {
               <option key={w} value={w}>{w}</option>
             ))}
           </select>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={requestLocation}
+            disabled={isGeoLoading}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Navigation size={14} /> 
+            {isGeoLoading ? 'Mencari Lokasi...' : 'Gunakan Lokasi Saya'}
+          </Button>
           <Button variant="ghost" size="sm" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <RotateCcw size={14} /> Reset Filter
           </Button>
         </div>
+        
+        {geoError && (
+          <div style={{ color: 'var(--color-danger)', fontSize: '13px', marginBottom: '12px' }}>
+            {geoError}
+          </div>
+        )}
 
         {/* Category Pills */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -269,6 +295,11 @@ export const DaftarRuangPublikPage = () => {
                         <p className="text-caption" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat} • <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>
                         </p>
+                        {item.jarak_km !== undefined && item.jarak_km !== null && (
+                          <span className="badge badge-neutral" style={{ display: 'inline-block', marginBottom: '8px' }}>
+                            {item.jarak_km.toFixed(2)} km dari Anda
+                          </span>
+                        )}
                       </div>
                       <StatusBadge status="baik" customLabel="Terverifikasi" />
                     </div>

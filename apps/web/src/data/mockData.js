@@ -142,10 +142,11 @@ export const TESTIMONIALS = [
 
 export const MOCK_CATEGORIES = [
   { id: 'semua', label: 'Semua Kategori', iconName: 'LayoutGrid' },
-  { id: 'taman-kota', label: 'Taman Kota', iconName: 'Trees' },
-  { id: 'rth', label: 'RTH & Konservasi', iconName: 'Leaf' },
-  { id: 'lapangan-olahraga', label: 'Lapangan Olahraga', iconName: 'Dumbbell' },
-  { id: 'hutan-kota', label: 'Hutan Kota', iconName: 'TreePine' }
+  { id: 'taman', label: 'Taman', iconName: 'Trees' },
+  { id: 'jalur-hijau', label: 'Jalur Hijau', iconName: 'Route' },
+  { id: 'hutan', label: 'Hutan', iconName: 'TreePine' },
+  { id: 'kebun-bibit', label: 'Kebun Bibit', iconName: 'Sprout' },
+  { id: 'taman-margasatwa', label: 'Taman Margasatwa', iconName: 'PawPrint' }
 ];
 
 export const MOCK_WILAYAH = [

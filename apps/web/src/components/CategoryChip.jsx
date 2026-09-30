@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Trees, Leaf, Dumbbell, TreePine, Footprints } from 'lucide-react';
+import { LayoutGrid, Trees, Leaf, Dumbbell, TreePine, Footprints, Route, Sprout, PawPrint } from 'lucide-react';
 
 const ICON_MAP = {
   LayoutGrid,
@@ -8,12 +8,15 @@ const ICON_MAP = {
   Dumbbell,
   TreePine,
   Footprints,
+  Route,
+  Sprout,
+  PawPrint,
   'semua': LayoutGrid,
-  'taman-kota': Trees,
-  'rth': Leaf,
-  'lapangan-olahraga': Dumbbell,
-  'hutan-kota': TreePine,
-  'jalur-pedestrian': Footprints
+  'taman': Trees,
+  'jalur-hijau': Route,
+  'hutan': TreePine,
+  'kebun-bibit': Sprout,
+  'taman-margasatwa': PawPrint
 };
 
 /**

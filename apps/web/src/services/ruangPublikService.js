@@ -36,7 +36,23 @@ export const getPublicSpaces = async (params = {}) => {
     });
 
     const items = Array.isArray(data) ? data : data?.items ?? [];
-    return items;
+    
+    // Normalize data from backend to match frontend expectations
+    return items.map(item => ({
+      ...item,
+      // Map kategori object to string, or fallback to kategori_id
+      kategori: typeof item.kategori === 'object' && item.kategori ? item.kategori.nama : (item.kategori || item.kategori_id || 'Umum'),
+      // Map image_url to image, with a fallback
+      image: item.image_url || item.image || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80',
+      // Ensure fasilitas is an array
+      fasilitas: item.fasilitas || [],
+      // Ensure deskripsi exists
+      deskripsi: item.deskripsi || 'Belum ada deskripsi.',
+      // Ensure stats exists
+      stats: item.stats || { baik: 0, perluPerhatian: 0, rusak: 0 },
+      // Ensure jamOperasional exists
+      jamOperasional: item.jam_operasional || item.jamOperasional || 'TBA'
+    }));
   } catch (error) {
     if (IS_DEV) {
       console.info('[ruangPublikService] FastAPI belum terhubung, menggunakan fallback mockData.');
@@ -45,11 +61,12 @@ export const getPublicSpaces = async (params = {}) => {
       if (kategori && kategori !== 'semua') {
         const kat = kategori.toLowerCase();
         results = results.filter((item) => {
-          const itemKat = item.kategori.toLowerCase();
-          if (kat === 'rth') return itemKat.includes('rth') || itemKat.includes('konservasi');
-          if (kat === 'taman-kota') return itemKat.includes('taman');
-          if (kat === 'lapangan-olahraga') return itemKat.includes('olahraga');
-          if (kat === 'hutan-kota') return itemKat.includes('hutan');
+          const itemKat = (item.kategori || '').toLowerCase();
+          if (kat === 'taman') return itemKat.includes('taman');
+          if (kat === 'jalur-hijau') return itemKat.includes('jalur');
+          if (kat === 'hutan') return itemKat.includes('hutan');
+          if (kat === 'kebun-bibit') return itemKat.includes('kebun');
+          if (kat === 'taman-margasatwa') return itemKat.includes('margasatwa');
           return itemKat.replace(/ /g, '-').includes(kat);
         });
       }
@@ -84,7 +101,19 @@ export const getPublicSpaces = async (params = {}) => {
 export const getPublicSpaceDetail = async (id) => {
   try {
     const data = await api.get(`/api/v1/public-spaces/${id}`);
-    return data;
+    return {
+      ...data,
+      kategori: typeof data.kategori === 'object' && data.kategori ? data.kategori.nama : (data.kategori || data.kategori_id || 'Umum'),
+      image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
+      fasilitas: data.fasilitas || [],
+      deskripsi: data.deskripsi || 'Belum ada deskripsi.',
+      stats: data.stats || { baik: 0, perluPerhatian: 0, rusak: 0 },
+      jamOperasional: data.jam_operasional || data.jamOperasional || 'TBA',
+      ramahHewan: data.ramah_hewan || data.ramahHewan || 'TBA',
+      aksesDisabilitas: data.akses_disabilitas || data.aksesDisabilitas || 'TBA',
+      tiketMasuk: data.tiket_masuk || data.tiketMasuk || 'TBA',
+      wilayah: data.wilayah || 'TBA'
+    };
   } catch (error) {
     if (IS_DEV) {
       console.info(`[ruangPublikService] Fallback mock data untuk ID: ${id}`);
