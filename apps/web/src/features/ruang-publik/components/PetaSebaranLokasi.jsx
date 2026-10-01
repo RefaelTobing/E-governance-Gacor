@@ -126,22 +126,7 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
       }
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserCoords([latitude, longitude]);
-          setMapCenter([latitude, longitude]);
-          fetchLocations(latitude, longitude, selectedRadius);
-        },
-        () => {
-          fetchLocations(null, null, selectedRadius);
-        },
-        { timeout: 5000 }
-      );
-    } else {
-      fetchLocations(null, null, selectedRadius);
-    }
+    fetchLocations(JAKARTA_CENTER[0], JAKARTA_CENTER[1], selectedRadius);
   }, [selectedKategori, selectedWilayah, selectedRadius]);
 
   if (loading) {
@@ -167,26 +152,37 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {RADIUS_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setSelectedRadius(option.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              border: selectedRadius === option.value ? '2px solid #10b981' : '1px solid #e2e8f0',
-              backgroundColor: selectedRadius === option.value ? '#d1fae5' : 'white',
-              color: selectedRadius === option.value ? '#10b981' : '#64748b',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div style={{ padding: 'var(--space-lg)', marginBottom: 'var(--space-lg)', display: 'flex', alignItems: 'center', gap: 'var(--space-lg)', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Radius Pencarian:</span>
+        <div style={{ 
+          display: 'inline-flex', 
+          gap: 'var(--space-xs)',
+          backgroundColor: 'var(--color-bg-main)',
+          padding: 'var(--space-xs)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--color-border-dark)'
+        }}>
+          {RADIUS_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setSelectedRadius(option.value)}
+              style={{
+                 padding: '8px 14px',
+                 borderRadius: 'var(--radius-sm)',
+                 border: 'none',
+                 backgroundColor: selectedRadius === option.value ? 'var(--color-primary)' : 'transparent',
+                 color: selectedRadius === option.value ? 'var(--color-surface)' : 'var(--color-text-muted)',
+                fontSize: '13px',
+                fontWeight: selectedRadius === option.value ? 600 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                 boxShadow: selectedRadius === option.value ? '0 2px 6px rgba(15, 118, 110, 0.25)' : 'none',
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ position: 'relative', height: '320px', width: '100%' }}>
@@ -197,29 +193,29 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
               top: '12px',
               right: '12px',
               zIndex: 1000,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              padding: '8px 12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              padding: '10px 14px',
               borderRadius: '8px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              maxWidth: '80%',
+              maxWidth: '85%',
               pointerEvents: 'none'
             }}
           >
             {error ? (
               <>
                 <AlertCircle size={16} color="#EF4444" />
-                <span style={{ fontSize: '11px', color: '#B91C1C', fontWeight: 500 }}>
-                  {error} (Menampilkan peta dasar)
+                <span style={{ fontSize: '12px', color: '#B91C1C', fontWeight: 500 }}>
+                  {error}
                 </span>
               </>
             ) : (
               <>
                 <MapPin size={16} color="#64748B" />
-                <span style={{ fontSize: '11px', color: '#475569', fontWeight: 500 }}>
-                  Tidak ada lokasi ditemukan dalam radius {selectedRadius / 1000} km dengan filter ini.
+                <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
+                  Tidak ada lokasi dalam radius {selectedRadius / 1000} km
                 </span>
               </>
             )}
