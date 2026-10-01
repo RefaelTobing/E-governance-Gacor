@@ -1,8 +1,16 @@
 import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-// Skeleton guard, logic auth belum diisi
 const RequireAuth = ({ children }) => {
-    // TODO: implement logic cek user dari AuthContext
+    const { user, token } = useAuth();
+    const location = useLocation();
+
+    if (!user || !token) {
+        const isDashboard = location.pathname.startsWith('/dashboard');
+        return <Navigate to={isDashboard ? '/login-pemerintah' : '/login'} state={{ from: location }} replace />;
+    }
+
     return <>{children}</>;
 };
 

@@ -2,21 +2,36 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, Card, CardBody, Logo } from '../../../components';
+import { loginPemerintah, getMe } from '../../../services/authService';
 
 export const LoginPemerintahPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('petugas@jakarta.go.id');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login({
-      name: 'Drs. H. Hendra M. (Pengawas)',
-      role: 'admin',
-      email: email
-    });
-    navigate('/dashboard');
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      const tokenData = await loginPemerintah(email, password);
+      const userData = await getMe(tokenData.access_token);
+      
+      if (userData.role !== 'admin' && userData.role !== 'dinas') {
+          throw new Error('Hanya akun pengelola (admin/dinas) yang diizinkan masuk.');
+      }
+      
+      login(userData, tokenData.access_token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Gagal login, periksa kembali kredensial Anda.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,6 +46,12 @@ export const LoginPemerintahPage = () => {
           <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2xl)' }}>
             Akses verifikasi laporan kondisi fasilitas ruang terbuka DKI Jakarta.
           </p>
+
+          {error && (
+            <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)' }}>
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
             <Input
@@ -47,8 +68,8 @@ export const LoginPemerintahPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }}>
-              Masuk ke Dashboard Admin →
+            <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }} disabled={isLoading}>
+              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard Admin →'}
             </Button>
           </form>
         </CardBody>
