@@ -55,8 +55,8 @@ export const DashboardPage = () => {
   }, []);
 
   const filteredLaporan = laporanList.filter((item) =>
-    item.fasilitasNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.ruangPublikNama.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.fasilitasNama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (item.ruangPublikNama || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

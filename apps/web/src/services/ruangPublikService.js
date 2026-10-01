@@ -31,6 +31,7 @@ export const getPublicSpaces = async (params = {}) => {
       limit,
       skip,
       category: kategori && kategori !== 'semua' ? kategori : undefined,
+      wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
       q: q || undefined
     });
 
@@ -100,8 +101,11 @@ export const getPublicSpaceDetail = async (id) => {
   } catch (error) {
     if (IS_DEV) {
       console.info(`[ruangPublikService] Fallback mock data untuk ID: ${id}`);
-      const found = MOCK_RUANG_PUBLIK.find((item) => item.id === id) || MOCK_RUANG_PUBLIK[0];
-      return found;
+      const found = MOCK_RUANG_PUBLIK.find((item) => item.id === id);
+      if (found) {
+        return found;
+      }
+      return null;
     }
     throw error;
   }
@@ -112,8 +116,13 @@ export const getPublicSpaceDetail = async (id) => {
  */
 export const getPublicSpacesStats = async () => {
   try {
-    const data = await api.get('/api/v1/public-spaces/stats');
-    return data;
+    const raw = await api.get('/api/v1/public-spaces/stats');
+    // Normalisasi ke key yang dibaca UI (DaftarRuangPublikPage).
+    return {
+      totalTerdata: raw.total_ruang_publik,
+      statusPrima: raw.status_prima,
+      perluPerhatian: raw.perlu_perhatian
+    };
   } catch (error) {
     if (IS_DEV) {
       return MOCK_RUANG_PUBLIK_METRICS;

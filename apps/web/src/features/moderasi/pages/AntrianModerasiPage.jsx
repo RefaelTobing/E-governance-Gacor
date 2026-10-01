@@ -48,8 +48,8 @@ export const AntrianModerasiPage = () => {
   // Filter Logic
   const filteredList = queueList.filter((item) => {
     const matchSearch =
-      item.fasilitasNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.ruangPublikNama.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.fasilitasNama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.ruangPublikNama || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchWilayah = selectedWilayah === 'Semua Wilayah' || item.wilayah === selectedWilayah;
     const matchStatus =
       selectedStatus === 'Semua Status' || item.statusLabel?.toLowerCase() === selectedStatus.toLowerCase();

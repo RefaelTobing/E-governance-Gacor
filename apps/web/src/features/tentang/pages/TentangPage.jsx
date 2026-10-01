@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -16,8 +16,11 @@ import {
   Sparkles,
   ArrowRight,
   Trees,
-  Check
+  Check,
+  RotateCcw
 } from 'lucide-react';
+import { getHomeStatistics } from '../../../services/statsService';
+import { getPublicSpacesStats } from '../../../services/ruangPublikService';
 
 const STEPS = [
   {
@@ -169,6 +172,45 @@ const FaqItem = ({ item }) => {
 
 export const TentangPage = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [metrics, setMetrics] = useState(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchStats = async () => {
+      setIsLoadingStats(true);
+      setStatsError(false);
+
+      // allSettled agar kegagalan satu endpoint tidak menggagalkan yang lain;
+      // bagian yang sukses tetap ditampilkan, yang gagal jadi '-'.
+      const [homeResult, metricsResult] = await Promise.allSettled([
+        getHomeStatistics(),
+        getPublicSpacesStats()
+      ]);
+
+      if (!isMounted) return;
+
+      if (homeResult.status === 'fulfilled') setStats(homeResult.value);
+      if (metricsResult.status === 'fulfilled') setMetrics(metricsResult.value);
+      if (homeResult.status === 'rejected' || metricsResult.status === 'rejected') {
+        setStatsError(true);
+      }
+      setIsLoadingStats(false);
+    };
+
+    fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [retryKey]);
+
+  // '...' saat memuat, '-' bila nilai tidak tersedia setelah selesai.
+  const fmt = (value) => (isLoadingStats ? '...' : (value == null ? '-' : value));
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh' }}>
@@ -261,29 +303,16 @@ export const TentangPage = () => {
           </div>
 
           {/* Stat Row */}
-          <div style={{
-            display: 'inline-flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            borderRadius: '16px',
-            boxShadow: '0 2px 12px rgba(15, 23, 42, 0.06)',
-            overflow: 'hidden'
-          }}>
+          <div className="tentang-stat-row">
             {/* Stat 1 */}
-            <div style={{
-              padding: '18px 32px',
-              textAlign: 'center',
-              borderRight: '1px solid #E2E8F0'
-            }}>
+            <div className="tentang-stat-cell">
               <div style={{
                 fontSize: '26px',
                 fontWeight: 800,
                 color: '#0F766E',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>-</div>
+              }}>{fmt(stats?.totalRuangPublik)}</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
@@ -294,70 +323,141 @@ export const TentangPage = () => {
             </div>
 
             {/* Stat 2 */}
-            <div style={{
-              padding: '18px 32px',
-              textAlign: 'center',
-              borderRight: '1px solid #E2E8F0'
-            }}>
+            <div className="tentang-stat-cell">
               <div style={{
                 fontSize: '26px',
                 fontWeight: 800,
                 color: '#10B981',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>-</div>
+              }}>{fmt(metrics?.statusPrima)}</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
                 color: '#64748B',
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em'
-              }}>Kondisi Prima</div>
+              }}>Fasilitas Kondisi Baik</div>
             </div>
 
             {/* Stat 3 */}
-            <div style={{
-              padding: '18px 32px',
-              textAlign: 'center',
-              borderRight: '1px solid #E2E8F0'
-            }}>
+            <div className="tentang-stat-cell">
               <div style={{
                 fontSize: '26px',
                 fontWeight: 800,
                 color: '#F59E0B',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>-</div>
+              }}>{fmt(stats?.laporanBulanIni)}</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
                 color: '#64748B',
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em'
-              }}>Wilayah Kota</div>
+              }}>Laporan Bulan Ini</div>
             </div>
 
             {/* Stat 4 */}
-            <div style={{
-              padding: '18px 32px',
-              textAlign: 'center'
-            }}>
+            <div className="tentang-stat-cell">
               <div style={{
                 fontSize: '26px',
                 fontWeight: 800,
                 color: '#0F766E',
                 lineHeight: 1,
                 marginBottom: '5px'
-              }}>-</div>
+              }}>{isLoadingStats ? '...' : (stats?.tingkatPenyelesaianPersen != null ? `${stats.tingkatPenyelesaianPersen}%` : '-')}</div>
               <div style={{
                 fontSize: '12px',
                 fontWeight: 600,
                 color: '#64748B',
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em'
-              }}>Respons Laporan</div>
+              }}>Tingkat Penyelesaian</div>
             </div>
           </div>
+
+          {/* Layout responsif untuk Stat Row */}
+          <style>{`
+            .tentang-stat-row {
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              max-width: 760px;
+              margin: 0 auto;
+              background-color: #FFFFFF;
+              border: 1px solid #E2E8F0;
+              border-radius: 16px;
+              box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+              overflow: hidden;
+            }
+            .tentang-stat-cell {
+              padding: 20px 16px;
+              text-align: center;
+              border-right: 1px solid #E2E8F0;
+              border-bottom: 1px solid #E2E8F0;
+            }
+            /* Kolom terakhir tiap baris tanpa garis kanan; baris terakhir tanpa garis bawah */
+            .tentang-stat-cell:nth-child(4n) {
+              border-right: none;
+            }
+            .tentang-stat-cell:nth-child(n + 5) {
+              border-bottom: none;
+            }
+            @media (max-width: 640px) {
+              .tentang-stat-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                max-width: 440px;
+              }
+              .tentang-stat-cell:nth-child(2n) {
+                border-right: none;
+              }
+              .tentang-stat-cell:nth-child(n + 3) {
+                border-bottom: none;
+              }
+              .tentang-stat-cell:nth-child(-n + 2) {
+                border-bottom: 1px solid #E2E8F0;
+              }
+            }
+          `}</style>
+
+          {/* Banner: sebagian/total statistik gagal dimuat */}
+          {statsError && (
+            <div style={{
+              marginTop: '16px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              color: '#991B1B',
+              padding: '10px 16px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 600
+            }}>
+              <span>Sebagian statistik gagal dimuat.</span>
+              <button
+                type="button"
+                onClick={() => setRetryKey((k) => k + 1)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#991B1B',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  padding: 0
+                }}
+              >
+                <RotateCcw size={13} />
+                Coba lagi
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

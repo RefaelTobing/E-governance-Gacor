@@ -8,7 +8,13 @@ const IS_DEV = import.meta.env.DEV;
  */
 export const getHomeStatistics = async () => {
   try {
-    return await api.get('/api/v1/statistics/summary');
+    const raw = await api.get('/api/v1/statistics/summary');
+    return {
+      totalRuangPublik: raw.total_ruang_publik,
+      totalLaporanSelesai: raw.total_laporan_selesai,
+      laporanBulanIni: raw.laporan_bulan_ini,
+      tingkatPenyelesaianPersen: raw.tingkat_penyelesaian_persen
+    };
   } catch (error) {
     if (IS_DEV) {
       return MOCK_STATISTICS;
@@ -22,7 +28,7 @@ export const getHomeStatistics = async () => {
  */
 export const getTestimonials = async () => {
   try {
-    return await api.get('/api/v1/testimonials');
+    return await api.get('/api/v1/statistics/testimonials');
   } catch (error) {
     if (IS_DEV) {
       return TESTIMONIALS;
@@ -36,7 +42,7 @@ export const getTestimonials = async () => {
  */
 export const getHeroSlides = async () => {
   try {
-    return await api.get('/api/v1/hero-slides');
+    return await api.get('/api/v1/statistics/hero-slides');
   } catch (error) {
     if (IS_DEV) {
       return HERO_SLIDES;

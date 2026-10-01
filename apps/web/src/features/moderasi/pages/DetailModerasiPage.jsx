@@ -55,7 +55,7 @@ export const DetailModerasiPage = () => {
     setCurrentStatus(newStatus);
     try {
       if (laporan?.id) {
-        await updateReportStatus(laporan.id, { status: newStatus, catatan: catatanPetugas });
+        await updateReportStatus(laporan.id, { status: newStatus, description: catatanPetugas });
       }
     } catch (err) {
       console.warn('Backend update failed, local state updated:', err);
@@ -176,7 +176,7 @@ export const DetailModerasiPage = () => {
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">PELAPOR</span>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>{laporan.namaPelapor}</div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>{laporan.namaPelapor || 'Nama tidak tersedia'}</div>
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">STATUS DISTRIK</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, Trees, ClipboardCheck, Clock, Star, Quote } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, Trees, ClipboardCheck, Clock, Star, Quote, CalendarDays } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -18,7 +18,7 @@ import heroImg4 from '../../../slidderHero/4.jpg';
 import { MOCK_CATEGORIES, HERO_SLIDES as DEFAULT_HERO_SLIDES, TESTIMONIALS as DEFAULT_TESTIMONIALS, MOCK_STATISTICS as DEFAULT_STATS } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
-import { getHomeStatistics, getTestimonials } from '../../../services/statsService';
+import { getHomeStatistics, getTestimonials, getHeroSlides } from '../../../services/statsService';
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -77,6 +77,15 @@ export const HomePage = () => {
         }
       } catch (err) {
         console.error('Error fetching testimonials:', err);
+      }
+
+      try {
+        const heroData = await getHeroSlides();
+        if (isMounted && Array.isArray(heroData) && heroData.length > 0) {
+          setHeroSlides(heroData);
+        }
+      } catch (err) {
+        console.error('Error fetching hero slides:', err);
       }
     };
 
@@ -403,7 +412,7 @@ export const HomePage = () => {
               <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Selesai</div>
             </div>
 
-            {/* Stat 3: Kecamatan */}
+            {/* Stat 3: Laporan Bulan Ini */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
               <div style={{
                 width: '100px',
@@ -417,15 +426,15 @@ export const HomePage = () => {
                 marginBottom: 'var(--space-lg)',
                 transition: 'all 0.3s ease'
               }}>
-                <MapPin size={48} color="#22C55E" strokeWidth={1.5} />
+                <CalendarDays size={48} color="#22C55E" strokeWidth={1.5} />
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.totalKecamatan ?? '-'}
+                {statistics?.laporanBulanIni ?? '-'}
               </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Kecamatan</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Bulan Ini</div>
             </div>
 
-            {/* Stat 4: Pemantauan 24/7 */}
+            {/* Stat 4: Tingkat Penyelesaian */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
               <div style={{
                 width: '100px',
@@ -442,9 +451,9 @@ export const HomePage = () => {
                 <Clock size={48} color="#06B6D4" strokeWidth={1.5} />
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.pemantauanLayanan ?? '-'}
+                {statistics?.tingkatPenyelesaianPersen != null ? `${statistics.tingkatPenyelesaianPersen}%` : '-'}
               </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Pemantauan</div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Tingkat Penyelesaian</div>
             </div>
           </div>
 

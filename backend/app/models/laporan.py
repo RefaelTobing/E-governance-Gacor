@@ -24,3 +24,17 @@ class Laporan(Base):
     ruang_publik = relationship("RuangPublik", back_populates="laporan")
     fasilitas = relationship("Fasilitas", back_populates="laporan")
     timeline = relationship("LaporanTimeline", back_populates="laporan", cascade="all, delete-orphan")
+
+    # Properti turunan dari relasi, dipakai untuk memperkaya response laporan.
+    # Relasi perlu di-eager load agar tidak memicu query berulang (N+1).
+    @property
+    def ruang_publik_nama(self) -> str | None:
+        return self.ruang_publik.nama if self.ruang_publik else None
+
+    @property
+    def wilayah(self) -> str | None:
+        return self.ruang_publik.wilayah if self.ruang_publik else None
+
+    @property
+    def fasilitas_nama(self) -> str | None:
+        return self.fasilitas.nama if self.fasilitas else None

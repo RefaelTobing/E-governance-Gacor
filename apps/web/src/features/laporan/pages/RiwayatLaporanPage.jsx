@@ -54,9 +54,6 @@ export const RiwayatLaporanPage = () => {
       {/* HEADER SECTION */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
         <div>
-          <span className="badge badge-info" style={{ marginBottom: 'var(--space-xs)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <ShieldCheck size={14} /> KETERBUKAAN PELAYANAN WARGA
-          </span>
           <h1 className="text-display">Laporan Saya</h1>
           <p className="text-body" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
             Pantau perkembangan laporan fasilitas ruang publik yang telah Anda sampaikan secara transparan dan berkala.

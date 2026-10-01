@@ -13,7 +13,9 @@ export const FormLaporPage = () => {
 
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Form State
   const [selectedFacilityId, setSelectedFacilityId] = useState('');
@@ -28,17 +30,24 @@ export const FormLaporPage = () => {
 
     const fetchSpace = async () => {
       setIsLoading(true);
+      setFetchError(null);
       try {
         const data = await getPublicSpaceDetail(id);
         if (isMounted && data) {
           setDetail(data);
-          const defaultFac = data.fasilitas?.find((f) => f.id === facilityParam) || data.fasilitas?.[0];
+          const fasilitas = Array.isArray(data.fasilitas) ? data.fasilitas : [];
+          const defaultFac = fasilitas.find((f) => f.id === facilityParam) || fasilitas[0];
           if (defaultFac) {
             setSelectedFacilityId(defaultFac.id);
           }
+        } else if (isMounted) {
+          setFetchError('Data ruang publik tidak ditemukan.');
         }
       } catch (err) {
         console.error('Error fetching detail for report form:', err);
+        if (isMounted) {
+          setFetchError('Gagal memuat data ruang publik. Periksa koneksi Anda lalu muat ulang halaman.');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -57,35 +66,38 @@ export const FormLaporPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+
+    // Validasi enum mode identitas: hanya anonim atau tampilkan_nama.
+    if (!['anonim', 'tampilkan_nama'].includes(modeIdentitas)) {
+      setErrorMsg('Mode identitas tidak valid. Pilih anonim atau tampilkan nama.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const selectedFac = detail?.fasilitas?.find((f) => f.id === selectedFacilityId);
       const reportPayload = {
-        ruangPublikId: detail?.id,
-        ruangPublikNama: detail?.nama,
-        fasilitasId: selectedFacilityId,
-        fasilitasNama: selectedFac?.nama || 'Fasilitas Umum',
-        wilayah: detail?.wilayah,
-        jenisMasalah,
-        deskripsi,
-        modeIdentitas,
-        fotoFile: fotoFile ? fotoFile.name : null
+        ruang_publik_id: detail?.id,
+        fasilitas_id: selectedFacilityId || null,
+        jenis_masalah: jenisMasalah,
+        deskripsi: deskripsi,
+        mode_identitas: modeIdentitas,
+        foto_url: null
       };
 
       await createReport(reportPayload);
       alert('Laporan berhasil dikirim! Laporan Anda telah masuk ke antrian peninjauan pengelola.');
       navigate('/laporan-saya');
     } catch (err) {
-      console.warn('Backend reporting failed or mocked:', err);
-      alert('Laporan berhasil dikirim! (Mode Pengembangan Terhubung)');
-      navigate('/laporan-saya');
+      console.error('Gagal mengirim laporan:', err);
+      setErrorMsg('Gagal mengirim laporan ke server. Periksa kembali isian Anda atau coba beberapa saat lagi.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading || !detail) {
+  if (isLoading) {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
         <Skeleton height="20px" width="300px" style={{ marginBottom: 'var(--space-md)' }} />
@@ -96,6 +108,24 @@ export const FormLaporPage = () => {
             <Skeleton height="400px" borderRadius="var(--radius-lg)" />
           </div>
           <Card><CardBody><Skeleton height="300px" /></CardBody></Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !detail) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <Card>
+            <CardBody style={{ padding: 'var(--space-2xl)', textAlign: 'center' }}>
+              <h1 className="h3" style={{ marginBottom: 'var(--space-sm)' }}>Ruang Publik Tidak Tersedia</h1>
+              <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-lg)' }}>
+                {fetchError || 'Data ruang publik tidak ditemukan.'}
+              </p>
+              <Button variant="outline" onClick={() => navigate('/ruang-publik')}>Kembali ke Ruang Publik</Button>
+            </CardBody>
+          </Card>
         </div>
       </div>
     );
@@ -122,6 +152,22 @@ export const FormLaporPage = () => {
           </p>
 
           <form onSubmit={handleSubmit}>
+            {errorMsg && (
+              <div
+                role="alert"
+                style={{
+                  backgroundColor: '#FEF2F2',
+                  border: '1px solid var(--color-danger)',
+                  color: '#991B1B',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  marginBottom: 'var(--space-lg)',
+                  fontSize: '14px'
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
             {/* LOKASI & FASILITAS TERPILIH BOX */}
             <div style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-lg)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-xl)', border: '1px solid var(--color-primary)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
@@ -193,7 +239,7 @@ export const FormLaporPage = () => {
             {/* MODE IDENTITAS (PRD FEAT-009) */}
             <div className="form-group" style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-lg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
               <label className="form-label" style={{ marginBottom: '8px' }}>
-                Mode Identitas Pelapor (FEAT-009) <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
+                Mode Identitas Pelapor  <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>

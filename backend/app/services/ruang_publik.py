@@ -1,6 +1,6 @@
 from typing import Optional, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.fasilitas import Fasilitas
@@ -33,6 +33,8 @@ def search_ruang_publik(
     radius_km: Optional[float] = None,
     kategori_id: Optional[str] = None,
     fasilitas: Optional[Sequence[str]] = None,
+    q: Optional[str] = None,
+    wilayah: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> list[tuple[RuangPublik, Optional[float]]]:
@@ -54,6 +56,16 @@ def search_ruang_publik(
 
     if kategori_id:
         stmt = stmt.where(RuangPublik.kategori_id == kategori_id)
+
+    if wilayah:
+        stmt = stmt.where(RuangPublik.wilayah == wilayah)
+
+    if q:
+        search_pattern = f"%{q}%"
+        stmt = stmt.where(
+            (RuangPublik.nama.ilike(search_pattern)) |
+            (RuangPublik.alamat.ilike(search_pattern))
+        )
 
     if fasilitas:
         # Semua fasilitas yang diminta harus ada (AND), bukan salah satu (OR).
@@ -96,3 +108,32 @@ def list_fasilitas(db: Session) -> list[tuple[str, Optional[str]]]:
         .order_by(Fasilitas.nama)
     )
     return [(nama, kategori) for nama, kategori in db.execute(stmt).all()]
+
+
+def get_public_spaces_stats(db: Session) -> dict:
+    """Ringkasan metrik ruang publik untuk halaman daftar.
+
+    `status_prima` menghitung fasilitas berstatus "baik" saja; NULL tidak
+    dihitung sebagai baik. `perlu_perhatian` adalah kebalikannya: semua yang
+    bukan "baik", termasuk yang NULL, jadi query-nya harus menangkap NULL
+    secara eksplisit karena `status != "baik"` saja tidak menyertakannya.
+    """
+    total_ruang_publik = db.query(RuangPublik).count()
+
+    status_prima = (
+        db.query(Fasilitas)
+        .filter(Fasilitas.status == "baik")
+        .count()
+    )
+
+    perlu_perhatian = (
+        db.query(Fasilitas)
+        .filter(or_(Fasilitas.status != "baik", Fasilitas.status.is_(None)))
+        .count()
+    )
+
+    return {
+        "total_ruang_publik": total_ruang_publik,
+        "status_prima": status_prima,
+        "perlu_perhatian": perlu_perhatian,
+    }

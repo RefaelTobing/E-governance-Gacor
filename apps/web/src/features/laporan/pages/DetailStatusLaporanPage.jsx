@@ -208,7 +208,7 @@ export const DetailStatusLaporanPage = () => {
                   "{laporan.deskripsi}"
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--color-border)', fontSize: '12px' }}>
-                  <span>Identitas Pelapor: <strong>{laporan.modeIdentitas === 'anonim' ? 'Anonim (Warga)' : laporan.namaPelapor}</strong></span>
+                  <span>Identitas Pelapor: <strong>{laporan.modeIdentitas === 'anonim' ? 'Anonim (Warga)' : (laporan.namaPelapor || 'Nama tidak tersedia')}</strong></span>
                   <span className="badge badge-info">{laporan.modeIdentitas === 'anonim' ? 'Identitas Terlindung' : 'Warga Terdaftar'}</span>
                 </div>
               </div>

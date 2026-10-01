@@ -1,6 +1,8 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
+from app.schemas.laporan_timeline import LaporanTimelineResponse
+from app.schemas.user import UserResponse
 
 class LaporanBase(BaseModel):
     user_id: Optional[str] = None
@@ -21,10 +23,24 @@ class LaporanUpdate(BaseModel):
     deskripsi: Optional[str] = None
     foto_url: Optional[str] = None
 
+class LaporanStatusUpdate(BaseModel):
+    status: str
+    title: Optional[str] = "Status diperbarui"
+    description: Optional[str] = None
+
 class LaporanResponse(LaporanBase):
     id: str
     status: str
     created_at: datetime
     updated_at: datetime
+    ruang_publik_nama: Optional[str] = None
+    wilayah: Optional[str] = None
+    fasilitas_nama: Optional[str] = None
 
+    model_config = ConfigDict(from_attributes=True)
+
+class LaporanDetailResponse(LaporanResponse):
+    user: Optional[UserResponse] = None
+    timeline: List[LaporanTimelineResponse] = []
+    
     model_config = ConfigDict(from_attributes=True)

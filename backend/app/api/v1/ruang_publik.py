@@ -21,6 +21,8 @@ def read_public_spaces(
     facilities: Optional[List[str]] = Query(
         None, description="Filter fasilitas; semua yang diminta harus tersedia"
     ),
+    q: Optional[str] = Query(None, description="Cari nama/alamat"),
+    wilayah: Optional[str] = Query(None, description="Filter wilayah"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
@@ -33,6 +35,8 @@ def read_public_spaces(
         radius_km=radius,
         kategori_id=category,
         fasilitas=facilities,
+        q=q,
+        wilayah=wilayah,
         skip=skip,
         limit=limit,
     )
@@ -42,6 +46,16 @@ def read_public_spaces(
         )
         for ruang, jarak in hasil
     ]
+
+
+@router.get("/stats")
+def read_public_spaces_stats(db: Session = Depends(get_db)):
+    """Ringkasan metrik ruang publik untuk halaman daftar.
+
+    Dideklarasikan sebelum route /{ruang_publik_id} agar path "/stats" tidak
+    tertangkap sebagai id ruang publik.
+    """
+    return crud_ruang_publik.get_public_spaces_stats(db)
 
 
 @router.get("/{ruang_publik_id}", response_model=RuangPublikDetailResponse)
