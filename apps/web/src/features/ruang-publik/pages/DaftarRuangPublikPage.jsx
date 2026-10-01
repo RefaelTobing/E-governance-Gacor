@@ -22,7 +22,6 @@ export const DaftarRuangPublikPage = () => {
 
   // Dynamic States
   const [spaces, setSpaces] = useState([]);
-  const [metrics, setMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const { location, error: geoError, isLoading: isGeoLoading, requestLocation } = useGeolocation();
@@ -59,24 +58,27 @@ export const DaftarRuangPublikPage = () => {
     };
   }, [selectedKategori, selectedWilayah, location.lat, location.lng]);
 
-  // Fetch overall statistics
-  useEffect(() => {
-    let isMounted = true;
-    const fetchStats = async () => {
-      try {
-        const stats = await getPublicSpacesStats();
-        if (isMounted && stats) {
-          setMetrics(stats);
-        }
-      } catch (err) {
-        console.error('Error fetching metrics:', err);
+  const computedMetrics = React.useMemo(() => {
+    let prima = 0;
+    let perhatian = 0;
+    
+    spaces.forEach(s => {
+      const rusak = s.stats?.rusak || 0;
+      const perluPerhatian = s.stats?.perluPerhatian || 0;
+      
+      if (rusak > 0 || perluPerhatian > 0) {
+        perhatian++;
+      } else {
+        prima++;
       }
+    });
+    
+    return {
+      totalTerdata: spaces.length,
+      statusPrima: prima,
+      perluPerhatian: perhatian
     };
-    fetchStats();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  }, [spaces]);
 
   // Filter Logic over dynamic spaces state
   const filteredList = spaces.filter((item) => {
@@ -150,19 +152,19 @@ export const DaftarRuangPublikPage = () => {
           <div style={{ textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700 }}>TOTAL TERDATA</span>
             <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)' }}>
-              {metrics?.totalTerdata ?? '-'}
+              {computedMetrics.totalTerdata}
             </div>
           </div>
           <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 'var(--space-xl)', textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>STATUS PRIMA</span>
             <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)' }}>
-              {metrics?.statusPrima ?? '-'}
+              {computedMetrics.statusPrima}
             </div>
           </div>
           <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 'var(--space-xl)', textAlign: 'center' }}>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning)' }}>PERHATIAN</span>
             <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-warning)' }}>
-              {metrics?.perluPerhatian ?? '-'}
+              {computedMetrics.perluPerhatian}
             </div>
           </div>
         </div>
