@@ -59,6 +59,8 @@ Raku Jakarta diposisikan untuk mengisi celah ini: direktori ruang publik yang se
 | FEAT-010 | Visibilitas & Status Laporan | Laporan yang lolos moderasi tayang publik dan dapat dibaca semua pengguna, terikat ke entri ruang publik terkait | Status laporan (baru/ditinjau/terverifikasi/ditolak) terlihat oleh pelapor |
 | FEAT-011 | Moderasi Laporan (Admin) | Panel admin untuk meninjau laporan sebelum/​sesudah tayang, mencegah spam atau konten tidak relevan | Minimal mendukung aksi setujui/tolak laporan; dapat ditambah mekanisme flag oleh pengguna lain |
 | FEAT-012 | Manajemen Data Master Ruang Publik | Admin dapat mengimpor/memperbarui data ruang publik dari Satu Data Jakarta, serta mengedit manual bila perlu | Perubahan manual tidak hilang saat sinkronisasi ETL berikutnya (perlu strategi merge) |
+| FEAT-013 | Riwayat "Laporan Saya" | Warga yang login melihat daftar laporan miliknya sendiri beserta status dan progres penanganannya | Hanya menampilkan laporan milik akun yang login (filter per-pengguna, bukan seluruh laporan); setiap entri menampilkan status terkini + waktu, dan mengarahkan pengguna ke detail status laporan (FEAT-010) |
+| FEAT-014 | Autentikasi & Otorisasi Admin | Login terpisah untuk petugas/pengelola dengan hak akses admin, serta pengelolaan akun petugas | Pendaftaran publik hanya menghasilkan role `warga`; role `admin` hanya dibuat lewat endpoint admin/seed; semua endpoint admin ditolak (`403`) untuk non-admin dan akun nonaktif; sesi memakai JWT dengan masa berlaku terbatas; admin dapat menambah/mengubah/menonaktifkan/mengaktifkan petugas, tanpa bisa menonaktifkan admin aktif terakhir |
 
 ### 4.2 Non-Functional Requirements
 
