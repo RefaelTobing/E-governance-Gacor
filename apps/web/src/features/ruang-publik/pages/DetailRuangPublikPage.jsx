@@ -14,6 +14,7 @@ import {
   PawPrint,
   AlertCircle,
   AlertTriangle,
+  ExternalLink,
   X
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -104,7 +105,11 @@ export const DetailRuangPublikPage = () => {
 
   const centerCoords = detail?.koordinat
     ? [detail.koordinat.lat, detail.koordinat.lng]
-    : [-6.2088, 106.8456];
+    : null;
+
+  const urlPetunjukArah = centerCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${centerCoords[0]},${centerCoords[1]}`
+    : null;
 
   if (isLoading) {
     return (
@@ -189,20 +194,39 @@ export const DetailRuangPublikPage = () => {
           <div style={{ marginBottom: 'var(--space-2xl)', animation: 'fadeIn 0.3s ease-in-out' }}>
             <Card style={{ border: '2px solid var(--color-primary)' }}>
               <CardBody style={{ padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Map size={20} color="var(--color-primary)" />
                     <h3 className="h3" style={{ fontSize: '18px', margin: 0 }}>Peta Interaktif & Rute Kawasan • {detail.nama}</h3>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowMap(false)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <X size={16} /> Tutup Peta
-                  </Button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {urlPetunjukArah && (
+                      <a
+                        className="btn btn-outline btn-sm"
+                        href={urlPetunjukArah}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <ExternalLink size={14} /> Petunjuk Arah (Google Maps)
+                      </a>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMap(false)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <X size={16} /> Tutup Peta
+                    </Button>
+                  </div>
                 </div>
+                {!centerCoords ? (
+                  <div style={{ height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)' }}>
+                    <MapPin size={24} />
+                    <p className="text-small" style={{ margin: 0 }}>Koordinat belum tersedia untuk lokasi ini.</p>
+                  </div>
+                ) : (
                 <div style={{ height: '400px', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', zIndex: 1, position: 'relative' }}>
                   <MapContainer
                     center={centerCoords}
@@ -224,6 +248,7 @@ export const DetailRuangPublikPage = () => {
                     </Marker>
                   </MapContainer>
                 </div>
+                )}
               </CardBody>
             </Card>
           </div>
@@ -235,21 +260,34 @@ export const DetailRuangPublikPage = () => {
         {/* Peta Akses & Batas Kawasan */}
         <Card>
           <CardBody>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', gap: '8px', flexWrap: 'wrap' }}>
               <div>
                 <h3 className="h3" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Map size={18} color="#0F766E" /> Peta Akses & Batas Kawasan
                 </h3>
                 <p className="text-caption">{detail.alamat}</p>
               </div>
-              <Button
-                variant={showMap ? 'outline' : 'primary'}
-                size="sm"
-                onClick={handleToggleMap}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Navigation size={14} /> {showMap ? 'Sembunyikan Peta' : 'Petunjuk Arah / Rute'}
-              </Button>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <Button
+                  variant={showMap ? 'outline' : 'primary'}
+                  size="sm"
+                  onClick={handleToggleMap}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Navigation size={14} /> {showMap ? 'Sembunyikan Peta' : 'Tampilkan Peta'}
+                </Button>
+                {urlPetunjukArah && (
+                  <a
+                    className="btn btn-primary btn-sm"
+                    href={urlPetunjukArah}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <ExternalLink size={14} /> Petunjuk Arah (Google Maps)
+                  </a>
+                )}
+              </div>
             </div>
 
             <div style={{ height: '220px', borderRadius: 'var(--radius-md)', overflow: 'hidden', position: 'relative' }}>

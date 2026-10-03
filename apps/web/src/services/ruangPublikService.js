@@ -85,8 +85,11 @@ export const getPublicSpaces = async (params = {}) => {
 export const getPublicSpaceDetail = async (id) => {
   try {
     const data = await api.get(`/api/v1/public-spaces/${id}`);
+    const lat = Number.parseFloat(data.latitude);
+    const lng = Number.parseFloat(data.longitude);
     return {
       ...data,
+      koordinat: Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null,
       kategori: typeof data.kategori === 'object' && data.kategori
         ? data.kategori.label || data.kategori_id || 'Umum'
         : (data.kategori || data.kategori_id || 'Umum'),
