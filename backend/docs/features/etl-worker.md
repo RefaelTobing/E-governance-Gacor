@@ -5,14 +5,17 @@
 
 Kode terkait (semua di `app/etl/`):
 - `read_raw.py` — baca file mentah dari `data/raw/`
-- `transform_rth_raw.py` — transformasi utama → `data/processed/ruang_publik.json`
-- `transform_rth.py` — varian transform (legacy/alternatif)
-- `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL
+- `kategori.py` — master kategori (4 tipe) dipakai seed dan transform
+- `transform_rth_raw.py` — transformasi utama → `data/processed/ruang_publik_mentah.json`
+- `transform_rth.py` — varian transform (legacy/alternatif) → `data/processed/ruang_publik_mentah.csv`
+- `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL (`--file`, `--reset`)
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
 
 Data:
 - Sumber mentah: `data/raw/` (mis. `data-ruang-terbuka-hijau-(rth)-komponen-data.xls`, `rth_dki_coordinates.csv`)
-- Hasil olah: `data/processed/ruang_publik.json` (+ `.csv`), `categories.json` (+ `.csv`)
+- Sumber seed (bawaan): `data/processed/ruang_publik.csv` — 1200 baris, kolom lengkap, `tipe` diisi
+- Baris rusak (kolom bergeser, 334 baris) terpisah di `data/processed/ruang_publik_perlu_perbaikan.csv`, tidak di-seed
+- Master kategori: `data/processed/categories.json` (+ `.csv`) — 4 tipe: taman-lingkungan, rptra, taman-interaktif, taman-kota
 
 ---
 
@@ -22,7 +25,8 @@ Data:
 |---|---|
 | Pipeline mentah → processed → DB | **Ada & berjalan** (script manual) |
 | Idempoten (aman diulang) | **Ya** — seed skip ID sudah ada (inti FEAT-012) |
-| Koordinat terisi | **Ya** — 5542/5542 baris berkoordinat (klaim lama "koordinat kosong" sudah kedaluwarsa) |
+| Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
+| Kategori konsisten | **Ya** — kolom `tipe` di file sumber → `kategori_id` lewat `kategori.py`; tipe di luar master → `NULL` |
 | Penjadwalan otomatis (cron) | **Belum** — PRD §5 menyebut "cron job/scheduled task"; saat ini manual |
 | Endpoint trigger dari admin API | **Belum** — opsional, lihat `data-master-service.md` §2.3 |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
@@ -40,13 +44,15 @@ Satu Data Jakarta (unduhan manual — portal menyediakan CSV/Excel, bukan API re
 [2] transform_rth_raw.py   normalisasi:
         │                    - koordinat dari kolom X/Y sumber → latitude/longitude
         │                    - wilayah "KOTA ADM. JAKARTA SELATAN" → "Jakarta Selatan"
-        │                    - kategori dinormalisasi ke id (taman, jalur-hijau, ...)
+        │                    - tipe: nama diawali "RPTRA", atau JENIS_OBJEK ∈ 3 tipe taman
         ▼
-   data/processed/ruang_publik.json  (+ categories.json; varian .csv legacy)
+   data/processed/ruang_publik_mentah.json  (data mentah; bukan file seed)
         ▼
 [3] seed_db.py             ke MySQL raku_db — INSERT idempoten
+        │                   sumber bawaan: data/processed/ruang_publik.csv
+        │                   --file <path> memakai sumber lain, --reset mengganti total isi
         ▼
-   tabel categories + ruang_publik (+ fasilitas bila ikut di sumber)
+   tabel categories (4 tipe) + ruang_publik
 ```
 
 **Bentuk kerja: worker terpisah** — script batch dijalankan manusia lewat shell, **bukan** proses di dalam server (alasan: `02-architecture.md` §3).
@@ -62,14 +68,22 @@ cd "d:\Ruka Jakarta\backend"
 docker compose up -d            # dari root repo; tunggu raku-db healthy
 ..\.venv\Scripts\python.exe -m alembic upgrade head
 
-# 2. transform (bila ada file baru di data/raw/)
+# 2. transform (bila ada file baru di data/raw/; opsional, tulis ke *_raw.*)
 ..\.venv\Scripts\python.exe -m app.etl.transform_rth_raw
 
 # 3. seed (idempoten; jalankan lagi boleh)
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
+
+# 4. ganti total isi tabel (backup DB dulu!), atau seed file lain
+..\.venv\Scripts\python.exe -m app.etl.seed_db --reset
+..\.venv\Scripts\python.exe -m app.etl.seed_db --file ../data/processed/ruang_publik_lainnya.csv
 ```
 
-Keluaran `seed_db`: format (json/csv), jumlah kategori & ruang publik **baru** + total.
+Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru** + total, lalu baris per kategori.
+
+Flag:
+- `--file <path>` — sumber ruang publik (csv/json); path relatif terhadap `data/processed/` juga diterima. Default: `ruang_publik.csv`.
+- `--reset` — kosongkan `ruang_publik` + `categories` dulu. **Ditolak** kalau masih ada `laporan`/`fasilitas` yang menempel. Backup DB sebelum dipakai.
 
 > Perhatian path: script menghitung `data/` relatif terhadap lokasi file (`parents[3]`) → jalankan dari folder mana pun tidak masalah, **asalkan struktur folder repo utuh**.
 
@@ -99,18 +113,21 @@ if record["id"] in ada:
 
 | Fakta | Status | Tindakan |
 |---|---|---|
-| Koordinat semua baris terisi (5542) | ✅ | Pencarian radius hidup; verifikasi dengan curl radius kecil |
+| Koordinat semua baris terisi (1200) | ✅ | Pencarian radius hidup; verifikasi dengan curl radius kecil |
+| 333 baris `alamat` NULL di sumber 4tipe | Diketahui | FE menampilkan "Alamat tidak tersedia"; jangan diisi teks default di backend |
+| 334 baris sumber asli kolomnya bergeser (koma tak di-quote) | Diketahui | Terpisah di `ruang_publik_perlu_perbaikan.csv`; baris layak harus dipisah manual sebelum masuk seed |
 | Atribut (`deskripsi`, `jam_operasional`, `tiket_masuk`, dll.) tidak seragam antar dataset | Sesuai PRD §6.3 | Kolom nullable; FE wajib menandai "data tidak tersedia" — jangan isi default palsu di backend |
 | Foto resmi sering dummy/kosong (PRD §2) | Diketahui | Kolom `image_url` nullable; kelengkapan bertahap via data partisipatif |
 | Sumber tersedia sebagai **unduhan berkala**, bukan API real-time (PRD §6.3) | Diterima | Sinkronisasi manual berkala; **catat tanggal data** di UI adalah urusan FE/produk |
-| `kecamatan`/`kelurahan` ada di CSV tapi tidak di model | Sengaja | Dibuang saat seed (`KOLOM_DILEWATI`) — jangan tambahkan kolom tanpa kebutuhan jelas + migrasi |
-| `transform_rth.py` vs `transform_rth_raw.py` | Dua varian | `transform_rth_raw.py` = jalur utama koordinat; pastikan memakai script yang benar sebelum seed |
+| `kecamatan`/`kelurahan` ada di file tapi tidak di model | Sengaja | Dibuang saat seed (whitelist `KOLOM_RUANG_PUBLIK`) — jangan tambahkan kolom tanpa kebutuhan jelas + migrasi |
+| `verified` datang sebagai string `'True'` | Ditangani | Dikonversi `_ke_bool` sebelum insert, kalau tidak MySQL mengubahnya jadi 0 |
+| `transform_rth.py` vs `transform_rth_raw.py` | Dua varian | Keduanya menulis `ruang_publik_mentah.*`; **seed tidak membaca keduanya** |
 
 **Validasi data (PRD §8):** lakukan spot-check sampel hasil transform terhadap file sumber — terutama **akurasi koordinat** (latitude negatif lintang SELATAN, longitude ~106) dan `kategori_id` yang valid di tabel `categories`.
 
 ```powershell
-# contoh pemeriksaan cepat
-..\.venv\Scripts\python.exe -c "import json;d=json.load(open('../data/processed/ruang_publik.json',encoding='utf-8'));print(len(d),'baris');print('tanpa koord:',sum(1 for r in d if not r.get('latitude')))"
+# contoh pemeriksaan cepat (dari folder backend)
+..\.venv\Scripts\python.exe -c "import pandas as pd;d=pd.read_csv('../data/processed/ruang_publik.csv');print(len(d),'baris');print(d['tipe'].value_counts(dropna=False).to_dict());print('tanpa koord:',int(d['latitude'].isna().sum()))"
 ```
 
 ---
@@ -131,7 +148,8 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**.
 - [ ] **Merge:** catat `deskripsi` 1 baris → edit via SQL/API → seed ulang → editan tetap ada
 - [ ] **Koordinat:** `curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=1"` → hasil tidak kosong dan `jarak_km` terisi
 - [ ] **Kategori:** semua `kategori_id` hasil seed ada di `GET /categories` (tidak ada orphan — FK constraint akan menolak, tapi cek sebelum insert penuh)
-- [ ] **Kesegaran data:** `GET /public-spaces/stats` → `total_ruang_publik` ≈ jumlah baris processed
+- [ ] **Jumlah per tipe:** `GET /categories` → 4 entri; `GET /public-spaces?category=<id>` → taman-lingkungan 950, rptra 119, taman-interaktif 102, taman-kota 29 (limit 500, jadi haluskan dengan `skip` untuk taman-lingkungan)
+- [ ] **Kesegaran data:** `GET /public-spaces/stats` → `total_ruang_publik` = 1200 = jumlah baris `ruang_publik.csv`
 
 ---
 

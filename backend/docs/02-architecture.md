@@ -72,8 +72,9 @@ ETL **bukan bagian dari proses server** — sengaja dipisah karena:
 ```
 data/raw/*.xls|csv  →  app/etl/read_raw.py
                     →  app/etl/transform_rth_raw.py   (bersih + koordinat X/Y)
-                    →  data/processed/ruang_publik.json + categories.json
+                    →  data/processed/ruang_publik_raw.json + categories.json
                     →  app/etl/seed_db.py  (insert ke MySQL, skip ID sudah ada)
+                       sumber seed: data/processed/ruang_publik_4tipe.csv
 ```
 
 Detail & urutan kerja: [`features/etl-worker.md`](features/etl-worker.md).

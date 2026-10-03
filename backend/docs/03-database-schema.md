@@ -53,13 +53,13 @@ users ───────┴──────┬─────────�
 | `kategori_id` | VARCHAR(50) FK → categories | |
 | `wilayah` | VARCHAR(100) | Mis. `Jakarta Selatan` (dinormalisasi ETL dari `KOTA ADM. ...`) |
 | `alamat` | TEXT | |
-| `latitude` / `longitude` | DECIMAL(10,8) / DECIMAL(11,8) NULL | **Sudah terisi semua** (5542 baris di `data/processed/ruang_publik.csv`) |
+| `latitude` / `longitude` | DECIMAL(10,8) / DECIMAL(11,8) NULL | **Sudah terisi semua** (1200 baris di `data/processed/ruang_publik.csv`) |
 | `deskripsi` | TEXT NULL | Banyak yang kosong → tampil "data tidak tersedia" (FEAT-006) |
 | `jam_operasional`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan` | VARCHAR(255) NULL | Atribut tidak seragam antar dataset (PRD §6.3) |
 | `verified` | BOOLEAN default FALSE | |
 | `status_general` | VARCHAR(50) NULL | |
 | `image_url` | TEXT NULL | **Satu foto** — dibungkus jadi list `foto[]` di response detail (lihat §5) |
-| `kecamatan`, `kelurahan` | — | Ada di CSV, **dibuang saat seed** (`KOLOM_DILEWATI` di `seed_db.py`) |
+| `kecamatan`, `kelurahan` | — | Ada di file sumber, **dibuang saat seed** (whitelist `KOLOM_RUANG_PUBLIK` di `seed_db.py`) |
 
 ### `fasilitas`
 | Kolom | Tipe | Catatan |

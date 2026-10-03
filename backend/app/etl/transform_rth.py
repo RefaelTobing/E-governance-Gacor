@@ -1,4 +1,9 @@
-"""Transform dataset RTH mentah menjadi tabel siap-insert (categories, ruang_publik)."""
+"""Transform dataset RTH mentah menjadi tabel siap-insert (categories, ruang_publik).
+
+Sumber (.xls berisi HTML) tidak punya kolom tipe, jadi satu-satunya tipe yang
+bisa diturunkan adalah RPTRA (dari nama). Baris lain keluar tanpa kategori.
+Master kategori tetap 4 tipe di app/etl/kategori.py.
+"""
 from __future__ import annotations
 
 import hashlib
@@ -6,19 +11,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from .kategori import KATEGORI_TIPE, kategori_id_dari_tipe
 from .read_raw import RAW_DIR, read_raw_file
 
 PROCESSED_DIR = RAW_DIR.parent / "processed"
 RTH_FILE = RAW_DIR / "data-ruang-terbuka-hijau-(rth)-komponen-data.xls"
-
-# jenis_rth di sumber -> (id kategori, label)
-JENIS_TO_KATEGORI = {
-    "TAMAN": ("taman", "Taman"),
-    "JALUR HIJAU": ("jalur-hijau", "Jalur Hijau"),
-    "HUTAN": ("hutan", "Hutan"),
-    "KEBUN BIBIT": ("kebun-bibit", "Kebun Bibit"),
-    "TAMAN MARGASATWA": ("taman-margasatwa", "Taman Margasatwa"),
-}
 
 # TPU bukan ruang publik untuk rekreasi, jadi tidak masuk direktori.
 JENIS_DIKECUALIKAN = {"TPU"}
@@ -51,21 +48,18 @@ def _stable_id(nama: str, kecamatan: str, kelurahan: str) -> str:
     return "rth-" + hashlib.sha1(key.encode()).hexdigest()[:12]
 
 
-def build_categories(df: pd.DataFrame) -> pd.DataFrame:
-    jenis_dipakai = sorted(df["jenis_rth"].unique())
-    tak_dikenal = [j for j in jenis_dipakai if j not in JENIS_TO_KATEGORI]
-    if tak_dikenal:
-        raise ValueError(f"jenis_rth belum dipetakan: {tak_dikenal}")
+def _tipe_dari_nama(nama: str) -> str | None:
+    # Satu-satunya tipe yang bisa dikenali dari sumber ini (lihat docstring).
+    return "RPTRA" if str(nama).upper().startswith("RPTRA") else None
 
-    rows = [
-        {"id": JENIS_TO_KATEGORI[j][0], "label": JENIS_TO_KATEGORI[j][1], "icon_name": None}
-        for j in jenis_dipakai
-    ]
-    return pd.DataFrame(rows)
+
+def build_categories() -> pd.DataFrame:
+    return pd.DataFrame(KATEGORI_TIPE)
 
 
 def build_ruang_publik(df: pd.DataFrame) -> pd.DataFrame:
     df = df.fillna("")
+    tipe = df["nama_rth"].map(_tipe_dari_nama)
     out = pd.DataFrame(
         {
             "id": [
@@ -73,7 +67,8 @@ def build_ruang_publik(df: pd.DataFrame) -> pd.DataFrame:
                 for r in df.itertuples()
             ],
             "nama": df["nama_rth"],
-            "kategori_id": df["jenis_rth"].map(lambda j: JENIS_TO_KATEGORI[j][0]),
+            "kategori_id": tipe.map(kategori_id_dari_tipe),
+            "tipe": tipe,
             "wilayah": df["wilayah"].map(_normalize_wilayah),
             "alamat": df["alamat_rth"],
             "verified": False,
@@ -85,7 +80,7 @@ def build_ruang_publik(df: pd.DataFrame) -> pd.DataFrame:
         out[kolom] = None
 
     urutan = [
-        "id", "nama", "kategori_id", "wilayah", "alamat",
+        "id", "nama", "kategori_id", "tipe", "wilayah", "alamat",
         "latitude", "longitude", "deskripsi", "jam_operasional",
         "tiket_masuk", "akses_disabilitas", "ramah_hewan",
         "verified", "status_general", "image_url",
@@ -96,7 +91,7 @@ def build_ruang_publik(df: pd.DataFrame) -> pd.DataFrame:
 
 def transform(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = df[~df["jenis_rth"].isin(JENIS_DIKECUALIKAN)]
-    return build_categories(df), build_ruang_publik(df)
+    return build_categories(), build_ruang_publik(df)
 
 
 def main() -> None:
@@ -105,14 +100,16 @@ def main() -> None:
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     categories.to_csv(PROCESSED_DIR / "categories.csv", index=False)
-    ruang_publik.to_csv(PROCESSED_DIR / "ruang_publik.csv", index=False)
+    ruang_publik.to_csv(PROCESSED_DIR / "ruang_publik_mentah.csv", index=False)
 
     print(f"categories: {len(categories)} baris")
     print(categories.to_string(index=False))
     print(f"\nruang_publik: {len(ruang_publik)} baris")
     print(f"id unik: {ruang_publik['id'].nunique()}")
+    print(f"tipe: {ruang_publik['tipe'].value_counts(dropna=False).to_dict()}")
     print(f"periode_data sumber: {sorted(df['periode_data'].unique())}")
-    print(f"\noutput: {PROCESSED_DIR}")
+    print(f"\noutput: {PROCESSED_DIR / 'ruang_publik_mentah.csv'} (data mentah)")
+    print("catatan: seed memakai ruang_publik.csv (data hasil pembersihan).")
 
 
 if __name__ == "__main__":

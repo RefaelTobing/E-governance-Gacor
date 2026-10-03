@@ -61,7 +61,7 @@ Dokumen lama berisi klaim yang sudah tidak berlaku. Jangan mengulang audit dari 
 1. **`API.md` bagian "Belum Ada" sudah kedaluwarsa sebagian.**
    Router laporan **sudah aktif** di `backend/app/api/v1/api.py` (`/reports` + `/statistics`). Warga sudah bisa kirim laporan lewat `POST /api/v1/reports`.
    Yang **masih benar** dari daftar itu: CRUD admin ruang publik/fasilitas belum ada, refresh/logout token belum ada.
-2. **Catatan "koordinat kosong" sudah tidak berlaku.** `data/processed/ruang_publik.csv` kini berisi **5542 baris, semuanya punya `latitude`/`longitude`**. Pencarian radius sudah bisa hidup. (Masih ada file lama `ruang_publik_merged.json` — pakai sumber yang dipakai `seed_db.py`, yaitu JSON bila ada.)
+2. **Catatan "koordinat kosong" sudah tidak berlaku.** Sumber seed `data/processed/ruang_publik.csv` berisi **1200 baris, semuanya punya `latitude`/`longitude`**. Pencarian radius sudah hidup. (File lama `ruang_publik.json` dan `ruang_publik_merged.json` sudah dihapus dari `data/processed`; versi lama tetap ada di git history.)
 3. **`docs/Structure.md` menggambarkan kondisi awal (folder `.gitkeep` semua)** — kondisi aktual sudah jauh lebih maju. Anggap hanya sebagai peta lokasi folder, bukan status.
 4. **`pytest.ini` menunjuk `testpaths = tests`, tetapi folder `backend/tests/` tidak ada** (terhapus di commit lama). Menjalankan pytest sekarang menghasilkan "no tests ran". Fase testing wajib membuat ulang folder ini.
 
@@ -156,8 +156,8 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 **Pipeline ETL** (`backend/app/etl/`):
 
 1. `read_raw.py` — baca file mentah di `data/raw/`
-2. `transform_rth_raw.py` — olah ke `data/processed/ruang_publik.json` (koordinat dari kolom X/Y sumber; sudah berjalan, semua baris berkoordinat)
-3. `seed_db.py` — masukkan kategori + ruang publik ke MySQL (idempoten: baris yang sudah ada dilewat)
+2. `transform_rth_raw.py` — olah ke `data/processed/ruang_publik_mentah.json` (koordinat dari kolom X/Y sumber; semua baris berkoordinat)
+3. `seed_db.py` — masukkan kategori + ruang publik ke MySQL dari `data/processed/ruang_publik.csv` (idempoten: baris yang sudah ada dilewat; `--file` ganti sumber, `--reset` ganti total isi)
 4. `seed_admin.py` — buat admin pertama dari `ADMIN_SEED_*` di `.env` (idempoten)
 
 Aturan: **perubahan manual admin terhadap data ETL tidak boleh hilang** saat seed ulang (FEAT-012) — `seed_db` sudah skip ID yang ada; pertahankan perilaku ini.

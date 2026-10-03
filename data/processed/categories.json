@@ -1,27 +1,22 @@
 [
   {
-    "id": "hutan",
-    "label": "Hutan",
-    "icon_name": "TreePine"
-  },
-  {
-    "id": "jalur-hijau",
-    "label": "Jalur Hijau",
-    "icon_name": "Route"
-  },
-  {
-    "id": "kebun-bibit",
-    "label": "Kebun Bibit",
-    "icon_name": "Sprout"
-  },
-  {
-    "id": "taman",
-    "label": "Taman",
+    "id": "taman-lingkungan",
+    "label": "Taman Lingkungan",
     "icon_name": "Trees"
   },
   {
-    "id": "taman-margasatwa",
-    "label": "Taman Margasatwa",
-    "icon_name": "PawPrint"
+    "id": "rptra",
+    "label": "RPTRA",
+    "icon_name": "Footprints"
+  },
+  {
+    "id": "taman-interaktif",
+    "label": "Taman Interaktif",
+    "icon_name": "Dumbbell"
+  },
+  {
+    "id": "taman-kota",
+    "label": "Taman Kota",
+    "icon_name": "Leaf"
   }
 ]

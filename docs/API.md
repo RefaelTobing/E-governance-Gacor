@@ -198,11 +198,11 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 > `jarak_km` bernilai `null` kalau `lat`/`long` tidak dikirim. Field ini dihitung
 > ulang di Python, bukan lewat query SQL.
 >
-> **Catatan data sekarang:** kolom `latitude`/`longitude` di
-> `data/processed/ruang_publik.csv` masih kosong untuk semua 2.463 baris.
-> Akibatnya di database saat ini, `GET /api/v1/public-spaces?lat=..&long=..`
-> selalu mengembalikan `[]` dan `jarak_km` selalu `null`. Endpoint-nya benar,
-> sumber koordinatnya yang belum ada.
+> **Catatan data sekarang:** 1200 ruang publik, semua punya `latitude`/
+> `longitude`, jadi `?lat=..&long=..&radius=..` mengembalikan hasil berurut
+> jarak. Baris dengan `latitude` NULL tidak ikut query radius. Kategori
+> mengikuti kolom `tipe` (4 tipe di `GET /api/v1/categories`), dan 333 baris
+> punya `alamat` NULL.
 
 ### `GET /api/v1/public-spaces/{ruang_publik_id}`
 

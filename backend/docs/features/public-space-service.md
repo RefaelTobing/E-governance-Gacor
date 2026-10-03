@@ -33,7 +33,7 @@ Kode terkait:
 - `GET /api/v1/public-spaces?lat=&long=&radius=` → Haversine dihitung **di SQL** (`_haversine_km` di `services/ruang_publik.py`), bukan di Python → filter radius + urut terdekat terjadi di database.
 - Baris tanpa koordinat **dibuang** dari hasil pencarian radius (tidak bisa diukur jaraknya).
 - Response menyertakan `jarak_km` (float, dihitung ulang; bukan kolom DB).
-- Koordinat **sudah tersedia**: semua 5542 baris `data/processed/ruang_publik.csv` punya `latitude`/`longitude` (klaim "koordinat kosong" di dokumen lama sudah tidak berlaku).
+- Koordinat **sudah tersedia**: semua 1200 baris `data/processed/ruang_publik.csv` punya `latitude`/`longitude` (klaim "koordinat kosong" di dokumen lama sudah tidak berlaku).
 - Clustering marker & default radius = **tugas FE** (Leaflet sudah dipakai di `apps/web`; konstanta `VITE_DEFAULT_RADIUS_KM` ada di env FE).
 
 **Status: backend siap.** Langkah yang tersisa:

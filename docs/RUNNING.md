@@ -86,15 +86,19 @@ cd "d:\Ruka Jakarta\backend"
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 ```
 
-Lihat `app/etl/` untuk script transform yang tersedia (`read_raw`,
-`transform_rth`).
+Lihat `app/etl/` untuk script yang tersedia (`read_raw`, `transform_rth_raw`,
+`transform_rth`). Seed membaca `data/processed/ruang_publik.csv` (1200
+baris, semua punya koordinat). File lain bisa dipakai lewat `--file`, dan
+`--reset` mengganti total isi `ruang_publik` + `categories` (backup DB dulu;
+perintahnya ditolak kalau masih ada laporan/fasilitas).
 
-> **Koordinat di `data/processed/ruang_publik.csv` masih kosong.** Kolom
-> `latitude` dan `longitude` kosong untuk semua 2.463 baris, jadi pencarian
-> berbasis radius (`GET /api/v1/public-spaces?lat=..&long=..`) selalu
-> mengembalikan `[]`, dan `jarak_km` selalu `null`. Endpoint-nya sendiri
-> benar — yang belum ada adalah sumber koordinatnya. Kalau fitur "Terdekat"
-> mau hidup, isi dulu kolom itu di ETL, lalu jalankan `seed_db` ulang.
+```bash
+# pencarian radius sudah hidup, contoh 2 km dari Monas
+curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=2"
+```
+
+333 baris punya `alamat` NULL, jadi FE menampilkan "Alamat tidak tersedia"
+untuk baris itu. Kolom `latitude`/`longitude` tidak ada yang kosong.
 
 ---
 

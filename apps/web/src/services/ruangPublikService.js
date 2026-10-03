@@ -87,7 +87,9 @@ export const getPublicSpaceDetail = async (id) => {
     const data = await api.get(`/api/v1/public-spaces/${id}`);
     return {
       ...data,
-      kategori: typeof data.kategori === 'object' && data.kategori ? data.kategori.nama : (data.kategori || data.kategori_id || 'Umum'),
+      kategori: typeof data.kategori === 'object' && data.kategori
+        ? data.kategori.label || data.kategori_id || 'Umum'
+        : (data.kategori || data.kategori_id || 'Umum'),
       image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
       fasilitas: data.fasilitas || [],
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',

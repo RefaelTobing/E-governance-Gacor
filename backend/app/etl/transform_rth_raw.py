@@ -1,13 +1,13 @@
-"""Transform data raw rth_dki_coordinates.csv -> categories.json + ruang_publik.json.
+"""Transform data raw rth_dki_coordinates.csv -> categories.json + ruang_publik_mentah.json.
 
-Pemetaan JENIS_OBJEK mengikuti data processed (ruang_publik.csv):
-    RTH          -> taman
-    Jalur Hijau  -> jalur-hijau
-    Hutan        -> hutan
-    Kebun Bibit  -> kebun-bibit
-    Taman Kota   -> taman
-    Taman Margasatwa -> taman-margasatwa
-    Belum Diketahui -> null
+Kategori mengikuti 4 tipe data terbaru (lihat app/etl/kategori.py):
+    nama diawali "RPTRA"     -> RPTRA
+    JENIS_OBJEK Taman Lingkungan / Taman Interaktif / Taman Kota -> tipe itu sendiri
+    selain itu               -> tanpa tipe, kategori_id NULL
+
+Hasilnya file mentah `ruang_publik_mentah.json`:
+id yang dihitung dari file raw tidak sama dengan id data hasil pembersihan,
+jadi file ini bukan bahan seed. Sumber seed tetap `ruang_publik.csv`.
 """
 from __future__ import annotations
 
@@ -18,18 +18,14 @@ from typing import Optional
 
 import pandas as pd
 
+from app.etl.kategori import KATEGORI_TIPE, kategori_id_dari_tipe
+
 ROOT = Path(__file__).resolve().parents[3]
 RAW_FILE = ROOT / "data" / "raw" / "rth_dki_coordinates.csv"
 PROCESSED_DIR = ROOT / "data" / "processed"
 
-JENIS_TO_KATEGORI = {
-    "RTH": "taman",
-    "Taman Kota": "taman",
-    "Jalur Hijau": "jalur-hijau",
-    "Hutan": "hutan",
-    "Kebun Bibit": "kebun-bibit",
-    "Taman Margasatwa": "taman-margasatwa",
-}
+# JENIS_OBJEK yang nilainya persis sama dengan salah satu tipe di master kategori.
+JENIS_YANG_JADI_TIPE = ("Taman Lingkungan", "Taman Interaktif", "Taman Kota")
 
 KOTA_PREFIX = "Kota Adm. "
 KAB_PREFIX = "Kab. Adm. "
@@ -62,19 +58,16 @@ def _clean(value) -> Optional[str]:
     return s
 
 
-def build_categories(df: pd.DataFrame) -> list[dict]:
-    used = set()
-    for j in df["JENIS_OBJEK"]:
-        v = _clean(j)
-        if v and v in JENIS_TO_KATEGORI:
-            used.add(JENIS_TO_KATEGORI[v])
-    return [
-        {"id": "hutan", "label": "Hutan", "icon_name": "TreePine"},
-        {"id": "jalur-hijau", "label": "Jalur Hijau", "icon_name": "Route"},
-        {"id": "kebun-bibit", "label": "Kebun Bibit", "icon_name": "Sprout"},
-        {"id": "taman", "label": "Taman", "icon_name": "Trees"},
-        {"id": "taman-margasatwa", "label": "Taman Margasatwa", "icon_name": "PawPrint"},
-    ]
+def _tipe_dari(nama: str, jenis: Optional[str]) -> Optional[str]:
+    if nama.upper().startswith("RPTRA"):
+        return "RPTRA"
+    if jenis in JENIS_YANG_JADI_TIPE:
+        return jenis
+    return None
+
+
+def build_categories() -> list[dict]:
+    return [dict(kategori) for kategori in KATEGORI_TIPE]
 
 
 def build_ruang_publik(df: pd.DataFrame) -> list[dict]:
@@ -86,7 +79,8 @@ def build_ruang_publik(df: pd.DataFrame) -> list[dict]:
         kecamatan = _clean(r.get("KECAMATAN"))
         kelurahan = _clean(r.get("KELURAHAN"))
         jenis = _clean(r.get("JENIS_OBJEK"))
-        kategori_id = JENIS_TO_KATEGORI.get(jenis) if jenis else None
+        tipe = _tipe_dari(nama, jenis)
+        kategori_id = kategori_id_dari_tipe(tipe)
         verif = _clean(r.get("VERIFIKASI"))
         try:
             lat = float(r["Y"]) if pd.notna(r["Y"]) else None
@@ -101,6 +95,7 @@ def build_ruang_publik(df: pd.DataFrame) -> list[dict]:
                 "id": _stable_id(nama, kecamatan or "", kelurahan or ""),
                 "nama": nama,
                 "kategori_id": kategori_id,
+                "tipe": tipe,
                 "wilayah": _normalize_wilayah(r.get("KOTA")),
                 "alamat": _clean(r.get("ALAMAT_OBJEK")),
                 "latitude": lat,
@@ -124,30 +119,32 @@ def main() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     df = pd.read_csv(RAW_FILE)
 
-    categories = build_categories(df)
+    categories = build_categories()
     ruang_publik = build_ruang_publik(df)
 
     with open(PROCESSED_DIR / "categories.json", "w", encoding="utf-8") as f:
         json.dump(categories, f, ensure_ascii=False, indent=2)
-    with open(PROCESSED_DIR / "ruang_publik.json", "w", encoding="utf-8") as f:
+    with open(PROCESSED_DIR / "ruang_publik_mentah.json", "w", encoding="utf-8") as f:
         json.dump(ruang_publik, f, ensure_ascii=False, indent=2)
 
     total = len(ruang_publik)
     with_koord = sum(1 for r in ruang_publik if r["latitude"] and r["longitude"])
-    by_kategori: dict[str, int] = {}
+    by_tipe: dict[str, int] = {}
     by_wilayah: dict[str, int] = {}
     for r in ruang_publik:
-        k = r["kategori_id"] or "(null)"
-        by_kategori[k] = by_kategori.get(k, 0) + 1
+        t = r["tipe"] or "(tanpa tipe)"
+        by_tipe[t] = by_tipe.get(t, 0) + 1
         w = r["wilayah"] or "(null)"
         by_wilayah[w] = by_wilayah.get(w, 0) + 1
 
     print(f"total ruang_publik: {total}")
     print(f"dengan koordinat  : {with_koord}")
-    print(f"output            : {PROCESSED_DIR}")
-    print("\nDistribusi kategori:")
-    for k, v in sorted(by_kategori.items(), key=lambda x: -x[1]):
-        print(f"  {k:20s} {v}")
+    print(f"output            : {PROCESSED_DIR / 'ruang_publik_mentah.json'} (data mentah)")
+    print("catatan          : seed memakai ruang_publik.csv (data hasil pembersihan),")
+    print("                   bukan file ini, supaya id kembar tidak masuk tabel.")
+    print("\nDistribusi tipe:")
+    for t, v in sorted(by_tipe.items(), key=lambda x: -x[1]):
+        print(f"  {t:24s} {v}")
     print("\nDistribusi wilayah:")
     for k, v in sorted(by_wilayah.items(), key=lambda x: -x[1]):
         print(f"  {k:30s} {v}")

@@ -18,6 +18,7 @@ import heroImg4 from '../../../slidderHero/4.jpg';
 import { MOCK_CATEGORIES, HERO_SLIDES as DEFAULT_HERO_SLIDES, TESTIMONIALS as DEFAULT_TESTIMONIALS, MOCK_STATISTICS as DEFAULT_STATS } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
+import { getCategories } from '../../../services/categoryService';
 import { getHomeStatistics, getTestimonials, getHeroSlides } from '../../../services/statsService';
 
 export const HomePage = () => {
@@ -30,6 +31,7 @@ export const HomePage = () => {
   const [heroSlides, setHeroSlides] = useState(DEFAULT_HERO_SLIDES);
   const [statistics, setStatistics] = useState(null);
   const [featuredSpaces, setFeaturedSpaces] = useState([]);
+  const [categories, setCategories] = useState(MOCK_CATEGORIES.filter((cat) => cat.id !== 'semua'));
   const [testimonials, setTestimonials] = useState(DEFAULT_TESTIMONIALS);
   const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
@@ -68,6 +70,15 @@ export const HomePage = () => {
         if (isMounted) {
           setStatistics(DEFAULT_STATS);
         }
+      }
+
+      try {
+        const categoryData = await getCategories();
+        if (isMounted && categoryData.length > 0) {
+          setCategories(categoryData);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
       }
 
       try {
@@ -300,7 +311,7 @@ export const HomePage = () => {
 
           {/* Quick Category Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
-            {MOCK_CATEGORIES.slice(1).map((cat) => (
+            {categories.map((cat) => (
               <CategoryChip
                 key={cat.id}
                 category={cat}

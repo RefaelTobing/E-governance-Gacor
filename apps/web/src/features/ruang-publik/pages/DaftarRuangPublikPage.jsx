@@ -4,6 +4,7 @@ import { Globe, RotateCcw, MapPin, Clock, ArrowRight, ShieldCheck, Navigation } 
 import { MOCK_WILAYAH, MOCK_CATEGORIES, MOCK_RUANG_PUBLIK_METRICS } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
+import { getCategories } from '../../../services/categoryService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
 import useGeolocation from '../../../hooks/useGeolocation';
 import 'leaflet/dist/leaflet.css';
@@ -23,6 +24,7 @@ export const DaftarRuangPublikPage = () => {
   // Dynamic States
   const [spaces, setSpaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState(MOCK_CATEGORIES);
   
   const { location, error: geoError, isLoading: isGeoLoading, requestLocation } = useGeolocation();
 
@@ -58,6 +60,23 @@ export const DaftarRuangPublikPage = () => {
     };
   }, [selectedKategori, selectedWilayah, location.lat, location.lng]);
 
+  // Chip kategori mengikuti tabel categories lewat API, bukan daftar statis.
+  useEffect(() => {
+    let isMounted = true;
+
+    getCategories()
+      .then((data) => {
+        if (isMounted) {
+          setCategories([{ id: 'semua', label: 'Semua Kategori', iconName: 'LayoutGrid' }, ...data]);
+        }
+      })
+      .catch((err) => console.error('Error fetching categories:', err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const computedMetrics = React.useMemo(() => {
     let prima = 0;
     let perhatian = 0;
@@ -82,10 +101,10 @@ export const DaftarRuangPublikPage = () => {
 
   // Filter Logic over dynamic spaces state
   const filteredList = spaces.filter((item) => {
-    const matchSearch =
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.alamat.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchSearch;
+    const nama = (item.nama || '').toLowerCase();
+    const alamat = (item.alamat || '').toLowerCase();
+    const kata = searchTerm.toLowerCase();
+    return nama.includes(kata) || alamat.includes(kata);
   }).sort((a, b) => {
     if (sortBy === 'kondisi') {
       const scoreA = (a.stats?.baik || 0) - (a.stats?.rusak || 0);
@@ -214,7 +233,7 @@ export const DaftarRuangPublikPage = () => {
         {/* Category Pills */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
           <span className="text-caption" style={{ fontWeight: 700, marginRight: '4px' }}>KATEGORI:</span>
-          {MOCK_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <CategoryChip
               key={cat.id}
               category={cat}
@@ -295,7 +314,7 @@ export const DaftarRuangPublikPage = () => {
                       <div>
                         <h3 className="h3" style={{ marginBottom: '2px' }}>{item.nama}</h3>
                         <p className="text-caption" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat} • <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>
+                            <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat || 'Alamat tidak tersedia'} • <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>
                         </p>
                         {item.jarak_km !== undefined && item.jarak_km !== null && (
                           <span className="badge badge-neutral" style={{ display: 'inline-block', marginBottom: '8px' }}>
