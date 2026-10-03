@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { MapPin, AlertCircle, Loader } from 'lucide-react';
+import { MapPin, Loader } from 'lucide-react';
 import L from 'leaflet';
-import { getPublicSpaces } from '../../../services/ruangPublikService';
+import { JAKARTA_CENTER } from '../../../config/constants';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -15,18 +15,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
-
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 const RecenterMap = ({ center }) => {
   const map = useMap();
@@ -55,79 +43,42 @@ const createCustomIcon = (color = '#10b981') =>
     popupAnchor: [0, -36],
   });
 
-// Koordinat center Jakarta sebagai fallback
-const JAKARTA_CENTER = [-6.2088, 106.8456];
 const DEFAULT_ZOOM = 13;
-const RADIUS_OPTIONS = [
-  { value: 1000, label: '1 km' },
-  { value: 3000, label: '3 km' },
-  { value: 5000, label: '5 km' },
-  { value: 10000, label: '10 km' },
-];
 
 /**
  * PetaSebaranLokasi
- * Menampilkan peta OpenStreetMap dengan 3 titik ruang publik terdekat dari lokasi user.
+ * Menampilkan peta OpenStreetMap untuk ruang publik yang sudah disaring oleh
+ * halaman induk, supaya marker dan kartu daftar selalu menampilkan hasil yang sama.
  *
- * @param {string} selectedKategori - Filter kategori aktif dari halaman induk
- * @param {string} selectedWilayah  - Filter wilayah aktif dari halaman induk
+ * @param {Array} items - Hasil filter halaman induk (pencarian, kategori, wilayah, radius)
+ * @param {boolean} loading - Daftar masih dimuat
+ * @param {{lat: number|null, lng: number|null}} userLocation - Lokasi hasil geolokasi user
  */
-const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semua Wilayah' }) => {
+const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: null, lng: null } }) => {
   const navigate = useNavigate();
-  const [locations, setLocations] = useState([]);
-  const [userCoords, setUserCoords] = useState(null);
-  const [mapCenter, setMapCenter] = useState(JAKARTA_CENTER);
-  const [selectedRadius, setSelectedRadius] = useState(5000);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const hasUserLocation = Number.isFinite(userLocation?.lat) && Number.isFinite(userLocation?.lng);
+  const pusatLat = hasUserLocation ? userLocation.lat : JAKARTA_CENTER.lat;
+  const pusatLng = hasUserLocation ? userLocation.lng : JAKARTA_CENTER.lng;
+  const userCoords = hasUserLocation ? [userLocation.lat, userLocation.lng] : null;
+  const [mapCenter, setMapCenter] = useState([pusatLat, pusatLng]);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    setMapCenter((prev) => (prev[0] === pusatLat && prev[1] === pusatLng ? prev : [pusatLat, pusatLng]));
+  }, [pusatLat, pusatLng]);
 
-    const fetchLocations = async (lat, lng, radius) => {
-      try {
-        const data = await getPublicSpaces({
-          lat: lat || JAKARTA_CENTER[0],
-          lng: lng || JAKARTA_CENTER[1],
-          radius: radius,
-          kategori: selectedKategori,
-          wilayah: selectedWilayah,
-        });
-
-        const items = Array.isArray(data) ? data : data?.items ?? [];
-        
-        let filtered = items.map(item => {
-          const itemLat = parseFloat(item.latitude || item?.koordinat?.lat);
-          const itemLng = parseFloat(item.longitude || item?.koordinat?.lng || item?.koordinat?.long);
-          let distance = null;
-          if (lat && lng && itemLat && itemLng && !isNaN(itemLat) && !isNaN(itemLng)) {
-            distance = calculateDistance(lat, lng, itemLat, itemLng);
-          }
-          return { ...item, computedLat: itemLat, computedLng: itemLng, distance };
-        }).filter(item => item.computedLat && item.computedLng && !isNaN(item.computedLat) && !isNaN(item.computedLng));
-
-        if (lat && lng) {
-          filtered = filtered.filter(item => item.distance !== null && item.distance <= (radius / 1000));
-          filtered.sort((a, b) => a.distance - b.distance);
-        }
-
-        setLocations(filtered);
-
-        if (filtered.length > 0 && filtered[0]?.computedLat) {
-          setMapCenter([filtered[0].computedLat, filtered[0].computedLng]);
-        } else if (lat && lng) {
-          setMapCenter([lat, lng]);
-        }
-      } catch (err) {
-        setError('Layanan peta tidak tersedia. Pastikan backend sudah berjalan.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLocations(JAKARTA_CENTER[0], JAKARTA_CENTER[1], selectedRadius);
-  }, [selectedKategori, selectedWilayah, selectedRadius]);
+  // Jaraknya sudah dihitung backend (item.jarak_km) dari titik acuan yang sama
+  // dengan yang dipakai daftar, jadi angka di popup dan badge kartu identik.
+  const lokasiTampil = useMemo(
+    () => items
+      .map((item) => ({
+        ...item,
+        computedLat: Number.parseFloat(item.latitude),
+        computedLng: Number.parseFloat(item.longitude),
+      }))
+      .filter((item) => Number.isFinite(item.computedLat) && Number.isFinite(item.computedLng))
+      .sort((a, b) => (a.jarak_km ?? Infinity) - (b.jarak_km ?? Infinity)),
+    [items]
+  );
 
   if (loading) {
     return (
@@ -152,41 +103,8 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <div style={{ padding: 'var(--space-lg)', marginBottom: 'var(--space-lg)', display: 'flex', alignItems: 'center', gap: 'var(--space-lg)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Radius Pencarian:</span>
-        <div style={{ 
-          display: 'inline-flex', 
-          gap: 'var(--space-xs)',
-          backgroundColor: 'var(--color-bg-main)',
-          padding: 'var(--space-xs)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--color-border-dark)'
-        }}>
-          {RADIUS_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setSelectedRadius(option.value)}
-              style={{
-                 padding: '8px 14px',
-                 borderRadius: 'var(--radius-sm)',
-                 border: 'none',
-                 backgroundColor: selectedRadius === option.value ? 'var(--color-primary)' : 'transparent',
-                 color: selectedRadius === option.value ? 'var(--color-surface)' : 'var(--color-text-muted)',
-                fontSize: '13px',
-                fontWeight: selectedRadius === option.value ? 600 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                 boxShadow: selectedRadius === option.value ? '0 2px 6px rgba(15, 118, 110, 0.25)' : 'none',
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div style={{ position: 'relative', height: '320px', width: '100%' }}>
-        {(error || (!loading && locations.length === 0)) && (
+        {lokasiTampil.length === 0 && (
           <div
             style={{
               position: 'absolute',
@@ -204,21 +122,10 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
               pointerEvents: 'none'
             }}
           >
-            {error ? (
-              <>
-                <AlertCircle size={16} color="#EF4444" />
-                <span style={{ fontSize: '12px', color: '#B91C1C', fontWeight: 500 }}>
-                  {error}
-                </span>
-              </>
-            ) : (
-              <>
-                <MapPin size={16} color="#64748B" />
-                <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
-                  Tidak ada lokasi dalam radius {selectedRadius / 1000} km
-                </span>
-              </>
-            )}
+            <MapPin size={16} color="#64748B" />
+            <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
+              Tidak ada lokasi untuk ditampilkan di peta
+            </span>
           </div>
         )}
 
@@ -257,63 +164,57 @@ const PetaSebaranLokasi = ({ selectedKategori = 'semua', selectedWilayah = 'Semu
             </Marker>
           )}
 
-          {locations.map((item, index) => {
-            const lat = item?.computedLat;
-            const lng = item?.computedLng;
-            if (!lat || !lng) return null;
-
-            return (
-              <Marker
-                key={item.id ?? index}
-                position={[lat, lng]}
-                icon={createCustomIcon('#10b981')}
-              >
-                <Popup minWidth={200}>
-                  <div style={{ padding: '4px 0' }}>
-                    <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0F172A' }}>
-                      {item.nama}
+          {lokasiTampil.map((item) => (
+            <Marker
+              key={item.id}
+              position={[item.computedLat, item.computedLng]}
+              icon={createCustomIcon('#10b981')}
+            >
+              <Popup minWidth={200}>
+                <div style={{ padding: '4px 0' }}>
+                  <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0F172A' }}>
+                    {item.nama}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
+                    {item.alamat}
+                  </p>
+                  {item.jarak_km != null && (
+                    <p style={{ fontSize: '10px', color: '#047857', fontWeight: 600, marginBottom: '8px' }}>
+                      {Number(item.jarak_km).toFixed(1)} km {hasUserLocation ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
                     </p>
-                    <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                      {item.alamat}
-                    </p>
-                    {item.distance !== null && (
-                      <p style={{ fontSize: '10px', color: '#10b981', fontWeight: 600, marginBottom: '8px' }}>
-                        {item.distance.toFixed(1)} km dari lokasi Anda
-                      </p>
-                    )}
-                    {item.kategori_id && (
-                      <span style={{
-                        fontSize: '10px', fontWeight: 700,
-                        backgroundColor: '#d1fae5', color: '#10b981',
-                        padding: '2px 8px', borderRadius: '999px',
-                        display: 'inline-block', marginBottom: '8px'
-                      }}>
-                        {item.kategori_id}
-                      </span>
-                    )}
-                    <br />
-                    <button
-                      onClick={() => navigate(`/ruang-publik/${item.id}`)}
-                      style={{
-                        backgroundColor: '#10b981',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '6px 14px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        width: '100%',
-                        marginTop: '8px',
-                      }}
-                    >
-                      Lihat Detail →
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+                  )}
+                  {item.kategori_id && (
+                    <span style={{
+                      fontSize: '10px', fontWeight: 700,
+                      backgroundColor: '#d1fae5', color: '#047857',
+                      padding: '2px 8px', borderRadius: '999px',
+                      display: 'inline-block', marginBottom: '8px'
+                    }}>
+                      {item.kategori_id}
+                    </span>
+                  )}
+                  <br />
+                  <button
+                    onClick={() => navigate(`/ruang-publik/${item.id}`)}
+                    style={{
+                      backgroundColor: '#047857',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '6px 14px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      width: '100%',
+                      marginTop: '8px',
+                    }}
+                  >
+                    Lihat Detail →
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
       </div>
     </div>

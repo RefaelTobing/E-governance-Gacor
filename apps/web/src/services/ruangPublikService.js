@@ -79,6 +79,41 @@ export const getPublicSpaces = async (params = {}) => {
 };
 
 /**
+ * Ambil seluruh ruang publik dengan menarik semua halaman backend.
+ *
+ * Backend membatasi `limit` maksimal 500 baris, jadi data ribuan baris harus
+ * ditarik bertahap. Filter kategori/wilayah/pencarian sengaja tidak dikirim:
+ * semuanya disaring di sisi klien supaya mengganti filter tidak memicu
+ * unduhan ulang.
+ *
+ * @param {Object} params
+ * @param {number} params.lat - Titik acuan penghitungan jarak
+ * @param {number} params.lng - Titik acuan penghitungan jarak
+ */
+const BATAS_BATCH = 50;
+
+export const getAllPublicSpaces = async ({ lat, lng } = {}) => {
+  const PER_BATCH = 500;
+  const semua = [];
+
+  for (let batch = 0; batch < BATAS_BATCH; batch++) {
+    // radius: null menetralkan default 5000 di getPublicSpaces, supaya tidak
+    // ada baris yang tersaring keluar sebelum sempat dimuat.
+    const data = await getPublicSpaces({ lat, lng, radius: null, skip: semua.length, limit: PER_BATCH });
+    if (!Array.isArray(data) || data.length === 0) break;
+
+    // Backend yang mengabaikan `skip` akan mengulang baris pertama terus;
+    // berhenti sebelum datanya jadi dobel.
+    if (semua.length > 0 && data[0]?.id === semua[0]?.id) break;
+
+    semua.push(...data);
+    if (data.length < PER_BATCH) break;
+  }
+
+  return semua;
+};
+
+/**
  * Ambil detail satu ruang publik berdasarkan ID/slug.
  * @param {string|number} id
  */
