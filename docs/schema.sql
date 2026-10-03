@@ -30,6 +30,7 @@ CREATE TABLE ruang_publik (
    verified BOOLEAN DEFAULT FALSE,
    status_general VARCHAR(50),
    image_url TEXT,
+   field_source JSON,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    FOREIGN KEY (kategori_id) REFERENCES categories(id)

@@ -103,9 +103,10 @@ Konsekuensi:
 **Aturan lanjutan (wajib dipatuhi ketika menulis sinkronisasi apa pun):**
 
 1. **Jangan** mengganti pola "skip ID ada" dengan UPDATE overwrite seluruh baris.
-2. Bila nanti perlu sinkron kolom tertentu dari sumber resmi, terapkan **field-level merge**: tentukan daftar kolom `ETL_OWNED` (mis. `latitude`, `longitude`, `alamat` bila sumber lebih otoritatif) vs `ADMIN_OWNED` (`deskripsi`, `verified`, `image_url`, `status_general`) → seed hanya menulis kolom `ETL_OWNED`, dan hanya untuk baris yang belum pernah diedit (mis. ditandai flag `manually_edited` — butuh migrasi bila dipilih).
-3. Dokumentasikan keputusan pemetaan kolom **di sini** saat keputusan diambil.
-4. Setiap perubahan skema (flag/dst.) = migrasi Alembic baru (`03-database-schema.md` §3).
+2. Bila nanti perlu sinkron kolom tertentu dari sumber resmi, terapkan **field-level merge**: tentukan daftar kolom `ETL_OWNED` (mis. `latitude`, `longitude`, `alamat` bila sumber lebih otoritatif) vs `ADMIN_OWNED` (`deskripsi`, `verified`, `image_url`, `status_general`) → seed hanya menulis kolom `ETL_OWNED`, dan hanya untuk kolom yang belum pernah diedit admin.
+3. **Keputusan penanda (BE-05, sudah dijalankan 2026-10-03):** penanda memakai kolom **`ruang_publik.field_source` (JSON, nullable)**, bukan tabel log terpisah. Isinya `{"nama_kolom": "waktu edit ISO-8601"}`; `NULL` = belum pernah diedit. Ditulis oleh `mark_fields_edited(db, ruang_publik, fields)` di `app/services/ruang_publik.py` — dipanggil endpoint edit admin (BE-33), dibaca proses merge ETL (BE-16). Migrasi: `c1f4a9d2e073_add_ruang_publik_field_source`.
+4. Pemetaan kolom `ETL_OWNED` vs `ADMIN_OWNED` **masih ditulis di sini** saat task BE-16 dikerjakan.
+5. Setiap perubahan skema (flag/dst.) = migrasi Alembic baru (`03-database-schema.md` §3).
 
 ---
 

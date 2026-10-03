@@ -3,6 +3,7 @@ from typing import Optional, Sequence
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
+from app.models.base import utcnow
 from app.models.fasilitas import Fasilitas
 from app.models.ruang_publik import RuangPublik
 
@@ -137,3 +138,44 @@ def get_public_spaces_stats(db: Session) -> dict:
         "status_prima": status_prima,
         "perlu_perhatian": perlu_perhatian,
     }
+
+
+KOLOM_BUKAN_DATA = {"id", "field_source", "created_at", "updated_at"}
+
+
+def edited_fields(ruang_publik: RuangPublik) -> dict[str, str]:
+    """Salinan penanda edit manual: {nama kolom: waktu edit ISO-8601}."""
+    return dict(ruang_publik.field_source or {})
+
+
+def is_edited_manually(ruang_publik: RuangPublik, field: str) -> bool:
+    """True bila kolom ini pernah disunting admin, jadi ETL dilarang menimpanya."""
+    return field in (ruang_publik.field_source or {})
+
+
+def mark_fields_edited(
+    db: Session, ruang_publik: RuangPublik, fields: Sequence[str]
+) -> dict[str, str]:
+    """Catat kolom yang baru saja diedit manual admin (FEAT-012).
+
+    Dipanggil endpoint edit admin (task BE-33) supaya sinkronisasi ETL kelak
+    (task BE-16) bisa membaca kolom mana yang sudah bukan milik sumber resmi.
+    Kolom sistem (`id`, `created_at`, `updated_at`, `field_source`) ditolak.
+    """
+    dikenal = {kolom.name for kolom in RuangPublik.__table__.columns} - KOLOM_BUKAN_DATA
+    salah = [field for field in fields if field not in dikenal]
+    if salah:
+        raise ValueError(f"Kolom tidak dikenal: {', '.join(sorted(salah))}")
+
+    if not fields:
+        return edited_fields(ruang_publik)
+
+    penanda = edited_fields(ruang_publik)
+    waktu = utcnow().isoformat()
+    for field in fields:
+        penanda[field] = waktu
+    ruang_publik.field_source = penanda
+    db.add(ruang_publik)
+    db.commit()
+    db.refresh(ruang_publik)
+    return edited_fields(ruang_publik)

@@ -59,6 +59,7 @@ users ───────┴──────┬─────────�
 | `verified` | BOOLEAN default FALSE | |
 | `status_general` | VARCHAR(50) NULL | |
 | `image_url` | TEXT NULL | **Satu foto** — dibungkus jadi list `foto[]` di response detail (lihat §5) |
+| `field_source` | JSON NULL | Penanda field hasil **edit manual admin**: `{"deskripsi": "2026-10-03T14:44:38"}`. **`NULL` = belum pernah diedit manual**, aman ditimpa ETL (FEAT-012, task BE-05). Ditulis lewat `mark_fields_edited()` di `app/services/ruang_publik.py`, ikut di response detail. |
 | `kecamatan`, `kelurahan` | — | Ada di file sumber, **dibuang saat seed** (whitelist `KOLOM_RUANG_PUBLIK` di `seed_db.py`) |
 
 ### `fasilitas`
@@ -105,6 +106,7 @@ users ───────┴──────┬─────────�
 |---|---|
 | `34fc1fc4d761_initial_schema` | Seluruh tabel awal |
 | `b7e2c1049a3f_add_user_is_active` | Menambah `users.is_active` |
+| `c1f4a9d2e073_add_ruang_publik_field_source` | Menambah `ruang_publik.field_source` (JSON, nullable) — penanda edit manual admin (BE-05) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.
@@ -156,7 +158,10 @@ Masalah: data resmi di-ETL ulang berkala, tetapi **edit manual admin tidak boleh
 **Konsekuensi & aturan lanjutan:**
 
 - **Jangan** membuat seed yang menimpa seluruh kolom (UPDATE overwrite) — itu akan menghapus edit admin.
-- Jika nanti perlu sinkron kolom tertentu dari data resmi (mis. alamat diperbaiki sumber), gunakan pendekatan **field-level**: tentukan daftar kolom yang boleh di-ETL timpa vs kolom milik admin (mis. `deskripsi`, `verified`, `image_url` = admin-owned) dan hanya tulis kolom ETL-owned.
+- Penanda field-level **sudah ada** (BE-05): kolom `ruang_publik.field_source` diisi oleh `mark_fields_edited()`
+  tiap kali admin menyunting suatu kolom. Untuk sinkronisasi kolom tertentu dari data resmi (task BE-16),
+  tentukan daftar kolom yang boleh di-ETL timpa (ETL-owned) vs kolom milik admin (admin-owned) dan
+  **lewati kolom yang sudah tercatat di `field_source`**, tanpa perlu mengandalkan flag baris.
 - Foto pengguna (FEAT-007) tersimpan **terpisah dari kolom `image_url` resmi** — bila tabel galeri dibuat nanti, relasinya ke `ruang_publik_id` sehingga penghapusan/penimpaan data resmi tidak ikut menghapus foto.
 - Saat ini galeri foto laporan belum ada (lihat gap di `features/public-space-service.md` §Galeri).
 
@@ -170,7 +175,7 @@ docker compose up -d
 # tunggu container healthy (~30 detik saat volume baru)
 
 cd backend
-..\.venv\Scripts\python.exe -m alembic current   # harus: head (b7e2c1049a3f)
+..\.venv\Scripts\python.exe -m alembic current   # harus: head (c1f4a9d2e073)
 ..\.venv\Scripts\python.exe -m alembic upgrade head   # bila belum
 ```
 
