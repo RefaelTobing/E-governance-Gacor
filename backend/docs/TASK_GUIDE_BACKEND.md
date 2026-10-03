@@ -36,12 +36,12 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B2 ETL Worker | 6 | 0 | 2 | 4 |
 | B3 Report Service | 10 | 0 | 2 | 8 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
-| B5 Data Master Service | 3 | 0 | 0 | 3 |
+| B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **10** | **12** | **34** |
+| **Total** | **56** | **11** | **12** | **33** |
 
 ---
 
@@ -245,13 +245,18 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
       otomatis ditandai "diedit manual" (dipakai logika merge di BE-16).
   - **Belum ada.** Tombol "Edit Master" di FE masih `alert()`.
   - **Prasyarat:** BE-05 (penanda field-level merge).
-- [ ] **[BE-53]** **(baru - hasil audit)** CRUD fasilitas untuk admin:
-      `POST /admin/public-spaces/{id}/fasilitas`, `PATCH /admin/fasilitas/{id}`, `DELETE /admin/fasilitas/{id}`
-      (semua `get_current_admin`).
-  - **FEAT:** FEAT-005 + FEAT-012. **Dibutuhkan:** halaman `apps/web/src/features/data-master/pages/KelolaFasilitasPage.jsx`
-    (tombol "Tambah Fasilitas Baru" dan "Edit" kini hanya `alert()`), dan `FE-12` filter fasilitas FE.
-  - **Verifikasi:** tambah/edit/hapus fasilitas lewat API -> langsung terbaca di `GET /public-spaces/{id}`
-    dan masuk opsi filter `GET /facilities`; non-admin -> 403.
+- [x] **[BE-53]** **(baru - hasil audit)** CRUD fasilitas untuk admin:
+      `GET/POST /admin/facilities`, `PATCH /admin/facilities/{id}`, `DELETE /admin/facilities/{id}`,
+      `POST /admin/facilities/import` (semua `get_current_admin`).
+  - **FEAT:** FEAT-005 + FEAT-012. **Keputusan path:** namespace `/api/v1/admin/facilities`
+    (bukan nested `POST /public-spaces/{id}/fasilitas`) — alasan & tabel di
+    `features/data-master-service.md` §2.2.
+  - **FE:** `apps/web/src/features/data-master/pages/KelolaFasilitasPage.jsx` sudah terhubung
+    (`services/fasilitasService.js`), termasuk impor CSV dari halaman.
+  - **Verifikasi:** skrip black-box dengan `TestClient` + DB MySQL nyata: 29 pemeriksaan lolos
+    (401/403 non-admin, 201 buat, 400 status salah, 404 induk tak ada, patch/hapus, 409 saat ada
+    laporan, impor CSV parsial, terbaca lagi di `GET /public-spaces/{id}` dan masuk opsi
+    `GET /facilities`); `npm run build` sukses.
 
 ---
 

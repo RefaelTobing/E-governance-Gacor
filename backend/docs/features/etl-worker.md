@@ -9,6 +9,7 @@ Kode terkait (semua di `app/etl/`):
 - `transform_rth_raw.py` — transformasi utama → `data/processed/ruang_publik_mentah.json`
 - `transform_rth.py` — varian transform (legacy/alternatif) → `data/processed/ruang_publik_mentah.csv`
 - `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL (`--file`, `--reset`)
+- `seed_fasilitas.py` — isi tabel `fasilitas` dengan data contoh per ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
 
 Data:
@@ -28,6 +29,7 @@ Data:
 | Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
 | Kategori konsisten | **Ya** — kolom `tipe` di file sumber → `kategori_id` lewat `kategori.py`; tipe di luar master → `NULL` |
 | Penjadwalan otomatis (cron) | **Belum** — PRD §5 menyebut "cron job/scheduled task"; saat ini manual |
+| Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
 | Endpoint trigger dari admin API | **Belum** — opsional, lihat `data-master-service.md` §2.3 |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
 
@@ -74,12 +76,16 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 # 3. seed (idempoten; jalankan lagi boleh)
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 
+# 3b. isi fasilitas (data contoh; dilewati untuk lokasi yang sudah punya fasilitas)
+..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas
+
 # 4. ganti total isi tabel (backup DB dulu!), atau seed file lain
 ..\.venv\Scripts\python.exe -m app.etl.seed_db --reset
 ..\.venv\Scripts\python.exe -m app.etl.seed_db --file ../data/processed/ruang_publik_lainnya.csv
 ```
 
 Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru** + total, lalu baris per kategori.
+Keluaran `seed_fasilitas`: jumlah fasilitas **baru** + total, lalu baris per kategori ruang publik; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
 
 Flag:
 - `--file <path>` — sumber ruang publik (csv/json); path relatif terhadap `data/processed/` juga diterima. Default: `ruang_publik.csv`.
@@ -145,6 +151,8 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**.
 ## 6. Test / Verifikasi Regresi
 
 - [ ] **Idempoten:** jalankan `seed_db` dua kali berturut-turut → keluaran kedua `0 baru` dan total tidak berubah
+- [x] **Idempoten fasilitas:** `seed_fasilitas` dua kali berturut-turut → kedua kali `0 baru`, total tetap 5428; `--reset` lalu seed ulang → jumlahnya sama persis (2026-10-04)
+- [x] **Fasilitas admin aman:** ruang publik yang sudah punya fasilitas (dibuat lewat `POST /admin/facilities`) dilewati `seed_fasilitas` (2026-10-04)
 - [ ] **Merge:** catat `deskripsi` 1 baris → edit via SQL/API → seed ulang → editan tetap ada
 - [ ] **Koordinat:** `curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=1"` → hasil tidak kosong dan `jarak_km` terisi
 - [ ] **Kategori:** semua `kategori_id` hasil seed ada di `GET /categories` (tidak ada orphan — FK constraint akan menolak, tapi cek sebelum insert penuh)

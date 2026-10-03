@@ -6,7 +6,7 @@
 Kode terkait:
 - Baca saat ini: `app/api/v1/ruang_publik.py` (GET list/detail/stats), `app/services/ruang_publik.py`
 - Skema siap pakai: `app/schemas/ruang_publik.py` → `RuangPublikCreate`, `RuangPublikUpdate`, `RuangPublikResponse` **sudah ada, belum dipakai endpoint mana pun**
-- Konsumen FE (baca saja): `apps/web/src/features/data-master/pages/DataMasterPage.jsx`, `KelolaFasilitasPage.jsx`
+- Konsumen FE: `apps/web/src/features/data-master/pages/DataMasterPage.jsx` (baca saja), `KelolaFasilitasPage.jsx` (CRUD penuh lewat `apps/web/src/services/fasilitasService.js`)
 
 ---
 
@@ -15,17 +15,18 @@ Kode terkait:
 | Aspek PRD FEAT-012 | Status |
 |---|---|
 | Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sebagian** — ETL seed ada, tetapi **manual/script** (bukan dari panel admin) |
-| Admin mengedit data manual | **BELUM** — semua endpoint ruang publik/fasilitas saat ini GET saja |
+| Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); ruang publik masih GET saja (BE-33 belum) |
 | Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah dijamin mekanismenya** (seed idempoten skip ID ada) — dipertahankan |
 
 ---
 
 ## 1. Kondisi Saat Ini
 
-- Halaman admin FE `/dashboard/data-master` dan `/dashboard/fasilitas` **sudah dibuat**, tetapi hanya memanggil `GET /public-spaces` (read-only). Tombol simpan di FE belum punya backend.
+- Halaman admin FE `/dashboard/data-master` masih baca-saja (hanya `GET /public-spaces`; tombol "Edit Master" belum punya backend). `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
 - Tabel `ruang_publik` & `fasilitas` sudah punya kolom lengkap yang dibutuhkan edit (deskripsi, jam operasional, fasilitas status, dll.).
 - Skema Pydantic update (`RuangPublikUpdate`) sudah tersedia — mempercepat implementasi (tinggal pakai).
 - ETL (`seed_db`) **hanya INSERT ID baru, tidak pernah UPDATE** → edit admin otomatis aman (lihat §4).
+- Tabel `fasilitas` terisi oleh `app/etl/seed_fasilitas.py` (data contoh, idempoten) — sumber Satu Data tidak punya kolom fasilitas.
 
 ---
 
@@ -43,11 +44,26 @@ Pola wajib untuk seluruh endpoint di bawah: `_: User = Depends(get_current_admin
 
 ### 2.2 Fasilitas (per ruang publik)
 
+> **Keputusan path (2026-10-04):** memakai namespace admin terpisah, bukan nested
+> di bawah ruang publik. Semua di `/api/v1/admin/facilities`, dilindungi
+> `Depends(get_current_admin)`, terdaftar lewat `admin_router` di
+> `app/api/v1/fasilitas.py`.
+
 | Method & Path | Body | Perilaku |
 |---|---|---|
-| `POST /api/v1/public-spaces/{id}/fasilitas` | `{ nama, kategori?, status?, lokasi_spesifik?, deskripsi? }` | Tambah fasilitas ke ruang publik |
-| `PATCH` (padanan dari bentuk di atas) | sebagian field | Ubah fasilitas — **pilih bentuk path & catat keputusannya** (disarankan nested agar jelas induknya) |
-| `DELETE` (padanan dari bentuk di atas) | — | Hapus fasilitas; ingat `laporan.fasilitas_id` FK — putuskan: tolak bila masih ada laporan (409) atau set NULL |
+| `GET /api/v1/admin/facilities` | `?q=&kategori=&status=&wilayah=&skip=&limit=` | Semua baris fasilitas + `ruang_publik_nama` (join eksplisit + `contains_eager`) |
+| `POST /api/v1/admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, lokasi_spesifik?, deskripsi? }` | Tambah fasilitas; `201`; `404` induk tak ada |
+| `PATCH /api/v1/admin/facilities/{id}` | sebagian field di atas | Ubah sebagian; `404` bila tak ada |
+| `DELETE /api/v1/admin/facilities/{id}` | — | Hapus; `laporan.fasilitas_id` FK dipakai → **tolak dengan `409`** kalau masih ada laporan |
+| `POST /api/v1/admin/facilities/import` | `file` CSV multipart | Impor masal; jawaban parsial `{created, failed, errors}` |
+
+> **Alasan ditolaknya bentuk nested** (`POST /api/v1/public-spaces/{id}/fasilitas`):
+> endpoint publik `GET /public-spaces/{id}` memakai prefix yang sama, sehingga
+> penulisan fasilitas jadi tersembunyi di bawah resource publik dan pola admin
+> lain (`/admin/reports`, `/admin/users`) jadi tidak seragam. Nested path juga
+> membuat pemanggilan impor CSV (`POST .../public-spaces/import`) ambigu.
+> Konsekuensi: induk wajib dikirim sebagai field `ruang_publik_id`, jadi
+> divalidasi service (`404` bila tak ada).
 
 > **Kategori fasilitas**: tidak butuh tabel/master CRUD terpisah — `fasilitas.kategori` berupa teks bebas dan filter FE memakai `GET /facilities` aggregate.
 
@@ -64,15 +80,16 @@ Keduanya **wajib mempertahankan** strategi merge §4.
 
 ## 3. Langkah Implementasi (urut)
 
-- [ ] Pilih & tulis keputusan bentuk path (§2.2) + opsi impor (§2.3)
+- [x] Keputusan bentuk path fasilitas (§2.2): namespace admin terpisah `/admin/facilities`
+- [ ] Pilih opsi impor Satu Data (§2.3)
 - [ ] Implementasi `PATCH /public-spaces/{id}`:
   - service `update_ruang_publik(db, id, payload)` — update field yang **tidak `None`** di payload (patch semantics, jangan menimpa kolom terisi dengan `None`)
   - router + `get_current_admin` + response `RuangPublikResponse`
-- [ ] Implementasi CRUD fasilitas (nested path terpilih)
+- [x] Implementasi CRUD fasilitas (bentuk path terpilih, lihat §2.2)
 - [ ] (Opsi A) endpoint re-sync memanggil seed idempoten
-- [ ] Daftarkan semua di `app/api/v1/api.py`
-- [ ] Update `04-api-endpoints.md` **dan** `docs/API.md`
-- [ ] Beri tahu workflow frontend: `DataMasterPage`/`KelolaFasilitasPage` tinggal menyambungkan `services.js` ke endpoint ini
+- [x] Daftarkan semua di `app/api/v1/api.py`
+- [x] Update `04-api-endpoints.md` **dan** `docs/API.md`
+- [x] Beri tahu workflow frontend: `DataMasterPage`/`KelolaFasilitasPage` tinggal menyambungkan `services.js` ke endpoint ini
 - [ ] Test regresi §5
 
 ---
@@ -98,7 +115,7 @@ Konsekuensi:
 | Edit manual admin (alamat, deskripsi, verified, foto) | ✅ Ya — seed tidak meng-update baris lama |
 | Data resmi yang diperbaiki sumber (mis. koordinat dikoreksi) | ❌ Tidak ikut masuk — seed melewati ID lama |
 | Data baru dari sumber resmi | ✅ Masuk (ID baru) |
-| Fasilitas/laporan yang menempel | ✅ Tidak tersentuh seed (seed hanya `categories` + `ruang_publik`) |
+| Fasilitas/laporan yang menempel | ✅ `seed_db` tidak menyentuh keduanya (hanya `categories` + `ruang_publik`); `seed_fasilitas.py` hanya INSERT baris untuk ruang publik yang belum punya fasilitas |
 
 **Aturan lanjutan (wajib dipatuhi ketika menulis sinkronisasi apa pun):**
 
@@ -115,7 +132,7 @@ Konsekuensi:
 - [ ] `PATCH /public-spaces/{id}` tanpa token / token warga → 401/403; token admin → 200
 - [ ] PATCH hanya `deskripsi` → field lain tidak berubah (patch semantics)
 - [ ] PATCH body `{}` / field None → tidak menimpa kolom terisi dengan NULL
-- [ ] Tambah fasilitas → muncul di `GET /facilities` (aggregate) & detail ruang publik
+- [x] Tambah fasilitas → muncul di `GET /facilities` (aggregate) & detail ruang publik (2026-10-04, skrip black-box BE-53)
 - [ ] **Merge test:** edit deskripsi 1 ruang publik → jalankan `seed_db` ulang → perubahan tetap ada, data baru dari CSV tetap masuk
 - [ ] 404 untuk id tak ada; response selalu `RuangPublikResponse` valid
 
@@ -124,6 +141,6 @@ Konsekuensi:
 ## 6. Verifikasi Akhir File Ini
 
 - [ ] Hanya membahas FEAT-012 (+ dependensi yang ditandai jelas)
-- [ ] Setiap endpoint baru terdaftar: `get_current_admin` ✅, `04-api-endpoints.md` ✅, `docs/API.md` ✅
+- [x] Setiap endpoint baru terdaftar: `get_current_admin` ✅, `04-api-endpoints.md` ✅, `docs/API.md` ✅
 - [ ] Strategi merge tertulis dan teruji (test seed ulang)
-- [ ] Tidak ada endpoint tulis untuk warga/publik di file ini
+- [x] Tidak ada endpoint tulis untuk warga/publik di file ini

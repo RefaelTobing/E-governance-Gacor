@@ -25,6 +25,20 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-04
 
+- **Chore** seed fasilitas - `app/etl/seed_fasilitas.py` baru: isi `fasilitas` dengan data contoh per
+  ruang publik (id stabil `seed-<hash>-<n>`, dilewati bila lokasi sudah punya fasilitas, `--reset` hanya
+  menghapus baris prefix `seed-` dan menolak bila ada laporan menunjuknya); 5428 baris, sebelumnya 0;
+  verifikasi: seed dua kali -> `0 baru`, `--reset` + seed ulang -> jumlah sama, fasilitas buatan admin
+  tidak tersentuh, `GET /facilities` kini 13 opsi.
+- **[BE-53]** CRUD fasilitas admin - endpoint `/api/v1/admin/facilities` (`GET`/`POST`/`PATCH`/`DELETE`
+  + `POST /import` CSV multipart) di `app/api/v1/fasilitas.py`, service + validasi status di
+  `services/ruang_publik.py`, semua `get_current_admin`, hapus ditolak `409` bila masih dirujuk laporan;
+  keputusan path (namespace admin, bukan nested) dicatat di `features/data-master-service.md` §2.2;
+  verifikasi: skrip black-box `TestClient` 29 pemeriksaan lolos, tanpa warning SQLAlchemy.
+- **Frontend** halaman Kelola Fasilitas tersambung API - `KelolaFasilitasPage.jsx` ditulis ulang
+  (daftar + cari + Tambah/Edit/Hapus + impor CSV) memakai `services/fasilitasService.js`;
+  `config/api.js` kini menyalin `error.detail` ke `error.message`; kolom "X Terdata" di
+  `DataMasterPage.jsx` dihitung dari API (dulu selalu `0`); verifikasi: `npm run build` sukses.
 - **[FE-23]** sesi login pemerintah bertahan saat refresh - `AuthContext` hydrate `token`/`user` dari `localStorage`
   lewat lazy initializer `useState(readStoredAuth)` (dulu di `useEffect`, `RequireAuth` sudah Navigate ke
   `/login-pemerintah` sebelum state terisi); `role` diturunkan dari `user`, keluar tetap hanya lewat tombol logout;

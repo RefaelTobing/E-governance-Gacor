@@ -1,0 +1,138 @@
+import { api } from '../config/api';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+export const STATUS_FASILITAS = [
+  { value: 'baik', label: 'Baik' },
+  { value: 'perlu_perhatian', label: 'Perlu Perhatian' },
+  { value: 'rusak', label: 'Rusak' },
+];
+
+const keTampilan = (row) => ({
+  id: row.id,
+  ruangPublikId: row.ruang_publik_id,
+  ruangPublikNama: row.ruang_publik_nama,
+  wilayah: row.wilayah,
+  nama: row.nama,
+  kategori: row.kategori,
+  status: row.status,
+  lokasiSpesifik: row.lokasi_spesifik,
+  deskripsi: row.deskripsi,
+  createdAt: row.created_at,
+});
+
+const pesanKesalahan = (error) => error.detail || error.message;
+
+const BATAS_BATCH = 50;
+const PER_BATCH = 500;
+
+/**
+ * Seluruh baris fasilitas untuk tabel Kelola Fasilitas.
+ *
+ * Backend membatasi `limit` maksimal 500, jadi baris ditarik bertahap;
+ * filter dan pencarian disaring di sisi klien supaya mengetik tidak
+ * memicu unduhan ulang.
+ */
+export const getAllFacilities = async () => {
+  const semua = [];
+
+  for (let batch = 0; batch < BATAS_BATCH; batch++) {
+    const data = await api.get('/api/v1/admin/facilities', {
+      skip: semua.length,
+      limit: PER_BATCH,
+    });
+    if (!Array.isArray(data) || data.length === 0) break;
+
+    // Backend yang mengabaikan `skip` akan mengulang baris pertama terus.
+    if (semua.length > 0 && data[0]?.id === semua[0]?.id) break;
+
+    semua.push(...data.map(keTampilan));
+    if (data.length < PER_BATCH) break;
+  }
+
+  return semua;
+};
+
+export const createFacility = async (payload) => {
+  try {
+    const data = await api.post('/api/v1/admin/facilities', {
+      ruang_publik_id: payload.ruangPublikId,
+      nama: payload.nama,
+      kategori: payload.kategori || null,
+      status: payload.status,
+      lokasi_spesifik: payload.lokasiSpesifik || null,
+      deskripsi: payload.deskripsi || null,
+    });
+    return keTampilan(data);
+  } catch (error) {
+    throw new Error(pesanKesalahan(error));
+  }
+};
+
+export const updateFacility = async (id, payload) => {
+  try {
+    const data = await api.patch(`/api/v1/admin/facilities/${id}`, {
+      nama: payload.nama,
+      kategori: payload.kategori || null,
+      status: payload.status,
+      lokasi_spesifik: payload.lokasiSpesifik || null,
+      deskripsi: payload.deskripsi || null,
+    });
+    return keTampilan(data);
+  } catch (error) {
+    throw new Error(pesanKesalahan(error));
+  }
+};
+
+export const deleteFacility = async (id) => {
+  try {
+    await api.delete(`/api/v1/admin/facilities/${id}`);
+  } catch (error) {
+    throw new Error(pesanKesalahan(error));
+  }
+};
+
+/** Opsi nama/kategori unik untuk datalist kategori di form. */
+export const getFacilityOptions = async () => {
+  const data = await api.get('/api/v1/facilities');
+  return Array.isArray(data) ? data : [];
+};
+
+/**
+ * Impor massal dari CSV. Endpoint ini menerima multipart, bukan JSON,
+ * jadi tidak lewat wrapper `api` (wrapper itu selalu memasang Content-Type
+ * application/json yang akan merusak batas multipart).
+ */
+export const importFacilitiesCsv = async (file) => {
+  const form = new FormData();
+  form.append('file', file);
+
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(`${BASE_URL}/api/v1/admin/facilities/import`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+
+  if (!response.ok) {
+    let detail;
+    try {
+      detail = (await response.json())?.detail;
+    } catch (e) {
+      // body bukan JSON, biarkan pesan default
+    }
+    throw new Error(detail || `Gagal mengimpor berkas (status ${response.status})`);
+  }
+
+  return response.json();
+};
+
+export const cariRuangPublik = async (q, limit = 10) => {
+  try {
+    const data = await api.get('/api/v1/public-spaces', { q, limit });
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    if (import.meta.env.DEV) return [];
+    throw error;
+  }
+};

@@ -30,3 +30,26 @@ class FasilitasResponse(FasilitasBase):
 class FasilitasFilterOption(BaseModel):
     nama: str
     kategori: Optional[str] = None
+
+
+# Satu-satunya nilai status yang boleh disimpan, supaya badge di FE dan
+# hitungan statistik selalu punya arti. Ditulis bebas di CSV, dinormalkan di service.
+STATUS_FASILITAS = ("baik", "perlu_perhatian", "rusak")
+
+
+class AdminFasilitasResponse(FasilitasResponse):
+    """Baris tabel Kelola Fasilitas: fasilitas plus nama induknya."""
+
+    ruang_publik_nama: str
+    wilayah: Optional[str] = None
+
+
+class RowImportError(BaseModel):
+    baris: int
+    pesan: str
+
+
+class FacilitiesImportResult(BaseModel):
+    created: int
+    failed: int
+    errors: list[RowImportError] = []

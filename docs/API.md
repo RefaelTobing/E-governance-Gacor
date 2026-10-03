@@ -148,11 +148,45 @@ Body JSON, `id` wajib diisi manual (bukan auto-increment).
 ### `GET /api/v1/facilities`
 
 Daftar fasilitas unik hasil di-aggregate dari seluruh ruang publik. Dipakai
-FE untuk mengisi dropdown filter, jadi tidak perlu endpoint CRUD fasilitas.
+FE untuk mengisi dropdown filter.
 
 ```json
 [ { "nama": "Toilet Umum", "kategori": "Sanitasi" } ]
 ```
+
+### `GET /api/v1/admin/facilities` (admin)
+
+Semua baris `fasilitas` beserta nama induk `ruang_publik`. Query: `q`, `kategori`,
+`status` (`baik`/`perlu_perhatian`/`rusak`), `wilayah`, `skip`, `limit` (1..500).
+Butuh token admin; warga → `403`.
+
+### `POST /api/v1/admin/facilities` (admin)
+
+```json
+{ "nama": "Toilet Umum", "ruang_publik_id": "taman-abc", "status": "baik" }
+```
+
+`201` + baris terbaru; `400` bila `status` di luar enum; `404` bila induk tak ada.
+
+### `PATCH /api/v1/admin/facilities/{id}` (admin)
+
+Ubah sebagian field (termasuk pindah induk lewat `ruang_publik_id`). `404` bila id tak ada.
+
+### `DELETE /api/v1/admin/facilities/{id}` (admin)
+
+`204`/`200` kalau terhapus; `409` kalau masih jadi rujukan laporan (`laporan.fasilitas_id`).
+
+### `POST /api/v1/admin/facilities/import` (admin)
+
+`multipart/form-data`, field `file` (.csv, ≤1MB, ≤2000 baris). Header wajib `nama`
+dan salah satu dari `ruang_publik_id` / `ruang_publik_nama`. Jawaban parsial:
+
+```json
+{ "created": 2, "failed": 1, "errors": [ { "baris": 4, "pesan": "ruang publik tidak ditemukan" } ] }
+```
+
+Semua endpoint di atas muncul juga di `backend/docs/04-api-endpoints.md` §7
+(file itu yang paling ikut kode).
 
 ---
 
@@ -319,6 +353,7 @@ dijanjikan ke frontend dulu:
   `app/services/laporan.py` sudah ada dan sudah dipakai untuk endpoint baca,
   tapi router-nya masih dikomentari di [api.py](backend/app/api/v1/api.py).
   Artinya warga belum bisa mengirim laporan sama sekali.
-- **Kelola ruang publik / fasilitas** (CRUD admin) — belum ada endpoint tulis.
+- **Kelola ruang publik** (CRUD admin) — belum ada endpoint tulis. Fasilitas sudah
+  punya (`/api/v1/admin/facilities`, lihat §Fasilitas di atas).
 - **Dashboard admin, statistik, moderasi** — belum ada.
 - **Refresh / logout token** — token stateless 7 hari, tidak ada revocation.

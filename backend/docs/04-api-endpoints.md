@@ -26,6 +26,12 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
 | `POST` | `/api/v1/categories` | **— ⚠️ BELUM DILINDUNGI** | Buat kategori (seharusnya admin — gap FEAT-014) |
 | `GET` | `/api/v1/facilities` | — | Opsi filter fasilitas (aggregate unik) |
+| **Kelola Fasilitas (Admin)** ||||
+| `GET` | `/api/v1/admin/facilities` | **Admin** | Semua baris fasilitas + nama induk (`q`/`kategori`/`status`/`wilayah`, `skip`/`limit`) |
+| `POST` | `/api/v1/admin/facilities` | **Admin** | Tambah fasilitas; `201`, `404` induk tak ada, `400` body tak valid |
+| `PATCH` | `/api/v1/admin/facilities/{id}` | **Admin** | Ubah sebagian field (nama, kategori, status, lokasi, deskripsi, induk) |
+| `DELETE` | `/api/v1/admin/facilities/{id}` | **Admin** | Hapus; `409` kalau masih jadi rujukan laporan |
+| `POST` | `/api/v1/admin/facilities/import` | **Admin** | Impor CSV `multipart/form-data`; hasil parsial `{created, failed, errors}` |
 | **Ruang Publik** ||||
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
@@ -211,13 +217,29 @@ Detail logika & urutan pengerjaan gap: `features/admin-auth.md`.
 
 ---
 
-## 7. Gap Endpoint (belum ada — dibutuhkan PRD/FE)
+## 7. Kelola Fasilitas (Admin, BE-53)
+
+Prefix `/api/v1/admin/facilities`, semua butuh role `admin` (`get_current_admin`); tanpa token → `401`, warga → `403`.
+
+| Endpoint | Body / Query | Catatan |
+|---|---|---|
+| `GET /admin/facilities` | `?q=&kategori=&status=&wilayah=&skip=&limit=` | `limit` 1..500 (default 100). Response punya `ruang_publik_nama` via join |
+| `POST /admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, lokasi_spesifik?, deskripsi? }` | `201`; `400` status di luar `baik/perlu_perhatian/rusak`; `404` induk tak ada |
+| `PATCH /admin/facilities/{id}` | sebagian field di atas | Field kosong/diisi ulang dinormalisasi (strip, status di-lowercase) |
+| `DELETE /admin/facilities/{id}` | — | `409` bila `laporan.fasilitas_id` masih menunjuk baris ini |
+| `POST /admin/facilities/import` | `file` CSV multipart | Wajib `.csv` ≤1MB, ≤2000 baris, header `nama` + `ruang_publik_id`\|`ruang_publik_nama`; dibuat per baris, baris gagal dikembalikan di `errors` |
+
+Keputusan path (nested `POST /public-spaces/{id}/fasilitas` ditolak): `features/data-master-service.md` §2.2.
+
+---
+
+## 8. Gap Endpoint (belum ada — dibutuhkan PRD/FE)
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
 | Upload foto (`multipart`) → `{ url }` | 008 | `FormLaporPage` (foto wajib) | `features/report-service.md` |
 | Filter laporan per-pengguna (`mine=true` / `/reports/mine`) | 013 | `getUserReports` → Laporan Saya | `features/report-service.md` |
-| CRUD ruang publik & fasilitas (admin) | 012 | `/dashboard/data-master`, `/dashboard/fasilitas` | `features/data-master-service.md` |
+| CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
 | Rate limit `POST /reports` | NFR-002 | — | `features/report-service.md` |
@@ -226,7 +248,7 @@ Detail logika & urutan pengerjaan gap: `features/admin-auth.md`.
 
 ---
 
-## 8. Verifikasi Kontrak
+## 9. Verifikasi Kontrak
 
 1. Nyalakan backend (`05-environment-setup.md`).
 2. Buka `/docs` → bandingkan daftar operasi dengan §1 — tidak boleh ada endpoint aktif yang tidak terdokumentasi di sini.

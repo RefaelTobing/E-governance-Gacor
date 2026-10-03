@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, CardBody, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
+import { getAllFacilities } from '../../../services/fasilitasService';
 
 export const DataMasterPage = () => {
   const [masterList, setMasterList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [jumlahFasilitas, setJumlahFasilitas] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,7 +27,22 @@ export const DataMasterPage = () => {
       }
     };
 
+    const fetchJumlahFasilitas = async () => {
+      try {
+        const daftar = await getAllFacilities();
+        const hitung = {};
+        daftar.forEach((f) => {
+          hitung[f.ruangPublikId] = (hitung[f.ruangPublikId] || 0) + 1;
+        });
+        if (isMounted) setJumlahFasilitas(hitung);
+      } catch (err) {
+        // Gagal memuat hitungan: kolom memakai "-", bukan angka nol yang menyesatkan.
+        if (isMounted) setJumlahFasilitas(null);
+      }
+    };
+
     fetchMasterData();
+    fetchJumlahFasilitas();
 
     return () => {
       isMounted = false;
@@ -82,7 +99,7 @@ export const DataMasterPage = () => {
                       <td style={{ padding: '12px' }}><span className="badge badge-info">{rp.kategori}</span></td>
                       <td style={{ padding: '12px' }}>{rp.wilayah}</td>
                       <td style={{ padding: '12px' }}>{rp.jamOperasional}</td>
-                      <td style={{ padding: '12px' }}>{rp.fasilitas?.length || 0} Terdata</td>
+                      <td style={{ padding: '12px' }}>{jumlahFasilitas ? `${jumlahFasilitas[rp.id] || 0} Terdata` : '-'}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <Button variant="outline" size="sm" onClick={() => alert(`Edit Ruang Publik: ${rp.nama}`)}>
                           Edit Master

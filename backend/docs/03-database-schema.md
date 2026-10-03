@@ -73,6 +73,8 @@ users ───────┴──────┬─────────�
 | `lokasi_spesifik` | VARCHAR(255) NULL | |
 | `deskripsi` | TEXT NULL | |
 
+Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten) + buatan admin lewat `/api/v1/admin/facilities` atau impor CSV. Sumber Satu Data tidak punya kolom fasilitas.
+
 ### `laporan`
 | Kolom | Tipe | Catatan |
 |---|---|---|

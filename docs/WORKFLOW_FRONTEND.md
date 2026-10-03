@@ -74,7 +74,7 @@ Repo sudah **jauh melampaui** gambaran di `docs/WORKFLOWFE.md` dan `docs/Structu
 5. **Foto lapor belum terkirim**: `FormLaporPage` menyetel `fotoFile` ke string dummy dan mengirim `foto_url: null` (belum ada endpoint upload di backend — pantau Fase 2 workflow backend, lalu hubungkan di sini).
 6. **"Laporan Saya" belum per-pengguna**: `getUserReports()` hanya meneruskan ke `getReports()` tanpa filter pemilik (butuh dukungan endpoint — ada di Fase 1a workflow backend).
 7. **`config/constants.js` masih placeholder** (`export const CONSTANTS = {};`) — enum status belum dipusatkan (rekomendasi DESIGN.md §3.2.4).
-8. **`EDIT DATA MASTER`**: halaman `DataMasterPage`/`KelolaFasilitasPage` baru membaca data; endpoint tulis belum ada (Fase 3 workflow backend) — sementara tampilkan keadaan read-only + pesan yang jujur, jangan simulasi sukses palsu.
+8. **`EDIT DATA MASTER`**: `KelolaFasilitasPage` sudah terhubung ke `/api/v1/admin/facilities` (daftar, tambah, edit, hapus, impor CSV — BE-53). `DataMasterPage` masih baca-saja karena endpoint tulis ruang publik (`PATCH /public-spaces/{id}`) belum ada; tombol "Edit Master" dan "Impor Data Satu Data" masih `alert()` — pertahankan pesan yang jujur, jangan simulasi sukses palsu.
 9. **404**: `App.jsx` me-redirect `*` ke `/home` — belum ada halaman NotFound.
 
 ---
@@ -124,7 +124,7 @@ Route diambil dari `App.jsx` (sumber yang benar saat ini; rekonsiliasi dengan `r
 | 12 | Pemerintah | Detail Laporan | `/dashboard/moderasi/:laporanId` | `features/moderasi/pages/DetailModerasiPage.jsx` ✓ | `Screen 12` | Ada — verifikasi visual (F4) |
 | — | Warga | Tentang | `/tentang` | `features/tentang/pages/TentangPage.jsx` ✓ | — | Ada di App.jsx, belum di route-config |
 | — | Admin | Data Master | `/dashboard/data-master` | `features/data-master/pages/DataMasterPage.jsx` ✓ | sidebar Screen 10-12 | Read-only (butuh BE Fase 3) |
-| — | Admin | Kelola Fasilitas | `/dashboard/fasilitas` | `features/data-master/pages/KelolaFasilitasPage.jsx` ✓ | sidebar | Read-only (butuh BE Fase 3) |
+| — | Admin | Kelola Fasilitas | `/dashboard/fasilitas` | `features/data-master/pages/KelolaFasilitasPage.jsx` ✓ | sidebar | Terhubung API (BE-53): daftar + Tambah/Edit/Hapus + impor CSV |
 | — | Admin | Petugas Lapangan | `/dashboard/petugas` | `features/moderasi/pages/PetugasLapanganPage.jsx` ✓ | sidebar | Ada |
 | — | Admin | Kelola Admin | `/dashboard/kelola-admin` | `features/moderasi/pages/KelolaAdminPage.jsx` ✓ | sidebar | Ada |
 | — | — | 404 | `*` | **belum ada** (`features/shared/pages/NotFoundPage.jsx`) | — | Buat di F1 |

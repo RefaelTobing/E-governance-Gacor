@@ -78,13 +78,17 @@ Cek statusnya:
 
 ### Isi data awal
 
-Ruang publik, kategori, dan fasilitas berasal dari file ETL di `data/raw/`.
-Jalankan sekali kalau tabel masih kosong, **setelah migrasi di atas**:
+Ruang publik & kategori berasal dari file ETL di `data/raw/`. Fasilitas punya
+script terpisah (`seed_fasilitas`) karena file Satu Data tidak punya kolom
+fasilitas. Jalankan sekali kalau tabel masih kosong, **setelah migrasi di atas**:
 
 ```
 cd "d:\Ruka Jakarta\backend"
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
+..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas
 ```
+
+Tanpa langkah kedua, `/dashboard/fasilitas` dan filter fasilitas publik kosong.
 
 Lihat `app/etl/` untuk script yang tersedia (`read_raw`, `transform_rth_raw`,
 `transform_rth`). Seed membaca `data/processed/ruang_publik.csv` (1200

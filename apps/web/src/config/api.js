@@ -23,6 +23,14 @@ const request = async (endpoint, options = {}) => {
   if (!response.ok) {
     const error = new Error(`HTTP error! status: ${response.status}`);
     error.status = response.status;
+    // FastAPI menjelaskan penyebab lewat { detail }; tanpa ini yang terbaca di UI
+    // hanya "status 409", bukan larangan yang sebenarnya.
+    try {
+      const body = await response.json();
+      error.detail = body?.detail;
+    } catch (e) {
+      // body bukan JSON (mis. halaman error reverse proxy), biarkan apa adanya
+    }
     throw error;
   }
 

@@ -1,11 +1,12 @@
 from typing import Optional, Sequence
 
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from app.models.base import utcnow
 from app.models.fasilitas import Fasilitas
 from app.models.ruang_publik import RuangPublik
+from app.schemas.fasilitas import STATUS_FASILITAS, FasilitasUpdate
 
 # Radius bumi rata-rata dalam km, dipakai rumus Haversine.
 EARTH_RADIUS_KM = 6371.0
@@ -109,6 +110,188 @@ def list_fasilitas(db: Session) -> list[tuple[str, Optional[str]]]:
         .order_by(Fasilitas.nama)
     )
     return [(nama, kategori) for nama, kategori in db.execute(stmt).all()]
+
+
+def list_fasilitas_admin(
+    db: Session,
+    q: Optional[str] = None,
+    kategori: Optional[str] = None,
+    status: Optional[str] = None,
+    wilayah: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[Fasilitas]:
+    """Semua baris fasilitas untuk tabel Kelola Fasilitas, termasuk nama induknya.
+
+    Diurutkan dari yang terbaru dibuat, dengan `id` sebagai pemecah seri supaya
+    halaman FE yang menarik data per-batch tidak melewatkan atau mengulang baris.
+    """
+    # Join eksplisit, bukan joinedload: filter di bawah mereferensikan kolom
+    # RuangPublik, dan tanpa join eksplisit SQLAlchemy memasukkannya sebagai
+    # FROM tambahan tanpa ON (cartesian product).
+    stmt = (
+        select(Fasilitas)
+        .join(Fasilitas.ruang_publik)
+        .options(contains_eager(Fasilitas.ruang_publik))
+    )
+
+    if q:
+        pola = f"%{q}%"
+        stmt = stmt.where(
+            or_(
+                Fasilitas.nama.ilike(pola),
+                Fasilitas.lokasi_spesifik.ilike(pola),
+                RuangPublik.nama.ilike(pola),
+            )
+        )
+
+    if kategori:
+        stmt = stmt.where(Fasilitas.kategori == kategori)
+
+    if status:
+        stmt = stmt.where(Fasilitas.status == status)
+
+    if wilayah:
+        stmt = stmt.where(RuangPublik.wilayah == wilayah)
+
+    stmt = (
+        stmt.order_by(Fasilitas.created_at.desc(), Fasilitas.id)
+        .offset(skip)
+        .limit(limit)
+    )
+    return list(db.scalars(stmt).unique().all())
+
+
+def get_fasilitas(db: Session, fasilitas_id: str) -> Optional[Fasilitas]:
+    stmt = (
+        select(Fasilitas)
+        .options(joinedload(Fasilitas.ruang_publik))
+        .where(Fasilitas.id == fasilitas_id)
+    )
+    return db.scalars(stmt).unique().first()
+
+
+def normalisasi_status(value: Optional[str]) -> str:
+    """Petakan input bebas ke salah satu `STATUS_FASILITAS`; kosong = baik."""
+    kandidat = (value or "").strip().lower().replace(" ", "_")
+    return kandidat or "baik"
+
+
+def create_fasilitas(db: Session, payload: dict) -> Fasilitas:
+    fasilitas = Fasilitas(**payload)
+    db.add(fasilitas)
+    db.commit()
+    db.refresh(fasilitas)
+    return fasilitas
+
+
+def update_fasilitas(db: Session, fasilitas: Fasilitas, payload: FasilitasUpdate) -> Fasilitas:
+    """Patch sebagian field: `None` di payload berarti "tidak diubah", bukan dikosongkan."""
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(fasilitas, field, value)
+    db.commit()
+    db.refresh(fasilitas)
+    return fasilitas
+
+
+def count_laporan_fasilitas(db: Session, fasilitas: Fasilitas) -> int:
+    return len(fasilitas.laporan)
+
+
+def delete_fasilitas(db: Session, fasilitas: Fasilitas) -> None:
+    db.delete(fasilitas)
+    db.commit()
+
+
+def referensi_ruang_publik(db: Session) -> tuple[set[str], dict[str, tuple[str, int]]]:
+    """(semua id ruang publik, peta nama huruf kecil -> (id, jumlah nama yang sama)).
+
+    Dipakai impor CSV: admin mengisi nama, bukan id, jadi nama yang ganda harus
+    terdeteksi di sini supaya barisnya ditolak, bukan ditempatkan ke induk yang salah.
+    """
+    semua_id: set[str] = set()
+    peta: dict[str, tuple[str, int]] = {}
+    for rp_id, rp_nama in db.execute(select(RuangPublik.id, RuangPublik.nama)).all():
+        semua_id.add(rp_id)
+        kunci = (rp_nama or "").strip().lower()
+        if not kunci:
+            continue
+        id_pertama, jumlah = peta.get(kunci, (rp_id, 0))
+        peta[kunci] = (id_pertama, jumlah + 1)
+    return semua_id, peta
+
+
+def import_fasilitas_csv(db: Session, baris: list[dict]) -> dict:
+    """Validasi dan simpan baris CSV impor fasilitas.
+
+    Baris rusak dilaporkan per baris dan baris valid tetap tersimpan, jadi satu
+    typo tidak membatalkan seluruh berkas.
+    """
+    semua_id, peta = referensi_ruang_publik(db)
+    created = 0
+    errors: list[dict] = []
+
+    for nomor, row in enumerate(baris, start=2):  # baris 1 = header
+        nama = (row.get("nama") or "").strip()
+        if not nama:
+            errors.append({"baris": nomor, "pesan": "Nama fasilitas wajib diisi."})
+            continue
+        if len(nama) > 255:
+            errors.append({"baris": nomor, "pesan": "Nama fasilitas maksimal 255 karakter."})
+            continue
+
+        rp_id = (row.get("ruang_publik_id") or "").strip()
+        if rp_id:
+            if rp_id not in semua_id:
+                errors.append({"baris": nomor, "pesan": f"Ruang publik id {rp_id} tidak ditemukan."})
+                continue
+        else:
+            kunci = (row.get("ruang_publik_nama") or "").strip().lower()
+            cocok = peta.get(kunci)
+            if cocok is None:
+                errors.append({
+                    "baris": nomor,
+                    "pesan": f"Ruang publik \"{row.get('ruang_publik_nama') or ''}\" tidak ditemukan.",
+                })
+                continue
+            if cocok[1] > 1:
+                errors.append({
+                    "baris": nomor,
+                    "pesan": f"Nama ruang publik \"{row.get('ruang_publik_nama')}\" ganda, isi kolom ruang_publik_id.",
+                })
+                continue
+            rp_id = cocok[0]
+
+        status = normalisasi_status(row.get("status"))
+        if status not in STATUS_FASILITAS:
+            errors.append({
+                "baris": nomor,
+                "pesan": f"Status \"{row.get('status')}\" tidak dikenal, pilih salah satu: {', '.join(STATUS_FASILITAS)}.",
+            })
+            continue
+
+        kategori = (row.get("kategori") or "").strip() or None
+        lokasi = (row.get("lokasi_spesifik") or "").strip() or None
+        if kategori and len(kategori) > 100:
+            errors.append({"baris": nomor, "pesan": "Kategori maksimal 100 karakter."})
+            continue
+        if lokasi and len(lokasi) > 255:
+            errors.append({"baris": nomor, "pesan": "Lokasi spesifik maksimal 255 karakter."})
+            continue
+
+        db.add(Fasilitas(
+            ruang_publik_id=rp_id,
+            nama=nama,
+            kategori=kategori,
+            status=status,
+            lokasi_spesifik=lokasi,
+            deskripsi=(row.get("deskripsi") or "").strip() or None,
+        ))
+        created += 1
+
+    if created:
+        db.commit()
+    return {"created": created, "failed": len(errors), "errors": errors}
 
 
 def get_public_spaces_stats(db: Session) -> dict:

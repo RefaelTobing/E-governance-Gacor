@@ -60,7 +60,7 @@ Dokumen lama berisi klaim yang sudah tidak berlaku. Jangan mengulang audit dari 
 
 1. **`API.md` bagian "Belum Ada" sudah kedaluwarsa sebagian.**
    Router laporan **sudah aktif** di `backend/app/api/v1/api.py` (`/reports` + `/statistics`). Warga sudah bisa kirim laporan lewat `POST /api/v1/reports`.
-   Yang **masih benar** dari daftar itu: CRUD admin ruang publik/fasilitas belum ada, refresh/logout token belum ada.
+   Yang **masih benar** dari daftar itu: CRUD admin ruang publik belum ada (fasilitas sudah ada lewat `/api/v1/admin/facilities`, 2026-10-04), refresh/logout token belum ada.
 2. **Catatan "koordinat kosong" sudah tidak berlaku.** Sumber seed `data/processed/ruang_publik.csv` berisi **1200 baris, semuanya punya `latitude`/`longitude`**. Pencarian radius sudah hidup. (File lama `ruang_publik.json` dan `ruang_publik_merged.json` sudah dihapus dari `data/processed`; versi lama tetap ada di git history.)
 3. **`docs/Structure.md` menggambarkan kondisi awal (folder `.gitkeep` semua)** — kondisi aktual sudah jauh lebih maju. Anggap hanya sebagai peta lokasi folder, bukan status.
 4. **`pytest.ini` menunjuk `testpaths = tests`, tetapi folder `backend/tests/` tidak ada** (terhapus di commit lama). Menjalankan pytest sekarang menghasilkan "no tests ran". Fase testing wajib membuat ulang folder ini.
@@ -140,7 +140,7 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 |---|---|---|---|
 | Upload foto laporan (`POST .../uploads` atau multipart di create-report) | FEAT-008 | `FormLaporPage` (foto wajib, kini `foto_url: null`) | 2 |
 | Filter laporan per-pengguna | FEAT-010 | `getUserReports` → "Laporan Saya" | 1a |
-| CRUD ruang publik & fasilitas (admin) | FEAT-012 | halaman `/dashboard/data-master`, `/dashboard/fasilitas` | 3 |
+| CRUD ruang publik (admin) | FEAT-012 | halaman `/dashboard/data-master` | 3 |
 | Rate limiting endpoint laporan | NFR-002 | PRD | 4 |
 | Refresh/logout token | — | keamanan sesi (token stateless 7 hari) | 4 |
 
@@ -202,9 +202,9 @@ Saat ini payload `status` bebas string apa pun → admin bisa menulis status tak
 - Setelah endpoint ini hidup, **catat di `API.md`** agar frontend menghubungkan `FormLaporPage` (lihat workflow FE Fase 3).
 
 ### FASE 3 — CRUD Admin Data Master (FEAT-012)
-Halaman FE `/dashboard/data-master` dan `/dashboard/fasilitas` kini hanya membaca via `GET /public-spaces`. Tambahkan endpoint tulis (semua `get_current_admin`):
+Halaman FE `/dashboard/data-master` kini hanya membaca via `GET /public-spaces`. Tambahkan endpoint tulis (semua `get_current_admin`):
 - `PUT/PATCH /public-spaces/{id}` — edit manual ruang publik
-- `POST/PUT/DELETE /public-spaces/{id}/fasilitas` — kelola fasilitas
+- Fasilitas **sudah selesai** (2026-10-04): `/api/v1/admin/facilities` (`GET`/`POST`/`PATCH`/`DELETE` + `POST /import` CSV), lihat `backend/docs/04-api-endpoints.md` §7
 - (opsional, bila disepakati) endpoint impor/refresh ETL dari Satu Data
 - **Aturan FEAT-012:** perubahan manual tidak boleh hilang saat sinkronisasi ETL berikutnya — pertahankan pola seed idempoten; bila ada kolom yang di-ETL, tentukan strategi merge (minimal: seed tidak menimpa ID yang sudah ada + dokumentasikan).
 - **Verifikasi:** edit nama ruang publik via API → berubah di DB → tidak kembali lagi setelah `seed_db` dijalankan ulang.

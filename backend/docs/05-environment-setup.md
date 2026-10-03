@@ -54,11 +54,19 @@ cd "d:\Ruka Jakarta\backend"
 
 ### Isi data awal
 
-Ruang publik, kategori, fasilitas berasal dari hasil ETL di `data/processed/` — jalankan **setelah migrasi**, sekali saat tabel kosong (idempoten, aman diulang):
+Ruang publik & kategori berasal dari hasil ETL di `data/processed/` — jalankan **setelah migrasi**, sekali saat tabel kosong (idempoten, aman diulang):
 
 ```powershell
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 ```
+
+Fasilitas tidak punya sumber data resmi (file Satu Data tak punya kolom fasilitas), jadi diisi terpisah oleh `seed_fasilitas` — data contoh per ruang publik, dilewati untuk lokasi yang sudah punya fasilitas (termasuk buatan admin):
+
+```powershell
+..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas
+```
+
+Tanpa langkah kedua ini, `/dashboard/fasilitas`, filter fasilitas publik, dan daftar fasilitas di halaman detail kosong.
 
 Detail pipeline: `features/etl-worker.md`.
 
@@ -153,6 +161,6 @@ Port 8000 terpakai? Pakai `--port 8001` lalu **sesuaikan** `apps/web/.env` → `
 - [ ] `.venv` dibuat + `pip install -r backend/requirements.txt` sukses
 - [ ] `backend/.env` ada (salin `.env.example`, isi `SECRET_KEY` sendiri)
 - [ ] `alembic upgrade head` sukses, `alembic current` = head
-- [ ] `python -m app.etl.seed_db` (data terisi), `python -m app.etl.seed_admin` (akun admin)
+- [ ] `python -m app.etl.seed_db` (data terisi), `python -m app.etl.seed_fasilitas` (fasilitas contoh), `python -m app.etl.seed_admin` (akun admin)
 - [ ] uvicorn start → `/health` 200, `/docs` terbuka
 - [ ] Smoke: `curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=3"` → array berisi
