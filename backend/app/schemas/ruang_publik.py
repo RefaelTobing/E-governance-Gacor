@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List
+from typing import Dict, Optional, List
 from datetime import datetime
 from decimal import Decimal
 from app.schemas.category import CategoryResponse
@@ -32,6 +32,7 @@ class RuangPublikResponse(RuangPublikBase):
     created_at: datetime
     updated_at: datetime
     kategori: Optional[CategoryResponse] = None
+    field_source: Optional[Dict[str, str]] = None
 
     model_config = ConfigDict(from_attributes=True)
 

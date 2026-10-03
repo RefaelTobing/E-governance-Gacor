@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, DECIMAL, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DECIMAL, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from app.models.base import Base, utcnow
 
@@ -21,6 +21,7 @@ class RuangPublik(Base):
     verified = Column(Boolean, default=False)
     status_general = Column(String(50))
     image_url = Column(Text)
+    field_source = Column(JSON(none_as_null=True), nullable=True)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
