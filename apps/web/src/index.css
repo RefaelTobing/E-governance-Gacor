@@ -20,6 +20,11 @@
   --color-danger: #EF4444;
   --color-danger-light: #FEE2E2;
 
+  /* Varian teks: #10B981 dan #EF4444 hanya 2,5:1 dan 3,8:1 di atas putih,
+     jadi pesan kecil memakai varian gelap ini agar lolos WCAG AA 4,5:1. */
+  --color-success-text: #047857;
+  --color-danger-text: #B91C1C;
+
   /* Neutral Tokens */
   --color-text-main: #0F172A;
   --color-text-muted: #64748B;
