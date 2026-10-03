@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ErrorBoundary } from './components';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
+import AkunLayout from './layouts/AkunLayout';
 import RequireAuth from './routes/RequireAuth';
 import RequireAdmin from './routes/RequireAdmin';
 
@@ -11,6 +12,14 @@ import { HomePage, DaftarRuangPublikPage, DetailRuangPublikPage } from './featur
 import { FormLaporPage, RiwayatLaporanPage, DetailStatusLaporanPage } from './features/laporan';
 import { LoginPage, LoginPemerintahPage } from './features/auth';
 import { TentangPage } from './features/tentang';
+import {
+  ProfilDashboardPage,
+  RuangTersimpanPage,
+  EditProfilPage,
+  PengaturanTemaPage,
+  KeamananPage,
+  BantuanPage,
+} from './features/profil';
 
 // Feature Pages Imports - Admin
 import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
@@ -53,6 +62,23 @@ function App() {
 
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login-pemerintah" element={<LoginPemerintahPage />} />
+          </Route>
+
+          {/* LAYOUT AKUN WARGA (/profil) */}
+          <Route
+            element={
+              <RequireAuth>
+                <AkunLayout />
+              </RequireAuth>
+            }
+          >
+            <Route path="/profil" element={<ProfilDashboardPage />} />
+            <Route path="/profil/laporan" element={<RiwayatLaporanPage />} />
+            <Route path="/profil/tersimpan" element={<RuangTersimpanPage />} />
+            <Route path="/profil/edit" element={<EditProfilPage />} />
+            <Route path="/profil/tema" element={<PengaturanTemaPage />} />
+            <Route path="/profil/keamanan" element={<KeamananPage />} />
+            <Route path="/profil/bantuan" element={<BantuanPage />} />
           </Route>
 
           {/* LAYOUT ADMIN / DASHBOARD (Phase 13 - 17) */}

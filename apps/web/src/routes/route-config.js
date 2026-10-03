@@ -13,6 +13,15 @@ export const routes = [
   { path: "/login", component: "features/auth/pages/LoginPage", layout: "public" },
   { path: "/login-pemerintah", component: "features/auth/pages/LoginPemerintahPage", layout: "public" },
 
+  // ---- AKUN WARGA (path prefix /profil) ----
+  { path: "/profil", component: "features/profil/pages/ProfilDashboardPage", layout: "akun", protected: true },
+  { path: "/profil/laporan", component: "features/laporan/pages/RiwayatLaporanPage", layout: "akun", protected: true },
+  { path: "/profil/tersimpan", component: "features/profil/pages/RuangTersimpanPage", layout: "akun", protected: true },
+  { path: "/profil/edit", component: "features/profil/pages/EditProfilPage", layout: "akun", protected: true },
+  { path: "/profil/tema", component: "features/profil/pages/PengaturanTemaPage", layout: "akun", protected: true },
+  { path: "/profil/keamanan", component: "features/profil/pages/KeamananPage", layout: "akun", protected: true },
+  { path: "/profil/bantuan", component: "features/profil/pages/BantuanPage", layout: "akun", protected: true },
+
   // ---- ADMIN (path prefix /dashboard) ----
   { path: "/dashboard", component: "features/moderasi/pages/DashboardPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/moderasi", component: "features/moderasi/pages/AntrianModerasiPage", layout: "admin", protected: true, role: "admin" },
