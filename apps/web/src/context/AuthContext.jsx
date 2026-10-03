@@ -1,37 +1,38 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [role, setRole] = useState('guest');
-    const [token, setToken] = useState(null);
-
-    useEffect(() => {
+const readStoredAuth = () => {
+    try {
         const storedToken = localStorage.getItem('access_token');
         const storedUser = localStorage.getItem('user');
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            setRole(parsedUser.role || 'guest');
-        }
-    }, []);
+        if (!storedToken || !storedUser) return { token: null, user: null };
+
+        const user = JSON.parse(storedUser);
+        if (!user || typeof user !== 'object') return { token: null, user: null };
+
+        return { token: storedToken, user };
+    } catch (e) {
+        return { token: null, user: null };
+    }
+};
+
+export const AuthProvider = ({ children }) => {
+    const [auth, setAuth] = useState(readStoredAuth);
+
+    const { user, token } = auth;
+    const role = user?.role || 'guest';
 
     const login = (userData, accessToken) => {
-        setUser(userData);
-        setRole(userData.role || 'guest');
-        setToken(accessToken);
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('user', JSON.stringify(userData));
+        setAuth({ user: userData, token: accessToken });
     };
 
     const logout = () => {
-        setUser(null);
-        setRole('guest');
-        setToken(null);
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
+        setAuth({ user: null, token: null });
     };
 
     return (

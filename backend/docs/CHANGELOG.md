@@ -23,6 +23,13 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ---
 
+## 2026-10-04
+
+- **[FE-23]** sesi login pemerintah bertahan saat refresh - `AuthContext` hydrate `token`/`user` dari `localStorage`
+  lewat lazy initializer `useState(readStoredAuth)` (dulu di `useEffect`, `RequireAuth` sudah Navigate ke
+  `/login-pemerintah` sebelum state terisi); `role` diturunkan dari `user`, keluar tetap hanya lewat tombol logout;
+  verifikasi: `npm run build` sukses.
+
 ## 2026-10-03
 
 - **Dokumen** - buat `TASK_GUIDE_BACKEND.md` (audit 56 task BE-01 s/d BE-56: 9 selesai,
