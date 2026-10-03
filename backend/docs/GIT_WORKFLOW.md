@@ -136,6 +136,7 @@ Prioritas saat konflik di `app/api/v1/api.py` (semua daftarkan endpoint di sini)
 | Kolom/tabel baru | `backend/docs/03-database-schema.md` + migrasi Alembic |
 | Gap FEAT ditutup | file `backend/docs/features/...` — centang checklist & catat verifikasi |
 | Dependency baru | `backend/docs/01-tech-stack.md` (alasan), `requirements.txt` (versi) |
+| Task guide dicentang (task selesai) | `backend/docs/TASK_GUIDE_BACKEND.md` + entri bertanggal di `backend/docs/CHANGELOG.md` |
 | Perubahan workflow / strategi | file ini (`GIT_WORKFLOW.md`) bila prosesnya berubah |
 
 ---

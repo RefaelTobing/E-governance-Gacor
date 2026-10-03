@@ -1,0 +1,378 @@
+# TASK_GUIDE_BACKEND.md - Task Guide Backend Raku Jakarta
+
+Turunan dari [`../../docs/JOBDESK_FE_BE_Raku_Jakarta.md`](../../docs/JOBDESK_FE_BE_Raku_Jakarta.md) bagian B
+(BE-01 s/d BE-45), ditambah task baru **BE-46 s/d BE-56** hasil audit kebutuhan website.
+
+Status tiap task **diverifikasi langsung ke kode** di `backend/app/` per dokumen ini dibuat.
+Bila nanti kode berubah, perbarui centangnya di sini (bukan di jobdesk induk).
+
+---
+
+## Cara Baca
+
+- `[x]` selesai dan sudah ada di kode.
+- `[ ]` **Parsial** - sudah ditulis `**Parsial:**` + apa yang kurang. Kotak sengaja tidak dicentang
+  sampai seluruh isinya beres.
+- `[ ]` belum dikerjakan.
+- `**Lokasi kode:**` menunjuk file supaya cepat dicek ulang.
+- `**Verifikasi:**` gerbang penerimaan task - dikerjakan sebelum task ditandai selesai.
+- **Aturan changelog:** setiap kali satu task berubah jadi `[x]`, pada sesi yang sama tambahkan entri
+  ber-tanggal di [`CHANGELOG.md`](CHANGELOG.md) (format `YYYY-MM-DD`, terbaru di atas, satu baris per task).
+  Task parsial atau belum dikerjakan tidak dicatat di changelog - statusnya sudah terbaca di sini.
+
+### Kamus status laporan (kanonik, jangan dilepas)
+
+`menunggu_verifikasi` -> `diverifikasi` -> `dalam_penanganan` -> `selesai`, plus `ditolak`.
+Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
+
+---
+
+## Ringkasan Status
+
+| Bagian | Task | Selesai | Parsial | Belum |
+|---|---|---|---|---|
+| B0 Setup & Fondasi | 9 | 6 | 2 | 1 |
+| B1 Public Space Service | 7 | 3 | 1 | 3 |
+| B2 ETL Worker | 6 | 0 | 2 | 4 |
+| B3 Report Service | 10 | 0 | 2 | 8 |
+| B4 Moderation Service | 6 | 0 | 3 | 3 |
+| B5 Data Master Service | 3 | 0 | 0 | 3 |
+| B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
+| B7 Testing | 5 | 0 | 0 | 5 |
+| B8 Deployment | 4 | 0 | 0 | 4 |
+| B9 Konten Situs | 1 | 0 | 0 | 1 |
+| **Total** | **56** | **10** | **12** | **34** |
+
+---
+
+## B0. Setup & Fondasi
+
+- [x] **[BE-01]** Inisialisasi project FastAPI, struktur folder (routers, models, schemas, services, core/config, db).
+  - **Lokasi kode:** `backend/app/main.py`, `backend/app/api/`, `backend/app/core/`, `backend/app/models/`,
+    `backend/app/schemas/`, `backend/app/services/`, `backend/app/etl/`.
+- [x] **[BE-02]** Setup koneksi MySQL via SQLAlchemy + PyMySQL, konfigurasi `.env`.
+  - **Lokasi kode:** `app/core/database.py`, `app/core/config.py`, `backend/.env.example`,
+    `docker-compose.yml` (service `raku-db`).
+- [x] **[BE-03]** Setup Alembic untuk database migration.
+  - **Lokasi kode:** `backend/alembic.ini`, `backend/alembic/env.py`,
+    `alembic/versions/34fc1fc4d761_initial_schema.py`, `alembic/versions/b7e2c1049a3f_add_user_is_active.py`.
+- [ ] **[BE-04]** Rancang & buat skema tabel awal: `ruang_publik`, `kategori`, `fasilitas`, relasi fasilitas,
+      `laporan`, `pengguna` (role publik/admin), kolom `lat`/`long` yang mendukung query jarak.
+  - **Parsial:** tabel `categories`, `users`, `ruang_publik`, `fasilitas`, `laporan`, `laporan_timeline` sudah ada
+    (lihat `docs/03-database-schema.md`). Kurang: (a) tabel `laporan` **belum punya kolom lokasi pelapor/EXIF**
+    -> task **BE-46**; (b) relasi fasilitas memakai `fasilitas.ruang_publik_id` 1-FK, bukan tabel join many-to-many
+    seperti tertulis di jobdesk (perilaku filter FEAT-005 sudah jalan lewat query aggregate - keputusan perlu
+    dicatat, jangan diubah tanpa koordinasi FE).
+  - **Verifikasi:** `alembic current` di head, `docs/schema.sql` cocok dengan model.
+- [x] **[BE-05]** Tambah kolom penanda field-level merge di `ruang_publik` (`field_source` JSON atau tabel
+      `ruang_publik_edit_log` yang mencatat kolom mana yang pernah diedit manual admin). *(FEAT-012)*
+  - **Lokasi kode:** kolom `field_source` di `app/models/ruang_publik.py`, migrasi
+    `alembic/versions/c1f4a9d2e073_add_ruang_publik_field_source.py`, penulis/pembaca
+    `mark_fields_edited()` / `is_edited_manually()` di `app/services/ruang_publik.py`,
+    ikut di response lewat `RuangPublikResponse.field_source`.
+  - **Keputusan:** pakai kolom JSON di tabel `ruang_publik`, bukan tabel log terpisah —
+    `NULL` = belum pernah diedit, `{"kolom": "waktu edit"}` = milik admin, tidak boleh ditimpa ETL (BE-16).
+  - **Verifikasi:** kolom tercipta (alembic `head`), penanda tertulis & terbaca lintas sesi,
+    kolom tak dikenal/kolom sistem ditolak, dan `python -m app.etl.seed_db` tidak menimpa edit manual (0 baris di-update).
+- [x] **[BE-06]** Setup JWT auth dasar (login, generate token, dependency proteksi) + hashing password bcrypt.
+  - **Lokasi kode:** `app/core/security.py` (PyJWT + passlib), `app/api/deps.py`
+    (`get_current_user`, `get_current_active_user`, `get_current_admin`), `app/api/v1/auth.py`.
+- [x] **[BE-07]** Setup CORS middleware, whitelist origin FE Publik dan FE Admin secara eksplisit. *(NFR-002)*
+  - **Lokasi kode:** `app/main.py:22`.
+  - **Catatan:** `FRONTEND_ADMIN_URL` default `http://localhost:5174` di `.env.example`, sedangkan FE Admin
+    saat ini masih satu aplikasi dengan FE Publik di `:5173`. Sesuaikan nilai saat FE Admin dipisah.
+- [ ] **[BE-08]** Setup local storage foto: folder `/uploads`, mount `StaticFiles`, validasi tipe & ukuran saat upload. *(NFR-002)*
+  - **Parsial:** mount `/uploads` di `app/main.py:19` dan helper `app/core/file_upload.py`
+    (`validate_image_upload`, `save_upload_file`) sudah siap, **tetapi belum dipakai endpoint mana pun** -> task **BE-49**.
+  - **Verifikasi:** upload JPEG 600KB -> 201 + URL bisa dibuka; `.txt` -> 400; >5MB -> 400.
+- [ ] **[BE-46]** **(baru - hasil audit)** Migration Alembic: tambah kolom lokasi di tabel `laporan`
+      `lat_user`, `long_user`, `lat_exif`, `long_exif` (semua nullable) untuk menyimpan koordinat browser
+      dan koordinat EXIF foto saat submit.
+  - **FEAT:** prasyarat FEAT-013 validasi lokasi (task BE-22/BE-23) dan FEAT-008.
+  - **Langkah:** `alembic revision --autogenerate -m "tambah kolom lokasi laporan"` dari `backend/`;
+    tambahkan field kosong di `app/models/laporan.py` dan `app/schemas/laporan.py`.
+  - **Verifikasi:** migrasi jalan di DB segar dan DB lama tanpa error; kolom baru nullable sehingga data lama aman.
+
+---
+
+## B1. Public Space Service (FEAT-001 s/d FEAT-007)
+
+- [x] **[BE-09]** `GET /public-spaces?lat=&long=&radius=&category=&facilities=` - radius search + filter. *(FEAT-001, 004, 005)*
+  - **Lokasi kode:** `app/api/v1/ruang_publik.py:15`, `app/services/ruang_publik.py:29` (Haversine di SQL).
+  - Mendukung juga `q`, `wilayah`, `skip`, `limit`.
+- [x] **[BE-10]** `GET /public-spaces/{id}` - detail lengkap dengan fasilitas & foto. *(FEAT-006)*
+  - **Lokasi kode:** `app/api/v1/ruang_publik.py:61` (membungkus `image_url` jadi list `foto[]`).
+- [x] **[BE-11]** `GET /categories` dan `GET /facilities` untuk populate filter FE. *(FEAT-004, 005)*
+  - **Lokasi kode:** `app/api/v1/categories.py:11`, `app/api/v1/fasilitas.py:13`.
+  - **Catatan:** `POST /categories` ikut ada tapi belum terproteksi -> task **BE-54**.
+- [ ] **[BE-12]** `GET /public-spaces/{id}/reports` - daftar laporan yang **sudah tayang**. *(FEAT-007, 010)*
+  - **Parsial + BUG:** endpoint ada (`app/api/v1/ruang_publik.py:79`), tetapi
+    `app/services/laporan.py:148` menyaring `status IN ("disetujui", "tayang_otomatis")` - nilai itu
+    **tidak pernah ada** di database (kamus status di atas). Akibatnya endpoint selalu mengembalikan `[]`.
+  - **Perbaikan -> task BE-47.**
+- [ ] **[BE-13]** Unit test (pytest) untuk logika radius search & kombinasi filter.
+  - **Belum ada:** folder `backend/tests/` tidak ada; `pytest.ini` menunjuk `testpaths = tests`.
+    Catatan: file test memang di-`.gitignore` (lihat `docs/06-testing-strategy.md`), jadi test dibuat lokal.
+- [ ] **[BE-47]** **(baru - hasil audit)** Fix filter laporan tayang di `GET /public-spaces/{id}/reports`:
+      ganti kamus status menjadi `diverifikasi`, `dalam_penanganan`, `selesai` (kecuali ada keputusan produk lain,
+      catat di `docs/API.md`), plus unit test regresi supaya bug ini tidak kembali.
+  - **FEAT:** FEAT-010. **Memperbaiki BE-12.**
+  - **Verifikasi:** setujui satu laporan via `PATCH /reports/{id}/status` -> endpoint ini mengembalikannya;
+    laporan `menunggu_verifikasi` dan `ditolak` tidak tampil.
+- [ ] **[BE-48]** **(baru - hasil audit)** Galeri foto multi-foto ruang publik: tabel `ruang_publik_foto`,
+      endpoint `GET /admin/public-spaces/{id}/photos` + `POST` (upload) + `DELETE`, migrasikan kolom tunggal
+      `image_url` jadi baris foto pertama; response `GET /public-spaces/{id}` menyertakan foto resmi
+      **digabung** dengan foto laporan yang sudah tayang.
+  - **FEAT:** FEAT-007 (dukung FE-14 Galeri Foto di FE Publik).
+  - **Verifikasi:** setelah ada 2 foto resmi + 1 laporan tayang, response detail menampilkan ketiganya
+    tanpa duplikat, urutan stabil.
+
+---
+
+## B2. ETL Worker - Sinkronisasi Satu Data Jakarta
+
+- [ ] **[BE-14]** Script Extract: download dataset RTH & RPTRA dari Satu Data Jakarta, simpan sementara.
+  - **Belum ada:** `app/etl/read_raw.py` hanya membaca file yang sudah ada di `data/raw/`.
+  - **Verifikasi:** satu perintah mengunduh dataset terbaru dan menaruhnya di `data/raw/` dengan nama standar.
+- [ ] **[BE-15]** Script Transform: normalisasi nama kategori ke 4 kategori final, normalisasi koordinat,
+      deteksi baris duplikat/tidak valid.
+  - **Parsial:** `app/etl/kategori.py` (4 kategori), `app/etl/transform_rth_raw.py`,
+    `app/etl/transform_rth.py` sudah menangani pemetaan kategori + koordinat + hash id, tetapi sumbernya
+    masih file lokal, bukan hasil extract BE-14.
+  - **Verifikasi:** kategori selain 4 tipe final tidak masuk; koordinat seragam formatnya; duplikat terhapus.
+- [ ] **[BE-16]** Script Load: update kolom yang **belum pernah diedit manual** saja, atau insert data baru. *(FEAT-012)*
+  - **Parsial:** `app/etl/seed_db.py` idempoten (baris dengan id sudah ada dilewati - jadi edit manual tidak
+    tertimpa), **tetapi belum ada jalur update** untuk kolom non-manual, dan penanda field hasil edit manual
+    (BE-05) belum ada.
+  - **Verifikasi:** edit nama via API -> tidak hilang saat `seed_db` dijalankan ulang; kolom lain tetap ter-update.
+- [ ] **[BE-17]** Setup APScheduler untuk menjalankan Extract -> Transform -> Load berkala, sebagai proses
+      terpisah dari server API.
+  - **Belum ada:** `requirements.txt` tidak memuat `APScheduler`; tidak ada modul scheduler.
+- [ ] **[BE-18]** `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin,
+      kembalikan status/log hasil. *(FEAT-012, FE-28)*
+  - **Belum ada:** tidak ada router `/admin` sama sekali di `app/api/v1/api.py`.
+- [ ] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error) untuk ditampilkan di Panel Admin.
+  - **Belum ada:** `seed_db.py` hanya mencetak ke stdout, tidak ada tabel/log yang bisa dibaca API.
+
+---
+
+## B3. Report Service + Validasi Lokasi Anti Fake-GPS (FEAT-008, 009, 010)
+
+- [ ] **[BE-20]** `POST /reports` - terima kategori masalah, deskripsi, foto (upload wajib), mode identitas,
+      koordinat lokasi pengguna, `public_space_id`.
+  - **Parsial:** endpoint hidup (`app/api/v1/laporan.py:19`, token opsional, anti-spoofing nama sudah benar
+    di `app/services/laporan.py:13`), tetapi body JSON biasa: `foto_url` selalu `null`, tidak ada koordinat.
+  - **Yang kurang:** multipart foto (BE-49) + field lokasi hasil BE-46.
+- [ ] **[BE-21]** Simpan foto ke local storage, ekstrak metadata EXIF GPS dari foto (Pillow/exifread).
+  - **Belum ada:** `Pillow` tidak ada di `requirements.txt`; tidak ada pemanggilan `save_upload_file`.
+- [ ] **[BE-22]** Logika validasi lokasi: Haversine antara koordinat browser vs koordinat EXIF foto,
+      masing-masing dibandingkan ke koordinat ruang publik tujuan. *(FEAT-013 - validasi lokasi)*
+  - **Belum ada:** butuh kolom hasil **BE-46** dan EXIF hasil **BE-21**. Haversine sudah ada contohnya di
+    `app/services/ruang_publik.py:13` (bisa dipakai ulang).
+- [ ] **[BE-23]** Ambang batas 100 meter: salah satu/kedua jarak > 100 m atau EXIF tidak ada ->
+      status `menunggu_verifikasi`; dalam ambang batas -> tayang. *(FEAT-013, FEAT-010)*
+  - **Belum ada:** status saat ini selalu `menunggu_verifikasi` tanpa perhitungan apa pun.
+  - **Catatan:** ambang di FE memakai `VITE_FAKE_GPS_THRESHOLD_M=50` (`.env.example` FE) sementara PRD menyebut
+    100 m - **samakan satu nilai** dan catat di `docs/API.md` sebelum task ini dikerjakan.
+  - **Verifikasi:** 4 skenario PRD bagian 8 (lokasi valid, lokasi jauh, foto tanpa EXIF, EXIF vs browser bertentangan).
+- [ ] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
+  - **Parsial:** status sudah ikut di `GET /reports/{id}` dan response submit, tetapi endpoint itu publik
+    dan tidak dibatasi pemilik -> lihat **BE-50** dan **BE-52**.
+- [ ] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
+  - **Belum ada** endpoint maupun UI di FE.
+- [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
+  - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
+- [ ] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
+  - **Belum ada** (lihat BE-13).
+- [ ] **[BE-49]** **(baru - hasil audit)** Endpoint upload foto `POST /api/v1/uploads` dengan `UploadFile`
+      (multipart), memakai `app/core/file_upload.py` yang sudah siap, kembalikan `{ "url": "/uploads/laporan/xxx.jpg" }`;
+      auth opsional mengikuti kebijakan laporan anonim; foto masuk ke `storage/laporan/`.
+  - **FEAT:** FEAT-008 + NFR-002. **Dibutuhkan:** `apps/web/src/features/laporan/pages/FormLaporPage.jsx`
+    kini mengirim `foto_url: null` karena endpoint ini belum ada.
+  - **Langkah:** buat `app/api/v1/uploads.py`, daftarkan di `api.py`; setelah hidup, catat di
+    `docs/API.md` dan `docs/04-api-endpoints.md`.
+  - **Verifikasi:** JPEG 600KB -> 201 + URL bisa diakses lewat `/uploads/...`; `.txt` -> 400; >5MB -> 400;
+    `FormLaporPage` mengirim foto asli dan foto tampil di moderasi.
+- [ ] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
+      untuk halaman "Laporan Saya".
+  - **FEAT:** FEAT-013 PRD (Riwayat "Laporan Saya"). **Dibutuhkan:** `getUserReports` di
+    `apps/web/src/services/laporanService.js` kini memanggil `GET /reports` tanpa filter pemilik,
+    jadi "Laporan Saya" berpotensi menampilkan laporan orang lain.
+  - **Langkah:** service `get_reports()` di `app/services/laporan.py:76` **sudah menerima `user_id`** -
+    tambahkan param di router (atau buat path terpisah `/reports/mine`), wajib `Depends(get_current_active_user)`.
+  - **Verifikasi:** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan milik pemanggil;
+    tanpa token -> 401.
+
+---
+
+## B4. Moderation Service - Khusus Admin (FEAT-011)
+
+- [ ] **[BE-28]** `GET /admin/reports?status=menunggu_verifikasi` - antrian tinjauan admin, proteksi role `admin`.
+  - **Parsial:** fungsinya dipenuhi `GET /reports?status=` (`app/api/v1/laporan.py:39`) tetapi
+    **tanpa `get_current_admin`** sehingga publik bisa membaca seluruh laporan -> task **BE-52**.
+- [ ] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
+  - **Parsial:** dipenuhi `PATCH /reports/{id}/status` (`app/api/v1/laporan.py:84`, sudah admin), tetapi
+    `payload.status` berupa string bebas - tidak divalidasi ke kamus status -> task **BE-51**.
+- [ ] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
+  - **Parsial:** alasan hanya ditulis sebagai deskripsi timeline (`app/services/laporan.py:126`),
+    **tidak disimpan di kolom laporan** sehingga tidak bisa ditampilkan ulang di daftar/FE -> task **BE-51**.
+- [ ] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
+  - **Belum ada** (bergantung BE-25).
+- [ ] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
+      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400;
+      (b) migration kolom `alasan_penolakan` (nullable) di `laporan`, **wajib diisi** bila status `ditolak`;
+      (c) field `alasan_penolakan` ikut di response detail supaya FE bisa menampilkannya.
+  - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (tombol Setujui/Tolak + alasan, FE-25).
+  - **Verifikasi:** PATCH dengan status `dibuang_sana` -> 422; reject tanpa alasan -> 400;
+    alasan muncul di `GET /reports/{id}` untuk pemilik/admin.
+- [ ] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
+      (a) buat `GET /admin/reports?status=&flagged=` terproteksi `get_current_admin` (menggantikan pemakaian
+      `GET /reports` untuk antrian); (b) `GET /reports` publik hanya mengembalikan laporan tayang;
+      (c) `GET /reports/{id}` hanya untuk pemilik laporan atau admin.
+  - **FEAT:** FEAT-011 + FEAT-010. **Memperbaiki** BE-28 dan sebagian BE-35.
+  - **Verifikasi:** tanpa token `GET /reports` hanya berisi laporan tayang; `GET /reports/{id}` milik orang lain -> 403/404;
+    token admin tetap bisa membuka semua.
+
+---
+
+## B5. Data Master Service - Khusus Admin (FEAT-012)
+
+- [ ] **[BE-32]** `GET /admin/public-spaces` - list lengkap data master untuk Panel Admin (termasuk penanda
+      field hasil edit manual).
+  - **Belum ada:** yang ada hanya `GET /public-spaces` publik. Halaman FE
+    `/dashboard/data-master` kini membaca lewat endpoint publik itu.
+- [ ] **[BE-33]** `PATCH /admin/public-spaces/{id}` - edit manual per field; setiap field yang diubah
+      otomatis ditandai "diedit manual" (dipakai logika merge di BE-16).
+  - **Belum ada.** Tombol "Edit Master" di FE masih `alert()`.
+  - **Prasyarat:** BE-05 (penanda field-level merge).
+- [ ] **[BE-53]** **(baru - hasil audit)** CRUD fasilitas untuk admin:
+      `POST /admin/public-spaces/{id}/fasilitas`, `PATCH /admin/fasilitas/{id}`, `DELETE /admin/fasilitas/{id}`
+      (semua `get_current_admin`).
+  - **FEAT:** FEAT-005 + FEAT-012. **Dibutuhkan:** halaman `apps/web/src/features/data-master/pages/KelolaFasilitasPage.jsx`
+    (tombol "Tambah Fasilitas Baru" dan "Edit" kini hanya `alert()`), dan `FE-12` filter fasilitas FE.
+  - **Verifikasi:** tambah/edit/hapus fasilitas lewat API -> langsung terbaca di `GET /public-spaces/{id}`
+    dan masuk opsi filter `GET /facilities`; non-admin -> 403.
+
+---
+
+## B6. Admin Auth & Pemisahan Akses (FEAT-014)
+
+- [ ] **[BE-34]** `POST /admin/login` - terpisah dari login publik, validasi role `admin` sebelum issue token.
+  - **Parsial:** `POST /auth/login` (`app/api/v1/auth.py:14`) dipakai semua role dan **tidak memvalidasi role
+    saat issue token** - proteksi baru terjadi di `get_current_admin`. Untuk FE ini cukup, tetapi ketentuan
+    "login terpisah" di PRD belum terpenuhi: perlu pengecekan role di login admin (atau catatkan deviasi di PRD).
+  - **Verifikasi:** login dengan akun `warga` lewat endpoint admin -> 403; akun admin -> 200.
+- [ ] **[BE-35]** Middleware/dependency proteksi khusus role `admin` di seluruh endpoint `/admin/*`,
+      endpoint publik tidak bisa diakses ambigu dengan token admin.
+  - **Parsial:** `get_current_admin` dipakai di `/users*`, `/reports/stats/*`, `PATCH /reports/{id}/status`.
+    **Masih bocor:** `GET /reports`, `GET /reports/{id}`, `POST /categories` -> task **BE-52** dan **BE-54**.
+  - **Verifikasi:** audit tiap endpoint: daftar di `docs/04-api-endpoints.md` cocok dengan kolom Auth di kode.
+- [x] **[BE-36]** Konfigurasi CORS mengizinkan domain FE Admin spesifik, terpisah dari FE Publik.
+  - **Lokasi kode:** `app/main.py:24` (`FRONTEND_PUBLIC_URL` + `FRONTEND_ADMIN_URL`).
+  - **Catatan:** nilai kedua origin menunggu FE Admin benar-benar dipisah (lihat BE-07).
+- [ ] **[BE-54]** **(baru - hasil audit)** Tutup sisa kebocoran non-admin: `POST /api/v1/categories`
+      wajib `Depends(get_current_admin)`, lalu audit seluruh router terhadap daftar endpoint publik vs admin
+      dan catat hasilnya di `docs/04-api-endpoints.md`.
+  - **FEAT:** FEAT-014. **Memperbaiki** BE-35.
+  - **Verifikasi:** `POST /categories` tanpa token -> 403, dengan token admin -> 201; tidak ada endpoint tulis
+    yang bisa dipanggil publik.
+- [ ] **[BE-55]** **(baru - hasil audit)** Refresh / logout token (rotasi atau blacklist sederhana),
+      supaya sesi tidak hidup 7 hari tanpa kendali saat perangkat hilang/keluar.
+  - **NFR:** NFR-002. **Dibutuhkan:** alur keluar di FE admin dan warga.
+  - **Langkah:** minimal satu dari: tabel `token_blacklist` (jti + expiry) + endpoint `POST /auth/logout`;
+    atau refresh token pendek untuk akses panjang. Catat keputusannya di `docs/API.md`.
+  - **Verifikasi:** logout -> token lama ditolak di endpoint terproteksi; token yang belum kedaluwarsa tetap
+    berfungsi sebelum logout.
+
+---
+
+## B7. Testing Backend
+
+- [ ] **[BE-37]** Unit test (pytest) menyeluruh: Public Space, Report, Moderation, Data Master, Auth.
+- [ ] **[BE-38]** **Black-box testing**: uji tiap endpoint dari input-output yang diharapkan tanpa melihat kode,
+      mencakup skenario normal dan edge case (input kosong, koordinat tidak valid, file bukan gambar).
+- [ ] **[BE-39]** **Testing API dengan Postman**: collection seluruh endpoint (publik & admin) beserta
+      assertion status code & struktur response, dipakai untuk regression testing.
+- [ ] **[BE-40]** **User concurrent testing**: simulasi banyak pengguna di endpoint pencarian & submit laporan
+      (Locust/JMeter/k6) - pastikan tidak ada race condition pada status laporan & merge data master.
+- [ ] **[BE-41]** Uji performa query radius search dengan volume data skala penuh (ribuan titik). *(NFR-001)*
+- **Status kelima task: belum ada sama sekali** - `backend/tests/` tidak ada dan file test masuk `.gitignore`.
+  Panduan pembuatan ulang: `docs/06-testing-strategy.md` (bagian 3).
+  Gerbang: `..\.venv\Scripts\python.exe -m pytest tests\unit -q` dari `backend/` harus 0 gagal.
+
+---
+
+## B8. Deployment Backend
+
+- [ ] **[BE-42]** Setup server (VPS/cloud), install dependency Python, konfigurasi Uvicorn + reverse proxy (Nginx).
+- [ ] **[BE-43]** Setup MySQL production, jalankan migration Alembic.
+- [ ] **[BE-44]** Deploy ETL Worker sebagai proses terpisah (systemd/cron/scheduler) - tidak menyatu dengan
+      proses API utama (lihat bagian 5 PRD).
+- [ ] **[BE-45]** Setup folder local storage foto di production dengan permission benar + backup berkala.
+- **Status keempat task: belum ada** - `docker-compose.yml` di root hanya berisi service MySQL; belum ada
+  Dockerfile aplikasi, Nginx, systemd unit, maupun skrip backup.
+
+---
+
+## B9. Konten Situs (baru)
+
+- [ ] **[BE-56]** **(baru - hasil audit)** Pindahkan konten beranda/tentang dari hardcode ke database:
+      (a) tabel + seed untuk `testimonials` dan `hero-slides`; (b) `GET /statistics/testimonials` dan
+      `GET /statistics/hero-slides` membaca dari tabel; (c) endpoint CRUD admin untuk mengelolanya;
+      (d) perbaiki karakter emoji rusak (mojibake) di response testimonials.
+  - **Dibutuhkan:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx` dan `TentangPage.jsx`
+    (kini memakai mock fallback), `app/api/v1/statistics.py:33` dan `:44` (isi hardcode).
+  - **Verifikasi:** response valid UTF-8 saat dirender FE; mengubah testimonial lewat API langsung terlihat di beranda.
+
+---
+
+## Peta Kebutuhan FE -> Task Backend
+
+Dipakai saat FE minta endpoint; cek daftar ini dulu sebelum menambah task baru.
+
+| Halaman / fitur FE | Endpoint yang ditunggu | Task |
+|---|---|---|
+| `FormLaporPage` (foto wajib) | `POST /uploads` | BE-49 |
+| `RiwayatLaporanPage` ("Laporan Saya") | `GET /reports/mine` | BE-50 |
+| `DetailRuangPublikPage` (riwayat laporan + galeri) | `GET /public-spaces/{id}/reports` yang benar, gabungan foto | BE-47, BE-48 |
+| `DetailModerasiPage` (Setujui/Tolak + alasan) | enum status + `alasan_penolakan` | BE-51 |
+| `AntrianModerasiPage` (antrian + daftar flagged) | `GET /admin/reports`, `/admin/reports/flagged` | BE-52, BE-31 |
+| `DataMasterPage` (Edit Master, Impor Satu Data) | `PATCH /admin/public-spaces/{id}`, `POST /admin/sync-data` | BE-33, BE-18 |
+| `KelolaFasilitasPage` | CRUD fasilitas admin | BE-53 |
+| Form lapor (validasi anti fake-GPS) | kolom lokasi + EXIF + ambang batas | BE-46, BE-21, BE-22, BE-23 |
+| Flag laporan tayang (belum ada UI di FE) | `POST /reports/{id}/flag`, `GET /admin/reports/flagged` | BE-25, BE-31 |
+| Halaman keluar / ganti perangkat | logout / refresh token | BE-55 |
+
+**Catatan FE (bukan tugas backend):** `route-config.js` menunjuk `EditRuangPublikPage.jsx` dan
+`NotFoundPage.jsx` yang filenya belum ada; UI flag (FE-21), galeri (FE-14), riwayat per ruang publik (FE-20)
+dan routing OSRM (FE-15, kini memakai link Google Maps) juga belum terpasang.
+
+---
+
+## Urutan Pengerjaan yang Disarankan
+
+1. **BE-46** (migration kolom lokasi) + **BE-47** (fix filter tayang) + **BE-54** (tutup kebocoran) - kecil,
+   memperbaiki data/keamanan yang sudah bocor sekarang.
+2. **BE-49** (upload foto) + **BE-50** (laporan saya) -> menyekat FE-16 dan FE-20.
+3. **BE-51** + **BE-52** (moderasi rapi) -> FE-24, FE-25, FE-26.
+4. **BE-32**, **BE-33**, **BE-53** (data master) -> halaman admin FE; sejalan dengan **BE-14 s/d BE-19** (ETL) yang tidak menahan FE.
+   (BE-05 penanda field-level sudah beres, jadi BE-33 tinggal memanggil `mark_fields_edited()`.)
+5. **BE-21**, **BE-22**, **BE-23** (validasi lokasi) setelah BE-46 beres.
+6. **BE-25**, **BE-31** (flag), **BE-55** (logout), **BE-56** (konten situs).
+7. Testing **BE-13**, **BE-27**, **BE-37 s/d BE-41** - dikerjakan tiap kali satu modul di atas selesai,
+   jangan ditunda ke akhir.
+8. Deployment **BE-42 s/d BE-45** terakhir, sebelum FE production build (FE-32, FE-33).
+
+---
+
+## Definition of Done (Backend)
+
+- [ ] Kotak `[x]` di dokumen ini sama dengan kenyataan di kode dan di `docs/04-api-endpoints.md`.
+- [ ] Tidak ada endpoint aktif yang tidak terdokumentasi, dan tidak ada baris di `04-api-endpoints.md`
+      yang sudah tidak berlaku.
+- [ ] Semua FEAT-001 s/d FEAT-014 dan NFR-001 s/d NFR-004 punya task tercentang.
+- [ ] Black-box testing, Postman collection, dan concurrent testing (B7) pernah dijalankan minimal sekali
+      dengan hasil terdokumentasi.
+- [ ] UAT dan kuesioner TAM sesuai PRD bagian 8 selesai.
+- [ ] Setiap task yang berubah jadi `[x]` punya entri changelog bertanggal di
+      [`CHANGELOG.md`](CHANGELOG.md) (satu baris, sesuai aturan di bagian Cara Baca).
