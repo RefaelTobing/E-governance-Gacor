@@ -19,7 +19,9 @@ import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
+      {/* v7_relativeSplatPath tidak berpengaruh di sini karena route wildcard
+          hanya berisi Navigate, tanpa child route relatif. */}
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           {/* Redirect / ke /home */}
           <Route path="/" element={<Navigate to="/home" replace />} />
