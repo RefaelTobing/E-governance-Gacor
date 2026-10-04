@@ -14,7 +14,7 @@ Kode terkait:
 
 | Aspek PRD FEAT-012 | Status |
 |---|---|
-| Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sebagian** — ETL seed ada, tetapi **manual/script** (bukan dari panel admin) |
+| Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sebagian** — ETL jalan otomatis lewat scheduler (BE-17) atau manual lewat shell, tetapi **bukan dari panel admin** (endpoint = BE-18) |
 | Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); ruang publik masih GET saja (BE-33 belum) |
 | Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah** — field-level merge BE-16: kolom `ETL_OWNED` disegarkan, kolom tercatat `field_source` ditahan (lihat §4) |
 
@@ -74,7 +74,7 @@ Pilihan (pilih satu & catat):
 - **Opsi A (MVP, disarankan):** endpoint admin `POST /api/v1/public-spaces/re-sync` yang **menjalankan ulang fungsi seed** (`seed_db` dipanggil sebagai fungsi, bukan subprocess) → response jumlah baris baru. Admin tidak perlu akses shell.
 - **Opsi B:** tetap manual lewat shell (`python -m app.etl.seed_db`) — cukup didokumentasikan di `etl-worker.md`, tanpa endpoint.
 
-Keduanya **wajib mempertahankan** strategi merge §4.
+Keduanya **wajib mempertahankan** strategi merge §4. Catatan: pipeline ini sudah jalan otomatis lewat `scheduler.py` (BE-17, jadwal `ETL_JADWAL`); opsi di atas menyangkut **trigger tambahan dari panel admin** (task BE-18).
 
 ---
 

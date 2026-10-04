@@ -159,7 +159,8 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 2. `read_raw.py` — baca file mentah di `data/raw/`
 3. `transform_rth_raw.py` — olah jadi `data/processed/ruang_publik_terbaru.csv` (1200 baris, id identik master) + `kandidat/ruang_publik_kandidat.csv` (baris baru, `verified=False`) + `transform_laporan.json`; koordinat hilang/luar rentang & baris di luar 4 kategori dibuang
 4. `seed_db.py` — masukkan kategori + ruang publik ke MySQL dari `data/processed/ruang_publik_terbaru.csv` (cadangan `ruang_publik.csv`; idempoten: baris yang sudah ada dicocokkan id → natural key → nama, lalu hanya kolom `ETL_OWNED` yang disegarkan; `--file` ganti sumber, `--reset` ganti total isi, file kandidat ditolak kecuali `--pakai-kandidat`)
-5. `seed_admin.py` — buat admin pertama dari `ADMIN_SEED_*` di `.env` (idempoten)
+5. `scheduler.py` — jalankan pipeline (1) -> (3) -> (4) berkala dengan APScheduler, proses terpisah dari server API; jadwal `ETL_JADWAL` (cron WIB, default 02:00), `--once` untuk sekali jalan (BE-17)
+6. `seed_admin.py` — buat admin pertama dari `ADMIN_SEED_*` di `.env` (idempoten)
 
 Aturan: **perubahan manual admin terhadap data ETL tidak boleh hilang** saat seed ulang (FEAT-012) — kolom yang pernah diedit tercatat di `ruang_publik.field_source` dan ETL menahannya; kolom `ETL_OWNED` tetap disegarkan dari sumber. Pemetaan kolom: `backend/docs/features/data-master-service.md` §4.
 

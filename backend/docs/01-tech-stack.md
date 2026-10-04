@@ -40,10 +40,11 @@ Daftar teknologi, versi persis (dari `backend/requirements.txt`), dan **alasan p
 | pandas | >= 2.2 | Pembacaan & transformasi dataset Satu Data Jakarta (CSV/Excel) di `app/etl/`. |
 | lxml | >= 5.0 | Parser untuk file Excel lama format `.xls` (dataset RTH berbentuk Excel). |
 | **requests** | **2.34.2 (di-pin)** | Tahap Extract (`app/etl/extract_satudata.py`): unduh dataset dari API Satu Data Jakarta & layer ArcGIS Jakarta Satu. Dipakai untuk retry otomatis (server portal dua kali putus saat pengujian), timeout per request, dan status code yang jelas. |
+| **APScheduler** | **3.11.3 (di-pin)** | Penjadwalan pipeline ETL (BE-17) di `app/etl/scheduler.py`: cron `ETL_JADWAL` zona WIB, `max_instances=1` anti tumpang tindih. Proses terpisah dari server, `app/main.py` tidak diubah. Di-pin karena rilis 4.x mengubah API. |
 | python-dotenv | 1.0.1 | Fallback pembacaan `.env`. |
 | cryptography | >= 42.0 | Dependensi pendukung stack data/keamanan. |
 
-> **Bentuk kerja ETL:** script batch yang dijalankan manual (`python -m app.etl.seed_db`), **bukan** worker yang jalan terus-menerus di dalam server. Lihat `features/etl-worker.md`.
+> **Bentuk kerja ETL:** script batch, dijalankan manual (`python -m app.etl.seed_db`) atau dijadwalkan lewat proses terpisah (`python -m app.etl.scheduler`, BE-17), **bukan** worker yang jalan terus-menerus di dalam server. Lihat `features/etl-worker.md`.
 
 ## 5. Pengujian
 
@@ -73,3 +74,4 @@ Sebelum menambah library ke `requirements.txt`:
 | Library | Aturan 2 (stdlib cukup?) | Alasan pengecualian |
 |---|---|---|
 | `requests==2.34.2` | Sebenarnya bisa dengan `urllib.request`, tetapi ditolak | PRD §5 mewajibkan unduhan berkala ke dua portal eksternal yang tidak punya SLA. Saat pengujian, koneksi ke `satudata.jakarta.go.id` sempat putus dan timeout. Retry + backoff otomatis lewat `HTTPAdapter` menulis jauh lebih sedikit kode daripada versi `urllib` sendiri, dan biaya dependensinya kecil (murni Python). Keputusan pemilik proyek (2026-10-04). |
+| `APScheduler==3.11.3` | Loop stdlib bisa saja ditulis sendiri, tetapi tidak punya ekspresi cron & zona waktu bawaan | Task BE-17 dan JOBDESK menyebut APScheduler secara eksplisit; dibutuhkan cron `ETL_JADWAL` (WIB), `max_instances` anti tumpang tindih, dan `misfire_grace_time` yang sudah tersedia. Berjalan sebagai proses terpisah dari API, jadi server tidak menambah dependensi maupun beban. Keputusan pemilik proyek (2026-10-04). |

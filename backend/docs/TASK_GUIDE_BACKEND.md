@@ -33,7 +33,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 |---|---|---|---|---|
 | B0 Setup & Fondasi | 9 | 6 | 2 | 1 |
 | B1 Public Space Service | 7 | 3 | 1 | 3 |
-| B2 ETL Worker | 6 | 2 | 2 | 2 |
+| B2 ETL Worker | 6 | 4 | 0 | 2 |
 | B3 Report Service | 10 | 0 | 2 | 8 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
@@ -41,7 +41,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **13** | **12** | **31** |
+| **Total** | **56** | **15** | **10** | **31** |
 
 ---
 
@@ -192,9 +192,32 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     API: radius search `jarak_km` terisi, `stats.total_ruang_publik` 1200, detail menampilkan
     `kecamatan`/`kelurahan`. Catatan: verifikasi "edit via API" memakai skrip `mark_fields_edited`
     karena endpoint edit admin (BE-33) belum ada.
-- [ ] **[BE-17]** Setup APScheduler untuk menjalankan Extract -> Transform -> Load berkala, sebagai proses
+- [x] **[BE-17]** Setup APScheduler untuk menjalankan Extract -> Transform -> Load berkala, sebagai proses
       terpisah dari server API.
-  - **Belum ada:** `requirements.txt` tidak memuat `APScheduler`; tidak ada modul scheduler.
+  - **Lokasi kode:** `app/etl/scheduler.py` (pipeline per tahap + `--once` + `BlockingScheduler`),
+    jadwal `ETL_JADWAL` di `app/core/config.py` (default `0 2 * * *` = 02:00 WIB) + `.env.example`,
+    dependency `APScheduler==3.11.3` di `requirements.txt`.
+  - **Keputusan:**
+    1. Scheduler berjalan sendiri lewat `python -m app.etl.scheduler` dari folder `backend/`;
+       `app/main.py` tidak disentuh (aturan: worker tidak boleh ada di dalam server API,
+       `01-tech-stack.md` bagian 4).
+    2. Tiap tahap dijalankan sebagai subprocess (`sys.executable -m <tahap>`, `cwd` folder backend)
+       supaya kegagalan satu tahap tidak membawa proses scheduler mati, dan keluaran tiap tahap
+       masuk log bertimestamp (bekal BE-19).
+    3. Gagal extract (portal tanpa SLA) membatalkan run; file raw lama dipakai run berikutnya.
+       `max_instances=1` + `coalesce=True` mencegah run tumpang tindih dan menumpuk.
+    4. Kandidat tetap di luar pipeline: `seed_db` dipanggil tanpa `--pakai-kandidat`, tetap menunggu
+       review manual.
+    5. Dependency baru `APScheduler` dicatat di `01-tech-stack.md` bagian 4 dan tabel keputusan
+       bagian 7; `--once` disediakan sebagai jalur alternatif cron/systemd timer untuk BE-44.
+  - **Verifikasi (2026-10-04):** `--once` menjalankan 3 tahap penuh (extract 5 dataset -> transform ->
+    seed `0 baru, 0 diupdate, 1200`, exit 0, total 20 detik); mode terjadwal dengan
+    `ETL_JADWAL="* * * * *"` fires tepat menit berikutnya (log `15:19:00`) lalu selesai 17 detik dan
+    proses tetap hidup, terpisah dari uvicorn; tahap gagal (modul rusak) -> pipeline dibatalkan dan
+    `--once` exit 1; `ETL_JADWAL` salah -> exit 2 dengan pesan jelas; `compileall` lolos dan
+    `pip install -r requirements.txt` bersih. Catatan: berhenti lewat Ctrl+C ditangani
+    `except (KeyboardInterrupt, SystemExit)` tetapi belum diuji non-interaktif, dan Stop-Process
+    (bunuh paksa) meninggalkan anak proses extract yang sedang jalan.
 - [ ] **[BE-18]** `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin,
       kembalikan status/log hasil. *(FEAT-012, FE-28)*
   - **Belum ada:** tidak ada router `/admin` sama sekali di `app/api/v1/api.py`.

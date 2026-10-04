@@ -71,6 +71,8 @@ ETL **bukan bagian dari proses server** — sengaja dipisah karena:
 - Seed bisa diulang dengan aman (idempoten) tanpa menyentuh proses yang sedang melayani request.
 
 ```
+python -m app.etl.scheduler (BE-17)  proses terpisah; jadwal ETL_JADWAL (02:00 WIB)
+        └── menjalankan ketiga tahap di bawah berurutan (--once = sekali jalan)
 python -m app.etl.extract_satudata (BE-14)
         → data/raw/satudata_*.csv + geoportal_*.csv (+ .meta.json)
 data/raw/*.csv  →  app/etl/read_raw.py
@@ -86,7 +88,7 @@ data/raw/*.csv  →  app/etl/read_raw.py
 
 Detail & urutan kerja: [`features/etl-worker.md`](features/etl-worker.md).
 
-> **Belum ada scheduler otomatis** (cron/celery sengaja tidak dipakai — lihat larangan di `01-tech-stack.md`). Sinkronisasi dijalankan manual. Bila dijadwalkan nanti, cukup dengan OS cron memanggil script yang sama.
+> **Scheduler otomatis ada sejak BE-17:** `python -m app.etl.scheduler` (APScheduler, proses terpisah dari uvicorn) menjalankan extract -> transform -> seed sesuai `ETL_JADWAL` (default 02:00 WIB). Celery/redis tetap tidak dipakai dan `app/main.py` tidak diubah. Detail & keputusan: [`features/etl-worker.md`](features/etl-worker.md) §5.
 
 ---
 

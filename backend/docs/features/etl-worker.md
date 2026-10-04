@@ -18,6 +18,9 @@ Kode terkait (semua di `app/etl/`):
   kolom `ETL_OWNED` yang disegarkan (aturan merge di `data-master-service.md` §4)
 - `seed_fasilitas.py` — isi tabel `fasilitas` dengan data contoh per ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
+- `scheduler.py` — **Penjadwalan (BE-17):** jalankan extract -> transform -> seed berkala lewat
+  APScheduler, proses terpisah dari server API (`python -m app.etl.scheduler`, `--once` untuk
+  sekali jalan); jadwal dari `ETL_JADWAL` di `.env`
 
 Data:
 - **Hasil Extract (gitignored, bisa diunduh ulang kapan saja):**
@@ -57,7 +60,7 @@ Data:
 | Merge field-level (BE-16) | **Ya** — kolom `ETL_OWNED` disegarkan, kolom di `field_source` ditahan; pemetaan kolom di `data-master-service.md` §4 |
 | Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
 | Kategori konsisten | **Ya** — kolom `tipe` → `kategori_id` lewat `kategori.py`; `kategori_id` lama (`taman`, `jalur-hijau`) dinormalisasi ulang saat transform |
-| Penjadwalan otomatis (cron) | **Belum** — PRD §5 menyebut "cron job/scheduled task"; saat ini manual |
+| Penjadwalan otomatis (BE-17) | **Ada** — `python -m app.etl.scheduler` (APScheduler, proses terpisah dari API); jadwal harian 02:00 WIB lewat `ETL_JADWAL`, kandidat tetap direview manual |
 | Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
 | Endpoint trigger dari admin API | **Belum** — opsional, lihat `data-master-service.md` §2.3 |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
@@ -98,7 +101,11 @@ Satu Data Jakarta (API JSON: detail + get-table-data)   Jakarta Satu Geoportal (
 Master 1200 tetap acuan: `ruang_publik_terbaru.csv` berisi baris yang sama (id identik), dan baris baru
 hanya muncul di `kandidat/` yang tidak bisa di-seed tanpa persetujuan eksplisit.
 
-**Bentuk kerja: worker terpisah** — script batch dijalankan manusia lewat shell, **bukan** proses di dalam server (alasan: `02-architecture.md` §3).
+**Scheduler (BE-17):** `app/etl/scheduler.py` menjalankan tahap [0] -> [2] -> [3] berurutan sesuai
+`ETL_JADWAL`. Tahap [1] `read_raw` alat inspeksi manual, tidak ikut pipeline.
+
+**Bentuk kerja: worker terpisah** — script batch lewat shell atau lewat `scheduler.py` (BE-17),
+**bukan** proses di dalam server (alasan: `02-architecture.md` §3).
 
 ---
 
@@ -126,12 +133,18 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 # 4. ganti total isi tabel (backup DB dulu!), atau seed file lain
 ..\.venv\Scripts\python.exe -m app.etl.seed_db --reset
 ..\.venv\Scripts\python.exe -m app.etl.seed_db --file ../data/processed/ruang_publik_lainnya.csv
+
+# 5. scheduler (opsional, BE-17): proses panjang yang menjalankan tahap 0 -> 2 -> 3
+#    otomatis sesuai ETL_JADWAL di .env (default 02:00 WIB); --once = jalankan sekali lalu keluar
+..\.venv\Scripts\python.exe -m app.etl.scheduler
+..\.venv\Scripts\python.exe -m app.etl.scheduler --once
 ```
 
 Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru**, **diupdate**, dan tanpa perubahan + total, jumlah kolom yang ditahan penanda edit manual bila ada (plus baris yang cocok tanpa id), lalu baris per kategori.
 Keluaran `seed_fasilitas`: jumlah fasilitas **baru** + total, lalu baris per kategori ruang publik; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
 Keluaran `extract_satudata`: nama dataset, jumlah baris & kolom, tanggal rilis sumber (bila ada), nama file di `data/raw/`; dataset gagal tidak menghentikan yang lain, dan membuat keluaran exit code 1.
 Keluaran `transform_rth_raw`: jumlah sumber tersimpan, jumlah buang per alasan, jumlah baris master yang disegarkan/tanpa pasangan, jumlah kandidat; daftar lengkap (79 nama tanpa pasangan, 1 koordinat luar rentang) ada di `transform_laporan.json`.
+Keluaran `scheduler`: log bertimestamp per tahap (stdout & stderr anak proses ikut masuk), ringkasan durasi run, dan baris ERROR bila satu tahap gagal lalu run dibatalkan.
 
 Flag `extract_satudata`:
 - `--source all|satudata|geoportal` — sumber mana yang dijalankan (default `all`).
@@ -206,12 +219,17 @@ else:
 
 ---
 
-## 5. Penjadwalan (belum ada — keputusan perlu ditulis)
+## 5. Penjadwalan (BE-17)
 
-PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**, termasuk tahap [0] extract (butuh internet).
+PRD §5: "Proses berkala (cron job/scheduled task)". Kini ada scheduler sendiri, tetap di luar proses server API:
 
-- [ ] **Keputusan MVP:** jalankan manual tiap kali ada rilis data baru dari Satu Data Jakarta → cukup tandai "disetujui manual" di sini, **tanpa kode**. Bila kelak dijadwalkan, urutannya `extract_satudata` → `transform_rth_raw` → `seed_db` dalam satu jadwal.
-- [ ] **Bila wajib otomatis nanti:** OS cron / Task Scheduler memanggil `python -m app.etl.seed_db` harian — **tanpa** menambah dependency ke server (jangan integrasikan celery/redis ke `app/main.py`; lihat larangan `01-tech-stack.md` §7).
+- **Modul:** `app/etl/scheduler.py`, dijalankan dari folder `backend/`: `python -m app.etl.scheduler` (proses panjang) atau `--once` (sekali jalan, exit 0/1).
+- **Jadwal:** `ETL_JADWAL` di `.env`, format cron 5 field, zona WIB; default `0 2 * * *` (tiap hari 02:00 WIB).
+- **Pipeline tiap run:** `extract_satudata` -> `transform_rth_raw` -> `seed_db` (tanpa `--pakai-kandidat`; kandidat tetap menunggu review manual). Gagal satu tahap membatalkan run, file raw lama dipakai run berikutnya.
+- **Anti tumpang tindih:** `max_instances=1`, `coalesce=True`, `misfire_grace_time=3600`.
+- **Dependency:** `APScheduler==3.11.3` dicatat di `01-tech-stack.md` bagian 4 dan tabel keputusan bagian 7. Celery/redis tetap tidak dipakai dan `app/main.py` tidak diubah.
+
+- [x] **Keputusan (2026-10-04):** APScheduler sebagai proses terpisah, jadwal harian 02:00 WIB lewat `ETL_JADWAL`; mode `--once` disediakan untuk pengecekan dan untuk jalur cron/systemd timer saat BE-44.
 - [ ] **Opsi API trigger** (admin-only `POST /public-spaces/re-sync`) → keputusan & langkah ada di `data-master-service.md` §2.3.
 
 ---
@@ -237,6 +255,10 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**, termas
 - [x] **Kategori:** semua `kategori_id` hasil seed lolos FK (seed tanpa error) dan `GET /categories` → 4 entri (2026-10-04)
 - [ ] **Jumlah per tipe:** `GET /categories` → 4 entri; `GET /public-spaces?category=<id>` → taman-lingkungan 950, rptra 119, taman-interaktif 102, taman-kota 29 (limit 500, jadi haluskan dengan `skip` untuk taman-lingkungan)
 - [x] **Kesegaran data:** `GET /public-spaces/stats` → `total_ruang_publik` = 1200 = jumlah baris `ruang_publik.csv` (2026-10-04)
+- [x] **Scheduler `--once` (BE-17):** `python -m app.etl.scheduler --once` menjalankan 3 tahap penuh (extract 5 dataset -> transform -> seed `0 baru, 0 diupdate, 1200`), exit 0, total 20 detik (2026-10-04)
+- [x] **Scheduler terjadwal (BE-17):** `ETL_JADWAL="* * * * *"` -> run pertama fires tepat menit berikutnya (log `15:19:00`) lalu selesai 17 detik, proses tetap hidup dan terpisah dari API, jadwal berikutnya dicetak di log awal (2026-10-04)
+- [x] **Scheduler gagal tahap (BE-17):** tahap rusak -> pipeline dibatalkan dengan log ERROR dan `--once` exit 1; `ETL_JADWAL` salah -> exit 2 dengan pesan jelas (2026-10-04)
+- [ ] **Scheduler berhenti rapi (BE-17):** jalur `KeyboardInterrupt`/`SystemExit` sudah ada di kode tetapi belum diuji non-interaktif; Stop-Process (bunuh paksa) meninggalkan anak proses extract yang sedang jalan
 
 ---
 
@@ -245,4 +267,4 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**, termas
 - [ ] Hanya membahas sinkronisasi data resmi (edit admin → `data-master-service.md`)
 - [ ] Urutan perintah bisa diikuti mentah-mentah di mesin baru
 - [ ] Aturan merge tidak diubah tanpa membaca dampaknya ke FEAT-012
-- [ ] Keputusan penjadwalan (manual/otomatis) ditulis eksplisit di §5
+- [x] Keputusan penjadwalan (manual/otomatis) ditulis eksplisit di §5

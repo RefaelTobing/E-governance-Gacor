@@ -25,6 +25,13 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-04
 
+- **[BE-17]** Penjadwal pipeline ETL - `app/etl/scheduler.py` baru: APScheduler 3.11.3 sebagai proses
+  terpisah dari API (`python -m app.etl.scheduler`, `--once` untuk sekali jalan) menjalankan extract ->
+  transform -> seed sesuai `ETL_JADWAL` (default `0 2 * * *` = 02:00 WIB, ada di `config.py` +
+  `.env.example`); tiap tahap jalan lewat subprocess dengan timeout, gagal extract membatalkan run,
+  kandidat tetap di luar pipeline (tanpa `--pakai-kandidat`); verifikasi: `--once` penuh exit 0 dengan
+  seed `0 diupdate`, jadwal `* * * * *` fires tepat menit berikutnya (17 detik/run), tahap gagal ->
+  `--once` exit 1, `ETL_JADWAL` salah -> exit 2.
 - **[BE-16]** Load field-level merge FEAT-012 - `app/etl/seed_db.py` kini punya jalur UPDATE: baris
   dicocokkan id -> natural key `nama|kecamatan|kelurahan` -> nama (nama ambigu ditahan, tidak
   ditebak), hanya kolom `ETL_OWNED` yang disegarkan dan hanya bila belum tercatat di `field_source`;

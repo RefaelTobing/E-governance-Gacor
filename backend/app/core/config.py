@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     ADMIN_SEED_NAME: str = ""
     ADMIN_SEED_EMAIL: str = ""
     ADMIN_SEED_PASSWORD: str = ""
+
+    # Jadwal pipeline ETL (cron 5 field, zona WIB), hanya dibaca
+    # `python -m app.etl.scheduler`. Default "0 2 * * *" = tiap hari 02:00 WIB.
+    ETL_JADWAL: str = "0 2 * * *"
     
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
