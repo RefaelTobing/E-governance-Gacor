@@ -33,7 +33,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 |---|---|---|---|---|
 | B0 Setup & Fondasi | 9 | 6 | 2 | 1 |
 | B1 Public Space Service | 7 | 3 | 1 | 3 |
-| B2 ETL Worker | 6 | 4 | 0 | 2 |
+| B2 ETL Worker | 6 | 5 | 0 | 1 |
 | B3 Report Service | 10 | 0 | 2 | 8 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
@@ -41,7 +41,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **15** | **10** | **31** |
+| **Total** | **56** | **16** | **10** | **30** |
 
 ---
 
@@ -218,9 +218,19 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     `pip install -r requirements.txt` bersih. Catatan: berhenti lewat Ctrl+C ditangani
     `except (KeyboardInterrupt, SystemExit)` tetapi belum diuji non-interaktif, dan Stop-Process
     (bunuh paksa) meninggalkan anak proses extract yang sedang jalan.
-- [ ] **[BE-18]** `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin,
+- [x] **[BE-18]** `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin,
       kembalikan status/log hasil. *(FEAT-012, FE-28)*
-  - **Belum ada:** tidak ada router `/admin` sama sekali di `app/api/v1/api.py`.
+  - Router `app/api/v1/sync_data.py` (prefix `/admin/sync-data`, tag `admin-sync`), menjalankan ketiga
+    tahap lewat `jalankan_tahap` milik BE-17. `threading.Lock` anti-overlap: run kedua saat masih
+    berjalan -> `409`. Response `SyncResult` (`app/schemas/sync.py`): status, waktu mulai/selesai,
+    total detik, daftar tahap (nama, status, detik, log maksimal 100 baris terakhir), `tahap_gagal`
+    bila run berhenti di tengah. Run selesai dengan tahap gagal tetap `200` + `status: "gagal"`
+    (kegagalan ETL = hasil domain, bukan error transport).
+    Catatan: lock hanya se-proses API; run scheduler terjadwal (proses terpisah) tidak saling
+    terkunci - diterima karena jalur manual dan jalur terjadwal jarang bentrok.
+  - **Verifikasi:** `pytest tests/unit -q` 6 lolos - 401 tanpa token, 403 warga, sukses 3 tahap
+    berurutan, gagal di tahap kedua -> tahap ketiga tidak dijalankan, 409 saat lock terkunci,
+    log 5000 baris dipotong menjadi 100.
 - [ ] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error) untuk ditampilkan di Panel Admin.
   - **Belum ada:** `seed_db.py` hanya mencetak ke stdout, tidak ada tabel/log yang bisa dibaca API.
 

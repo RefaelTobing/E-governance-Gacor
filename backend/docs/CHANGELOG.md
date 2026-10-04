@@ -25,6 +25,14 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-04
 
+- **[BE-18]** Trigger manual ETL dari panel admin - endpoint `POST /api/v1/admin/sync-data`
+  (`app/api/v1/sync_data.py`, dijaga `get_current_admin`) menjalankan pipeline penuh extract ->
+  transform -> seed lewat `jalankan_tahap` BE-17, dilindungi `threading.Lock` (run kedua saat masih
+  berjalan -> `409`); response `SyncResult` (`app/schemas/sync.py`) memuat status, waktu mulai/
+  selesai, daftar tahap + log 100 baris terakhir, dan `tahap_gagal`; `scheduler.py` direfactor kecil:
+  `jalankan_tahap` kini mengembalikan `(sukses, log_lines)` tanpa mengubah perilaku scheduler;
+  verifikasi: `pytest tests/unit -q` 6 lolos (401 tanpa token, 403 warga, sukses 3 tahap, gagal di
+  tahap kedua, 409 lock, log dipotong).
 - **[BE-17]** Penjadwal pipeline ETL - `app/etl/scheduler.py` baru: APScheduler 3.11.3 sebagai proses
   terpisah dari API (`python -m app.etl.scheduler`, `--once` untuk sekali jalan) menjalankan extract ->
   transform -> seed sesuai `ETL_JADWAL` (default `0 2 * * *` = 02:00 WIB, ada di `config.py` +

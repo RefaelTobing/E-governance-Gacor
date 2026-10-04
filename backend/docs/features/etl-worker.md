@@ -62,7 +62,7 @@ Data:
 | Kategori konsisten | **Ya** — kolom `tipe` → `kategori_id` lewat `kategori.py`; `kategori_id` lama (`taman`, `jalur-hijau`) dinormalisasi ulang saat transform |
 | Penjadwalan otomatis (BE-17) | **Ada** — `python -m app.etl.scheduler` (APScheduler, proses terpisah dari API); jadwal harian 02:00 WIB lewat `ETL_JADWAL`, kandidat tetap direview manual |
 | Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
-| Endpoint trigger dari admin API | **Belum** — opsional, lihat `data-master-service.md` §2.3 |
+| Endpoint trigger dari admin API | **Ada (BE-18)** — `POST /api/v1/admin/sync-data` (admin-only, pipeline penuh, `409` saat run lain berjalan); kontrak di `04-api-endpoints.md` §8 |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
 
 ---
@@ -230,7 +230,10 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Kini ada scheduler sendiri,
 - **Dependency:** `APScheduler==3.11.3` dicatat di `01-tech-stack.md` bagian 4 dan tabel keputusan bagian 7. Celery/redis tetap tidak dipakai dan `app/main.py` tidak diubah.
 
 - [x] **Keputusan (2026-10-04):** APScheduler sebagai proses terpisah, jadwal harian 02:00 WIB lewat `ETL_JADWAL`; mode `--once` disediakan untuk pengecekan dan untuk jalur cron/systemd timer saat BE-44.
-- [ ] **Opsi API trigger** (admin-only `POST /public-spaces/re-sync`) → keputusan & langkah ada di `data-master-service.md` §2.3.
+- [x] **Opsi API trigger (BE-18, 2026-10-04):** `POST /api/v1/admin/sync-data` menjalankan pipeline
+  penuh (extract → transform → seed) lewat `jalankan_tahap`, dibuka setelah keputusan di
+  `data-master-service.md` §2.3; endpoint di `app/api/v1/sync_data.py`, kontrak di
+  `04-api-endpoints.md` §8.
 
 ---
 

@@ -17,6 +17,7 @@ import logging
 import os
 import subprocess
 import sys
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -32,16 +33,14 @@ WIB = ZoneInfo("Asia/Jakarta")
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 TAHAP: dict[str, int] = {
-    # Extract menunggu dua portal tanpa SLA (timeout per request di
-    # extract_satudata.py bisa diulang beberapa kali), sisanya hitungan menit.
     "app.etl.extract_satudata": 1800,
     "app.etl.transform_rth_raw": 600,
     "app.etl.seed_db": 600,
 }
 
 
-def jalankan_tahap(modul: str) -> bool:
-    """Jalankan satu tahap sebagai subprocess; keluaran ikut masuk log."""
+def jalankan_tahap(modul: str) -> tuple[bool, list[str]]:
+    """Jalankan satu tahap sebagai subprocess; kembalikan (sukses, log_lines)."""
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     try:
         hasil = subprocess.run(
@@ -56,17 +55,20 @@ def jalankan_tahap(modul: str) -> bool:
         )
     except subprocess.TimeoutExpired:
         logger.error("%s melewati batas %d detik, tahap dibatalkan", modul, TAHAP[modul])
-        return False
+        return False, [f"TIMEOUT: melewati batas {TAHAP[modul]} detik"]
 
+    log: list[str] = []
     for baris in hasil.stdout.splitlines():
         if baris.strip():
             logger.info("%s | %s", modul, baris)
+            log.append(baris)
     for baris in hasil.stderr.splitlines():
         if baris.strip():
             logger.error("%s | %s", modul, baris)
+            log.append(baris)
     if hasil.returncode != 0:
         logger.error("%s keluar dengan kode %d", modul, hasil.returncode)
-    return hasil.returncode == 0
+    return hasil.returncode == 0, log
 
 
 def jalankan_pipeline() -> bool:
@@ -74,7 +76,8 @@ def jalankan_pipeline() -> bool:
     mulai = datetime.now(WIB)
     logger.info("pipeline mulai")
     for modul in TAHAP:
-        if not jalankan_tahap(modul):
+        sukses, _ = jalankan_tahap(modul)
+        if not sukses:
             logger.error("pipeline dibatalkan, tahap %s gagal", modul)
             return False
     logger.info(

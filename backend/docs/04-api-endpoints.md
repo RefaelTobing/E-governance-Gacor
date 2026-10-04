@@ -32,6 +32,8 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `PATCH` | `/api/v1/admin/facilities/{id}` | **Admin** | Ubah sebagian field (nama, kategori, status, lokasi, deskripsi, induk) |
 | `DELETE` | `/api/v1/admin/facilities/{id}` | **Admin** | Hapus; `409` kalau masih jadi rujukan laporan |
 | `POST` | `/api/v1/admin/facilities/import` | **Admin** | Impor CSV `multipart/form-data`; hasil parsial `{created, failed, errors}` |
+| **Sinkronisasi Satu Data (Admin)** ||||
+| `POST` | `/api/v1/admin/sync-data` | **Admin** | Trigger manual pipeline ETL penuh; `409` bila run lain masih berjalan |
 | **Ruang Publik** ||||
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
@@ -233,7 +235,38 @@ Keputusan path (nested `POST /public-spaces/{id}/fasilitas` ditolak): `features/
 
 ---
 
-## 8. Gap Endpoint (belum ada — dibutuhkan PRD/FE)
+## 8. Sinkronisasi Satu Data (Admin, BE-18)
+
+Prefix `/api/v1/admin/sync-data`, butuh role `admin` (`get_current_admin`); tanpa token → `401`, warga → `403`.
+
+| Endpoint | Body / Query | Catatan |
+|---|---|---|
+| `POST /admin/sync-data` | — (tanpa body) | Jalankan pipeline penuh extract → transform → seed (sama seperti scheduler BE-17, `--once`). `409` bila run manual lain masih berjalan (`threading.Lock` di proses API). Run selesai dengan tahap gagal tetap `200` + `status: "gagal"` |
+
+Response `SyncResult` (`app/schemas/sync.py`):
+
+```json
+{
+  "status": "sukses",
+  "mulai": "2026-10-04T08:00:00Z",
+  "selesai": "2026-10-04T08:00:19Z",
+  "total_detik": 19,
+  "tahap": [
+    { "tahap": "extract_satudata", "status": "sukses", "detik": 12, "log": ["..."] },
+    { "tahap": "transform_rth_raw", "status": "sukses", "detik": 4, "log": ["..."] },
+    { "tahap": "seed_db", "status": "sukses", "detik": 3, "log": ["..."] }
+  ],
+  "tahap_gagal": null
+}
+```
+
+`log` dipotong ke 100 baris terakhir per tahap. `tahap_gagal` terisi (dan tahap berikutnya tidak
+dijalankan) bila ada tahap yang gagal. Lock hanya se-proses API: run scheduler terjadwal (proses
+terpisah) tidak saling terkunci.
+
+---
+
+## 9. Gap Endpoint (belum ada — dibutuhkan PRD/FE)
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
@@ -248,7 +281,7 @@ Keputusan path (nested `POST /public-spaces/{id}/fasilitas` ditolak): `features/
 
 ---
 
-## 9. Verifikasi Kontrak
+## 10. Verifikasi Kontrak
 
 1. Nyalakan backend (`05-environment-setup.md`).
 2. Buka `/docs` → bandingkan daftar operasi dengan §1 — tidak boleh ada endpoint aktif yang tidak terdokumentasi di sini.

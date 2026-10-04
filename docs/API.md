@@ -32,6 +32,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `PATCH` | `/api/v1/users/{user_id}` | **Admin** | Ganti nama / reset sandi |
 | `DELETE` | `/api/v1/users/{user_id}` | **Admin** | Nonaktifkan petugas |
 | `POST` | `/api/v1/users/{user_id}/activate` | **Admin** | Aktifkan kembali |
+| `POST` | `/api/v1/admin/sync-data` | **Admin** | Trigger manual pipeline ETL dari panel admin |
 
 ---
 
@@ -187,6 +188,29 @@ dan salah satu dari `ruang_publik_id` / `ruang_publik_nama`. Jawaban parsial:
 
 Semua endpoint di atas muncul juga di `backend/docs/04-api-endpoints.md` §7
 (file itu yang paling ikut kode).
+
+### `POST /api/v1/admin/sync-data` (admin)
+
+Trigger manual pipeline ETL penuh (extract → transform → seed) dari panel admin.
+Tanpa body; butuh token admin (warga → `403`). Bila run manual lain masih berjalan → `409`.
+
+```json
+{
+  "status": "sukses",
+  "mulai": "2026-10-04T08:00:00Z",
+  "selesai": "2026-10-04T08:00:19Z",
+  "total_detik": 19,
+  "tahap": [
+    { "tahap": "extract_satudata", "status": "sukses", "detik": 12, "log": ["..."] },
+    { "tahap": "transform_rth_raw", "status": "sukses", "detik": 4, "log": ["..."] },
+    { "tahap": "seed_db", "status": "sukses", "detik": 3, "log": ["..."] }
+  ],
+  "tahap_gagal": null
+}
+```
+
+Run yang berhenti di tengah tetap membalas `200` dengan `status: "gagal"` dan
+`tahap_gagal` berisi nama tahapnya; `log` dipotong ke 100 baris terakhir per tahap.
 
 ---
 
