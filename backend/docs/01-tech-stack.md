@@ -39,6 +39,7 @@ Daftar teknologi, versi persis (dari `backend/requirements.txt`), dan **alasan p
 |---|---|---|
 | pandas | >= 2.2 | Pembacaan & transformasi dataset Satu Data Jakarta (CSV/Excel) di `app/etl/`. |
 | lxml | >= 5.0 | Parser untuk file Excel lama format `.xls` (dataset RTH berbentuk Excel). |
+| **requests** | **2.34.2 (di-pin)** | Tahap Extract (`app/etl/extract_satudata.py`): unduh dataset dari API Satu Data Jakarta & layer ArcGIS Jakarta Satu. Dipakai untuk retry otomatis (server portal dua kali putus saat pengujian), timeout per request, dan status code yang jelas. |
 | python-dotenv | 1.0.1 | Fallback pembacaan `.env`. |
 | cryptography | >= 42.0 | Dependensi pendukung stack data/keamanan. |
 
@@ -66,3 +67,9 @@ Sebelum menambah library ke `requirements.txt`:
 1. Apakah kebutuhan ini ada di PRD (FEAT/NFR)? Jika tidak → jangan.
 2. Apakah sudah bisa dengan stdlib/library yang ada? (Contoh: rate limiting sederhana bisa cukup dengan middleware sendiri, tanpa dependensi berat.)
 3. Jika ya → tambahkan **dengan versi terpin bila pernah ada kasus breaking change** (seperti bcrypt), dokumentasikan alasannya di file ini, lalu pastikan `pip install -r requirements.txt` bersih di `.venv` kosong.
+
+### Keputusan yang sudah diambil
+
+| Library | Aturan 2 (stdlib cukup?) | Alasan pengecualian |
+|---|---|---|
+| `requests==2.34.2` | Sebenarnya bisa dengan `urllib.request`, tetapi ditolak | PRD §5 mewajibkan unduhan berkala ke dua portal eksternal yang tidak punya SLA. Saat pengujian, koneksi ke `satudata.jakarta.go.id` sempat putus dan timeout. Retry + backoff otomatis lewat `HTTPAdapter` menulis jauh lebih sedikit kode daripada versi `urllib` sendiri, dan biaya dependensinya kecil (murni Python). Keputusan pemilik proyek (2026-10-04). |

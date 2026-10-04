@@ -36,6 +36,7 @@ Peta besar cara kerja backend: layer kode, posisi ETL sebagai worker terpisah, p
 
 ┌─────────────────────────────────────────────────────────────┐
 │ ETL WORKER (terpisah, script batch — TIDAK jalan di server) │
+│   python -m app.etl.extract_satudata  (unduh dari portal)   │
 │   python -m app.etl.read_raw / transform_rth_raw / seed_db  │
 │   python -m app.etl.seed_admin                              │
 │   data/raw/ → data/processed/ → MySQL                       │
@@ -65,16 +66,21 @@ Panggilan selalu mengalir ke bawah; **jangan melompati layer**:
 
 ETL **bukan bagian dari proses server** — sengaja dipisah karena:
 
-- Sumber data (Satu Data Jakarta) tersedia sebagai **unduhan berkala**, bukan API real-time (PRD §6.3) → sinkronisasi memang periodik, bukan terus-menerus.
+- Tahap Extract mengambil data lewat **API portal** (Satu Data Jakarta + ArcGIS Geoportal, tanpa SLA) → tetap dijalankan periodik/manual (PRD §6.3), bukan terus-menerus.
 - Server tidak boleh mati/hang karena proses transformasi data berat (pandas).
 - Seed bisa diulang dengan aman (idempoten) tanpa menyentuh proses yang sedang melayani request.
 
 ```
-data/raw/*.xls|csv  →  app/etl/read_raw.py
-                    →  app/etl/transform_rth_raw.py   (bersih + koordinat X/Y)
-                    →  data/processed/ruang_publik_raw.json + categories.json
-                    →  app/etl/seed_db.py  (insert ke MySQL, skip ID sudah ada)
-                       sumber seed: data/processed/ruang_publik_4tipe.csv
+python -m app.etl.extract_satudata (BE-14)
+        → data/raw/satudata_*.csv + geoportal_*.csv (+ .meta.json)
+data/raw/*.csv  →  app/etl/read_raw.py
+                →  app/etl/transform_rth_raw.py   (BE-15: filter 4 kategori + koordinat valid)
+                →  data/processed/ruang_publik_terbaru.csv (1200, id identik master)
+                   + kandidat/ruang_publik_kandidat.csv (687, belum direview)
+                   + categories.json + transform_laporan.json
+                →  app/etl/seed_db.py  (insert ke MySQL, skip ID sudah ada)
+                   sumber seed: data/processed/ruang_publik.csv
+                   (--pakai-kandidat wajib untuk file di kandidat/)
 ```
 
 Detail & urutan kerja: [`features/etl-worker.md`](features/etl-worker.md).
@@ -123,7 +129,7 @@ backend/
 │   ├── services/            # logika bisnis (CRUD/search/stats)
 │   ├── models/              # SQLAlchemy (Base di base.py)
 │   ├── schemas/             # kontrak Pydantic
-│   └── etl/                 # worker batch: read_raw, transform, seed
+│   └── etl/                 # worker batch: extract, read_raw, transform, seed
 ├── alembic/ + alembic.ini   # migrasi (versions/ = 2 revisi saat ini)
 ├── storage/                 # upload: laporan/ & ruang-publik/ (gitignored)
 ├── docs/                    # dokumen ini

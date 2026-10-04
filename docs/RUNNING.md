@@ -90,11 +90,13 @@ cd "d:\Ruka Jakarta\backend"
 
 Tanpa langkah kedua, `/dashboard/fasilitas` dan filter fasilitas publik kosong.
 
-Lihat `app/etl/` untuk script yang tersedia (`read_raw`, `transform_rth_raw`,
-`transform_rth`). Seed membaca `data/processed/ruang_publik.csv` (1200
+Lihat `backend/docs/features/etl-worker.md` untuk urutan lengkap (`extract_satudata`,
+`read_raw`, `transform_rth_raw`). Seed membaca `data/processed/ruang_publik.csv` (1200
 baris, semua punya koordinat). File lain bisa dipakai lewat `--file`, dan
 `--reset` mengganti total isi `ruang_publik` + `categories` (backup DB dulu;
-perintahnya ditolak kalau masih ada laporan/fasilitas).
+perintahnya ditolak kalau masih ada laporan/fasilitas). File kandidat di
+`data/processed/kandidat/` (hasil transform, belum direview) ditolak kecuali
+`--pakai-kandidat`.
 
 ```bash
 # pencarian radius sudah hidup, contoh 2 km dari Monas

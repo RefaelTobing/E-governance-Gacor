@@ -90,4 +90,8 @@ data/processed/categories.csv
 data/processed/ruang_publik_mentah.*
 data/processed/*.bak
 data/raw/data-ruang-terbuka-hijau-(rth)-komponen-data.xls
+data/raw/satudata_*
+data/raw/geoportal_*
+data/processed/kandidat/
+data/processed/transform_laporan.json
 anti-slop/audit-001-2026-09-23.md

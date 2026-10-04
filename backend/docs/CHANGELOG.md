@@ -25,6 +25,20 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-04
 
+- **[BE-15]** Transform 4 kategori + guard kandidat - `app/etl/transform_rth_raw.py` ditulis ulang: baca
+  3 file hasil BE-14 + master 1200 (master tidak ditulis ulang), buang baris di luar 4 kategori final,
+  koordinat tak valid/luar rentang DKI, dan duplikat by natural key; `latitude`/`longitude`/`tipe`
+  disegarkan untuk 1121 baris, `kategori_id` master (`taman` 1185 + `jalur-hijau` 15) dinormalisasi ke
+  4 id final; keluar `ruang_publik_terbaru.csv` (1200 baris, id identik) +
+  `kandidat/ruang_publik_kandidat.csv` (687 baris) + `transform_laporan.json`; `seed_db` kini menolak
+  file kandidat kecuali `--pakai-kandidat`; verifikasi: 11 pemeriksaan lolos, `seed_db --file
+  ruang_publik_terbaru.csv` -> `0 baru (total 1200)`, jalankan dua kali -> `0 file berubah`.
+- **[BE-14]** Script Extract Satu Data + Geoportal - `app/etl/extract_satudata.py` baru: unduh 5 dataset
+  (Satu Data: RTH 2545, RPTRA 648, RPTRA belum diresmikan 56; Geoportal ArcGIS: koordinat RTH 6512,
+  RPTRA 324) ke `data/raw/` dengan `<nama>.meta.json`, retry otomatis, penulisan atomik, CLI
+  `--source`/`--dataset`/`--page-url`; `requests==2.34.2` masuk requirements + alasan di
+  `01-tech-stack.md` §7; verifikasi: 5 CSV sesuai `total` API, run ulang identik (0 file berubah),
+  `read_raw` baca 7 file bersih, kolom RTH identik dengan unduhan manual.
 - **Chore** seed fasilitas - `app/etl/seed_fasilitas.py` baru: isi `fasilitas` dengan data contoh per
   ruang publik (id stabil `seed-<hash>-<n>`, dilewati bila lokasi sudah punya fasilitas, `--reset` hanya
   menghapus baris prefix `seed-` dan menolak bila ada laporan menunjuknya); 5428 baris, sebelumnya 0;

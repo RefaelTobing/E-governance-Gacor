@@ -4,17 +4,39 @@
 > Edit data master oleh admin → `data-master-service.md`; galeri foto → `public-space-service.md`.
 
 Kode terkait (semua di `app/etl/`):
+- `extract_satudata.py` — **tahap Extract (BE-14):** unduh dataset terbaru dari Satu Data Jakarta +
+  layer koordinat Jakarta Satu Geoportal ke `data/raw/`
 - `read_raw.py` — baca file mentah dari `data/raw/`
 - `kategori.py` — master kategori (4 tipe) dipakai seed dan transform
-- `transform_rth_raw.py` — transformasi utama → `data/processed/ruang_publik_mentah.json`
-- `transform_rth.py` — varian transform (legacy/alternatif) → `data/processed/ruang_publik_mentah.csv`
-- `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL (`--file`, `--reset`)
+- `transform_rth_raw.py` — **tahap Transform (BE-15):** 3 file extract + master 1200 →
+  `ruang_publik_terbaru.csv` + `kandidat/ruang_publik_kandidat.csv` + `transform_laporan.json`
+- `transform_rth.py` — varian transform legacy dari file `.xls`; bukan bagian pipeline utama
+- `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL (`--file`, `--reset`, `--pakai-kandidat`)
 - `seed_fasilitas.py` — isi tabel `fasilitas` dengan data contoh per ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
 
 Data:
-- Sumber mentah: `data/raw/` (mis. `data-ruang-terbuka-hijau-(rth)-komponen-data.xls`, `rth_dki_coordinates.csv`)
-- Sumber seed (bawaan): `data/processed/ruang_publik.csv` — 1200 baris, kolom lengkap, `tipe` diisi
+- **Hasil Extract (gitignored, bisa diunduh ulang kapan saja):**
+  | File | Sumber | Isi |
+  |---|---|---|
+  | `satudata_rth.csv` | Satu Data `data-ruang-terbuka-hijau-rth` | 2545 baris, 7 kolom atribut, **tanpa koordinat** |
+  | `satudata_rptra.csv` | Satu Data `jumlah-ruang-publik-terpadu-ramah-anak-rptra` | 648 baris, 2023–2024, punya `nama_rptra` |
+  | `satudata_rptra_belum_diresmikan.csv` | Satu Data (link PRD) | 56 baris, 2016, per kelurahan, **tanpa nama & koordinat** |
+  | `geoportal_rth_koordinat.csv` | ArcGIS `RTH_SKPD_DKI/RTH_SKPD_DKI_View` | 6512 baris x 18 kolom, kolom `X`/`Y` = lon/lat |
+  | `geoportal_rptra_koordinat.csv` | ArcGIS `RPTRA_DKI_Jakarta` | 324 baris, `NAMA_RPTRA` + `X`/`Y` + alamat |
+
+  Tiap CSV punya `<nama>.meta.json` (tanggal unduh, jumlah baris, kolom, tanggal rilis sumber).
+- **Hasil Transform (BE-15):**
+  | File | Isi |
+  |---|---|
+  | `ruang_publik_terbaru.csv` | 1200 baris, id & urutan identik master; hanya `latitude`/`longitude`/`tipe`/`kategori_id` disegarkan (1121 baris ketemu sumber) |
+  | `kandidat/ruang_publik_kandidat.csv` | 687 baris baru, `verified=False`, **ditolak `seed_db`** tanpa `--pakai-kandidat` |
+  | `transform_laporan.json` | buang per alasan, 79 baris master tanpa pasangan sumber, 1 koordinat luar rentang |
+- **File lama:** `data/raw/rth_dki_coordinates.csv` dan `data-ruang-terbuka-hijau-(rth)-komponen-data.xls`
+  tidak dibaca transform lagi, tetap sebagai arsip unduhan manual.
+- Sumber seed (bawaan): `data/processed/ruang_publik.csv` — 1200 baris, hasil pembersihan manual,
+  **tidak pernah ditulis ulang**. `ruang_publik_terbaru.csv` berisi baris yang sama (id identik),
+  dipakai lewat `seed_db --file ../data/processed/ruang_publik_terbaru.csv`
 - Baris rusak (kolom bergeser, 334 baris) terpisah di `data/processed/ruang_publik_perlu_perbaikan.csv`, tidak di-seed
 - Master kategori: `data/processed/categories.json` (+ `.csv`) — 4 tipe: taman-lingkungan, rptra, taman-interaktif, taman-kota
 
@@ -24,10 +46,12 @@ Data:
 
 | Aspek | Status |
 |---|---|
+| Extract dari portal (BE-14) | **Ada** — `python -m app.etl.extract_satudata`, 5 dataset, jalankan manual |
+| Transform + filter 4 kategori (BE-15) | **Ada** — `python -m app.etl.transform_rth_raw`; baris baru keluar sebagai kandidat, tidak pernah masuk database sendirian |
 | Pipeline mentah → processed → DB | **Ada & berjalan** (script manual) |
 | Idempoten (aman diulang) | **Ya** — seed skip ID sudah ada (inti FEAT-012) |
 | Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
-| Kategori konsisten | **Ya** — kolom `tipe` di file sumber → `kategori_id` lewat `kategori.py`; tipe di luar master → `NULL` |
+| Kategori konsisten | **Ya** — kolom `tipe` → `kategori_id` lewat `kategori.py`; `kategori_id` lama (`taman`, `jalur-hijau`) dinormalisasi ulang saat transform |
 | Penjadwalan otomatis (cron) | **Belum** — PRD §5 menyebut "cron job/scheduled task"; saat ini manual |
 | Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
 | Endpoint trigger dari admin API | **Belum** — opsional, lihat `data-master-service.md` §2.3 |
@@ -38,24 +62,36 @@ Data:
 ## 1. Alur Data (sesuai PRD §5 + kode)
 
 ```
-Satu Data Jakarta (unduhan manual — portal menyediakan CSV/Excel, bukan API real-time)
-        │  (manusia mengunduh ke data/raw/)
+Satu Data Jakarta (API JSON: detail + get-table-data)   Jakarta Satu Geoportal (ArcGIS REST query)
+  atribut: nama, alamat, jenis, wilayah                   koordinat: kolom X/Y (lon/lat), nama
+        │                                                        │
+        └──────────────────┬─────────────────────────────────────┘
+                           ▼
+[0] extract_satudata.py    unduh → data/raw/satudata_*.csv + geoportal_*.csv (+ .meta.json)
+        │                  (retry otomatis; jumlah baris dicek ke total API)
         ▼
-[1] read_raw.py            baca file mentah (xls/csv)
+[1] read_raw.py            baca file mentah dari data/raw/
         ▼
-[2] transform_rth_raw.py   normalisasi:
-        │                    - koordinat dari kolom X/Y sumber → latitude/longitude
-        │                    - wilayah "KOTA ADM. JAKARTA SELATAN" → "Jakarta Selatan"
-        │                    - tipe: nama diawali "RPTRA", atau JENIS_OBJEK ∈ 3 tipe taman
+[2] transform_rth_raw.py   normalisasi + filter:
+        │                    - koordinat X/Y → float, dicek ke rentang DKI (hilang/salah = dibuang)
+        │                    - buang baris di luar 4 kategori final, hapus duplikat by natural key
+        │                    - segarkan lat/lng/tipe baris master yang ketemu di sumber
         ▼
-   data/processed/ruang_publik_mentah.json  (data mentah; bukan file seed)
+   ruang_publik_terbaru.csv (1200 baris, id identik master)
+   + kandidat/ruang_publik_kandidat.csv (687, belum direview)
+   + categories.json + transform_laporan.json
         ▼
 [3] seed_db.py             ke MySQL raku_db — INSERT idempoten
         │                   sumber bawaan: data/processed/ruang_publik.csv
         │                   --file <path> memakai sumber lain, --reset mengganti total isi
+        │                   file kandidat ditolak kecuali --pakai-kandidat
         ▼
    tabel categories (4 tipe) + ruang_publik
 ```
+
+**Catatan tahap [0] vs [2]:** sumber transform kini hasil extract BE-14, bukan `rth_dki_coordinates.csv`.
+Master 1200 tetap acuan: `ruang_publik_terbaru.csv` berisi baris yang sama (id identik), dan baris baru
+hanya muncul di `kandidat/` yang tidak bisa di-seed tanpa persetujuan eksplisit.
 
 **Bentuk kerja: worker terpisah** — script batch dijalankan manusia lewat shell, **bukan** proses di dalam server (alasan: `02-architecture.md` §3).
 
@@ -66,11 +102,14 @@ Satu Data Jakarta (unduhan manual — portal menyediakan CSV/Excel, bukan API re
 ```powershell
 cd "d:\Ruka Jakarta\backend"
 
+# 0. extract: unduh dataset terbaru (butuh internet; aman diulang)
+..\.venv\Scripts\python.exe -m app.etl.extract_satudata
+
 # 1. pastikan DB hidup & migrasi head
 docker compose up -d            # dari root repo; tunggu raku-db healthy
 ..\.venv\Scripts\python.exe -m alembic upgrade head
 
-# 2. transform (bila ada file baru di data/raw/; opsional, tulis ke *_raw.*)
+# 2. transform (baca data/raw hasil extract; keluar: ruang_publik_terbaru.csv + kandidat/ + laporan)
 ..\.venv\Scripts\python.exe -m app.etl.transform_rth_raw
 
 # 3. seed (idempoten; jalankan lagi boleh)
@@ -86,9 +125,18 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 
 Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru** + total, lalu baris per kategori.
 Keluaran `seed_fasilitas`: jumlah fasilitas **baru** + total, lalu baris per kategori ruang publik; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
+Keluaran `extract_satudata`: nama dataset, jumlah baris & kolom, tanggal rilis sumber (bila ada), nama file di `data/raw/`; dataset gagal tidak menghentikan yang lain, dan membuat keluaran exit code 1.
+Keluaran `transform_rth_raw`: jumlah sumber tersimpan, jumlah buang per alasan, jumlah baris master yang disegarkan/tanpa pasangan, jumlah kandidat; daftar lengkap (79 nama tanpa pasangan, 1 koordinat luar rentang) ada di `transform_laporan.json`.
+
+Flag `extract_satudata`:
+- `--source all|satudata|geoportal` — sumber mana yang dijalankan (default `all`).
+- `--dataset <KEY>` — hanya satu dataset dari registry (contoh `satudata_rth`); key yang salah dicetak beserta daftar pilihan, exit 2.
+- `--page-url <slug> --output <nama>` — dataset acak di luar registry (wajib berduaan); hasilnya `data/raw/<nama>.csv` + `.meta.json`.
+- `--timeout <detik>` — timeout per request (default 60).
 
 Flag:
 - `--file <path>` — sumber ruang publik (csv/json); path relatif terhadap `data/processed/` juga diterima. Default: `ruang_publik.csv`.
+- `--pakai-kandidat` — syarat bila `--file` menunjuk `data/processed/kandidat/`; tanpa flag ini seed menolak dengan pesan jelas dan exit 1.
 - `--reset` — kosongkan `ruang_publik` + `categories` dulu. **Ditolak** kalau masih ada `laporan`/`fasilitas` yang menempel. Backup DB sebelum dipakai.
 
 > Perhatian path: script menghitung `data/` relatif terhadap lokasi file (`parents[3]`) → jalankan dari folder mana pun tidak masalah, **asalkan struktur folder repo utuh**.
@@ -124,10 +172,18 @@ if record["id"] in ada:
 | 334 baris sumber asli kolomnya bergeser (koma tak di-quote) | Diketahui | Terpisah di `ruang_publik_perlu_perbaikan.csv`; baris layak harus dipisah manual sebelum masuk seed |
 | Atribut (`deskripsi`, `jam_operasional`, `tiket_masuk`, dll.) tidak seragam antar dataset | Sesuai PRD §6.3 | Kolom nullable; FE wajib menandai "data tidak tersedia" — jangan isi default palsu di backend |
 | Foto resmi sering dummy/kosong (PRD §2) | Diketahui | Kolom `image_url` nullable; kelengkapan bertahap via data partisipatif |
-| Sumber tersedia sebagai **unduhan berkala**, bukan API real-time (PRD §6.3) | Diterima | Sinkronisasi manual berkala; **catat tanggal data** di UI adalah urusan FE/produk |
+| Sumber tersedia sebagai **unduhan berkala**, bukan API real-time (PRD §6.3) | Sebagian berubah | Tahap [0] kini memakai API kedua portal (lihat `extract_satudata.py`); **tanpa SLA** — endpoint bisa berubah/berat sewaktu-waktu, karena itu retry + pengecekan `total` sebelum menulis CSV. Tarikh data tetap dicatat di `.meta.json` |
+| Satu Data **tidak punya kolom koordinat** | Ditangani (BE-15) | Koordinat diambil dari layer Geoportal (`geoportal_rth_koordinat.csv`), join by nama+kecamatan+kelurahan ternormalisasi |
+| `geoportal_rth_koordinat.csv`: 970 dari 6512 baris tanpa `X`/`Y` | Diketahui (sama persis dengan file lama) | Baris ini beratribut tanpa titik koordinat; jangan dibuang, tapi tandai "tanpa lokasi" di UI |
+| Koordinat berasal dari geometri EPSG:32748 | Sengaja tidak dipakai | Yang dipakai kolom `X`/`Y` yang sudah lon/lat (WGS84); transformasi butuh `pyproj`, tidak perlu |
 | `kecamatan`/`kelurahan` ada di file tapi tidak di model | Sengaja | Dibuang saat seed (whitelist `KOLOM_RUANG_PUBLIK`) — jangan tambahkan kolom tanpa kebutuhan jelas + migrasi |
 | `verified` datang sebagai string `'True'` | Ditangani | Dikonversi `_ke_bool` sebelum insert, kalau tidak MySQL mengubahnya jadi 0 |
-| `transform_rth.py` vs `transform_rth_raw.py` | Dua varian | Keduanya menulis `ruang_publik_mentah.*`; **seed tidak membaca keduanya** |
+| `transform_rth.py` vs `transform_rth_raw.py` | Dua varian | `transform_rth_raw.py` (pipeline) menulis `ruang_publik_terbaru.csv` + `kandidat/`; varian legacy menulis `ruang_publik_mentah.*` yang **tidak dibaca siapa-siapa** |
+| Master punya `kategori_id` lama `taman` (1185) + `jalur-hijau` (15) | Diperbaiki (BE-15) | Diturunkan ulang dari kolom `tipe` → 950/119/102/29; kolom `tipe` tidak pernah berubah (0 baris) |
+| 79 baris master tidak ketemu di sumber mana pun | Dipertahankan | Baris tetap ikut `ruang_publik_terbaru.csv` apa adanya; namanya tercatat di `transform_laporan.json` supaya BE-16 tidak asal menghapus |
+| 687 baris baru hasil extract | Kandidat saja | Hanya `kandidat/ruang_publik_kandidat.csv`; `seed_db` menolak path kandidat tanpa `--pakai-kandidat` |
+| 1 baris (`RPTRA Tidung Ceria`) koordinatnya di luar rentang DKI | Dipertahankan | Editan manual di master tidak ditimpa; jangan "diperbaiki" otomatis tanpa cek sumber |
+| Nama sumber memakai prefix `RTH ` (1044 baris) & RPTRA tanpa awalan | Dinormalisasi | Prefix dibuang saat mencocokkan, nama diseragamkan `RPTRA <nama>`; kolom `nama` master tidak diubah |
 
 **Validasi data (PRD §8):** lakukan spot-check sampel hasil transform terhadap file sumber — terutama **akurasi koordinat** (latitude negatif lintang SELATAN, longitude ~106) dan `kategori_id` yang valid di tabel `categories`.
 
@@ -140,9 +196,9 @@ if record["id"] in ada:
 
 ## 5. Penjadwalan (belum ada — keputusan perlu ditulis)
 
-PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**.
+PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**, termasuk tahap [0] extract (butuh internet).
 
-- [ ] **Keputusan MVP:** jalankan manual tiap kali ada rilis data baru dari Satu Data Jakarta → cukup tandai "disetujui manual" di sini, **tanpa kode**.
+- [ ] **Keputusan MVP:** jalankan manual tiap kali ada rilis data baru dari Satu Data Jakarta → cukup tandai "disetujui manual" di sini, **tanpa kode**. Bila kelak dijadwalkan, urutannya `extract_satudata` → `transform_rth_raw` → `seed_db` dalam satu jadwal.
 - [ ] **Bila wajib otomatis nanti:** OS cron / Task Scheduler memanggil `python -m app.etl.seed_db` harian — **tanpa** menambah dependency ke server (jangan integrasikan celery/redis ke `app/main.py`; lihat larangan `01-tech-stack.md` §7).
 - [ ] **Opsi API trigger** (admin-only `POST /public-spaces/re-sync`) → keputusan & langkah ada di `data-master-service.md` §2.3.
 
@@ -150,7 +206,15 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**.
 
 ## 6. Test / Verifikasi Regresi
 
-- [ ] **Idempoten:** jalankan `seed_db` dua kali berturut-turut → keluaran kedua `0 baru` dan total tidak berubah
+- [x] **Extract 5 dataset:** `python -m app.etl.extract_satudata` → 2545 / 648 / 56 / 6512 / 324 baris sesuai `total` API, masing-masing dengan `.meta.json` (2026-10-04)
+- [x] **Extract idempoten:** dijalankan dua kali → isi CSV identik (`0 file berubah`) (2026-10-04)
+- [x] **Kesegaran extract vs unduhan manual:** `satudata_rth.csv` kolom & jumlah barisnya sama dengan `.xls` yang diunduh manual; `geoportal_rth_koordinat.csv` sama strukturnya dengan `rth_dki_coordinates.csv` (6512 x 18, 970 baris tanpa `X`, baris pertama sama) (2026-10-04)
+- [x] **`read_raw` baca hasil extract:** ke-7 file di `data/raw/` terbaca tanpa error (2026-10-04)
+- [x] **Transform valid:** `python -m app.etl.transform_rth_raw` → 11 pemeriksaan lolos (id & kolom master identik, hanya 4 tipe final, `kategori_id` valid, koordinat dalam rentang DKI, tanpa duplikat, kandidat `verified=False`) (2026-10-04)
+- [x] **Transform idempoten:** dijalankan dua kali → `0 file berubah` (2026-10-04)
+- [x] **Master aman:** `ruang_publik.csv` tetap 1200 baris dengan isi sama sebelum & sesudah transform (tidak pernah dibuka untuk ditulis) (2026-10-04)
+- [x] **Guard kandidat:** `seed_db --file .../kandidat/ruang_publik_kandidat.csv` ditolak exit 1; `seed_db --file .../ruang_publik_terbaru.csv` → `0 baru (total 1200)` (2026-10-04)
+- [x] **Idempoten:** jalankan `seed_db` dua kali berturut-turut → keluaran kedua `0 baru` dan total tidak berubah (2026-10-04)
 - [x] **Idempoten fasilitas:** `seed_fasilitas` dua kali berturut-turut → kedua kali `0 baru`, total tetap 5428; `--reset` lalu seed ulang → jumlahnya sama persis (2026-10-04)
 - [x] **Fasilitas admin aman:** ruang publik yang sudah punya fasilitas (dibuat lewat `POST /admin/facilities`) dilewati `seed_fasilitas` (2026-10-04)
 - [ ] **Merge:** catat `deskripsi` 1 baris → edit via SQL/API → seed ulang → editan tetap ada

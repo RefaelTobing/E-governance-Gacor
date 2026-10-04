@@ -33,7 +33,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 |---|---|---|---|---|
 | B0 Setup & Fondasi | 9 | 6 | 2 | 1 |
 | B1 Public Space Service | 7 | 3 | 1 | 3 |
-| B2 ETL Worker | 6 | 0 | 2 | 4 |
+| B2 ETL Worker | 6 | 2 | 2 | 2 |
 | B3 Report Service | 10 | 0 | 2 | 8 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
@@ -41,7 +41,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **11** | **12** | **33** |
+| **Total** | **56** | **13** | **12** | **31** |
 
 ---
 
@@ -131,15 +131,42 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 ## B2. ETL Worker - Sinkronisasi Satu Data Jakarta
 
-- [ ] **[BE-14]** Script Extract: download dataset RTH & RPTRA dari Satu Data Jakarta, simpan sementara.
-  - **Belum ada:** `app/etl/read_raw.py` hanya membaca file yang sudah ada di `data/raw/`.
-  - **Verifikasi:** satu perintah mengunduh dataset terbaru dan menaruhnya di `data/raw/` dengan nama standar.
-- [ ] **[BE-15]** Script Transform: normalisasi nama kategori ke 4 kategori final, normalisasi koordinat,
+- [x] **[BE-14]** Script Extract: download dataset RTH & RPTRA dari Satu Data Jakarta, simpan sementara.
+  - **Lokasi kode:** `app/etl/extract_satudata.py`.
+  - **5 dataset, 2 sumber** (koordinat ikut diambil karena Satu Data tidak punya kolom koordinat,
+    keputusan pemilik proyek 2026-10-04): Satu Data Jakarta (POST JSON `detail` + `get-table-data`) ->
+    `satudata_rth` 2545 baris, `satudata_rptra` 648, `satudata_rptra_belum_diresmikan` 56;
+    Jakarta Satu Geoportal (ArcGIS REST `query`) -> `geoportal_rth_koordinat` 6512 (kolom X/Y),
+    `geoportal_rptra_koordinat` 324. Tiap CSV punya pasangan `<nama>.meta.json` (tanggal unduh,
+    jumlah baris, kolom, tanggal rilis sumber).
+  - **Verifikasi:** `python -m app.etl.extract_satudata` menulis 5 CSV + 5 meta ke `data/raw/`,
+    jumlah baris sama dengan `total` API; jalankan dua kali -> isi CSV identik;
+    `python -m app.etl.read_raw` membaca ke-7 file di `data/raw/` tanpa error;
+    kolom `satudata_rth.csv` identik dengan file `.xls` unduhan manual (2545 x 7);
+    `geoportal_rth_koordinat.csv` identik strukturnya dengan `rth_dki_coordinates.csv`
+    (6512 x 18, 970 baris tanpa X, baris pertama sama).
+- [x] **[BE-15]** Script Transform: normalisasi nama kategori ke 4 kategori final, normalisasi koordinat,
       deteksi baris duplikat/tidak valid.
-  - **Parsial:** `app/etl/kategori.py` (4 kategori), `app/etl/transform_rth_raw.py`,
-    `app/etl/transform_rth.py` sudah menangani pemetaan kategori + koordinat + hash id, tetapi sumbernya
-    masih file lokal, bukan hasil extract BE-14.
-  - **Verifikasi:** kategori selain 4 tipe final tidak masuk; koordinat seragam formatnya; duplikat terhapus.
+  - **Lokasi kode:** `app/etl/transform_rth_raw.py` (varian legacy `transform_rth.py` tidak diubah).
+  - **Sumber:** 3 file hasil BE-14 + master `data/processed/ruang_publik.csv` (1200 baris, hasil
+    pembersihan manual, **tidak pernah ditulis ulang**). Baris di luar 4 kategori final dibuang,
+    koordinat hilang/luar rentang DKI (lat -6.5..-5.5, lng 106.5..107.2) dibuang, duplikat dihapus
+    by natural key `nama|kecamatan|kelurahan` ternormalisasi (prefix `RTH ` dibuang, nama RPTRA
+    diseragamkan jadi `RPTRA <nama>` karena sumber menulisnya tanpa awalan).
+  - **Keluaran:** `ruang_publik_terbaru.csv` (tepat 1200 baris, id identik master; hanya `latitude`,
+    `longitude`, `tipe`, `kategori_id` disegarkan untuk 1121 baris yang ketemu sumber) +
+    `kandidat/ruang_publik_kandidat.csv` (687 baris baru, `verified=False`) +
+    `categories.json`/`.csv` + `transform_laporan.json` (dibuang per alasan, 79 baris tanpa pasangan).
+  - **Temuan di master:** `kategori_id` lama berisi `taman` (1185) dan `jalur-hijau` (15), keduanya
+    tidak ada di master kategori, jadi diturunkan ulang dari kolom `tipe` (950/119/102/29);
+    1 baris (`RPTRA Tidung Ceria`) koordinatnya di luar rentang DKI, dipertahankan apa adanya.
+  - **Untuk BE-16:** id di `ruang_publik.csv` lama tidak bisa direproduksi dari data sumber, jadi Load
+    wajib mencocokkan baris **by natural key, bukan by id**, dan hanya meng-update kolom milik ETL
+    (`features/data-master-service.md` §4). Tanpa itu database keisi dua kali: 1200 + 687.
+  - **Verifikasi:** 11 pemeriksaan lolos (id & kolom identik master, hanya 4 tipe final, kategori_id
+    valid, koordinat dalam rentang, tanpa duplikat); `seed_db --file ruang_publik_terbaru.csv` ->
+    `0 baru (total 1200)`; `seed_db --file .../kandidat/...` ditolak (exit 1); dua kali jalan ->
+    `0 file berubah`.
 - [ ] **[BE-16]** Script Load: update kolom yang **belum pernah diedit manual** saja, atau insert data baru. *(FEAT-012)*
   - **Parsial:** `app/etl/seed_db.py` idempoten (baris dengan id sudah ada dilewati - jadi edit manual tidak
     tertimpa), **tetapi belum ada jalur update** untuk kolom non-manual, dan penanda field hasil edit manual

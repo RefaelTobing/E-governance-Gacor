@@ -155,10 +155,11 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 
 **Pipeline ETL** (`backend/app/etl/`):
 
-1. `read_raw.py` — baca file mentah di `data/raw/`
-2. `transform_rth_raw.py` — olah ke `data/processed/ruang_publik_mentah.json` (koordinat dari kolom X/Y sumber; semua baris berkoordinat)
-3. `seed_db.py` — masukkan kategori + ruang publik ke MySQL dari `data/processed/ruang_publik.csv` (idempoten: baris yang sudah ada dilewat; `--file` ganti sumber, `--reset` ganti total isi)
-4. `seed_admin.py` — buat admin pertama dari `ADMIN_SEED_*` di `.env` (idempoten)
+1. `extract_satudata.py` — unduh 5 dataset dari Satu Data Jakarta + Geoportal ke `data/raw/` (+ `.meta.json`)
+2. `read_raw.py` — baca file mentah di `data/raw/`
+3. `transform_rth_raw.py` — olah jadi `data/processed/ruang_publik_terbaru.csv` (1200 baris, id identik master) + `kandidat/ruang_publik_kandidat.csv` (baris baru, `verified=False`) + `transform_laporan.json`; koordinat hilang/luar rentang & baris di luar 4 kategori dibuang
+4. `seed_db.py` — masukkan kategori + ruang publik ke MySQL dari `data/processed/ruang_publik.csv` (idempoten: baris yang sudah ada dilewat; `--file` ganti sumber, `--reset` ganti total isi, file kandidat ditolak kecuali `--pakai-kandidat`)
+5. `seed_admin.py` — buat admin pertama dari `ADMIN_SEED_*` di `.env` (idempoten)
 
 Aturan: **perubahan manual admin terhadap data ETL tidak boleh hilang** saat seed ulang (FEAT-012) — `seed_db` sudah skip ID yang ada; pertahankan perilaku ini.
 

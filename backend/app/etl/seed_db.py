@@ -6,7 +6,9 @@ tetap bisa dipakai lewat `--file`:
 
     python -m app.etl.seed_db                                   # data terbaru
     python -m app.etl.seed_db --reset                           # ganti total isi tabel
-    python -m app.etl.seed_db --file ../data/processed/ruang_publik_lainnya.csv
+    python -m app.etl.seed_db --file ../data/processed/ruang_publik_terbaru.csv
+    python -m app.etl.seed_db --file ../data/processed/kandidat/ruang_publik_kandidat.csv \
+        --pakai-kandidat                                        # kandidat hasil transform, baru boleh setelah review
 
 Idempoten: baris dengan id yang sudah ada dilewati, tidak pernah di-update
 (aturan merge FEAT-012, lihat docs/features/data-master-service.md).
@@ -193,9 +195,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--file", help="file sumber ruang publik (csv/json); default data terbaru")
     parser.add_argument("--reset", action="store_true", help="kosongkan tabel dulu sebelum seed")
+    parser.add_argument(
+        "--pakai-kandidat",
+        action="store_true",
+        help="izinkan seed dari file kandidat (hasil transform yang belum direview)",
+    )
     args = parser.parse_args()
 
     path_ruang = _cari_file(args.file)
+    if "kandidat" in path_ruang.parts and not args.pakai_kandidat:
+        raise SystemExit(
+            f"{path_ruang} ditolak: file kandidat belum direview, jangan masuk ke database. "
+            "Review dulu isinya, lalu jalankan ulang dengan --pakai-kandidat bila sudah disetujui."
+        )
     df_kategori = _baca_kategori()
     df_ruang = _siapkan(_baca_ruang_publik(path_ruang), path_ruang)
 

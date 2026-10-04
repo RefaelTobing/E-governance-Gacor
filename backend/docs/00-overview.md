@@ -66,7 +66,7 @@ Kode di backend/app/ (kebenaran akhir bila konflik dengan dokumen lama)
 | 012 | Manajemen Data Master | `features/data-master-service.md` | Belum (baru baca) |
 | 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Belum (filter per-pengguna belum ada) |
 | 014 | Autentikasi & Otorisasi Admin | `features/admin-auth.md` | Ada (gap: `POST /categories` belum terproteksi) |
-| — | Sinkronisasi Satu Data Jakarta | `features/etl-worker.md` | Ada (script manual, belum terjadwal) |
+| — | Sinkronisasi Satu Data Jakarta | `features/etl-worker.md` | Sebagian (Extract 5 dataset + transform 4 kategori sudah ada — BE-14/15; seed manual, 687 kandidat menunggu review BE-16, belum terjadwal) |
 
 \*Status ringkas per terakhir dokumen dibuat; detail & langkah perbaikan ada di file masing-masing.
 
