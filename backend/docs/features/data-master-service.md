@@ -16,7 +16,7 @@ Kode terkait:
 |---|---|
 | Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sebagian** — ETL seed ada, tetapi **manual/script** (bukan dari panel admin) |
 | Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); ruang publik masih GET saja (BE-33 belum) |
-| Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah dijamin mekanismenya** (seed idempoten skip ID ada) — dipertahankan |
+| Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah** — field-level merge BE-16: kolom `ETL_OWNED` disegarkan, kolom tercatat `field_source` ditahan (lihat §4) |
 
 ---
 
@@ -25,7 +25,7 @@ Kode terkait:
 - Halaman admin FE `/dashboard/data-master` masih baca-saja (hanya `GET /public-spaces`; tombol "Edit Master" belum punya backend). `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
 - Tabel `ruang_publik` & `fasilitas` sudah punya kolom lengkap yang dibutuhkan edit (deskripsi, jam operasional, fasilitas status, dll.).
 - Skema Pydantic update (`RuangPublikUpdate`) sudah tersedia — mempercepat implementasi (tinggal pakai).
-- ETL (`seed_db`) **hanya INSERT ID baru, tidak pernah UPDATE** → edit admin otomatis aman (lihat §4).
+- ETL (`seed_db`, BE-16) **insert baris baru + update terbatas**: hanya kolom `ETL_OWNED`, hanya untuk kolom yang belum tercatat di `field_source` → edit admin otomatis aman (lihat §4).
 - Tabel `fasilitas` terisi oleh `app/etl/seed_fasilitas.py` (data contoh, idempoten) — sumber Satu Data tidak punya kolom fasilitas.
 
 ---
@@ -98,32 +98,54 @@ Keduanya **wajib mempertahankan** strategi merge §4.
 
 **Masalah PRD:** "Perubahan manual tidak hilang saat sinkronisasi ETL berikutnya."
 
-**Mekanisme yang sudah ada di kode (`app/etl/seed_db.py`):**
+**Mekanisme yang sudah ada di kode (`app/etl/seed_db.py`, BE-16):**
 
 ```python
-ada = set(db.scalars(select(RuangPublik.id)).all())
-...
-if record["id"] in ada:
-    continue        # ← baris yang sudah ada TIDAK disentuh
-db.add(RuangPublik(**record))
+if record["id"] in ada:                      # atau cocok natural key / nama
+    # hanya kolom ETL_OWNED yang disegarkan:
+    for kolom in ETL_OWNED:
+        if kolom in baris.field_source:      # milik admin -> ditahan
+            continue
+        if nilai_sumber is None or sama(nilai_lama, nilai_sumber):
+            continue                         # sumber kosong bukan perintah hapus
+        setattr(baris, kolom, nilai_sumber)
+else:
+    db.add(RuangPublik(**record))            # baris baru
 ```
 
 Konsekuensi:
 
 | Jenis perubahan | Selamat dari seed ulang? |
 |---|---|
-| Edit manual admin (alamat, deskripsi, verified, foto) | ✅ Ya — seed tidak meng-update baris lama |
-| Data resmi yang diperbaiki sumber (mis. koordinat dikoreksi) | ❌ Tidak ikut masuk — seed melewati ID lama |
-| Data baru dari sumber resmi | ✅ Masuk (ID baru) |
+| Edit manual admin (alamat, deskripsi, verified, foto) | ✅ Ya — kolom tercatat di `field_source`, ETL menahannya |
+| Data resmi yang diperbaiki sumber (mis. koordinat dikoreksi) | ✅ Ikut masuk — kolom `ETL_OWNED` disegarkan tiap seed |
+| Data baru dari sumber resmi | ✅ Masuk (id baru, atau merge lewat natural key bila barisnya sudah ada) |
 | Fasilitas/laporan yang menempel | ✅ `seed_db` tidak menyentuh keduanya (hanya `categories` + `ruang_publik`); `seed_fasilitas.py` hanya INSERT baris untuk ruang publik yang belum punya fasilitas |
+
+**Pemetaan kolom (BE-16; sumber kebenaran: konstanta `ETL_OWNED` / `KOLOM_ADMIN` di `app/etl/seed_db.py`):**
+
+| Kelompok | Kolom | Aturan |
+|---|---|---|
+| `ETL_OWNED` | `nama`, `kecamatan`, `kelurahan`, `wilayah`, `alamat`, `latitude`, `longitude`, `kategori_id` | Ditulis ulang dari file sumber, **kecuali** kolom sudah tercatat di `field_source`. Nilai sumber NULL dilewati (tidak mengosongkan data terisi). |
+| `KOLOM_ADMIN` | `deskripsi`, `jam_operasional`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan`, `verified`, `status_general`, `image_url` | Tidak pernah ditulis ETL, berapa pun isi sumbernya. |
+| `KOLOM_SISTEM` | `id`, `field_source`, `created_at`, `updated_at` | Ditulis sistem (`mark_fields_edited()`, timestamp); `id` sekaligus kunci pencocokan pertama. |
+
+Kolom tabel yang belum masuk salah satu kelompok membuat seed **berhenti dengan pesan error**
+(`_cek_pemetaan`) — keputusan kolom baru harus ditulis di tabel ini dulu.
+
+**Pencocokan baris (urut, berhenti di yang pertama cocok):** `id` file sumber -> natural key
+`nama|kecamatan|kelurahan` ternormalisasi (kunci di `app/etl/kunci.py`, dipakai transform & seed) ->
+`nama` saja bila tepat satu baris. Nama yang cocok di banyak baris tidak ditebak: barisnya dilewati
+dan dicatat (`nama_ambigu`) supaya direview manual. `kecamatan`/`kelurahan` ada di tabel justru
+supaya kunci natural bisa dihitung dari database (migrasi `d7b19b0b82cc`).
 
 **Aturan lanjutan (wajib dipatuhi ketika menulis sinkronisasi apa pun):**
 
-1. **Jangan** mengganti pola "skip ID ada" dengan UPDATE overwrite seluruh baris.
-2. Bila nanti perlu sinkron kolom tertentu dari sumber resmi, terapkan **field-level merge**: tentukan daftar kolom `ETL_OWNED` (mis. `latitude`, `longitude`, `alamat` bila sumber lebih otoritatif) vs `ADMIN_OWNED` (`deskripsi`, `verified`, `image_url`, `status_general`) → seed hanya menulis kolom `ETL_OWNED`, dan hanya untuk kolom yang belum pernah diedit admin.
+1. **Jangan** mengganti pola merge dengan UPDATE overwrite seluruh baris.
+2. Perubahan kolom `ETL_OWNED` <-> `KOLOM_ADMIN` wajib lewat pemetaan di atas + konstanta di
+   `seed_db.py`, jangan diam-diam pindah satu kolom.
 3. **Keputusan penanda (BE-05, sudah dijalankan 2026-10-03):** penanda memakai kolom **`ruang_publik.field_source` (JSON, nullable)**, bukan tabel log terpisah. Isinya `{"nama_kolom": "waktu edit ISO-8601"}`; `NULL` = belum pernah diedit. Ditulis oleh `mark_fields_edited(db, ruang_publik, fields)` di `app/services/ruang_publik.py` — dipanggil endpoint edit admin (BE-33), dibaca proses merge ETL (BE-16). Migrasi: `c1f4a9d2e073_add_ruang_publik_field_source`.
-4. Pemetaan kolom `ETL_OWNED` vs `ADMIN_OWNED` **masih ditulis di sini** saat task BE-16 dikerjakan.
-5. Setiap perubahan skema (flag/dst.) = migrasi Alembic baru (`03-database-schema.md` §3).
+4. Setiap perubahan skema (flag/dst.) = migrasi Alembic baru (`03-database-schema.md` §3).
 
 ---
 
@@ -133,7 +155,7 @@ Konsekuensi:
 - [ ] PATCH hanya `deskripsi` → field lain tidak berubah (patch semantics)
 - [ ] PATCH body `{}` / field None → tidak menimpa kolom terisi dengan NULL
 - [x] Tambah fasilitas → muncul di `GET /facilities` (aggregate) & detail ruang publik (2026-10-04, skrip black-box BE-53)
-- [ ] **Merge test:** edit deskripsi 1 ruang publik → jalankan `seed_db` ulang → perubahan tetap ada, data baru dari CSV tetap masuk
+- [x] **Merge test:** edit `nama` + `latitude` lewat `mark_fields_edited()` → `seed_db` ulang → perubahan tetap ada (`2 kolom ditahan`) dan kolom lain (`longitude` tanpa penanda) tetap ter-update dari CSV; `field_source` tidak pernah ditulis seed (2026-10-04; jalur API menyusul bersama BE-33)
 - [ ] 404 untuk id tak ada; response selalu `RuangPublikResponse` valid
 
 ---

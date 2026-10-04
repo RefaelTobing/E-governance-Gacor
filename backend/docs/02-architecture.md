@@ -78,8 +78,9 @@ data/raw/*.csv  →  app/etl/read_raw.py
                 →  data/processed/ruang_publik_terbaru.csv (1200, id identik master)
                    + kandidat/ruang_publik_kandidat.csv (687, belum direview)
                    + categories.json + transform_laporan.json
-                →  app/etl/seed_db.py  (insert ke MySQL, skip ID sudah ada)
-                   sumber seed: data/processed/ruang_publik.csv
+                →  app/etl/seed_db.py  (insert baris baru + update field-level, BE-16)
+                   kolom ETL_OWNED disegarkan, kolom di field_source ditahan
+                   sumber seed: data/processed/ruang_publik_terbaru.csv
                    (--pakai-kandidat wajib untuk file di kandidat/)
 ```
 

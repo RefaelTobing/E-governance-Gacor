@@ -10,6 +10,8 @@ class RuangPublik(Base):
     nama = Column(String(255), nullable=False)
     kategori_id = Column(String(50), ForeignKey("categories.id"))
     wilayah = Column(String(100))
+    kecamatan = Column(String(100))
+    kelurahan = Column(String(100))
     alamat = Column(Text)
     latitude = Column(DECIMAL(10, 8))
     longitude = Column(DECIMAL(11, 8))

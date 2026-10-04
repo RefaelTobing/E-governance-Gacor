@@ -133,7 +133,7 @@ curl "http://localhost:8000/api/v1/public-spaces?facilities=Toilet%20Umum&limit=
 **PRD:** nama, kategori, alamat/kelurahan, koordinat, jam operasional, deskripsi, daftar fasilitas; **field yang tidak tersedia ditandai eksplisit "data tidak tersedia"** (bukan dikosongkan).
 
 **Implementasi saat ini:**
-- `GET /public-spaces/{id}` → `RuangPublikDetailResponse` = field list + `kategori{...}` + `fasilitas[]` + `foto[]`.
+- `GET /public-spaces/{id}` → `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `kategori{...}` + `fasilitas[]` + `foto[]`.
 - Relasi di-eager-load (`joinedload` kategori & fasilitas) → anti N+1.
 - Koordinat ikut diresponse (`latitude`/`longitude`) — FE yang menampilkan di peta.
 - `404` bila id tak ada.

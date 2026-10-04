@@ -25,6 +25,18 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-04
 
+- **[BE-16]** Load field-level merge FEAT-012 - `app/etl/seed_db.py` kini punya jalur UPDATE: baris
+  dicocokkan id -> natural key `nama|kecamatan|kelurahan` -> nama (nama ambigu ditahan, tidak
+  ditebak), hanya kolom `ETL_OWNED` yang disegarkan dan hanya bila belum tercatat di `field_source`;
+  pemetaan `ETL_OWNED`/`KOLOM_ADMIN` jadi konstanta di `seed_db.py` dengan penjaga kolom baru belum
+  terpetakan; `app/etl/kunci.py` baru (kunci normalisasi dipakai transform & seed);
+  `kecamatan`/`kelurahan` masuk tabel `ruang_publik` (migrasi `d7b19b0b82cc`) + response detail;
+  default sumber seed pindah ke `ruang_publik_terbaru.csv`, `ruang_publik.csv` jadi cadangan;
+  verifikasi: seed pertama `0 baru, 1018 diupdate` -> ulang `0 diupdate`, edit manual lewat
+  `mark_fields_edited` bertahan sementara `longitude` tanpa penanda dibetulkan, 687 kandidat (48
+  jalur update + 639 insert, tanpa duplikat; baris uji dibersihkan setelah uji), `field_source` 0
+  terisi & `verified` 1200 True tak tersentuh, transform pasca-refactor file identik, API radius
+  `jarak_km` + `stats` 1200 + detail `kecamatan`/`kelurahan` normal.
 - **[BE-15]** Transform 4 kategori + guard kandidat - `app/etl/transform_rth_raw.py` ditulis ulang: baca
   3 file hasil BE-14 + master 1200 (master tidak ditulis ulang), buang baris di luar 4 kategori final,
   koordinat tak valid/luar rentang DKI, dan duplikat by natural key; `latitude`/`longitude`/`tipe`

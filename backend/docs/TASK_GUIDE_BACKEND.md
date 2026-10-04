@@ -167,11 +167,31 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     valid, koordinat dalam rentang, tanpa duplikat); `seed_db --file ruang_publik_terbaru.csv` ->
     `0 baru (total 1200)`; `seed_db --file .../kandidat/...` ditolak (exit 1); dua kali jalan ->
     `0 file berubah`.
-- [ ] **[BE-16]** Script Load: update kolom yang **belum pernah diedit manual** saja, atau insert data baru. *(FEAT-012)*
-  - **Parsial:** `app/etl/seed_db.py` idempoten (baris dengan id sudah ada dilewati - jadi edit manual tidak
-    tertimpa), **tetapi belum ada jalur update** untuk kolom non-manual, dan penanda field hasil edit manual
-    (BE-05) belum ada.
-  - **Verifikasi:** edit nama via API -> tidak hilang saat `seed_db` dijalankan ulang; kolom lain tetap ter-update.
+- [x] **[BE-16]** Script Load: update kolom yang **belum pernah diedit manual** saja, atau insert data baru. *(FEAT-012)*
+  - **Lokasi kode:** jalur update di `app/etl/seed_db.py` (`_terapkan_etl`, `seed_ruang_publik`),
+    pemetaan kolom `ETL_OWNED` / `KOLOM_ADMIN` di file yang sama, kunci natural di `app/etl/kunci.py`
+    (dipakai bersama transform), kolom `kecamatan`/`kelurahan` + migrasi
+    `alembic/versions/d7b19b0b82cc_tambah_kecamatan_kelurahan_ke_ruang_.py`.
+  - **Keputusan:**
+    1. Pencocokan bertingkat `id` -> natural key `nama|kecamatan|kelurahan` -> `nama`; bila nama cocok
+       di lebih dari satu baris, baris ditahan (hitung `nama_ambigu`), tidak ditebak, supaya tidak
+       jadi duplikat.
+    2. Kolom `kecamatan`/`kelurahan` kini ada di tabel (dulu dibuang saat seed) supaya kunci natural
+       bisa dihitung dari database, bukan hanya dari file master.
+    3. Default sumber seed pindah ke `ruang_publik_terbaru.csv`; `ruang_publik.csv` (master) jadi
+       cadangan, supaya jalur update tidak menulis ulang nilai lama di atas hasil transform.
+    4. Nilai sumber NULL tidak pernah menimpa nilai terisi (sumber kosong bukan perintah menghapus);
+       `field_source` tidak pernah ditulis seed; `verified` masuk `KOLOM_ADMIN`.
+  - **Verifikasi (2026-10-04):** seed pertama `0 baru, 1018 diupdate` (backfill `kecamatan` 1006 baris
+    + koordinat yang berubah), diulang 2x -> `0 diupdate` (idempoten); edit manual lewat
+    `mark_fields_edited(db, row, ["latitude", "nama"])` bertahan sementara `longitude` tanpa penanda
+    dibetulkan seed; kandidat diuji: 687 baris -> 1 natural key + 47 nama masuk jalur update (639
+    insert), baris uji tidak jadi duplikat (dibersihkan lagi setelah uji); guard kandidat tetap exit 1;
+    `field_source` 0 terisi & `verified` 1200 True (tak tersentuh ETL); selisih `ETL_OWNED` vs
+    `ruang_publik_terbaru.csv` = 0; `transform_rth_raw` hasil refactor kunci menghasilkan file identik;
+    API: radius search `jarak_km` terisi, `stats.total_ruang_publik` 1200, detail menampilkan
+    `kecamatan`/`kelurahan`. Catatan: verifikasi "edit via API" memakai skrip `mark_fields_edited`
+    karena endpoint edit admin (BE-33) belum ada.
 - [ ] **[BE-17]** Setup APScheduler untuk menjalankan Extract -> Transform -> Load berkala, sebagai proses
       terpisah dari server API.
   - **Belum ada:** `requirements.txt` tidak memuat `APScheduler`; tidak ada modul scheduler.

@@ -124,7 +124,7 @@ Catatan: Haversine dihitung **di SQL** (bukan Python). Baris tanpa koordinat sel
 `status_prima` = fasilitas `status="baik"`; `perlu_perhatian` = semua yang **bukan** baik (termasuk `NULL`).
 
 ### `GET /api/v1/public-spaces/{id}`
-Detail `RuangPublikDetailResponse` = field list + `fasilitas: [...]` + `foto: ["..."]` (dibungkus dari `image_url` tunggal) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit — FEAT-012). `404` bila id tak ada.
+Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` + `foto: ["..."]` (dibungkus dari `image_url` tunggal) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit — FEAT-012). `404` bila id tak ada.
 
 ### `GET /api/v1/public-spaces/{id}/reports`
 Laporan tayang untuk 1 ruang publik, query `skip`/`limit`.

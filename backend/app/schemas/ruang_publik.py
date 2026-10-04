@@ -9,6 +9,8 @@ class RuangPublikBase(BaseModel):
     nama: str
     kategori_id: Optional[str] = None
     wilayah: Optional[str] = None
+    kecamatan: Optional[str] = None
+    kelurahan: Optional[str] = None
     alamat: Optional[str] = None
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None

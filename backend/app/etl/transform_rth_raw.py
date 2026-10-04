@@ -8,8 +8,9 @@ Sumber di `data/raw/`:
 Master `data/processed/ruang_publik.csv` (1200 baris, hasil pembersihan manual)
 jadi acuan: jumlah baris, id, nama, alamat, wilayah, dan verified tidak pernah
 berubah di sini. Hanya latitude, longitude, tipe, dan kategori_id yang disegarkan
-untuk baris yang ketemu di sumber. Hasil segar itu baru menyinggung database saat
-BE-16 (jalur update) selesai, karena seed_db sekarang melewatkan id yang sudah ada.
+untuk baris yang ketemu di sumber. Nilai segar itu masuk database lewat jalur
+update di seed_db (BE-16), yang menyegarkan kolom ETL_OWNED tanpa menimpa edit
+manual admin.
 
 Keluaran:
 - ruang_publik_terbaru.csv            1200 baris, id identik dengan master
@@ -31,6 +32,7 @@ from typing import Optional
 import pandas as pd
 
 from app.etl.kategori import KATEGORI_TIPE, kategori_id_dari_tipe
+from app.etl.kunci import kunci_alami, teks as _teks
 from app.etl.read_raw import read_raw_csv
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -60,17 +62,6 @@ KOLOM = [
 KOLOM_KOSONG = KOLOM[7:12] + KOLOM[13:15]
 
 
-def _teks(value) -> str:
-    if value is None or (isinstance(value, str) and not value.strip()):
-        return ""
-    try:
-        if pd.isna(value):
-            return ""
-    except (TypeError, ValueError):
-        pass
-    return re.sub(r"\s+", " ", str(value)).strip()
-
-
 def _tanpa_prefix(teks: str, prefix: str) -> str:
     cocok = re.match(rf"^{re.escape(prefix)}\s+", teks, flags=re.I)
     return teks[cocok.end():] if cocok else teks
@@ -90,12 +81,8 @@ def _basename_rptra(value) -> str:
     return _tanpa_prefix(_nama_rth(value), "RPTRA").strip()
 
 
-def _kunci(nama, kecamatan, kelurahan) -> str:
-    return "|".join(_teks(v).upper() for v in (nama, kecamatan, kelurahan))
-
-
 def _stable_id(nama, kecamatan, kelurahan) -> str:
-    return "rth-" + hashlib.sha1(_kunci(nama, kecamatan, kelurahan).encode()).hexdigest()[:12]
+    return "rth-" + hashlib.sha1(kunci_alami(nama, kecamatan, kelurahan).encode()).hexdigest()[:12]
 
 
 def _wilayah(value) -> Optional[str]:
@@ -145,7 +132,7 @@ def _kumpul_rth(df: pd.DataFrame, buang: dict, verifikasi: dict) -> list[dict]:
         tanda = _teks(r.get("VERIFIKASI")).upper() or "kosong"
         verifikasi[tanda] = verifikasi.get(tanda, 0) + 1
         rows.append({
-            "key": _kunci(nama, r.get("KECAMATAN"), r.get("KELURAHAN")),
+            "key": kunci_alami(nama, r.get("KECAMATAN"), r.get("KELURAHAN")),
             "nama": nama,
             "tipe": tipe,
             "wilayah": _wilayah(r.get("KOTA")),
@@ -170,7 +157,7 @@ def _kumpul_rptra(df_geo: pd.DataFrame, df_sat: pd.DataFrame, buang: dict) -> tu
             buang[status] = buang.get(status, 0) + 1
             continue
         kecamatan, kelurahan = _teks(r.get("WADMKC")), _teks(r.get("WADMKD"))
-        key = _kunci(nama, kecamatan, kelurahan)
+        key = kunci_alami(nama, kecamatan, kelurahan)
         if key in geo:
             buang["duplikat"] = buang.get("duplikat", 0) + 1
             continue
@@ -189,7 +176,7 @@ def _kumpul_rptra(df_geo: pd.DataFrame, df_sat: pd.DataFrame, buang: dict) -> tu
     cocok = 0
     for r in df_sat.to_dict("records"):
         nama = _nama_rptra(r.get("nama_rptra"))
-        key = _kunci(nama, r.get("kecamatan"), r.get("kelurahan"))
+        key = kunci_alami(nama, r.get("kecamatan"), r.get("kelurahan"))
         baris = geo.get(key)
         if baris:
             cocok += 1
@@ -228,7 +215,7 @@ def _segarkan_master(master: pd.DataFrame, index: dict[str, dict]):
     disegarkan, tipe_berubah, kategori_dinormalisasi = 0, 0, 0
     tanpa_pasangan, luar_rentang = [], []
     for i, r in master.iterrows():
-        sumber = index.get(_kunci(r["nama"], r["kecamatan"], r["kelurahan"]))
+        sumber = index.get(kunci_alami(r["nama"], r["kecamatan"], r["kelurahan"]))
         if sumber is None:
             tanpa_pasangan.append(_teks(r["nama"]))
             if _luar_rentang(r["latitude"], r["longitude"]):
@@ -296,7 +283,7 @@ def main() -> None:
     kolom_kurang = set(KOLOM) - set(master.columns)
     if kolom_kurang:
         raise SystemExit(f"{MASTER.name} tidak punya kolom: {', '.join(sorted(kolom_kurang))}")
-    master_keys = {_kunci(r["nama"], r["kecamatan"], r["kelurahan"]) for r in master.to_dict("records")}
+    master_keys = {kunci_alami(r["nama"], r["kecamatan"], r["kelurahan"]) for r in master.to_dict("records")}
     index = {r["key"]: r for r in sumber}
     segar = _segarkan_master(master, index)
     kandidat = [r for k, r in index.items() if k not in master_keys]

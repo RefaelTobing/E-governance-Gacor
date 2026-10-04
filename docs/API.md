@@ -240,8 +240,10 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 
 ### `GET /api/v1/public-spaces/{ruang_publik_id}`
 
-Detail lengkap. Menambahkan `fasilitas` (array) dan `foto` (array) di atas
-field yang sama dengan response list.
+Detail lengkap. Menambahkan `fasilitas` (array), `foto` (array), `field_source`
+(objek penanda kolom hasil edit admin, `null` bila belum pernah diedit), serta
+`kecamatan` dan `kelurahan` (kolom baru dari merge ETL, `null` bila sumber tidak
+punya) di atas field yang sama dengan response list.
 
 ```bash
 curl http://localhost:8000/api/v1/public-spaces/<id>

@@ -8,10 +8,14 @@ Kode terkait (semua di `app/etl/`):
   layer koordinat Jakarta Satu Geoportal ke `data/raw/`
 - `read_raw.py` — baca file mentah dari `data/raw/`
 - `kategori.py` — master kategori (4 tipe) dipakai seed dan transform
+- `kunci.py` — normalisasi `nama|kecamatan|kelurahan` dipakai transform (BE-15) dan load (BE-16),
+  supaya kedua tahap menghitung kunci yang sama
 - `transform_rth_raw.py` — **tahap Transform (BE-15):** 3 file extract + master 1200 →
   `ruang_publik_terbaru.csv` + `kandidat/ruang_publik_kandidat.csv` + `transform_laporan.json`
 - `transform_rth.py` — varian transform legacy dari file `.xls`; bukan bagian pipeline utama
-- `seed_db.py` — muat `categories` + `ruang_publik` ke MySQL (`--file`, `--reset`, `--pakai-kandidat`)
+- `seed_db.py` — **tahap Load (BE-16):** muat `categories` + `ruang_publik` ke MySQL (`--file`,
+  `--reset`, `--pakai-kandidat`); baris sudah ada dicocokkan id → natural key → nama, lalu hanya
+  kolom `ETL_OWNED` yang disegarkan (aturan merge di `data-master-service.md` §4)
 - `seed_fasilitas.py` — isi tabel `fasilitas` dengan data contoh per ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
 
@@ -34,9 +38,9 @@ Data:
   | `transform_laporan.json` | buang per alasan, 79 baris master tanpa pasangan sumber, 1 koordinat luar rentang |
 - **File lama:** `data/raw/rth_dki_coordinates.csv` dan `data-ruang-terbuka-hijau-(rth)-komponen-data.xls`
   tidak dibaca transform lagi, tetap sebagai arsip unduhan manual.
-- Sumber seed (bawaan): `data/processed/ruang_publik.csv` — 1200 baris, hasil pembersihan manual,
-  **tidak pernah ditulis ulang**. `ruang_publik_terbaru.csv` berisi baris yang sama (id identik),
-  dipakai lewat `seed_db --file ../data/processed/ruang_publik_terbaru.csv`
+- Sumber seed (bawaan): `data/processed/ruang_publik_terbaru.csv` (hasil transform; ada → dipakai
+  otomatis). Cadangan `data/processed/ruang_publik.csv` — 1200 baris, hasil pembersihan manual,
+  **tidak pernah ditulis ulang**. Sumber lain lewat `seed_db --file <path>`
 - Baris rusak (kolom bergeser, 334 baris) terpisah di `data/processed/ruang_publik_perlu_perbaikan.csv`, tidak di-seed
 - Master kategori: `data/processed/categories.json` (+ `.csv`) — 4 tipe: taman-lingkungan, rptra, taman-interaktif, taman-kota
 
@@ -49,7 +53,8 @@ Data:
 | Extract dari portal (BE-14) | **Ada** — `python -m app.etl.extract_satudata`, 5 dataset, jalankan manual |
 | Transform + filter 4 kategori (BE-15) | **Ada** — `python -m app.etl.transform_rth_raw`; baris baru keluar sebagai kandidat, tidak pernah masuk database sendirian |
 | Pipeline mentah → processed → DB | **Ada & berjalan** (script manual) |
-| Idempoten (aman diulang) | **Ya** — seed skip ID sudah ada (inti FEAT-012) |
+| Idempoten (aman diulang) | **Ya** — seed ulang kedua kalinya `0 diupdate` (inti FEAT-012) |
+| Merge field-level (BE-16) | **Ya** — kolom `ETL_OWNED` disegarkan, kolom di `field_source` ditahan; pemetaan kolom di `data-master-service.md` §4 |
 | Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
 | Kategori konsisten | **Ya** — kolom `tipe` → `kategori_id` lewat `kategori.py`; `kategori_id` lama (`taman`, `jalur-hijau`) dinormalisasi ulang saat transform |
 | Penjadwalan otomatis (cron) | **Belum** — PRD §5 menyebut "cron job/scheduled task"; saat ini manual |
@@ -81,8 +86,8 @@ Satu Data Jakarta (API JSON: detail + get-table-data)   Jakarta Satu Geoportal (
    + kandidat/ruang_publik_kandidat.csv (687, belum direview)
    + categories.json + transform_laporan.json
         ▼
-[3] seed_db.py             ke MySQL raku_db — INSERT idempoten
-        │                   sumber bawaan: data/processed/ruang_publik.csv
+[3] seed_db.py             ke MySQL raku_db — insert baris baru + update field-level (BE-16)
+        │                   sumber bawaan: ruang_publik_terbaru.csv (cadangan: ruang_publik.csv)
         │                   --file <path> memakai sumber lain, --reset mengganti total isi
         │                   file kandidat ditolak kecuali --pakai-kandidat
         ▼
@@ -112,7 +117,7 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 # 2. transform (baca data/raw hasil extract; keluar: ruang_publik_terbaru.csv + kandidat/ + laporan)
 ..\.venv\Scripts\python.exe -m app.etl.transform_rth_raw
 
-# 3. seed (idempoten; jalankan lagi boleh)
+# 3. seed / load (idempoten; sumber bawaan ruang_publik_terbaru.csv; jalankan lagi boleh)
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 
 # 3b. isi fasilitas (data contoh; dilewati untuk lokasi yang sudah punya fasilitas)
@@ -123,7 +128,7 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 ..\.venv\Scripts\python.exe -m app.etl.seed_db --file ../data/processed/ruang_publik_lainnya.csv
 ```
 
-Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru** + total, lalu baris per kategori.
+Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru**, **diupdate**, dan tanpa perubahan + total, jumlah kolom yang ditahan penanda edit manual bila ada (plus baris yang cocok tanpa id), lalu baris per kategori.
 Keluaran `seed_fasilitas`: jumlah fasilitas **baru** + total, lalu baris per kategori ruang publik; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
 Keluaran `extract_satudata`: nama dataset, jumlah baris & kolom, tanggal rilis sumber (bila ada), nama file di `data/raw/`; dataset gagal tidak menghentikan yang lain, dan membuat keluaran exit code 1.
 Keluaran `transform_rth_raw`: jumlah sumber tersimpan, jumlah buang per alasan, jumlah baris master yang disegarkan/tanpa pasangan, jumlah kandidat; daftar lengkap (79 nama tanpa pasangan, 1 koordinat luar rentang) ada di `transform_laporan.json`.
@@ -135,7 +140,7 @@ Flag `extract_satudata`:
 - `--timeout <detik>` — timeout per request (default 60).
 
 Flag:
-- `--file <path>` — sumber ruang publik (csv/json); path relatif terhadap `data/processed/` juga diterima. Default: `ruang_publik.csv`.
+- `--file <path>` — sumber ruang publik (csv/json); path relatif terhadap `data/processed/` juga diterima. Default: `ruang_publik_terbaru.csv` bila ada, selanjutnya `ruang_publik.csv`.
 - `--pakai-kandidat` — syarat bila `--file` menunjuk `data/processed/kandidat/`; tanpa flag ini seed menolak dengan pesan jelas dan exit 1.
 - `--reset` — kosongkan `ruang_publik` + `categories` dulu. **Ditolak** kalau masih ada `laporan`/`fasilitas` yang menempel. Backup DB sebelum dipakai.
 
@@ -145,21 +150,28 @@ Flag:
 
 ## 3. Aturan Merge (kunci FEAT-012 — ringkas; detail di `data-master-service.md` §4)
 
-`seed_ruang_publik`:
+`seed_ruang_publik` (BE-16) per baris sumber:
 
 ```python
-if record["id"] in ada:
-    continue        # ID sudah ada → DILEWATI, tidak pernah di-UPDATE
+target = by_id.get(record["id"])            # [1] id
+      or by_kunci.get(nama|kecamatan|kelurahan)   # [2] natural key
+      or by_nama[nama] if unik            # [3] nama, bila tepat satu baris
+if target is None:
+    db.add(RuangPublik(**record))          # baris baru
+else:
+    # hanya kolom ETL_OWNED; lewati bila tercatat di field_source / nilai sumber NULL
+    terapkan_etl(target, record)
 ```
 
 | Konsekuensi | Implikasi |
 |---|---|
-| Edit admin selamat dari seed ulang ✅ | Syarat utama FEAT-012 terpenuhi oleh mekanisme ini |
-| Perbaikan kolom dari sumber resmi **tidak** meng-update baris lama | Trade-off yang diterima untuk MVP; bila kelak perlu, pakai **field-level merge** (kolom ETL_OWNED vs ADMIN_OWNED — langkahnya tertulis di `data-master-service.md` §4) |
-| Data baru masuk otomatis ✅ | Tidak ada duplikat (dicek via set ID) |
+| Edit admin selamat dari seed ulang ✅ | Kolom yang ditandai `field_source` ditahan ETL (inti FEAT-012) |
+| Perbaikan kolom dari sumber resmi ikut masuk ✅ | Kolom `ETL_OWNED` (koordinat, alamat, kategori, kecamatan/kelurahan, ...) disegarkan tiap seed; pemetaan kolom di `data-master-service.md` §4 |
+| Nama sama di beberapa baris → baris ditahan | Hitungannya dicetak (`nama_ambigu`); review manual, tidak ditebak jadi update/duplikat |
+| Data baru masuk otomatis ✅ | Tidak ada duplikat: id dulu, lalu natural key, lalu nama |
 | `categories` idem (insert ID baru saja) ✅ | Tambah kategori sumber tidak menimpa label buatan admin |
 
-**Jangan** mengubah pola ini jadi UPDATE overwrite tanpa membaca `data-master-service.md` §4.
+**Jangan** mengubah pola ini jadi UPDATE overwrite seluruh baris tanpa membaca `data-master-service.md` §4.
 
 ---
 
@@ -176,12 +188,12 @@ if record["id"] in ada:
 | Satu Data **tidak punya kolom koordinat** | Ditangani (BE-15) | Koordinat diambil dari layer Geoportal (`geoportal_rth_koordinat.csv`), join by nama+kecamatan+kelurahan ternormalisasi |
 | `geoportal_rth_koordinat.csv`: 970 dari 6512 baris tanpa `X`/`Y` | Diketahui (sama persis dengan file lama) | Baris ini beratribut tanpa titik koordinat; jangan dibuang, tapi tandai "tanpa lokasi" di UI |
 | Koordinat berasal dari geometri EPSG:32748 | Sengaja tidak dipakai | Yang dipakai kolom `X`/`Y` yang sudah lon/lat (WGS84); transformasi butuh `pyproj`, tidak perlu |
-| `kecamatan`/`kelurahan` ada di file tapi tidak di model | Sengaja | Dibuang saat seed (whitelist `KOLOM_RUANG_PUBLIK`) — jangan tambahkan kolom tanpa kebutuhan jelas + migrasi |
+| `kecamatan`/`kelurahan` ada di file dan kini juga di model | Ditangani (BE-16) | Masuk tabel (migrasi `d7b19b0b82cc`) karena dipakai kunci natural saat merge; diisi/backfill oleh seed, dan ikut response detail |
 | `verified` datang sebagai string `'True'` | Ditangani | Dikonversi `_ke_bool` sebelum insert, kalau tidak MySQL mengubahnya jadi 0 |
 | `transform_rth.py` vs `transform_rth_raw.py` | Dua varian | `transform_rth_raw.py` (pipeline) menulis `ruang_publik_terbaru.csv` + `kandidat/`; varian legacy menulis `ruang_publik_mentah.*` yang **tidak dibaca siapa-siapa** |
 | Master punya `kategori_id` lama `taman` (1185) + `jalur-hijau` (15) | Diperbaiki (BE-15) | Diturunkan ulang dari kolom `tipe` → 950/119/102/29; kolom `tipe` tidak pernah berubah (0 baris) |
-| 79 baris master tidak ketemu di sumber mana pun | Dipertahankan | Baris tetap ikut `ruang_publik_terbaru.csv` apa adanya; namanya tercatat di `transform_laporan.json` supaya BE-16 tidak asal menghapus |
-| 687 baris baru hasil extract | Kandidat saja | Hanya `kandidat/ruang_publik_kandidat.csv`; `seed_db` menolak path kandidat tanpa `--pakai-kandidat` |
+| 79 baris master tidak ketemu di sumber mana pun | Dipertahankan | Baris tetap ikut `ruang_publik_terbaru.csv` apa adanya; namanya tercatat di `transform_laporan.json`. Load (BE-16) tidak pernah menghapus baris, hanya menyegarkan kolom `ETL_OWNED` |
+| 687 baris baru hasil extract | Kandidat saja | Hanya `kandidat/ruang_publik_kandidat.csv`; `seed_db` menolak path kandidat tanpa `--pakai-kandidat`. Kandidat yang natural key/nama-nya sudah ada di DB meng-update baris itu, bukan menambah baris (BE-16) |
 | 1 baris (`RPTRA Tidung Ceria`) koordinatnya di luar rentang DKI | Dipertahankan | Editan manual di master tidak ditimpa; jangan "diperbaiki" otomatis tanpa cek sumber |
 | Nama sumber memakai prefix `RTH ` (1044 baris) & RPTRA tanpa awalan | Dinormalisasi | Prefix dibuang saat mencocokkan, nama diseragamkan `RPTRA <nama>`; kolom `nama` master tidak diubah |
 
@@ -217,11 +229,14 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Saat ini **manual**, termas
 - [x] **Idempoten:** jalankan `seed_db` dua kali berturut-turut → keluaran kedua `0 baru` dan total tidak berubah (2026-10-04)
 - [x] **Idempoten fasilitas:** `seed_fasilitas` dua kali berturut-turut → kedua kali `0 baru`, total tetap 5428; `--reset` lalu seed ulang → jumlahnya sama persis (2026-10-04)
 - [x] **Fasilitas admin aman:** ruang publik yang sudah punya fasilitas (dibuat lewat `POST /admin/facilities`) dilewati `seed_fasilitas` (2026-10-04)
-- [ ] **Merge:** catat `deskripsi` 1 baris → edit via SQL/API → seed ulang → editan tetap ada
-- [ ] **Koordinat:** `curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=1"` → hasil tidak kosong dan `jarak_km` terisi
-- [ ] **Kategori:** semua `kategori_id` hasil seed ada di `GET /categories` (tidak ada orphan — FK constraint akan menolak, tapi cek sebelum insert penuh)
+- [x] **Merge field-level (BE-16):** edit `nama` + `latitude` lewat `mark_fields_edited()` -> seed ulang -> nilai edit bertahan dan tercatat `2 kolom ditahan`; `longitude` tanpa penanda dibetulkan balik dari CSV; `field_source` 0 baris disentuh seed (2026-10-04)
+- [x] **Load update + backfill (BE-16):** seed pertama `0 baru, 1018 diupdate` (koordinat disegarkan + `kecamatan`/`kelurahan` terisi 1006 baris), diulang 2x -> `0 diupdate`; selisih kolom `ETL_OWNED` vs `ruang_publik_terbaru.csv` = 0; `verified` 1200 True tak tersentuh (2026-10-04)
+- [x] **Pencocokan tanpa id (BE-16):** baris uji ber-id baru dengan natural key kandidat -> masuk jalur update `natural key`, 687 kandidat -> 48 jalur update + 639 insert, tanpa duplikat; baris uji dibersihkan setelah uji, DB kembali 1200 baris (2026-10-04)
+- [x] **Transform tetap identik pasca-refactor kunci:** `transform_rth_raw` dijalankan 2x -> `ruang_publik_terbaru.csv` & kandidat identik dengan sebelum refactor, `transform_laporan.json` sama kecuali `generated_at` (2026-10-04)
+- [x] **Koordinat:** `GET /api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=3` → hasil tidak kosong dan `jarak_km` terisi (2026-10-04)
+- [x] **Kategori:** semua `kategori_id` hasil seed lolos FK (seed tanpa error) dan `GET /categories` → 4 entri (2026-10-04)
 - [ ] **Jumlah per tipe:** `GET /categories` → 4 entri; `GET /public-spaces?category=<id>` → taman-lingkungan 950, rptra 119, taman-interaktif 102, taman-kota 29 (limit 500, jadi haluskan dengan `skip` untuk taman-lingkungan)
-- [ ] **Kesegaran data:** `GET /public-spaces/stats` → `total_ruang_publik` = 1200 = jumlah baris `ruang_publik.csv`
+- [x] **Kesegaran data:** `GET /public-spaces/stats` → `total_ruang_publik` = 1200 = jumlah baris `ruang_publik.csv` (2026-10-04)
 
 ---
 

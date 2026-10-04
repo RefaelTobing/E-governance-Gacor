@@ -19,6 +19,8 @@ CREATE TABLE ruang_publik (
    nama VARCHAR(255) NOT NULL,
    kategori_id VARCHAR(50),
    wilayah VARCHAR(100),
+   kecamatan VARCHAR(100),
+   kelurahan VARCHAR(100),
    alamat TEXT,
    latitude DECIMAL(10, 8),
    longitude DECIMAL(11, 8),
