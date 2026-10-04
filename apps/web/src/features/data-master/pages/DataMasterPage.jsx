@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardBody, EmptyState, Skeleton } from '../../../components';
+import { Button, Card, CardBody, EmptyState, Skeleton, Spinner } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
 import { getAllFacilities } from '../../../services/fasilitasService';
+import { triggerSync } from '../../../services/syncService';
+
+const gayaLog = {
+  margin: 'var(--space-xs) 0 0',
+  padding: 'var(--space-sm)',
+  backgroundColor: 'var(--color-bg-main)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-md)',
+  fontSize: '12px',
+  maxHeight: '200px',
+  overflowX: 'auto',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+};
+
+const gayaBarisStatus = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--space-sm)',
+  flexWrap: 'wrap',
+};
 
 export const DataMasterPage = () => {
   const [masterList, setMasterList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [jumlahFasilitas, setJumlahFasilitas] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+  const [syncError, setSyncError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,9 +73,35 @@ export const DataMasterPage = () => {
     };
   }, []);
 
+  const muatUlangMaster = async () => {
+    try {
+      const data = await getPublicSpaces();
+      setMasterList(data);
+    } catch (err) {
+      console.error('Error fetching master data:', err);
+    }
+  };
+
+  const jalankanSinkronisasi = async () => {
+    setIsSyncing(true);
+    setSyncResult(null);
+    setSyncError(null);
+    try {
+      const hasil = await triggerSync();
+      if (hasil.status === 'sukses') {
+        await muatUlangMaster();
+      }
+      setSyncResult(hasil);
+    } catch (err) {
+      setSyncError(typeof err.detail === 'string' ? err.detail : err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2xl)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
             DATA MASTER • SINKRONISASI SATU DATA
@@ -61,10 +111,67 @@ export const DataMasterPage = () => {
             Data resmi lokasi ruang terbuka hijau hasil integrasi Satu Data Jakarta.
           </p>
         </div>
-        <Button variant="primary" size="sm" onClick={() => alert('Impor Data Baru dari Satu Data Jakarta')}>
-          🔄 Impor Data Satu Data
+        <Button variant="primary" size="sm" onClick={jalankanSinkronisasi} disabled={isSyncing}>
+          {isSyncing ? 'Menyinkronkan…' : 'Impor Data Satu Data'}
         </Button>
       </div>
+
+      {(isSyncing || syncResult || syncError) && (
+        <Card style={{ marginBottom: 'var(--space-xl)' }}>
+          <CardBody>
+            <div role="status" aria-live="polite">
+              {isSyncing && (
+                <div style={gayaBarisStatus}>
+                  <Spinner size="sm" />
+                  <span style={{ fontWeight: 600 }}>Menyinkronkan data dari Satu Data Jakarta</span>
+                  <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+                    Extract, transform, dan seed berjalan di server; hasilnya tampil di sini setelah selesai.
+                  </span>
+                </div>
+              )}
+
+              {!isSyncing && syncError && (
+                <div style={gayaBarisStatus}>
+                  <span className="badge badge-danger">Sinkronisasi tidak berjalan</span>
+                  <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>{syncError}</span>
+                </div>
+              )}
+
+              {!isSyncing && syncResult && (
+                <div>
+                  <div style={gayaBarisStatus}>
+                    <span className={`badge ${syncResult.status === 'sukses' ? 'badge-success' : 'badge-danger'}`}>
+                      {syncResult.status === 'sukses' ? 'Sinkronisasi selesai' : 'Sinkronisasi gagal'}
+                    </span>
+                    <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+                      {syncResult.status === 'sukses'
+                        ? `Total ${syncResult.totalDetik} detik.`
+                        : `Berhenti di tahap ${syncResult.tahapGagal} setelah ${syncResult.totalDetik} detik.`}
+                    </span>
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 'var(--space-md) 0 0', display: 'grid', gap: 'var(--space-sm)' }}>
+                    {syncResult.tahap.map((t) => (
+                      <li key={t.nama} style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-sm)', flexWrap: 'wrap' }}>
+                        <span className={`badge ${t.status === 'sukses' ? 'badge-success' : 'badge-danger'}`}>{t.status}</span>
+                        <span style={{ fontWeight: 600 }}>{t.nama}</span>
+                        <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>{t.detik} detik</span>
+                        {t.log.length > 0 && (
+                          <details style={{ flexBasis: '100%' }}>
+                            <summary className="text-small" style={{ cursor: 'pointer', color: 'var(--color-text-muted)' }}>
+                              Log {t.nama}
+                            </summary>
+                            <pre style={gayaLog}>{t.log.join('\n')}</pre>
+                          </details>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       <Card>
         <CardBody>
