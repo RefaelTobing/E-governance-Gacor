@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, Trees, ClipboardCheck, Clock, Star, Quote, CalendarDays } from 'lucide-react';
+import { MapPin, AlertCircle, ArrowUpRight, Trees, ClipboardCheck, Clock, Star, Quote, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -35,8 +35,6 @@ export const HomePage = () => {
   const [testimonials, setTestimonials] = useState(DEFAULT_TESTIMONIALS);
   const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
-
-  const [hoveredTestimonialId, setHoveredTestimonialId] = useState(null);
 
   // Fetch data placeholder for FastAPI integration
   useEffect(() => {
@@ -130,37 +128,6 @@ export const HomePage = () => {
     if (marqueeTrackRef.current) {
       marqueeTrackRef.current.style.animationPlayState = 'running';
     }
-  };
-
-  const handleCardMouseEnter = (id) => {
-    setHoveredTestimonialId(id);
-  };
-
-  const handleCardMouseLeave = () => {
-    setHoveredTestimonialId(null);
-  };
-
-  const getCardTransform = (cardId) => {
-    if (hoveredTestimonialId === null) return 'translateY(0) scale(1)';
-    return cardId === hoveredTestimonialId ? 'translateY(-4px) scale(1.1)' : 'translateY(0) scale(1)';
-  };
-
-  const getCardOpacity = (cardId) => {
-    return '1';
-  };
-
-  const getCardZIndex = (cardId) => {
-    return hoveredTestimonialId === cardId ? '30' : '1';
-  };
-
-  const getCardShadow = (cardId) => {
-    if (hoveredTestimonialId === cardId) return '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
-    return '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-  };
-
-  const getCardBorder = (cardId) => {
-    if (hoveredTestimonialId === cardId) return '1px solid rgba(20, 184, 166, 0.4)';
-    return '1px solid var(--color-border)';
   };
 
   return (
@@ -295,7 +262,7 @@ export const HomePage = () => {
               maxWidth: '680px',
               backgroundColor: 'rgba(255, 255, 255, 0.97)',
               padding: '5px',
-              borderRadius: 'var(--radius-lg, 12px)',
+              borderRadius: 'var(--radius-pill)',
               boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.3)',
               border: '1px solid rgba(255, 255, 255, 0.2)'
             }}
@@ -369,126 +336,60 @@ export const HomePage = () => {
       </section>
 
       {/* SECTION 1: STATISTIK RAKU JAKARTA */}
-      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: '#FFFFFF' }}>
+      <section className="home-stat-section">
         <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
-            <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Ruka Jakarta dalam Angka</h2>
-            <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-              Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-2xl)' }}>
-            {/* Stat 1: Ruang Publik */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(15, 118, 110, 0.08)',
-                border: '2px solid rgba(15, 118, 110, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 'var(--space-lg)',
-                transition: 'all 0.3s ease'
-              }}>
-                <Trees size={48} color="#0F766E" strokeWidth={1.5} />
-              </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.totalRuangPublik ?? '-'}
-              </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Ruang Publik</div>
+          <div className="home-stat-panel">
+            <div className="home-stat-panel-head">
+              <h2 className="h2">Ruka Jakarta dalam Angka</h2>
+              <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: 'var(--space-sm) auto 0' }}>
+                Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
+              </p>
             </div>
 
-            {/* Stat 2: Laporan Selesai */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                border: '2px solid rgba(245, 158, 11, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 'var(--space-lg)',
-                transition: 'all 0.3s ease'
-              }}>
-                <ClipboardCheck size={48} color="#F59E0B" strokeWidth={1.5} />
+            <div className="home-stat-bar">
+              <div className="home-stat-cell">
+                <Trees size={26} color="#0F766E" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
+                <div className="home-stat-value">
+                  {statistics?.totalRuangPublik ?? '-'}
+                </div>
+                <div className="home-stat-label">Ruang Publik</div>
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.totalLaporanSelesai ?? '-'}
-              </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Selesai</div>
-            </div>
 
-            {/* Stat 3: Laporan Bulan Ini */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(34, 197, 94, 0.08)',
-                border: '2px solid rgba(34, 197, 94, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 'var(--space-lg)',
-                transition: 'all 0.3s ease'
-              }}>
-                <CalendarDays size={48} color="#22C55E" strokeWidth={1.5} />
+              <div className="home-stat-cell">
+                <ClipboardCheck size={26} color="#F59E0B" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
+                <div className="home-stat-value">
+                  {statistics?.totalLaporanSelesai ?? '-'}
+                </div>
+                <div className="home-stat-label">Laporan Selesai</div>
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.laporanBulanIni ?? '-'}
-              </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Laporan Bulan Ini</div>
-            </div>
 
-            {/* Stat 4: Tingkat Penyelesaian */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', transition: 'transform 0.3s ease', cursor: 'pointer' }} className="stat-card">
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(6, 182, 212, 0.08)',
-                border: '2px solid rgba(6, 182, 212, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 'var(--space-lg)',
-                transition: 'all 0.3s ease'
-              }}>
-                <Clock size={48} color="#06B6D4" strokeWidth={1.5} />
+              <div className="home-stat-cell">
+                <CalendarDays size={26} color="#10B981" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
+                <div className="home-stat-value">
+                  {statistics?.laporanBulanIni ?? '-'}
+                </div>
+                <div className="home-stat-label">Laporan Bulan Ini</div>
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {statistics?.tingkatPenyelesaianPersen != null ? `${statistics.tingkatPenyelesaianPersen}%` : '-'}
+
+              <div className="home-stat-cell">
+                <Clock size={26} color="#0284C7" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
+                <div className="home-stat-value">
+                  {statistics?.tingkatPenyelesaianPersen != null ? `${statistics.tingkatPenyelesaianPersen}%` : '-'}
+                </div>
+                <div className="home-stat-label">Tingkat Penyelesaian</div>
               </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Tingkat Penyelesaian</div>
             </div>
           </div>
-
-          <style>{`
-            .stat-card {
-              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .stat-card:hover {
-              transform: translateY(-8px);
-            }
-            .stat-card:hover div:first-child {
-              transform: scale(1.08);
-              box-shadow: 0 8px 24px rgba(15, 118, 110, 0.15);
-            }
-          `}</style>
         </div>
       </section>
 
+
       {/* SECTION 2: RUANG PUBLIK PILIHAN */}
-      <section style={{ padding: 'var(--space-4xl) 0' }}>
+      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: 'var(--color-surface)' }}>
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-2xl)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-2xl)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
             <div>
-              <h2 className="h2">Ruang Publik Pilihan di Jakarta</h2>
+              <h2 className="h2" style={{ marginBottom: 'var(--space-xs)' }}>Ruang Publik Pilihan di Jakarta</h2>
               <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
                 Jelajahi ruang terbuka terpopuler dengan informasi fasilitas terkini.
               </p>
@@ -527,82 +428,131 @@ export const HomePage = () => {
               onAction={() => navigate('/ruang-publik')}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-xl)' }}>
-              {featuredSpaces.map((item) => (
-                <Card key={item.id} hoverable>
-                  <div style={{ position: 'relative', height: '200px', width: '100%' }}>
-                    <img
-                      src={item.image}
-                      alt={item.nama}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
-                      {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
-                    </span>
-                    <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} color="#FFFFFF" /> {item.wilayah}
-                    </span>
-                  </div>
+            <div className="home-space-asymmetric">
+              {/* Kolom Kiri: Kartu Unggulan Utama */}
+              {featuredSpaces[0] && (
+                <div className="home-space-main-col">
+                  <Card hoverable className="home-space-card home-space-card-featured">
+                    <div style={{ position: 'relative', height: '240px', width: '100%' }}>
+                      <img
+                        src={featuredSpaces[0].image}
+                        alt={featuredSpaces[0].nama}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <span className="home-space-pick" style={{ position: 'absolute', top: '12px', left: '12px' }}>
+                        Rekomendasi Warga
+                      </span>
+                      <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
+                        {typeof featuredSpaces[0].kategori === 'object' ? featuredSpaces[0].kategori?.label || 'Kategori' : featuredSpaces[0].kategori || featuredSpaces[0].kategori_id || 'Kategori'}
+                      </span>
+                      <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={12} color="#FFFFFF" /> {featuredSpaces[0].wilayah}
+                      </span>
+                    </div>
 
-                  <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-xl)' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                          <h3 className="h3" style={{ marginBottom: 'var(--space-xs)', fontSize: '22px' }}>{featuredSpaces[0].nama}</h3>
+                          <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {featuredSpaces[0].deskripsi}
+                          </p>
+                        </div>
+
+                        {/* Facility Condition Summary Box */}
+                        <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', border: '1px solid var(--color-border)' }}>
+                          <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
+                            Kondisi Fasilitas
+                          </span>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            {featuredSpaces[0].fasilitas?.slice(0, 4).map((fas) => (
+                              <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
+                                <span
+                                  title={fas.nama}
+                                  style={{
+                                    display: 'inline-block',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '120px',
+                                    flex: 1,
+                                    minWidth: 0,
+                                    color: 'var(--color-text-main)'
+                                  }}
+                                >
+                                  {fas.nama}
+                                </span>
+                                <StatusBadge status={fas.status} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: 'auto' }}>
+                        <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${featuredSpaces[0].id}`)}>
+                          Lihat Detail Ruang
+                        </Button>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+              )}
+
+              {/* Kolom Kanan: 2 Kartu Pendamping Tersusun Vertikal */}
+              <div className="home-space-side-col">
+                {featuredSpaces.slice(1, 3).map((item) => (
+                  <Card key={item.id} hoverable className="home-space-card home-space-card-side">
+                    <div style={{ position: 'relative', height: '140px', width: '100%' }}>
+                      <img
+                        src={item.image}
+                        alt={item.nama}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <span className="badge badge-info" style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: 'var(--color-surface)', fontSize: '11px' }}>
+                        {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
+                      </span>
+                      <span className="text-caption" style={{ position: 'absolute', bottom: '8px', left: '8px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '2px 8px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
+                        <MapPin size={10} color="#FFFFFF" /> {item.wilayah}
+                      </span>
+                    </div>
+
+                    <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-md)' }}>
                       <div>
-                        <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{item.nama}</h3>
-                        <p className="text-caption" style={{ marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item.nama}</h4>
+                        <p className="text-caption" style={{ marginBottom: 'var(--space-sm)', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {item.deskripsi}
                         </p>
                       </div>
 
-                      {/* Facility Condition Summary Box */}
-                      <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', border: '1px solid var(--color-border)' }}>
-                        <span className="text-caption" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', display: 'block', marginBottom: '8px' }}>
-                          Kondisi Fasilitas
-                        </span>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                          {item.fasilitas?.slice(0, 4).map((fas) => (
-                            <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
-                              <span
-                                title={fas.nama}
-                                style={{
-                                  display: 'inline-block',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  maxWidth: '110px',
-                                  flex: 1,
-                                  minWidth: 0,
-                                  color: 'var(--color-text-main)'
-                                }}
-                              >
-                                {fas.nama}
-                              </span>
-                              <StatusBadge status={fas.status} />
-                            </div>
-                          ))}
-                        </div>
+                      <div style={{ marginTop: 'auto', paddingTop: 'var(--space-sm)' }}>
+                        <Button variant="outline" size="sm" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
+                          Lihat Detail
+                        </Button>
                       </div>
-                    </div>
-
-                    <div style={{ marginTop: 'auto' }}>
-                      <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
-                        Lihat Detail Ruang
-                      </Button>
-                    </div>
-                  </CardBody>
-                </Card>
-              ))}
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </section>
 
       {/* SECTION 3: TESTIMONI WARGA RUANGTERBUKA - CONTINUOUS MARQUEE */}
-      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: '#FFFFFF', width: '100%', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
-        <div className="container" style={{ textAlign: 'center', marginBottom: 'var(--space-3xl)' }}>
-          <h2 className="h2" style={{ marginBottom: 'var(--space-sm)' }}>Testimoni Warga</h2>
-          <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-            Dengarkan pengalaman mereka dalam menggunakan platform RuangTerbuka Jakarta untuk menjaga fasilitas kota.
-          </p>
+      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: 'var(--color-bg-main)', width: '100%' }}>
+        <div className="container" style={{ marginBottom: 'var(--space-2xl)' }}>
+          <div className="home-testimonial-head">
+            <div>
+              <span className="home-testimonial-eyebrow">
+                <Quote size={14} aria-hidden="true" /> Suara Warga
+              </span>
+              <h2 className="h2">Sorotan Suara Warga</h2>
+            </div>
+            <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '440px' }}>
+              Dengarkan pengalaman mereka dalam menggunakan platform RuangTerbuka Jakarta untuk menjaga fasilitas kota.
+            </p>
+          </div>
         </div>
 
         <div 
@@ -623,24 +573,18 @@ export const HomePage = () => {
                   minWidth: '320px',
                   maxWidth: '320px',
                   position: 'relative',
-                  transform: getCardTransform(t.id),
-                  opacity: getCardOpacity(t.id),
-                  zIndex: getCardZIndex(t.id),
-                  transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
                 className="testimonial-card-marquee"
-                onMouseEnter={() => handleCardMouseEnter(t.id)}
-                onMouseLeave={handleCardMouseLeave}
               >
-                <Card 
+                <Card
                   className="card"
-                  style={{ 
-                    height: '100%', 
-                    border: getCardBorder(t.id), 
-                    boxShadow: getCardShadow(t.id), 
-                    borderRadius: '16px', 
+                  style={{
+                    height: '100%',
+                    border: '1px solid var(--color-border)',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    borderRadius: '16px',
                     transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }} 
+                  }}
                 >
                   <CardBody style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <div style={{ display: 'flex', gap: '2px', marginBottom: '16px' }}>
@@ -709,33 +653,35 @@ export const HomePage = () => {
       {/* SECTION 4: BANNER CTA MARI JAGA RUANG BERSAMA */}
       <section style={{ padding: 'var(--space-4xl) 0' }}>
         <div className="container">
-          <div
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              borderRadius: 'var(--radius-xl)',
-              padding: 'var(--space-3xl)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 'var(--space-xl)'
-            }}
-          >
-            <div>
-              <h2 className="h2" style={{ color: 'white', marginBottom: 'var(--space-xs)' }}>Mari Jaga Ruang Bersama</h2>
-              <p className="text-body" style={{ opacity: 0.9 }}>
+          <div className="home-cta-banner">
+            <div className="home-cta-content">
+              <span className="home-cta-eyebrow">Partisipasi Warga</span>
+              <h2 className="h2" style={{ color: 'white', marginBottom: 'var(--space-sm)' }}>Mari Jaga Ruang Bersama</h2>
+              <p className="text-body" style={{ color: 'rgba(255, 255, 255, 0.92)', marginBottom: 'var(--space-xl)' }}>
                 Menemukan fasilitas yang rusak saat berkunjung? Laporkan masalah secara mudah untuk pemeliharaan fasilitas bersama.
               </p>
+              <div className="home-cta-points">
+                <div className="home-cta-point">
+                  <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
+                  <span>Laporan dengan foto bukti presisi lokasi</span>
+                </div>
+                <div className="home-cta-point">
+                  <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
+                  <span>Respon verifikasi petugas dalam 1x24 jam</span>
+                </div>
+              </div>
             </div>
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => navigate('/ruang-publik/taman-suropati/lapor')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-            >
-              <AlertCircle size={20} /> Pelajari Cara Melapor
-            </Button>
+            <div className="home-cta-action">
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate('/ruang-publik')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                <AlertCircle size={20} /> Pelajari Cara Melapor
+              </Button>
+              <span className="home-cta-note">Gratis, bisa anonim, tanpa perlu daftar akun</span>
+            </div>
           </div>
         </div>
       </section>
