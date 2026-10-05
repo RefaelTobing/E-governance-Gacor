@@ -71,20 +71,18 @@ def jalankan_tahap(modul: str) -> tuple[bool, list[str]]:
     return hasil.returncode == 0, log
 
 
-def jalankan_pipeline() -> bool:
-    """Eksekusi ketiga tahap berurutan; gagal tahap membatalkan run."""
+def jalankan_pipeline(pemicu: str = "terjadwal") -> bool:
+    from app.etl.pipeline import jalankan_pipeline as _jp
+
     mulai = datetime.now(WIB)
-    logger.info("pipeline mulai")
-    for modul in TAHAP:
-        sukses, _ = jalankan_tahap(modul)
-        if not sukses:
-            logger.error("pipeline dibatalkan, tahap %s gagal", modul)
-            return False
-    logger.info(
-        "pipeline selesai, total %d detik",
-        int((datetime.now(WIB) - mulai).total_seconds()),
-    )
-    return True
+    logger.info("pipeline mulai (%s)", pemicu)
+    hasil = _jp(pemicu)
+    durasi = int((datetime.now(WIB) - mulai).total_seconds())
+    if hasil.status == "sukses":
+        logger.info("pipeline selesai, total %d detik", durasi)
+        return True
+    logger.error("pipeline dibatalkan, tahap %s gagal", hasil.tahap_gagal or "?")
+    return False
 
 
 def main() -> int:
@@ -106,7 +104,7 @@ def main() -> int:
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
     if args.once:
-        return 0 if jalankan_pipeline() else 1
+        return 0 if jalankan_pipeline("sekali") else 1
 
     try:
         trigger = CronTrigger.from_crontab(settings.ETL_JADWAL, timezone=WIB)

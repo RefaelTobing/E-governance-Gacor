@@ -33,6 +33,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `DELETE` | `/api/v1/users/{user_id}` | **Admin** | Nonaktifkan petugas |
 | `POST` | `/api/v1/users/{user_id}/activate` | **Admin** | Aktifkan kembali |
 | `POST` | `/api/v1/admin/sync-data` | **Admin** | Trigger manual pipeline ETL dari panel admin |
+| `GET` | `/api/v1/admin/sync-data` | **Admin** | Riwayat run ETL terakhir (`?limit=`, 1..200) |
 
 ---
 
@@ -211,6 +212,35 @@ Tanpa body; butuh token admin (warga → `403`). Bila run manual lain masih berj
 
 Run yang berhenti di tengah tetap membalas `200` dengan `status: "gagal"` dan
 `tahap_gagal` berisi nama tahapnya; `log` dipotong ke 100 baris terakhir per tahap.
+
+### `GET /api/v1/admin/sync-data` (admin)
+
+Riwayat run ETL yang tersimpan di tabel `etl_run`, dipakai Panel Admin supaya hasil sinkronisasi
+tetap terbaca setelah refresh atau login ulang. Query `limit` (1..200, default 20); urutan
+terbaru di atas.
+
+```json
+[
+  {
+    "id": 3,
+    "pemicu": "sekali",
+    "status": "sukses",
+    "mulai": "2026-10-05T05:03:34Z",
+    "selesai": "2026-10-05T05:04:02Z",
+    "tahap_gagal": null,
+    "hitung": { "baru": 0, "diupdate": 0, "tanpa_perubahan": 1200 },
+    "tahap": [
+      { "tahap": "extract_satudata", "status": "sukses", "detik": 23, "log": ["..."] },
+      { "tahap": "transform_rth_raw", "status": "sukses", "detik": 1, "log": ["..."] },
+      { "tahap": "seed_db", "status": "sukses", "detik": 1, "log": ["..."] }
+    ]
+  }
+]
+```
+
+`pemicu` bernilai `manual` (endpoint POST), `terjadwal` (scheduler), atau `sekali` (`--once`).
+`hitung` terisi hanya bila tahap `seed_db` sukses, `tahap_gagal` terisi pada run gagal, dan
+`selesai` masih `null` selama run berstatus `berjalan`. Waktu selalu ber-UTC (akhiran `Z`).
 
 ---
 

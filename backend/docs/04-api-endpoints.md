@@ -34,6 +34,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `POST` | `/api/v1/admin/facilities/import` | **Admin** | Impor CSV `multipart/form-data`; hasil parsial `{created, failed, errors}` |
 | **Sinkronisasi Satu Data (Admin)** ||||
 | `POST` | `/api/v1/admin/sync-data` | **Admin** | Trigger manual pipeline ETL penuh; `409` bila run lain masih berjalan |
+| `GET` | `/api/v1/admin/sync-data` | **Admin** | Riwayat run ETL terakhir (`limit` 1..200, default 20), terbaru di atas |
 | **Ruang Publik** ||||
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
@@ -235,13 +236,14 @@ Keputusan path (nested `POST /public-spaces/{id}/fasilitas` ditolak): `features/
 
 ---
 
-## 8. Sinkronisasi Satu Data (Admin, BE-18)
+## 8. Sinkronisasi Satu Data (Admin, BE-18 / BE-19)
 
 Prefix `/api/v1/admin/sync-data`, butuh role `admin` (`get_current_admin`); tanpa token → `401`, warga → `403`.
 
 | Endpoint | Body / Query | Catatan |
 |---|---|---|
-| `POST /admin/sync-data` | — (tanpa body) | Jalankan pipeline penuh extract → transform → seed (sama seperti scheduler BE-17, `--once`). `409` bila run manual lain masih berjalan (`threading.Lock` di proses API). Run selesai dengan tahap gagal tetap `200` + `status: "gagal"` |
+| `POST /admin/sync-data` | - (tanpa body) | Jalankan pipeline penuh extract → transform → seed (sama seperti scheduler BE-17, `--once`). `409` bila run manual lain masih berjalan (`threading.Lock` di proses API). Run selesai dengan tahap gagal tetap `200` + `status: "gagal"` |
+| `GET /admin/sync-data` | `limit` (1..200, default 20) | Riwayat baris `etl_run`, urut id menurun (terbaru di atas). Response `list[RiwayatItem]` |
 
 Response `SyncResult` (`app/schemas/sync.py`):
 
@@ -263,6 +265,32 @@ Response `SyncResult` (`app/schemas/sync.py`):
 `log` dipotong ke 100 baris terakhir per tahap. `tahap_gagal` terisi (dan tahap berikutnya tidak
 dijalankan) bila ada tahap yang gagal. Lock hanya se-proses API: run scheduler terjadwal (proses
 terpisah) tidak saling terkunci.
+
+Response `RiwayatItem` (`app/schemas/sync.py`) untuk `GET`:
+
+```json
+[
+  {
+    "id": 3,
+    "pemicu": "sekali",
+    "status": "sukses",
+    "mulai": "2026-10-05T05:03:34Z",
+    "selesai": "2026-10-05T05:04:02Z",
+    "tahap_gagal": null,
+    "hitung": { "baru": 0, "diupdate": 0, "tanpa_perubahan": 1200 },
+    "tahap": [
+      { "tahap": "extract_satudata", "status": "sukses", "detik": 23, "log": ["..."] },
+      { "tahap": "transform_rth_raw", "status": "sukses", "detik": 1, "log": ["..."] },
+      { "tahap": "seed_db", "status": "sukses", "detik": 1, "log": ["..."] }
+    ]
+  }
+]
+```
+
+`pemicu` berisi `manual` (BE-18), `terjadwal` (BE-17), atau `sekali` (`--once`). `hitung` terisi
+hanya bila tahap `seed_db` sukses; `tahap_gagal` berisi nama tahap pada run `gagal`, dan
+`selesai` masih `null` selama statusnya `berjalan`. Waktu dikirim ber-UTC (akhiran `Z`) supaya
+browser membaca zona waktu yang benar.
 
 ---
 

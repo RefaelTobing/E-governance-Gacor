@@ -4,14 +4,16 @@ Sumber: `docs/schema.sql` + model SQLAlchemy di `backend/app/models/` (kode = ke
 
 ---
 
-## 1. Enam Tabel & Relasi
+## 1. Tujuh Tabel & Relasi
 
 ```
 categories ──┐
              ├──< ruang_publik ──┬──< fasilitas ──┐
-users ───────┴──────┬───────────┘                │
-                    └──< laporan >────────────────┘
-                            └──< laporan_timeline
+ users ───────┴──────┬───────────┘                │
+                     └──< laporan >────────────────┘
+                             └──< laporan_timeline
+
+ etl_run (berdiri sendiri, log run ETL)
 ```
 
 | Tabel | Model | Relasi |
@@ -22,6 +24,7 @@ users ───────┴──────┬─────────�
 | `fasilitas` | `models/fasilitas.py` | FK `ruang_publik_id → ruang_publik.id` (wajib); induk `laporan` |
 | `laporan` | `models/laporan.py` | FK `user_id` (opsional), `ruang_publik_id` (wajib), `fasilitas_id` (opsional) |
 | `laporan_timeline` | `models/laporan_timeline.py` | FK `laporan_id → laporan.id`, cascade delete |
+| `etl_run` | `models/etl_run.py` | Tanpa FK; satu baris per run ETL (BE-19), dibaca `GET /admin/sync-data` |
 
 ---
 
@@ -100,6 +103,18 @@ Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten
 | `description` | TEXT NULL | Untuk alasan penolakan (FEAT-010) |
 | `created_at` | DATETIME | Menjadi "waktu pembaruan" di UI timeline |
 
+### `etl_run`
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `pemicu` | VARCHAR(20) NOT NULL | `manual` (BE-18), `terjadwal` (BE-17), `sekali` (`--once`) |
+| `status` | VARCHAR(20) NOT NULL | `berjalan`, `sukses`, `gagal` |
+| `mulai` | DATETIME NOT NULL | Waktu UTC tanpa zona (ditandai UTC di schema API) |
+| `selesai` | DATETIME NULL | Masih `NULL` selama `berjalan` |
+| `tahap_gagal` | VARCHAR(50) NULL | Nama tahap yang gagal, atau `terputus` bila proses mati |
+| `hitung` | JSON NULL | Angka `seed_db` dari baris `ETL_HITUNG` (`baru`, `diupdate`, `tanpa_perubahan`, dll); terisi bila tahap `seed_db` sukses |
+| `tahap` | JSON NULL | Daftar tahap: nama, status, detik, 100 baris log terakhir |
+
 ---
 
 ## 3. Migrasi Alembic
@@ -110,6 +125,7 @@ Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten
 | `b7e2c1049a3f_add_user_is_active` | Menambah `users.is_active` |
 | `c1f4a9d2e073_add_ruang_publik_field_source` | Menambah `ruang_publik.field_source` (JSON, nullable) — penanda edit manual admin (BE-05) |
 | `d7b19b0b82cc_tambah_kecamatan_kelurahan_ke_ruang_` | Menambah `ruang_publik.kecamatan` & `kelurahan` (VARCHAR(100), nullable) — kunci natural untuk merge ETL (BE-16) |
+| `tambah_tabel_etl_run` | Menambah tabel `etl_run` - log hasil run ETL per tahap (BE-19) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.
@@ -178,7 +194,7 @@ docker compose up -d
 # tunggu container healthy (~30 detik saat volume baru)
 
 cd backend
-..\.venv\Scripts\python.exe -m alembic current   # harus: head (d7b19b0b82cc)
+..\.venv\Scripts\python.exe -m alembic current   # harus: head (tambah_tabel_etl_run)
 ..\.venv\Scripts\python.exe -m alembic upgrade head   # bila belum
 ```
 

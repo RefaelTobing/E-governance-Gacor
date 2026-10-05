@@ -23,6 +23,19 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ---
 
+## 2026-10-05
+
+- **[BE-19]** Log hasil run ETL ke database - tabel `etl_run` (model + migrasi
+  `tambah_tabel_etl_run`) diisi `app/etl/pipeline.py`, kini satu-satunya jalur pipeline untuk
+  scheduler (BE-17), `--once`, dan endpoint manual (BE-18): status, waktu mulai/selesai,
+  `tahap_gagal`, `hitung` insert/update/skip dari baris `ETL_HITUNG`, serta log 100 baris
+  terakhir per tahap; run `berjalan` yang stale lebih dari 2 jam ditandai terputus;
+  `GET /api/v1/admin/sync-data?limit=` (admin) membaca riwayat, FE `syncService.riwayatSync`
+  + `DataMasterPage` menampilkan 10 run terakhir beserta log per tahap; verifikasi: run
+  `--once` sukses 3 tahap dengan `0 baru, 0 diupdate, 1200 tanpa perubahan` tercatat dan
+  terbaca lewat API (401 tanpa token, 403 warga, 200 admin), run gagal mencatat
+  `tahap_gagal`, `npm run build` FE lolos.
+
 ## 2026-10-04
 
 - **[BE-18]** Trigger manual ETL dari panel admin - endpoint `POST /api/v1/admin/sync-data`

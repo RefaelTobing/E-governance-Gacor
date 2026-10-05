@@ -63,6 +63,7 @@ Data:
 | Penjadwalan otomatis (BE-17) | **Ada** — `python -m app.etl.scheduler` (APScheduler, proses terpisah dari API); jadwal harian 02:00 WIB lewat `ETL_JADWAL`, kandidat tetap direview manual |
 | Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
 | Endpoint trigger dari admin API | **Ada (BE-18)** — `POST /api/v1/admin/sync-data` (admin-only, pipeline penuh, `409` saat run lain berjalan); kontrak di `04-api-endpoints.md` §8 |
+| Log hasil run per tahap (BE-19) | **Ada**: tabel `etl_run` diisi tiap run (status, mulai/selesai, `tahap_gagal`, `hitung` insert/update/skip, log 100 baris terakhir per tahap) dan dibaca lewat `GET /api/v1/admin/sync-data?limit=` |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
 
 ---
@@ -234,6 +235,13 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Kini ada scheduler sendiri,
   penuh (extract → transform → seed) lewat `jalankan_tahap`, dibuka setelah keputusan di
   `data-master-service.md` §2.3; endpoint di `app/api/v1/sync_data.py`, kontrak di
   `04-api-endpoints.md` §8.
+- [x] **Log hasil run (BE-19, 2026-10-05):** `app/etl/pipeline.py` jadi satu-satunya jalur
+  pipeline untuk scheduler, `--once`, dan endpoint manual; tiap run menulis satu baris
+  `etl_run` (migrasi `tambah_tabel_etl_run`) berisi `pemicu`, status, waktu mulai/selesai,
+  `tahap_gagal`, `hitung` dari baris `ETL_HITUNG` yang dicetak `seed_db`, dan log 100 baris
+  terakhir tiap tahap. Run `berjalan` yang stale lebih 2 jam ditandai `terputus` saat run baru
+  dimulai. Pembaca: `GET /api/v1/admin/sync-data?limit=` (admin), dipakai FE lewat
+  `services/syncService.js#riwayatSync`.
 
 ---
 
@@ -262,6 +270,10 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Kini ada scheduler sendiri,
 - [x] **Scheduler terjadwal (BE-17):** `ETL_JADWAL="* * * * *"` -> run pertama fires tepat menit berikutnya (log `15:19:00`) lalu selesai 17 detik, proses tetap hidup dan terpisah dari API, jadwal berikutnya dicetak di log awal (2026-10-04)
 - [x] **Scheduler gagal tahap (BE-17):** tahap rusak -> pipeline dibatalkan dengan log ERROR dan `--once` exit 1; `ETL_JADWAL` salah -> exit 2 dengan pesan jelas (2026-10-04)
 - [ ] **Scheduler berhenti rapi (BE-17):** jalur `KeyboardInterrupt`/`SystemExit` sudah ada di kode tetapi belum diuji non-interaktif; Stop-Process (bunuh paksa) meninggalkan anak proses extract yang sedang jalan
+- [x] **Run tercatat (BE-19):** `--once` menghasilkan baris `etl_run` `pemicu=sekali` `status=sukses` dengan 3 tahap (extract 23 dtk, transform 1 dtk, seed 1 dtk), `hitung` `0 baru, 0 diupdate, 1200 tanpa perubahan`, total 27 detik (2026-10-05)
+- [x] **Run gagal tercatat (BE-19):** tahap kedua dipaksa gagal -> `status=gagal`, `tahap_gagal=transform_rth_raw`, hanya 2 baris tahap tersimpan, `hitung` tetap `null` (2026-10-05)
+- [x] **Riwayat terbaca (BE-19):** `GET /api/v1/admin/sync-data?limit=3` -> tanpa token `401`, token warga `403`, token admin `200` berisi run di atas dengan `mulai`/`selesai` ber-UTC (2026-10-05)
+- [ ] **Panel riwayat (BE-19):** `syncService.riwayatSync()` + `DataMasterPage` tersambung ke `GET` dan `npm run build` lolos; klik manual per elemen di browser belum dilakukan
 
 ---
 

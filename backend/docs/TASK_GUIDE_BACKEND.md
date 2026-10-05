@@ -231,8 +231,36 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi:** `pytest tests/unit -q` 6 lolos - 401 tanpa token, 403 warga, sukses 3 tahap
     berurutan, gagal di tahap kedua -> tahap ketiga tidak dijalankan, 409 saat lock terkunci,
     log 5000 baris dipotong menjadi 100.
-- [ ] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error) untuk ditampilkan di Panel Admin.
-  - **Belum ada:** `seed_db.py` hanya mencetak ke stdout, tidak ada tabel/log yang bisa dibaca API.
+- [x] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error) untuk ditampilkan di Panel Admin.
+  - **Lokasi kode:** tabel `etl_run` (`app/models/etl_run.py` + migrasi
+    `alembic/versions/tambah_tabel_etl_run.py`), penulis run `app/etl/pipeline.py`, pembaca
+    `GET /admin/sync-data` (`app/api/v1/sync_data.py`) dengan response `RiwayatItem`
+    (`app/schemas/sync.py`), penanda angka `ETL_HITUNG` dari `app/etl/seed_db.py`.
+  - **Keputusan:**
+    1. Satu baris `etl_run` per run: `pemicu` (`manual`/`terjadwal`/`sekali`), `status`,
+       `mulai`, `selesai`, `tahap_gagal`, `hitung` (JSON: `baru`, `diupdate`,
+       `tanpa_perubahan`, `ditahan`, `cocok_*`, `categories_baru`, `sumber_baris`), dan
+       `tahap` (JSON: nama, status, detik, 100 baris log terakhir per tahap).
+    2. Pipeline dipusatkan di `app/etl/pipeline.py` supaya ketiga jalur menulis log yang sama:
+       scheduler BE-17, `--once`, dan endpoint manual BE-18; `scheduler.jalankan_pipeline`
+       kini menerima argumen `pemicu`.
+    3. Baris `berjalan` yang mulainya lebih tua dari 2 jam ditandai `gagal` + `tahap_gagal`
+       `terputus` tiap run baru dimulai, supaya run yang prosesnya dibunuh paksa tidak
+       tertampil selamanya sebagai berjalan.
+    4. `seed_db` mencetak satu baris `ETL_HITUNG {json}`; baris itu dibuang dari log yang
+       disimpan supaya angka hitung tidak muncul dua kali (sekali sebagai ringkasan, sekali
+       sebagai log).
+    5. `GET` hanya admin, `limit` 1..200 (FE meminta 10), urut id menurun; waktu polos dari
+       kolom `DATETIME` ditandai UTC di `RiwayatItem` supaya browser membaca zona waktu yang
+       benar (konsisten dengan `SyncResult` yang sudah aware UTC).
+  - **Verifikasi (2026-10-05):** `alembic upgrade head` membuat `etl_run` (head sebelumnya
+    `d7b19b0b82cc`); `python -m app.etl.scheduler --once` mencatat run sukses `pemicu=sekali`,
+    3 tahap (extract 23 dtk, transform 1 dtk, seed 1 dtk), `hitung` terisi `0 baru, 0 diupdate,
+    1200 tanpa perubahan`, total 27 detik; run gagal di tahap kedua menyimpan
+    `tahap_gagal=transform_rth_raw` + 2 baris tahap; API dijalankan langsung: tanpa token `401`,
+    token warga `403`, token admin `200` berisi run di atas dengan `mulai`/`selesai` ber-UTC;
+    FE `npm run build` lolos dan `riwayatSync()` memanggil `GET /admin/sync-data`.
+    Unit test `tests/unit/test_etl_run_log.py` belum dijalankan di sesi ini.
 
 ---
 
@@ -422,7 +450,7 @@ Dipakai saat FE minta endpoint; cek daftar ini dulu sebelum menambah task baru.
 | `DetailRuangPublikPage` (riwayat laporan + galeri) | `GET /public-spaces/{id}/reports` yang benar, gabungan foto | BE-47, BE-48 |
 | `DetailModerasiPage` (Setujui/Tolak + alasan) | enum status + `alasan_penolakan` | BE-51 |
 | `AntrianModerasiPage` (antrian + daftar flagged) | `GET /admin/reports`, `/admin/reports/flagged` | BE-52, BE-31 |
-| `DataMasterPage` (Edit Master, Impor Satu Data) | `PATCH /admin/public-spaces/{id}`, `POST /admin/sync-data` | BE-33, BE-18 |
+| `DataMasterPage` (Edit Master, Impor Satu Data, Riwayat sinkronisasi) | `PATCH /admin/public-spaces/{id}`, `POST`/`GET /admin/sync-data` | BE-33, BE-18, BE-19 |
 | `KelolaFasilitasPage` | CRUD fasilitas admin | BE-53 |
 | Form lapor (validasi anti fake-GPS) | kolom lokasi + EXIF + ambang batas | BE-46, BE-21, BE-22, BE-23 |
 | Flag laporan tayang (belum ada UI di FE) | `POST /reports/{id}/flag`, `GET /admin/reports/flagged` | BE-25, BE-31 |
