@@ -17,6 +17,7 @@ import logging
 import os
 import subprocess
 import sys
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -32,16 +33,14 @@ WIB = ZoneInfo("Asia/Jakarta")
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 TAHAP: dict[str, int] = {
-    # Extract menunggu dua portal tanpa SLA (timeout per request di
-    # extract_satudata.py bisa diulang beberapa kali), sisanya hitungan menit.
     "app.etl.extract_satudata": 1800,
     "app.etl.transform_rth_raw": 600,
     "app.etl.seed_db": 600,
 }
 
 
-def jalankan_tahap(modul: str) -> bool:
-    """Jalankan satu tahap sebagai subprocess; keluaran ikut masuk log."""
+def jalankan_tahap(modul: str) -> tuple[bool, list[str]]:
+    """Jalankan satu tahap sebagai subprocess; kembalikan (sukses, log_lines)."""
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     try:
         hasil = subprocess.run(
@@ -56,32 +55,34 @@ def jalankan_tahap(modul: str) -> bool:
         )
     except subprocess.TimeoutExpired:
         logger.error("%s melewati batas %d detik, tahap dibatalkan", modul, TAHAP[modul])
-        return False
+        return False, [f"TIMEOUT: melewati batas {TAHAP[modul]} detik"]
 
+    log: list[str] = []
     for baris in hasil.stdout.splitlines():
         if baris.strip():
             logger.info("%s | %s", modul, baris)
+            log.append(baris)
     for baris in hasil.stderr.splitlines():
         if baris.strip():
             logger.error("%s | %s", modul, baris)
+            log.append(baris)
     if hasil.returncode != 0:
         logger.error("%s keluar dengan kode %d", modul, hasil.returncode)
-    return hasil.returncode == 0
+    return hasil.returncode == 0, log
 
 
-def jalankan_pipeline() -> bool:
-    """Eksekusi ketiga tahap berurutan; gagal tahap membatalkan run."""
+def jalankan_pipeline(pemicu: str = "terjadwal") -> bool:
+    from app.etl.pipeline import jalankan_pipeline as _jp
+
     mulai = datetime.now(WIB)
-    logger.info("pipeline mulai")
-    for modul in TAHAP:
-        if not jalankan_tahap(modul):
-            logger.error("pipeline dibatalkan, tahap %s gagal", modul)
-            return False
-    logger.info(
-        "pipeline selesai, total %d detik",
-        int((datetime.now(WIB) - mulai).total_seconds()),
-    )
-    return True
+    logger.info("pipeline mulai (%s)", pemicu)
+    hasil = _jp(pemicu)
+    durasi = int((datetime.now(WIB) - mulai).total_seconds())
+    if hasil.status == "sukses":
+        logger.info("pipeline selesai, total %d detik", durasi)
+        return True
+    logger.error("pipeline dibatalkan, tahap %s gagal", hasil.tahap_gagal or "?")
+    return False
 
 
 def main() -> int:
@@ -103,7 +104,7 @@ def main() -> int:
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
     if args.once:
-        return 0 if jalankan_pipeline() else 1
+        return 0 if jalankan_pipeline("sekali") else 1
 
     try:
         trigger = CronTrigger.from_crontab(settings.ETL_JADWAL, timezone=WIB)

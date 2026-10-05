@@ -14,7 +14,7 @@ Kode terkait:
 
 | Aspek PRD FEAT-012 | Status |
 |---|---|
-| Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sebagian** — ETL jalan otomatis lewat scheduler (BE-17) atau manual lewat shell, tetapi **bukan dari panel admin** (endpoint = BE-18) |
+| Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sudah** — sinkronisasi bisa dijalankan dari panel admin (`POST /admin/sync-data`, BE-18); jalur lain: scheduler (BE-17) & shell |
 | Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); ruang publik masih GET saja (BE-33 belum) |
 | Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah** — field-level merge BE-16: kolom `ETL_OWNED` disegarkan, kolom tercatat `field_source` ditahan (lihat §4) |
 
@@ -76,17 +76,22 @@ Pilihan (pilih satu & catat):
 
 Keduanya **wajib mempertahankan** strategi merge §4. Catatan: pipeline ini sudah jalan otomatis lewat `scheduler.py` (BE-17, jadwal `ETL_JADWAL`); opsi di atas menyangkut **trigger tambahan dari panel admin** (task BE-18).
 
+> **Keputusan (2026-10-04, BE-18):** Opsi A dengan dua deviasi yang dicatat:
+> 1. **Path** `POST /api/v1/admin/sync-data` (namespace admin, mengikuti keputusan §2.2), bukan `/public-spaces/re-sync`.
+> 2. **Isi run = pipeline penuh** (extract → transform → seed lewat `jalankan_tahap` subprocess, sama seperti BE-17), bukan seed saja — tombol panel admin berarti "ambil data terbaru dari portal", dan file raw lama kadang sudah usang.
+> Kontrak lengkap: `04-api-endpoints.md` §8.
+
 ---
 
 ## 3. Langkah Implementasi (urut)
 
 - [x] Keputusan bentuk path fasilitas (§2.2): namespace admin terpisah `/admin/facilities`
-- [ ] Pilih opsi impor Satu Data (§2.3)
+- [x] Pilih opsi impor Satu Data (§2.3): Opsi A dengan deviasi path & pipeline penuh (BE-18)
 - [ ] Implementasi `PATCH /public-spaces/{id}`:
   - service `update_ruang_publik(db, id, payload)` — update field yang **tidak `None`** di payload (patch semantics, jangan menimpa kolom terisi dengan `None`)
   - router + `get_current_admin` + response `RuangPublikResponse`
 - [x] Implementasi CRUD fasilitas (bentuk path terpilih, lihat §2.2)
-- [ ] (Opsi A) endpoint re-sync memanggil seed idempoten
+- [x] (Opsi A) endpoint re-sync memanggil seed idempoten — kini lewat pipeline penuh `jalankan_tahap` (BE-18), seed tetap idempoten (BE-16)
 - [x] Daftarkan semua di `app/api/v1/api.py`
 - [x] Update `04-api-endpoints.md` **dan** `docs/API.md`
 - [x] Beri tahu workflow frontend: `DataMasterPage`/`KelolaFasilitasPage` tinggal menyambungkan `services.js` ke endpoint ini

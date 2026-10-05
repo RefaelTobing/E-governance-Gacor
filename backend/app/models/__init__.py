@@ -5,6 +5,7 @@ from app.models.ruang_publik import RuangPublik
 from app.models.fasilitas import Fasilitas
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
+from app.models.etl_run import EtlRun
 
 __all__ = [
     "Base",
@@ -13,5 +14,6 @@ __all__ = [
     "RuangPublik",
     "Fasilitas",
     "Laporan",
-    "LaporanTimeline"
+    "LaporanTimeline",
+    "EtlRun",
 ]

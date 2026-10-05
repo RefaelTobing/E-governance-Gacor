@@ -54,7 +54,8 @@
 - [ ] **[FE-25]** Halaman detail laporan tertandai: tampilkan foto, deskripsi, koordinat pengguna vs koordinat ruang publik (idealnya divisualisasikan di mini-map), tombol Setujui/Tolak + alasan. *(FEAT-011)*
 - [ ] **[FE-26]** Halaman daftar laporan yang di-flag pengguna lain (dari FE-21), untuk ditinjau ulang admin. *(FEAT-011)*
 - [ ] **[FE-27]** Halaman Manajemen Data Master Ruang Publik: tabel data ruang publik, form edit manual per field, indikator field yang "pernah diedit manual" (beda visual dari field hasil ETL). *(FEAT-012)*
-- [ ] **[FE-28]** Tombol trigger manual sinkronisasi ETL (opsional) dari panel admin, dengan status/log hasil sinkronisasi terakhir. *(FEAT-012)*
+- [x] **[FE-28]** Tombol trigger manual sinkronisasi ETL (opsional) dari panel admin, dengan status/log hasil sinkronisasi terakhir. *(FEAT-012)*
+  - Sudah tersambung ke `POST /admin/sync-data` (BE-18) lewat `services/syncService.js`; panel status menampilkan hasil run yang baru dijalankan (per tahap + log). Hasil lintas sesi lewat `GET /admin/sync-data` (BE-19): `riwayatSync()` memuat 10 run terakhir di `DataMasterPage` (status, waktu, durasi, hitung insert/update/skip, log per tahap).
 
 ### A4. Testing Frontend
 - [ ] **[FE-29]** Unit test komponen kritikal (form validasi, filter, komponen status laporan) — React Testing Library.
@@ -91,8 +92,8 @@
 - [ ] **[BE-15]** Script Transform: normalisasi nama kategori (mapping ke 4 kategori final: Taman Kota, Taman Interaktif, Taman Lingkungan, RPTRA — buang kategori lain seperti jalur hijau jalan, tepian air, taman pemakaman), normalisasi format koordinat, deteksi baris duplikat/tidak valid.
 - [ ] **[BE-16]** Script Load: cek per baris apakah ruang publik sudah ada (mis. berdasarkan ID resmi dari dataset atau kombinasi nama+koordinat) → Update kolom yang **belum pernah diedit manual** saja, atau Insert kalau data baru. *(FEAT-012, field-level merge)*
 - [ ] **[BE-17]** Setup APScheduler untuk menjalankan Extract → Transform → Load secara berkala (jadwal ditentukan, mis. tiap malam), berjalan sebagai proses terpisah dari server API utama.
-- [ ] **[BE-18]** Endpoint `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin, kembalikan status/log hasil. *(FEAT-012, FE-28)*
-- [ ] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error jika ada) untuk ditampilkan di Panel Admin.
+- [x] **[BE-18]** Endpoint `POST /admin/sync-data` (khusus admin) untuk trigger manual ETL dari Panel Admin, kembalikan status/log hasil. *(FEAT-012, FE-28)*
+- [x] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error jika ada) untuk ditampilkan di Panel Admin.
 
 ### B3. Report Service + Validasi Lokasi Anti Fake-GPS (FEAT-008, 009, 010, 013)
 - [ ] **[BE-20]** Endpoint `POST /reports` — terima kategori masalah, deskripsi, foto (upload wajib), mode identitas, koordinat lokasi pengguna dari klien, `public_space_id`.

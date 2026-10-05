@@ -367,6 +367,9 @@ def main() -> None:
         for kategori, jumlah in sorted(per_kategori, key=lambda x: -(x[1] or 0)):
             print(f"  {kategori or '(tanpa kategori)':20s} {jumlah}")
 
+        hitung_akhir = {**hasil, "categories_baru": n_cat, "sumber_baris": len(df_ruang)}
+        print(f"ETL_HITUNG {json.dumps(hitung_akhir, default=str)}")
+
 
 if __name__ == "__main__":
     main()
