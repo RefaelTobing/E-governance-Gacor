@@ -13,7 +13,6 @@ import {
   Lightbulb,
   Droplets,
   Armchair,
-  Sparkles,
   ArrowRight,
   Trees,
   Check,
@@ -24,32 +23,28 @@ import { getPublicSpacesStats } from '../../../services/ruangPublikService';
 
 const STEPS = [
   {
-    num: '01',
     title: 'Eksplorasi Lokasi',
     body: 'Cari taman kota, RPTRA, RTH, atau lapangan olahraga di seluruh wilayah DKI Jakarta melalui direktori lengkap dengan foto dan alamat.',
     icon: MapPin,
-    accent: '#0F766E'
+    tint: 'primary'
   },
   {
-    num: '02',
     title: 'Pantau Fasilitas',
     body: 'Lihat status terkini setiap fasilitas: toilet, penerangan, playground, dan bangku taman sebelum berkunjung.',
     icon: Search,
-    accent: '#0F766E'
+    tint: 'accent'
   },
   {
-    num: '03',
     title: 'Laporkan Kerusakan',
     body: 'Temukan fasilitas yang rusak? Kirim laporan dengan foto dan deskripsi singkat. Laporan dapat dikirim anonim.',
     icon: ClipboardList,
-    accent: '#F59E0B'
+    tint: 'info'
   },
   {
-    num: '04',
     title: 'Tindak Lanjut Petugas',
     body: 'Petugas Dinas Pertamanan atau RPTRA memverifikasi dan menindaklanjuti perbaikan secara akuntabel.',
     icon: ShieldCheck,
-    accent: '#0F766E'
+    tint: 'success'
   }
 ];
 
@@ -58,33 +53,25 @@ const FACILITIES = [
     title: 'Arena Bermain',
     description: 'Ayunan, perosotan, dan lantai peredam benturan anak.',
     icon: Gamepad2,
-    status: 'Kondisi Baik',
-    statusColor: '#10B981',
-    statusBg: '#ECFDF5'
+    tint: 'primary'
   },
   {
     title: 'Penerangan Jalur',
     description: 'Lampu pedestrian solar cell dan tiang penerangan utama.',
     icon: Lightbulb,
-    status: 'Sebagian Rusak',
-    statusColor: '#EF4444',
-    statusBg: '#FEF2F2'
+    tint: 'accent'
   },
   {
     title: 'Sanitasi & Toilet',
     description: 'Kebersihan toilet umum, kran air, dan wastafel cuci tangan.',
     icon: Droplets,
-    status: 'Kondisi Baik',
-    statusColor: '#10B981',
-    statusBg: '#ECFDF5'
+    tint: 'info'
   },
   {
     title: 'Bangku Taman',
     description: 'Kenyamanan bangku taman kayu dan gazebo kanopi warga.',
     icon: Armchair,
-    status: 'Perlu Perhatian',
-    statusColor: '#D97706',
-    statusBg: '#FFFBEB'
+    tint: 'success'
   }
 ];
 
@@ -110,61 +97,22 @@ const FAQ_ITEMS = [
 const FaqItem = ({ item }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{
-      borderBottom: '1px solid #E2E8F0',
-      transition: 'all 0.2s ease'
-    }}>
+    <div className="tentang-faq-item">
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          padding: '16px 0',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          textAlign: 'left'
-        }}
+        className="tentang-faq-toggle"
       >
-        <span
-          style={{
-            fontSize: '15px',
-            fontWeight: 600,
-            color: open ? '#0F766E' : '#0F172A',
-            lineHeight: 1.45,
-            transition: 'color 0.2s ease'
-          }}
-        >
-          {item.q}
-        </span>
+        <span className={`tentang-faq-question ${open ? 'is-open' : ''}`}>{item.q}</span>
         <ChevronDown
           size={18}
-          color="#0F766E"
-          style={{
-            flexShrink: 0,
-            transition: 'transform 0.25s ease',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)'
-          }}
+          color="var(--color-primary)"
+          className={`tentang-faq-chevron ${open ? 'is-open' : ''}`}
         />
       </button>
       {open && (
-        <p
-          style={{
-            fontSize: '14px',
-            color: '#475569',
-            lineHeight: 1.65,
-            paddingBottom: '16px',
-            marginTop: '0',
-            marginBottom: 0
-          }}
-        >
-          {item.a}
-        </p>
+        <p className="tentang-faq-answer">{item.a}</p>
       )}
     </div>
   );
@@ -213,26 +161,9 @@ export const TentangPage = () => {
   const fmt = (value) => (isLoadingStats ? '...' : (value == null ? '-' : value));
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh' }}>
-      {/* 1. HERO SECTION: LIGHT GRADIENT — PUTIH → MINT → AMBER CREAM */}
-      <section style={{
-        position: 'relative',
-        overflow: 'hidden',
-        background: 'linear-gradient(135deg, #FFFFFF 0%, #F0FDFB 45%, #FFFBEB 100%)',
-        padding: '88px 24px 80px',
-        textAlign: 'center'
-      }}>
-        {/* Subtle top border accent */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: 'linear-gradient(90deg, #0F766E 0%, #14B8A6 50%, #F59E0B 100%)',
-          pointerEvents: 'none'
-        }} />
-
+    <div style={{ backgroundColor: 'var(--color-surface)', minHeight: '100vh' }}>
+      {/* 1. HERO SECTION */}
+      <section className="tentang-hero">
         {/* Content Wrapper */}
         <div style={{
           position: 'relative',
@@ -244,12 +175,12 @@ export const TentangPage = () => {
           <h1 style={{
             fontSize: 'clamp(2.1rem, 4.5vw, 3.2rem)',
             fontWeight: 800,
-            color: '#0F172A',
+            color: 'var(--color-text-main)',
             lineHeight: 1.22,
             margin: '0 0 20px',
             letterSpacing: '-0.025em'
           }}>
-            Platform <span style={{ color: '#0F766E' }}>Keterbukaan</span> Fasilitas Publik Jakarta
+            Platform <span style={{ color: 'var(--color-primary)' }}>Keterbukaan</span> Fasilitas Publik Jakarta
           </h1>
 
           {/* CTA Buttons */}
@@ -257,20 +188,12 @@ export const TentangPage = () => {
             <button
               type="button"
               onClick={() => navigate('/ruang-publik')}
+              className="btn btn-primary"
               style={{
-                backgroundColor: '#0F766E',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '12px',
+                borderRadius: 'var(--radius-lg)',
                 padding: '13px 26px',
                 fontSize: '15px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 16px rgba(15, 118, 110, 0.25)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                fontWeight: 700
               }}
             >
               <MapPin size={17} />
@@ -282,19 +205,12 @@ export const TentangPage = () => {
                 const el = document.getElementById('cara-kerja');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
+              className="btn btn-outline"
               style={{
-                backgroundColor: 'transparent',
-                color: '#0F766E',
-                border: '1.5px solid #0F766E',
-                borderRadius: '12px',
+                borderRadius: 'var(--radius-lg)',
                 padding: '13px 26px',
                 fontSize: '15px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease'
+                fontWeight: 600
               }}
             >
               <ChevronDown size={17} />
@@ -302,156 +218,54 @@ export const TentangPage = () => {
             </button>
           </div>
 
-          {/* Stat Row */}
-          <div className="tentang-stat-row">
-            {/* Stat 1 */}
-            <div className="tentang-stat-cell">
-              <div style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                color: '#0F766E',
-                lineHeight: 1,
-                marginBottom: '5px'
-              }}>{fmt(stats?.totalRuangPublik)}</div>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#64748B',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em'
-              }}>Ruang Publik</div>
-            </div>
+          {/* Stat Row: pakai class shared stat-bar */}
+          <div className="stat-panel" style={{ maxWidth: '780px', margin: '0 auto', textAlign: 'left', padding: 'var(--space-lg) var(--space-xl)' }}>
+            <div className="stat-bar" style={{ borderTop: 'none', paddingTop: 0 }}>
+              {/* Stat 1 */}
+              <div className="stat-cell">
+                <Trees size={22} color="var(--color-primary)" style={{ marginBottom: 'var(--space-xs)' }} />
+                <div className="stat-value" style={{ color: 'var(--color-primary)' }}>
+                  {fmt(stats?.totalRuangPublik)}
+                </div>
+                <div className="stat-label">Ruang Publik</div>
+              </div>
 
-            {/* Stat 2 */}
-            <div className="tentang-stat-cell">
-              <div style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                color: '#10B981',
-                lineHeight: 1,
-                marginBottom: '5px'
-              }}>{fmt(metrics?.statusPrima)}</div>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#64748B',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em'
-              }}>Fasilitas Kondisi Baik</div>
-            </div>
+              {/* Stat 2 */}
+              <div className="stat-cell">
+                <CheckCircle2 size={22} color="var(--color-success)" style={{ marginBottom: 'var(--space-xs)' }} />
+                <div className="stat-value" style={{ color: 'var(--color-success-text)' }}>
+                  {fmt(metrics?.statusPrima)}
+                </div>
+                <div className="stat-label">Kondisi Baik</div>
+              </div>
 
-            {/* Stat 3 */}
-            <div className="tentang-stat-cell">
-              <div style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                color: '#F59E0B',
-                lineHeight: 1,
-                marginBottom: '5px'
-              }}>{fmt(stats?.laporanBulanIni)}</div>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#64748B',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em'
-              }}>Laporan Bulan Ini</div>
-            </div>
+              {/* Stat 3 */}
+              <div className="stat-cell">
+                <ClipboardList size={22} color="var(--color-accent)" style={{ marginBottom: 'var(--space-xs)' }} />
+                <div className="stat-value" style={{ color: 'var(--color-accent)' }}>
+                  {fmt(stats?.laporanBulanIni)}
+                </div>
+                <div className="stat-label">Laporan Bulan Ini</div>
+              </div>
 
-            {/* Stat 4 */}
-            <div className="tentang-stat-cell">
-              <div style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                color: '#0F766E',
-                lineHeight: 1,
-                marginBottom: '5px'
-              }}>{isLoadingStats ? '...' : (stats?.tingkatPenyelesaianPersen != null ? `${stats.tingkatPenyelesaianPersen}%` : '-')}</div>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#64748B',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em'
-              }}>Tingkat Penyelesaian</div>
+              {/* Stat 4 */}
+              <div className="stat-cell">
+                <ShieldCheck size={22} color="var(--color-info)" style={{ marginBottom: 'var(--space-xs)' }} />
+                <div className="stat-value" style={{ color: 'var(--color-info)' }}>
+                  {isLoadingStats ? '...' : (stats?.tingkatPenyelesaianPersen != null ? `${stats.tingkatPenyelesaianPersen}%` : '-')}
+                </div>
+                <div className="stat-label">Penyelesaian</div>
+              </div>
             </div>
           </div>
 
-          {/* Layout responsif untuk Stat Row */}
-          <style>{`
-            .tentang-stat-row {
-              display: grid;
-              grid-template-columns: repeat(4, minmax(0, 1fr));
-              max-width: 760px;
-              margin: 0 auto;
-              background-color: #FFFFFF;
-              border: 1px solid #E2E8F0;
-              border-radius: 16px;
-              box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-              overflow: hidden;
-            }
-            .tentang-stat-cell {
-              padding: 20px 16px;
-              text-align: center;
-              border-right: 1px solid #E2E8F0;
-              border-bottom: 1px solid #E2E8F0;
-            }
-            /* Kolom terakhir tiap baris tanpa garis kanan; baris terakhir tanpa garis bawah */
-            .tentang-stat-cell:nth-child(4n) {
-              border-right: none;
-            }
-            .tentang-stat-cell:nth-child(n + 5) {
-              border-bottom: none;
-            }
-            @media (max-width: 640px) {
-              .tentang-stat-row {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                max-width: 440px;
-              }
-              .tentang-stat-cell:nth-child(2n) {
-                border-right: none;
-              }
-              .tentang-stat-cell:nth-child(n + 3) {
-                border-bottom: none;
-              }
-              .tentang-stat-cell:nth-child(-n + 2) {
-                border-bottom: 1px solid #E2E8F0;
-              }
-            }
-          `}</style>
-
           {/* Banner: sebagian/total statistik gagal dimuat */}
           {statsError && (
-            <div style={{
-              marginTop: '16px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '10px',
-              backgroundColor: '#FEF2F2',
-              border: '1px solid #FECACA',
-              color: '#991B1B',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              fontSize: '13px',
-              fontWeight: 600
-            }}>
+            <div className="tentang-stat-error">
               <span>Sebagian statistik gagal dimuat.</span>
               <button
                 type="button"
                 onClick={() => setRetryKey((k) => k + 1)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: '#991B1B',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  padding: 0
-                }}
               >
                 <RotateCcw size={13} />
                 Coba lagi
@@ -461,225 +275,77 @@ export const TentangPage = () => {
         </div>
       </section>
 
-      {/* 2. SEKSI: EMPAT LANGKAH PARTISIPASI WARGA (HORIZONTAL PROCESS TIMELINE) */}
-      <section id="cara-kerja" style={{ padding: '96px 0 88px', backgroundColor: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 60px' }}>
-            <h2 style={{
-              fontSize: 'clamp(1.75rem, 3.2vw, 2.3rem)',
-              fontWeight: 800,
-              color: '#0F172A',
-              margin: '0 0 16px',
-              letterSpacing: '-0.01em'
-            }}>
-              Empat Langkah Partisipasi Warga
-            </h2>
+      {/* 2. SEKSI: ALUR PARTISIPASI WARGA */}
+      <section id="cara-kerja" className="tentang-steps-section">
+        <div className="tentang-section-container">
+          <div className="tentang-section-heading">
+            <h2>Alur Partisipasi Warga</h2>
+            <p>Dari menemukan fasilitas hingga melihat tindak lanjut laporan.</p>
           </div>
 
-          {/* Horizontal Timeline Container */}
-          <div className="timeline-wrapper" style={{ position: 'relative' }}>
-            {/* Connecting Line (Desktop) */}
-            <div
-              className="timeline-track-line"
-              style={{
-                position: 'absolute',
-                top: '28px',
-                left: '60px',
-                right: '60px',
-                height: '2px',
-                backgroundColor: '#CCFBF1',
-                zIndex: 1
-              }}
-            />
-
-            <div className="timeline-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '24px',
-              position: 'relative',
-              zIndex: 2
-            }}>
-              {STEPS.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <div
-                    key={step.num}
-                    className="timeline-item-card"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      textAlign: 'center',
-                      backgroundColor: '#FFFFFF',
-                      padding: '8px 12px'
-                    }}
-                  >
-                    {/* Number Badge with Teal Accent */}
-                    <div style={{
-                      width: '56px',
-                      height: '56px',
-                      borderRadius: '50%',
-                      backgroundColor: '#F0FDFA',
-                      border: '2px solid #0F766E',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '17px',
-                      fontWeight: 800,
-                      color: '#0F766E',
-                      boxShadow: '0 4px 12px rgba(15, 118, 110, 0.12)',
-                      marginBottom: '18px'
-                    }}>
-                      {step.num}
-                    </div>
-
-                    {/* Step Icon Container */}
-                    <div style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '12px',
-                      backgroundColor: step.accent === '#F59E0B' ? '#FFFBEB' : '#F0FDFA',
-                      border: `1px solid ${step.accent}33`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '14px'
-                    }}>
-                      <Icon size={20} color={step.accent} />
-                    </div>
-
-                    <h3 style={{
-                      fontSize: '16px',
-                      fontWeight: 700,
-                      color: '#0F172A',
-                      margin: '0 0 8px',
-                      lineHeight: 1.35
-                    }}>
-                      {step.title}
-                    </h3>
-
-                    <p style={{
-                      fontSize: '13.5px',
-                      color: '#64748B',
-                      lineHeight: 1.6,
-                      margin: 0
-                    }}>
-                      {step.body}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+          <div className="tentang-steps-grid">
+            {STEPS.map((step) => {
+              const Icon = step.icon;
+              return (
+                <article key={step.title} className={`tentang-step-card tentang-step-${step.tint}`}>
+                  <Icon size={24} color={`var(--color-${step.tint})`} aria-hidden="true" />
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* 3. SEKSI: FASILITAS YANG DIPANTAU (SPLIT LAYOUT 2 KOLOM) */}
-      <section style={{ padding: '96px 0', backgroundColor: '#F8FAFC' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-          <div className="split-facility-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1.35fr',
-            gap: '56px',
-            alignItems: 'stretch'
-          }}>
+      <section className="tentang-facility-section">
+        <div className="tentang-section-container">
+          <div className="split-facility-grid">
             {/* Kolom Kiri: Header & Banner Visual Keterbukaan RTH */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <h2 style={{
-                fontSize: 'clamp(1.75rem, 3vw, 2.2rem)',
-                fontWeight: 800,
-                color: '#0F172A',
-                margin: '0 0 16px',
-                lineHeight: 1.25,
-                letterSpacing: '-0.01em'
-              }}>
+              <h2 className="tentang-h2">
                 Fasilitas yang Dipantau Secara Berkala
               </h2>
               {/* Banner Card RTH */}
-              <div style={{
-                flex: 1,
-                borderRadius: '18px',
-                overflow: 'hidden',
-                backgroundColor: '#F0FDFA',
-                border: '1px solid rgba(15, 118, 110, 0.2)',
-                boxShadow: '0 4px 16px rgba(15, 118, 110, 0.06)',
-                padding: '28px 24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0F766E', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-                  <Trees size={18} color="#0F766E" />
+              <div className="tentang-rth-banner">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+                  <Trees size={18} color="var(--color-primary)" />
                   <span>Ruang Terbuka Hijau DKI Jakarta</span>
                 </div>
-                <div style={{ color: '#0F172A', fontWeight: 800, fontSize: '18px', lineHeight: 1.4, marginBottom: '8px' }}>
+                <div style={{ color: 'var(--color-text-main)', fontWeight: 800, fontSize: '18px', lineHeight: 1.4, marginBottom: '8px' }}>
                   Pengawasan Terpadu Bersama Dinas Pertamanan &amp; RPTRA
                 </div>
-                <p style={{ color: '#475569', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>
                   Setiap fasilitas di taman dan RPTRA tercatat secara digital demi percepatan respon perbaikan teknis lapangan.
                 </p>
+                <div className="tentang-facility-metrics">
+                  <div>
+                    <span className="tentang-facility-metric-value">{fmt(metrics?.statusPrima)}</span>
+                    <span className="tentang-facility-metric-label">Fasilitas kondisi baik</span>
+                  </div>
+                  <div>
+                    <span className="tentang-facility-metric-value">{fmt(metrics?.perluPerhatian)}</span>
+                    <span className="tentang-facility-metric-label">Perlu perhatian</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Kolom Kanan: Compact 2x2 Grid Fasilitas */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '18px'
-            }}>
-              {FACILITIES.map((facility, idx) => {
+            <div className="tentang-facility-grid">
+              {FACILITIES.map((facility) => {
                 const Icon = facility.icon;
                 return (
-                  <div
-                    key={idx}
-                    className="facility-compact-card"
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '16px',
-                      padding: '22px 20px',
-                      border: '1px solid #E2E8F0',
-                      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
-                      transition: 'all 0.25s ease',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '14px'
-                    }}>
-                      <div style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '12px',
-                        backgroundColor: '#F0FDFA',
-                        border: '1px solid rgba(15, 118, 110, 0.18)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <Icon size={22} color="#0F766E" />
-                      </div>
-
-                      <span style={{
-                        fontSize: '11.5px',
-                        fontWeight: 700,
-                        color: facility.statusColor,
-                        backgroundColor: facility.statusBg,
-                        padding: '4px 10px',
-                        borderRadius: '9999px',
-                        border: `1px solid ${facility.statusColor}33`
-                      }}>
-                        {facility.status}
-                      </span>
+                  <div key={facility.title} className="tentang-facility-card">
+                    <div className={`tentang-facility-icon tentang-tint-${facility.tint}`}>
+                      <Icon size={22} color={`var(--color-${facility.tint})`} aria-hidden="true" />
                     </div>
 
-                    <h3 style={{ fontSize: '15.5px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+                    <h3 style={{ fontSize: '15.5px', fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '6px' }}>
                       {facility.title}
                     </h3>
-                    <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, margin: 0 }}>
                       {facility.description}
                     </p>
                   </div>
@@ -690,245 +356,75 @@ export const TentangPage = () => {
         </div>
       </section>
 
-      {/* 4. SEKSI: FITUR UTAMA PLATFORM (BENTO GRID / ASYMMETRICAL) */}
-      <section style={{ padding: '96px 0', backgroundColor: '#F0FDFB' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 56px' }}>
-            <h2 style={{
-              fontSize: 'clamp(1.75rem, 3.2vw, 2.3rem)',
-              fontWeight: 800,
-              color: '#0F172A',
-              margin: '0 0 16px',
-              letterSpacing: '-0.01em'
-            }}>
-              Fitur Utama Platform
-            </h2>
-            <p style={{
-              fontSize: '15px',
-              color: '#64748B',
-              lineHeight: 1.6,
-              margin: 0
-            }}>
-              Pilar utama dalam mewujudkan ekosistem pengelolaan ruang terbuka yang responsif dan transparan.
-            </p>
+      {/* 4. SEKSI: FITUR UTAMA PLATFORM */}
+      <section className="tentang-feature-section">
+        <div className="tentang-section-container">
+          <div className="tentang-section-heading">
+            <h2>Fitur Utama Platform</h2>
+            <p>Pilar utama dalam mewujudkan ekosistem pengelolaan ruang terbuka yang responsif dan transparan.</p>
           </div>
 
-          {/* Bento Asymmetrical Grid */}
-          <div className="bento-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: '1.25fr 1fr',
-            gap: '24px',
-            alignItems: 'stretch'
-          }}>
-            {/* Kartu Besar Kiri: Direktori Ruang Publik */}
-            <div
-              className="bento-card-large"
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: '20px',
-                border: '1px solid rgba(15, 118, 110, 0.16)',
-                padding: '36px 32px',
-                boxShadow: '0 10px 30px rgba(15, 118, 110, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'all 0.25s ease'
-              }}
-            >
-              <div>
-                <div style={{
-                  width: '54px',
-                  height: '54px',
-                  borderRadius: '16px',
-                  backgroundColor: '#F0FDFA',
-                  border: '1.5px solid rgba(15, 118, 110, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '22px'
-                }}>
-                  <MapPin size={28} color="#0F766E" />
-                </div>
-
-                <div style={{
-                  display: 'inline-block',
-                  backgroundColor: 'rgba(15, 118, 110, 0.08)',
-                  color: '#0F766E',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  padding: '4px 12px',
-                  borderRadius: '6px',
-                  marginBottom: '12px'
-                }}>
-                  Fitur Utama Unggulan
-                </div>
-
-                <h3 style={{
-                  fontSize: '22px',
-                  fontWeight: 800,
-                  color: '#0F172A',
-                  margin: '0 0 14px',
-                  lineHeight: 1.3
-                }}>
-                  Direktori Ruang Publik Jakarta
-                </h3>
-
-                <p style={{
-                  fontSize: '15px',
-                  color: '#475569',
-                  lineHeight: 1.7,
-                  margin: '0 0 24px'
-                }}>
-                  Jelajahi ratusan taman kota, RPTRA, hutan kota, dan lapangan olahraga di 5 wilayah kota administratif DKI Jakarta lengkap dengan titik presisi, foto kondisi, jam buka, dan fasilitas.
-                </p>
-
-                {/* Highlight Points */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: '#334155' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={13} color="#10B981" />
-                    </div>
-                    <span>Data Koordinat Presisi</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: '#334155' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={13} color="#10B981" />
-                    </div>
-                    <span>Galeri Foto Kondisi</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: '#334155' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={13} color="#10B981" />
-                    </div>
-                    <span>Filter per Wilayah</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: '#334155' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={13} color="#10B981" />
-                    </div>
-                    <span>Akses Cepat Laporan</span>
-                  </div>
-                </div>
+          <div className="tentang-feature-grid">
+            {/* Kartu Unggulan: Direktori Ruang Publik */}
+            <article className="tentang-feature-card tentang-feature-card-main">
+              <div className="tentang-feature-icon">
+                <MapPin size={26} color="var(--color-primary)" aria-hidden="true" />
               </div>
+
+              <h3>Direktori Ruang Publik Jakarta</h3>
+
+              <p>
+                Jelajahi ratusan taman kota, RPTRA, hutan kota, dan lapangan olahraga di 5 wilayah kota administratif DKI Jakarta lengkap dengan titik presisi, foto kondisi, jam buka, dan fasilitas.
+              </p>
+
+              <ul className="tentang-feature-points">
+                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Data Koordinat Presisi</li>
+                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Galeri Foto Kondisi</li>
+                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Filter per Wilayah</li>
+                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Akses Cepat Laporan</li>
+              </ul>
 
               <button
                 type="button"
                 onClick={() => navigate('/ruang-publik')}
-                style={{
-                  backgroundColor: '#0F766E',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px 22px',
-                  fontSize: '14.5px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  width: 'fit-content',
-                  transition: 'background-color 0.2s ease'
-                }}
+                className="btn btn-primary"
+                style={{ borderRadius: 'var(--radius-lg)', width: 'fit-content' }}
               >
                 <span>Buka Direktori Ruang Publik</span>
                 <ArrowRight size={16} />
               </button>
-            </div>
+            </article>
 
-            {/* 2 Kartu Bertumpuk di Kanan */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {/* Kartu 1: Status Kondisi Terbuka */}
-              <div
-                className="bento-card-small"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '20px',
-                  border: '1px solid rgba(15, 118, 110, 0.16)',
-                  padding: '28px 26px',
-                  boxShadow: '0 8px 24px rgba(15, 118, 110, 0.04)',
-                  flex: 1,
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                <div style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '14px',
-                  backgroundColor: '#F0FDFA',
-                  border: '1px solid rgba(15, 118, 110, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '16px'
-                }}>
-                  <CheckCircle2 size={24} color="#0F766E" />
-                </div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>
-                  Status Kondisi Terbuka
-                </h3>
-                <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                  Setiap fasilitas memiliki indikator kondisi terkini yang diperbarui secara transparan setelah penanganan oleh petugas lapangan.
-                </p>
+            {/* Kartu Pendukung: Status & Moderasi */}
+            <article className="tentang-feature-card">
+              <div className="tentang-feature-icon">
+                <CheckCircle2 size={24} color="var(--color-primary)" aria-hidden="true" />
               </div>
+              <h3>Status Kondisi Terbuka</h3>
+              <p>
+                Setiap fasilitas memiliki indikator kondisi terkini yang diperbarui secara transparan setelah penanganan oleh petugas lapangan.
+              </p>
+            </article>
 
-              {/* Kartu 2: Moderasi Petugas */}
-              <div
-                className="bento-card-small"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '20px',
-                  border: '1px solid rgba(245, 158, 11, 0.22)',
-                  padding: '28px 26px',
-                  boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
-                  flex: 1,
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                <div style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '14px',
-                  backgroundColor: '#FFFBEB',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '16px'
-                }}>
-                  <ShieldCheck size={24} color="#F59E0B" />
-                </div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>
-                  Moderasi oleh Petugas Resmi
-                </h3>
-                <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6, margin: 0 }}>
-                  Setiap laporan diverifikasi oleh petugas Dinas Pertamanan atau RPTRA untuk memastikan keabsahan dan penanganan yang tepat sasaran.
-                </p>
+            <article className="tentang-feature-card">
+              <div className="tentang-feature-icon tentang-feature-icon-accent">
+                <ShieldCheck size={24} color="var(--color-accent)" aria-hidden="true" />
               </div>
-            </div>
+              <h3>Moderasi oleh Petugas Resmi</h3>
+              <p>
+                Setiap laporan diverifikasi oleh petugas Dinas Pertamanan atau RPTRA untuk memastikan keabsahan dan penanganan yang tepat sasaran.
+              </p>
+            </article>
           </div>
         </div>
       </section>
 
       {/* 5. SEKSI: FAQ & HUBUNGI KAMI */}
-      <section style={{ padding: '96px 0', backgroundColor: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-          <div className="faq-contact-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: '56px',
-            alignItems: 'start'
-          }}>
-            {/* FAQ Kolom Kiri */}
+      <section className="tentang-contact-section">
+        <div className="tentang-section-container">
+          <div className="faq-contact-grid">
             <div>
-              <h2 style={{
-                fontSize: 'clamp(1.6rem, 2.8vw, 2rem)',
-                fontWeight: 800,
-                color: '#0F172A',
-                margin: '0 0 24px',
-                letterSpacing: '-0.01em'
-              }}>
-                Yang Sering Ditanyakan Warga
-              </h2>
+              <h2 className="tentang-h2 tentang-faq-heading">Yang Sering Ditanyakan Warga</h2>
               <div>
                 {FAQ_ITEMS.map((item, i) => (
                   <FaqItem key={i} item={item} />
@@ -936,175 +432,41 @@ export const TentangPage = () => {
               </div>
             </div>
 
-            {/* Hubungi Kami Kolom Kanan */}
-            <div style={{
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '20px',
-              padding: '36px 32px',
-              boxShadow: '0 12px 32px rgba(15, 23, 42, 0.04)'
-            }}>
-              <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
-                backgroundColor: '#FFFBEB',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '16px'
-              }}>
-                <Sparkles size={22} color="#F59E0B" />
+            <div className="tentang-contact-card">
+              <div className="tentang-contact-icon">
+                <Mail size={22} color="var(--color-primary)" aria-hidden="true" />
               </div>
 
-              <h3 style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                color: '#0F172A',
-                margin: '0 0 8px'
-              }}>
-                Hubungi Kami
-              </h3>
-              <p style={{
-                fontSize: '14px',
-                color: '#64748B',
-                lineHeight: 1.65,
-                margin: '0 0 24px'
-              }}>
+              <h3>Hubungi Kami</h3>
+              <p>
                 Untuk kendala teknis, pertanyaan pelaporan, atau informasi lebih lanjut mengenai pengelolaan fasilitas publik DKI Jakarta.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <a
-                  href="mailto:pengaduan@jakarta.go.id"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '14px 18px',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '14px',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <div style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '10px',
-                    backgroundColor: '#F0FDFA',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Mail size={20} color="#0F766E" />
-                  </div>
-                  <div>
-                    <span style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      color: '#94A3B8',
-                      fontWeight: 600,
-                      marginBottom: '2px'
-                    }}>
-                      Surel Pengaduan
-                    </span>
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: '#0F766E'
-                    }}>
-                      pengaduan@jakarta.go.id
-                    </span>
-                  </div>
+              <div className="tentang-contact-list">
+                <a href="mailto:pengaduan@jakarta.go.id" className="tentang-contact-link">
+                  <span className="tentang-contact-link-icon">
+                    <Mail size={20} color="var(--color-primary)" aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="tentang-contact-label">Surel Pengaduan</span>
+                    <span className="tentang-contact-value">pengaduan@jakarta.go.id</span>
+                  </span>
                 </a>
 
-                <a
-                  href="tel:1500164"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '14px 18px',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '14px',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <div style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '10px',
-                    backgroundColor: '#FFFBEB',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Phone size={20} color="#F59E0B" />
-                  </div>
-                  <div>
-                    <span style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      color: '#94A3B8',
-                      fontWeight: 600,
-                      marginBottom: '2px'
-                    }}>
-                      Hotline Jakarta
-                    </span>
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: '#0F172A'
-                    }}>
-                      1500-164
-                    </span>
-                  </div>
+                <a href="tel:1500164" className="tentang-contact-link">
+                  <span className="tentang-contact-link-icon tentang-contact-link-icon-accent">
+                    <Phone size={20} color="var(--color-accent)" aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="tentang-contact-label">Hotline Jakarta</span>
+                    <span className="tentang-contact-value tentang-contact-value-main">1500-164</span>
+                  </span>
                 </a>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Responsive Styles */}
-      <style>{`
-        .facility-compact-card:hover, .bento-card-large:hover, .bento-card-small:hover {
-          transform: translateY(-4px);
-          border-color: rgba(15, 118, 110, 0.35) !important;
-          box-shadow: 0 12px 28px -4px rgba(15, 118, 110, 0.12) !important;
-        }
-        @media (max-width: 992px) {
-          .split-facility-grid {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-          .bento-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .faq-contact-grid {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-        }
-        @media (max-width: 768px) {
-          .timeline-track-line {
-            display: none !important;
-          }
-          .timeline-grid {
-            grid-template-columns: 1fr !important;
-            gap: 32px !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

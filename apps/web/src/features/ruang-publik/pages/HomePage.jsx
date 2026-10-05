@@ -228,14 +228,13 @@ export const HomePage = () => {
             style={{
               color: '#FFFFFF',
               marginBottom: '16px',
-              textShadow: '0 4px 20px rgba(0, 0, 0, 0.9)',
+              textShadow: '0 2px 14px rgba(15, 23, 42, 0.45)',
               fontWeight: 800,
               fontSize: 'clamp(2rem, 4.5vw, 3.25rem)',
               lineHeight: 1.2
             }}
           >
-            <span style={{ color: '#10B981' }}>Pantau</span>{' '}
-            <span style={{ color: '#F59E0B' }}>Kondisi</span>{' '}
+            <span className="hero-title-gradient">Pantau Kondisi</span>{' '}
             <span>Ruang Publik Jakarta</span>
           </h1>
 
@@ -336,47 +335,47 @@ export const HomePage = () => {
       </section>
 
       {/* SECTION 1: STATISTIK RAKU JAKARTA */}
-      <section className="home-stat-section">
+      <section className="stat-section">
         <div className="container">
-          <div className="home-stat-panel">
-            <div className="home-stat-panel-head">
+          <div className="stat-panel">
+            <div className="stat-panel-head">
               <h2 className="h2">Ruka Jakarta dalam Angka</h2>
               <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: 'var(--space-sm) auto 0' }}>
                 Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
               </p>
             </div>
 
-            <div className="home-stat-bar">
-              <div className="home-stat-cell">
+            <div className="stat-bar">
+              <div className="stat-cell">
                 <Trees size={26} color="#0F766E" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="home-stat-value">
+                <div className="stat-value">
                   {statistics?.totalRuangPublik ?? '-'}
                 </div>
-                <div className="home-stat-label">Ruang Publik</div>
+                <div className="stat-label">Ruang Publik</div>
               </div>
 
-              <div className="home-stat-cell">
+              <div className="stat-cell">
                 <ClipboardCheck size={26} color="#F59E0B" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="home-stat-value">
+                <div className="stat-value">
                   {statistics?.totalLaporanSelesai ?? '-'}
                 </div>
-                <div className="home-stat-label">Laporan Selesai</div>
+                <div className="stat-label">Laporan Selesai</div>
               </div>
 
-              <div className="home-stat-cell">
+              <div className="stat-cell">
                 <CalendarDays size={26} color="#10B981" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="home-stat-value">
+                <div className="stat-value">
                   {statistics?.laporanBulanIni ?? '-'}
                 </div>
-                <div className="home-stat-label">Laporan Bulan Ini</div>
+                <div className="stat-label">Laporan Bulan Ini</div>
               </div>
 
-              <div className="home-stat-cell">
+              <div className="stat-cell">
                 <Clock size={26} color="#0284C7" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="home-stat-value">
+                <div className="stat-value">
                   {statistics?.tingkatPenyelesaianPersen != null ? `${statistics.tingkatPenyelesaianPersen}%` : '-'}
                 </div>
-                <div className="home-stat-label">Tingkat Penyelesaian</div>
+                <div className="stat-label">Tingkat Penyelesaian</div>
               </div>
             </div>
           </div>
