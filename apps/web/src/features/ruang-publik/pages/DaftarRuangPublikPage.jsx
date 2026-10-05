@@ -10,14 +10,15 @@ import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
 import useGeolocation from '../../../hooks/useGeolocation';
 import 'leaflet/dist/leaflet.css';
 
-const RADIUS_OPTIONS = [
-  { value: 1000, label: '1 km' },
-  { value: 3000, label: '3 km' },
-  { value: 5000, label: '5 km' },
-  { value: 10000, label: '10 km' },
-];
-const RADIUS_BAWAAN = 5000;
+const RADIUS_MIN = 1;
+const RADIUS_MAX = 1000;
+const RADIUS_BAWAAN = 700;
 const PER_HALAMAN = 12;
+const radiusDariUrl = (nilai) => {
+  const km = Number(nilai);
+  if (!Number.isFinite(km) || km <= 0) return null;
+  return Math.min(RADIUS_MAX, Math.max(RADIUS_MIN, Math.round(km)));
+};
 
 export const DaftarRuangPublikPage = () => {
   const navigate = useNavigate();
@@ -31,8 +32,8 @@ export const DaftarRuangPublikPage = () => {
   const [selectedKategori, setSelectedKategori] = useState(categoryParam);
   const [sortBy, setSortBy] = useState('relevan');
   const [selectedRadius, setSelectedRadius] = useState(() => {
-    const radiusParam = Number(searchParams.get('radius'));
-    return RADIUS_OPTIONS.some((opsi) => opsi.value === radiusParam) ? radiusParam : RADIUS_BAWAAN;
+    const radiusParam = searchParams.get('radius');
+    return radiusDariUrl(radiusParam) ?? RADIUS_BAWAAN;
   });
 
   // Dynamic States
@@ -130,7 +131,7 @@ export const DaftarRuangPublikPage = () => {
         || item.kategori_id === selectedKategori
         || item.kategori?.id === selectedKategori)
       .filter((item) => selectedWilayah === 'Semua Wilayah' || item.wilayah === selectedWilayah)
-      .filter((item) => item.jarak_km != null && item.jarak_km <= selectedRadius / 1000);
+      .filter((item) => item.jarak_km != null && item.jarak_km <= selectedRadius);
 
     return hasil.sort((a, b) => {
       if (sortBy === 'kondisi') {
@@ -349,31 +350,26 @@ export const DaftarRuangPublikPage = () => {
 
         {/* Radius dipakai bersama oleh daftar dan peta: mengubahnya sekaligus
             menyaring kartu di bawah dan marker yang tampil di peta. */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
-          <span className="text-caption" style={{ fontWeight: 700 }}>RADIUS:</span>
-          <div style={{ display: 'inline-flex', gap: 'var(--space-xs)', backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-xs)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-dark)' }}>
-            {RADIUS_OPTIONS.map((opsi) => (
-              <button
-                key={opsi.value}
-                type="button"
-                className="kontrol-radius"
-                aria-pressed={selectedRadius === opsi.value}
-                onClick={() => setSelectedRadius(opsi.value)}
-                style={{
-                  minHeight: '44px',
-                  padding: '8px 14px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  backgroundColor: selectedRadius === opsi.value ? 'var(--color-primary)' : 'transparent',
-                  color: selectedRadius === opsi.value ? '#FFFFFF' : 'var(--color-text-muted)',
-                  fontSize: '13px',
-                  fontWeight: selectedRadius === opsi.value ? 600 : 500,
-                  cursor: 'pointer',
-                }}
-              >
-                {opsi.label}
-              </button>
-            ))}
+        <div style={{ marginBottom: 'var(--space-md)' }}>
+          <label htmlFor="radius-slider" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span className="text-caption" style={{ fontWeight: 700 }}>RADIUS PENCARIAN</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', fontVariantNumeric: 'tabular-nums' }}>
+              {selectedRadius} km
+            </span>
+          </label>
+          <input
+            id="radius-slider"
+            type="range"
+            min={RADIUS_MIN}
+            max={RADIUS_MAX}
+            step={1}
+            value={selectedRadius}
+            onChange={(e) => setSelectedRadius(Number(e.target.value))}
+            style={{ width: '100%', accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{RADIUS_MIN} km</span>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{RADIUS_MAX} km</span>
           </div>
         </div>
 

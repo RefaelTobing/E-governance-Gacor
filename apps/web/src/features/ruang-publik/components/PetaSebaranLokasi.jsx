@@ -68,17 +68,20 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
 
   // Jaraknya sudah dihitung backend (item.jarak_km) dari titik acuan yang sama
   // dengan yang dipakai daftar, jadi angka di popup dan badge kartu identik.
-  const lokasiTampil = useMemo(
-    () => items
+  // Marker dibatasi supaya radius 1000 km tidak memaksa peta me-render ribuan
+  // titik sekaligus dan membuat halaman macet.
+  const BATAS_MARKER = 200;
+  const lokasiTampil = useMemo(() => {
+    const valid = items
       .map((item) => ({
         ...item,
         computedLat: Number.parseFloat(item.latitude),
         computedLng: Number.parseFloat(item.longitude),
       }))
       .filter((item) => Number.isFinite(item.computedLat) && Number.isFinite(item.computedLng))
-      .sort((a, b) => (a.jarak_km ?? Infinity) - (b.jarak_km ?? Infinity)),
-    [items]
-  );
+      .sort((a, b) => (a.jarak_km ?? Infinity) - (b.jarak_km ?? Infinity));
+    return valid.slice(0, BATAS_MARKER);
+  }, [items]);
 
   if (loading) {
     return (
