@@ -701,14 +701,14 @@ h3, .h3 {
 }
 
 /* Stat Bar Beranda: 4 metrik dalam satu card */
-.home-stat-section {
+.stat-section {
   position: relative;
   z-index: 5;
   margin-top: -64px;
   padding-bottom: var(--space-xl);
 }
 
-.home-stat-panel {
+.stat-panel {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -716,19 +716,19 @@ h3, .h3 {
   padding: var(--space-2xl) var(--space-xl);
 }
 
-.home-stat-panel-head {
+.stat-panel-head {
   text-align: center;
   margin-bottom: var(--space-2xl);
 }
 
-.home-stat-bar {
+.stat-bar {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid var(--color-border);
   padding-top: var(--space-xl);
 }
 
-.home-stat-cell {
+.stat-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -737,11 +737,11 @@ h3, .h3 {
   border-right: 1px solid var(--color-border);
 }
 
-.home-stat-cell:last-child {
+.stat-cell:last-child {
   border-right: none;
 }
 
-.home-stat-value {
+.stat-value {
   font-size: 1.9rem;
   font-weight: 800;
   color: var(--color-text-main);
@@ -749,7 +749,7 @@ h3, .h3 {
   margin-bottom: 4px;
 }
 
-.home-stat-label {
+.stat-label {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -758,23 +758,23 @@ h3, .h3 {
 }
 
 @media (max-width: 640px) {
-  .home-stat-section {
+  .stat-section {
     margin-top: -36px;
   }
-  .home-stat-panel {
+  .stat-panel {
     padding: var(--space-lg) var(--space-md);
   }
-  .home-stat-bar {
+  .stat-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: var(--space-lg);
   }
-  .home-stat-cell {
+  .stat-cell {
     padding: var(--space-sm);
   }
-  .home-stat-cell:nth-child(2n) {
+  .stat-cell:nth-child(2n) {
     border-right: none;
   }
-  .home-stat-cell:nth-child(-n + 2) {
+  .stat-cell:nth-child(-n + 2) {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: var(--space-md);
   }
@@ -934,6 +934,22 @@ h3, .h3 {
 }
 
 /* Hero search pill: hanya di hero beranda, agar halaman lain tetap radius standar */
+.hero-title-gradient {
+  display: inline-block;
+  color: #2DD4BF;
+  background: linear-gradient(105deg, #5EEAD4 0%, #2DD4BF 48%, #FCD34D 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(45, 212, 191, 0.28));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-gradient {
+    filter: none;
+  }
+}
+
 .hero-search-wrapper {
   padding: 6px;
 }
@@ -950,6 +966,464 @@ h3, .h3 {
 .hero-search-wrapper .btn {
   border-radius: var(--radius-pill);
   padding: 10px 22px;
+}
+
+/* Tentang page: satu sistem warna dan ritme untuk area publik */
+.tentang-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 88px 24px 80px;
+  text-align: center;
+  background: var(--color-bg-main);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tentang-section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.tentang-steps-section,
+.tentang-feature-section,
+.tentang-contact-section {
+  padding: 80px 0;
+  background-color: var(--color-surface);
+}
+
+.tentang-facility-section {
+  padding: 80px 0;
+  background-color: var(--color-bg-main);
+}
+
+.tentang-section-heading {
+  max-width: 680px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.tentang-section-heading h2,
+.tentang-h2 {
+  margin: 0 0 12px;
+  color: var(--color-text-main);
+  font-size: clamp(1.75rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+/* Langkah: aksen border-top per indeks untuk ritme halus */
+.tentang-step-primary { border-top-color: var(--color-primary); }
+.tentang-step-accent { border-top-color: var(--color-accent); }
+.tentang-step-info { border-top-color: var(--color-info); }
+.tentang-step-success { border-top-color: var(--color-success); }
+
+/* Tint ikon fasilitas sesuai kategori */
+.tentang-tint-primary { background-color: var(--color-primary-light); }
+.tentang-tint-accent { background-color: var(--color-accent-light); }
+.tentang-tint-info { background-color: var(--color-info-light); }
+.tentang-tint-success { background-color: var(--color-success-light); }
+
+.tentang-section-heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tentang-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-xl);
+}
+
+.tentang-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+  border-top: 2px solid var(--color-primary);
+}
+
+.tentang-step-card h3 {
+  margin: 0;
+  color: var(--color-text-main);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tentang-step-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.split-facility-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 48px;
+  align-items: stretch;
+}
+
+.tentang-rth-banner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+}
+
+.tentang-facility-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.tentang-facility-card {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.tentang-facility-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.tentang-facility-icon,
+.tentang-feature-icon,
+.tentang-contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-light);
+}
+
+.tentang-facility-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.tentang-facility-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.tentang-facility-metric-value {
+  color: var(--color-primary);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.tentang-facility-metric-label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.tentang-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
+}
+
+.tentang-feature-card {
+  padding: var(--space-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+}
+
+.tentang-feature-card-main {
+  grid-column: 1 / -1;
+  padding: var(--space-2xl);
+  border-color: var(--color-primary);
+  box-shadow: 0 14px 30px -10px rgba(15, 118, 110, 0.18);
+}
+
+.tentang-feature-card-main .tentang-feature-icon {
+  background-color: var(--color-primary-light);
+}
+
+.tentang-feature-card-main .tentang-feature-icon-accent {
+  background-color: var(--color-accent-light);
+}
+
+.tentang-feature-card h3 {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text-main);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.tentang-feature-card-main h3 {
+  font-size: 22px;
+}
+
+.tentang-feature-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.tentang-feature-icon-accent {
+  background-color: var(--color-accent-light);
+}
+
+.tentang-feature-points {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin: 0 0 var(--space-xl);
+  padding: 0;
+  color: var(--color-text-main);
+  font-size: 14px;
+  list-style: none;
+}
+
+.tentang-feature-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.faq-contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.tentang-faq-heading {
+  font-size: clamp(1.6rem, 2.8vw, 2rem);
+  margin-bottom: var(--space-xl);
+}
+
+.tentang-contact-card {
+  padding: var(--space-2xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-main);
+}
+
+.tentang-contact-card h3 {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text-main);
+  font-size: 20px;
+}
+
+.tentang-contact-card > p {
+  margin: 0 0 var(--space-xl);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.tentang-contact-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-light);
+}
+
+.tentang-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.tentang-contact-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.tentang-contact-link:focus-visible,
+.tentang-hero button:focus-visible,
+.tentang-feature-card button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.tentang-contact-label,
+.tentang-contact-value {
+  display: block;
+}
+
+.tentang-contact-label {
+  margin-bottom: 2px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tentang-contact-value {
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tentang-contact-value-main {
+  color: var(--color-text-main);
+}
+
+.tentang-contact-link-icon-accent {
+  background-color: var(--color-accent-light);
+}
+
+.tentang-faq-item {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tentang-faq-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-text-main);
+}
+
+.tentang-faq-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.tentang-faq-question {
+  color: var(--color-text-main);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  transition: color var(--transition-fast);
+}
+
+.tentang-faq-question.is-open {
+  color: var(--color-primary);
+}
+
+.tentang-faq-chevron {
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.tentang-faq-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.tentang-faq-answer {
+  margin: 0;
+  padding-bottom: var(--space-lg);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.tentang-stat-error {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-danger-text);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-light);
+  color: var(--color-danger-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tentang-stat-error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-danger-text);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 0;
+}
+
+@media (max-width: 992px) {
+  .split-facility-grid,
+  .faq-contact-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+  .tentang-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .tentang-hero {
+    padding: var(--space-3xl) var(--space-lg);
+  }
+  .tentang-section-container {
+    padding: 0 var(--space-lg);
+  }
+  .tentang-steps-section,
+  .tentang-feature-section,
+  .tentang-contact-section,
+  .tentang-facility-section {
+    padding: var(--space-3xl) 0;
+  }
+  .tentang-steps-grid,
+  .tentang-feature-grid,
+  .tentang-facility-grid {
+    grid-template-columns: 1fr;
+  }
+  .tentang-feature-card-main {
+    grid-column: auto;
+    padding: var(--space-xl);
+  }
+  .tentang-feature-points {
+    grid-template-columns: 1fr;
+  }
+  .stat-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-lg);
+  }
+  .stat-cell {
+    border-right: 1px solid var(--color-border);
+  }
+  .stat-cell:nth-child(2n) {
+    border-right: none;
+  }
 }
 
 /* Banner CTA split dua kolom */
