@@ -11,6 +11,15 @@ import RequireAdmin from './routes/RequireAdmin';
 import { HomePage, DaftarRuangPublikPage, DetailRuangPublikPage } from './features/ruang-publik';
 import { FormLaporPage, RiwayatLaporanPage, DetailStatusLaporanPage } from './features/laporan';
 import { LoginPage, LoginPemerintahPage } from './features/auth';
+import { TentangPage } from './features/tentang';
+import {
+  ProfilDashboardPage,
+  RuangTersimpanPage,
+  EditProfilPage,
+  PengaturanTemaPage,
+  KeamananPage,
+  BantuanPage,
+} from './features/profil';
 
 // Feature Pages Imports - Admin
 import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
@@ -29,6 +38,7 @@ function App() {
         {/* LAYOUT PUBLIK (Phase 5 - 12) */}
         <Route element={<PublicLayout />}>
           <Route path="/home" element={<HomePage />} />
+          <Route path="/tentang" element={<TentangPage />} />
           <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
           <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
           <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />

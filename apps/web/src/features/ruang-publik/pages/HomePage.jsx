@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 
 // Import Hero Images
 import heroImg1 from '../../../slidderHero/1.jpg';
@@ -15,8 +14,9 @@ import heroImg2 from '../../../slidderHero/2.png';
 import heroImg3 from '../../../slidderHero/3.jpg';
 import heroImg4 from '../../../slidderHero/4.jpg';
 
-import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip } from '../../../components';
+import { MOCK_CATEGORIES } from '../../../data/mockData';
+import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
+import { getPublicSpaces } from '../../../services/ruangPublikService';
 
 const HERO_SLIDES = [
   {
@@ -45,6 +45,37 @@ export const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+
+  const [featuredSpaces, setFeaturedSpaces] = useState([]);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHomePageData = async () => {
+      try {
+        const spacesData = await getPublicSpaces({ limit: 3 });
+        if (isMounted) {
+          setFeaturedSpaces(Array.isArray(spacesData) ? spacesData : []);
+        }
+      } catch (err) {
+        console.error('Error fetching featured spaces:', err);
+        if (isMounted) {
+          setFeaturedSpaces([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingSpaces(false);
+        }
+      }
+    };
+
+    fetchHomePageData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSearch = (query) => {
     if (query) {
@@ -82,7 +113,7 @@ export const HomePage = () => {
             }}
             style={{ width: '100%', height: '100%' }}
           >
-            {heroSlides.map((slide, index) => (
+            {HERO_SLIDES.map((slide, index) => (
               <SwiperSlide key={index} style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <img
                   src={slide.image}
@@ -206,7 +237,7 @@ export const HomePage = () => {
 
           {/* Quick Category Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
-            {categories.map((cat) => (
+            {MOCK_CATEGORIES.map((cat) => (
               <CategoryChip
                 key={cat.id}
                 category={cat}
