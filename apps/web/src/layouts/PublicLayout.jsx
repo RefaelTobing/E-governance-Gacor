@@ -3,6 +3,7 @@ import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import Logo from '../components/Logo';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 
 export const PublicLayout = () => {
@@ -57,41 +58,7 @@ export const PublicLayout = () => {
                 </Button>
               </Link>
             ) : user && role !== 'admin' ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Link
-                  to="/profil"
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                  title="Buka Halaman Akun Warga"
-                  aria-label="Buka Profil Akun Warga"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      backgroundColor: 'var(--color-bg-main)',
-                      padding: '6px 14px',
-                      borderRadius: 'var(--radius-pill)',
-                      border: '1px solid var(--color-border)',
-                      cursor: 'pointer',
-                      transition: 'border-color var(--transition-fast), background-color var(--transition-fast)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-primary)';
-                      e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-border)';
-                      e.currentTarget.style.backgroundColor = 'var(--color-bg-main)';
-                    }}
-                  >
-                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'W'}
-                    </div>
-                    <span className="text-small" style={{ fontWeight: 600 }}>{user.name || 'Warga Jakarta'}</span>
-                  </div>
-                </Link>
-              </div>
+              <ProfileDropdown />
             ) : (
               <>
                 <Link to="/login">

@@ -1,44 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  ClipboardList,
-  Bookmark,
-  SquarePen,
-  Palette,
-  Lock,
-  CircleHelp,
-  LogOut,
-  X,
-  Home,
-} from 'lucide-react';
+import { LogOut, X, Home } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import Logo from '../../../components/Logo';
-
-const MENU_GROUPS = [
-  {
-    label: 'Kontribusi',
-    items: [
-      { to: '/profil', label: 'Dashboard', icon: LayoutDashboard, end: true },
-      { to: '/profil/laporan', label: 'Laporan Saya', icon: ClipboardList, end: false },
-      { to: '/profil/tersimpan', label: 'Ruang Disimpan', icon: Bookmark, end: false },
-    ],
-  },
-  {
-    label: 'Pengaturan',
-    items: [
-      { to: '/profil/edit', label: 'Edit Profil', icon: SquarePen, end: false },
-      { to: '/profil/tema', label: 'Pengaturan Tema', icon: Palette, end: false },
-      { to: '/profil/keamanan', label: 'Keamanan', icon: Lock, end: false },
-    ],
-  },
-  {
-    label: 'Bantuan',
-    items: [
-      { to: '/profil/bantuan', label: 'FAQ & Bantuan', icon: CircleHelp, end: false },
-    ],
-  },
-];
+import MENU_GROUPS from '../menuConfig';
 
 export const AkunSidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
