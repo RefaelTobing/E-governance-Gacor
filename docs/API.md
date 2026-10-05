@@ -27,6 +27,12 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}` | — | Detail satu ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}/reports` | — | Laporan pada satu ruang publik |
+| `POST` | `/api/v1/uploads` | - | Upload file foto bukti fisik (JPEG/PNG/WebP, <= 5MB) |
+| `POST` | `/api/v1/reports` | Opsional | Submit laporan masalah fasilitas (foto wajib, koordinat opsional) |
+| `GET` | `/api/v1/reports` | - | Daftar laporan masyarakat (filter status, wilayah, query) |
+| `GET` | `/api/v1/reports/{report_id}` | - | Detail satu laporan beserta riwayat timeline |
+| `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
+| `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Statistik antrian moderasi untuk dashboard admin |
 | `GET` | `/api/v1/users` | **Admin** | Daftar petugas |
 | `POST` | `/api/v1/users` | **Admin** | Tambah petugas |
 | `PATCH` | `/api/v1/users/{user_id}` | **Admin** | Ganti nama / reset sandi |
@@ -387,16 +393,122 @@ Kembalikan akses untuk petugas yang sebelumnya dinonaktifkan.
 
 ---
 
-## Static File
+---
 
-Upload dilayani sebagai static file:
+## Upload & Berkas Statis
+
+### `POST /api/v1/uploads`
+
+Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint publik tanpa mewajibkan auth (mendukung pelaporan anonim). Berkas disimpan di `storage/laporan/<uuid.hex><ext>` dengan nama acak.
+
+- **Content-Type:** `multipart/form-data`
+- **Field:** `file` (UploadFile)
+- **Format diizinkan:** `image/jpeg`, `image/png`, `image/webp`
+- **Batas ukuran:** 5 MB (`settings.MAX_UPLOAD_SIZE`)
+- **Validasi:** MIME whitelist, ukuran berkas, dan magic bytes header.
+
+**Response Berhasil (201 Created):**
+```json
+{
+  "url": "/uploads/laporan/9fd34df4046e45458173186dfa329515.jpg"
+}
+```
+
+| Kasus | Skenario | Status | Keterangan |
+|---|---|---|---|
+| U1 | Upload file JPEG valid | `201` | Berkas tersimpan, URL unik UUID hex |
+| U2 | `GET` ke URL hasil upload | `200` | Berkas terlayani mount `/uploads` |
+| U3 | Upload ekstensi `.txt` | `400` | Tipe file tidak diizinkan |
+| U4 | Upload ukuran > 5 MB | `400` | Melebihi batas maksimal 5MB |
+| U5 | Ekstensi `.jpg` isi teks biasa | `400` | Ditolak oleh verifikasi magic bytes |
+| U6 | Request tanpa field `file` | `422` | Validasi parameter wajib FastAPI |
+
+### Static File Serving
 
 ```
 GET /uploads/<path>
 ```
 
-Direktorinya bisa diganti lewat `UPLOAD_DIR` (default `storage`). Batas
-ukuran file `MAX_UPLOAD_SIZE` (default 5 MB).
+Mount `StaticFiles` melayani berkas dari direktori `storage/` (atau `UPLOAD_DIR`). Contoh: `http://localhost:8000/uploads/laporan/xxx.jpg`.
+
+---
+
+## Laporan Masyarakat
+
+### `POST /api/v1/reports`
+
+Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anonim maupun tampilkan nama akun login.
+
+- **Auth:** Opsional (bisa diakses tanpa token via `oauth2_scheme_optional`).
+- **Foto:** **Wajib** (`foto_url` harus diawali `/uploads/laporan/` dan diverifikasi ada di disk).
+- **Koordinat:** Opsional. Jika salah satu diisi (`lat_user` atau `long_user`), keduanya **wajib lengkap**. Rentang latitude `-90..90`, longitude `-180..180`.
+
+**Contoh Payload (Anonim):**
+```json
+{
+  "ruang_publik_id": "rth-09107c86114d",
+  "fasilitas_id": "seed-ebf61eee35566d78-1",
+  "jenis_masalah": "Lampu Mati / Penerangan",
+  "deskripsi": "Lampu pedestrian mati sejak semalam, area gelap",
+  "mode_identitas": "anonim",
+  "foto_url": "/uploads/laporan/9fd34df4046e45458173186dfa329515.jpg",
+  "lat_user": -6.192,
+  "long_user": 106.823
+}
+```
+
+**Response Berhasil (201 Created):**
+```json
+{
+  "id": "de3ded9d-1cf2-4964-bc5e-46540f68d011",
+  "ruang_publik_id": "rth-09107c86114d",
+  "ruang_publik_nama": "Taman Menteng",
+  "fasilitas_nama": "Lampu Taman",
+  "jenis_masalah": "Lampu Mati / Penerangan",
+  "deskripsi": "Lampu pedestrian mati sejak semalam, area gelap",
+  "foto_url": "/uploads/laporan/9fd34df4046e45458173186dfa329515.jpg",
+  "status": "menunggu_verifikasi",
+  "mode_identitas": "anonim",
+  "nama_pelapor": null,
+  "user_id": null,
+  "lat_user": -6.192,
+  "long_user": 106.823,
+  "lat_exif": null,
+  "long_exif": null,
+  "created_at": "2026-10-05T19:15:20"
+}
+```
+
+| Kasus | Skenario | Status | Keterangan |
+|---|---|---|---|
+| R1 | Anonim tanpa header auth, foto valid, koordinat ada | `201` | `nama_pelapor` & `user_id` null, status `menunggu_verifikasi` |
+| R2 | `mode_identitas=tampilkan_nama` tanpa token | `400` | Silakan login atau pilih mode anonim |
+| R3 | `mode_identitas=tampilkan_nama` + Bearer token | `201` | `nama_pelapor` diisi nama DB (anti-spoofing) |
+| R4 | Body tanpa `foto_url` | `400` | Foto bukti fisik wajib diunggah |
+| R5 | `foto_url` bukan `/uploads/laporan/` atau berkas tidak ada | `400` | Berkas foto tidak valid / tidak ditemukan |
+| R6 | Hanya kirim `lat_user` tanpa `long_user` | `400` | Koordinat lokasi harus lengkap |
+| R7 | `lat_user` di luar rentang (-90..90) | `422` | Validasi schema Pydantic |
+| R8 | Submit tanpa koordinat sama sekali | `201` | Koordinat opsional, tersimpan null |
+
+### `GET /api/v1/reports`
+
+Daftar laporan masyarakat. Parameter query:
+- `status`: filter status (`menunggu_verifikasi`, `dalam_penanganan`, `selesai`, `ditolak`)
+- `wilayah`: filter kota administrasi Jakarta
+- `q`: filter kata kunci pencarian
+- `skip`, `limit`: pagination (default limit 100)
+
+### `GET /api/v1/reports/{report_id}`
+
+Detail satu laporan masyarakat lengkap dengan timeline tahapan penanganan fasilitas.
+
+### `PATCH /api/v1/reports/{report_id}/status`
+
+Pembaruan status laporan oleh admin/petugas (`menunggu_verifikasi` -> `diverifikasi` -> `dalam_penanganan` -> `selesai` / `ditolak`). Membutuhkan header `Authorization: Bearer <admin_token>`.
+
+### `GET /api/v1/reports/stats/moderasi`
+
+Statistik antrian laporan yang menunggu tinjauan dan moderasi petugas. Khusus role `admin`.
 
 ---
 
@@ -405,11 +517,6 @@ ukuran file `MAX_UPLOAD_SIZE` (default 5 MB).
 Endpoint berikut memang dipakai di UI tapi **belum ada** di backend — jangan
 dijanjikan ke frontend dulu:
 
-- **Buat / kirim laporan.** `app/schemas/laporan.py` dan
-  `app/services/laporan.py` sudah ada dan sudah dipakai untuk endpoint baca,
-  tapi router-nya masih dikomentari di [api.py](backend/app/api/v1/api.py).
-  Artinya warga belum bisa mengirim laporan sama sekali.
-- **Kelola ruang publik** (CRUD admin) — belum ada endpoint tulis. Fasilitas sudah
+- **Kelola ruang publik** (CRUD admin), belum ada endpoint tulis data ruang publik. Fasilitas sudah
   punya (`/api/v1/admin/facilities`, lihat §Fasilitas di atas).
-- **Dashboard admin, statistik, moderasi** — belum ada.
 - **Refresh / logout token** — token stateless 7 hari, tidak ada revocation.

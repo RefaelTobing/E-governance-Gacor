@@ -31,17 +31,17 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 | Bagian | Task | Selesai | Parsial | Belum |
 |---|---|---|---|---|
-| B0 Setup & Fondasi | 9 | 6 | 2 | 1 |
+| B0 Setup & Fondasi | 9 | 8 | 1 | 0 |
 | B1 Public Space Service | 7 | 3 | 1 | 3 |
 | B2 ETL Worker | 6 | 5 | 0 | 1 |
-| B3 Report Service | 10 | 0 | 2 | 8 |
+| B3 Report Service | 10 | 2 | 1 | 7 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **16** | **10** | **30** |
+| **Total** | **56** | **20** | **8** | **28** |
 
 ---
 
@@ -59,11 +59,10 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 - [ ] **[BE-04]** Rancang & buat skema tabel awal: `ruang_publik`, `kategori`, `fasilitas`, relasi fasilitas,
       `laporan`, `pengguna` (role publik/admin), kolom `lat`/`long` yang mendukung query jarak.
   - **Parsial:** tabel `categories`, `users`, `ruang_publik`, `fasilitas`, `laporan`, `laporan_timeline` sudah ada
-    (lihat `docs/03-database-schema.md`). Kurang: (a) tabel `laporan` **belum punya kolom lokasi pelapor/EXIF**
-    -> task **BE-46**; (b) relasi fasilitas memakai `fasilitas.ruang_publik_id` 1-FK, bukan tabel join many-to-many
+    (lihat `docs/03-database-schema.md`). Kolom lokasi pelapor/EXIF telah ditambahkan via BE-46. Kurang: relasi fasilitas memakai `fasilitas.ruang_publik_id` 1-FK, bukan tabel join many-to-many
     seperti tertulis di jobdesk (perilaku filter FEAT-005 sudah jalan lewat query aggregate - keputusan perlu
     dicatat, jangan diubah tanpa koordinasi FE).
-  - **Verifikasi:** `alembic current` di head, `docs/schema.sql` cocok dengan model.
+  - **Verifikasi:** `alembic current` di head (`37c407708e27`), `docs/schema.sql` cocok dengan model.
 - [x] **[BE-05]** Tambah kolom penanda field-level merge di `ruang_publik` (`field_source` JSON atau tabel
       `ruang_publik_edit_log` yang mencatat kolom mana yang pernah diedit manual admin). *(FEAT-012)*
   - **Lokasi kode:** kolom `field_source` di `app/models/ruang_publik.py`, migrasi
@@ -81,17 +80,17 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/main.py:22`.
   - **Catatan:** `FRONTEND_ADMIN_URL` default `http://localhost:5174` di `.env.example`, sedangkan FE Admin
     saat ini masih satu aplikasi dengan FE Publik di `:5173`. Sesuaikan nilai saat FE Admin dipisah.
-- [ ] **[BE-08]** Setup local storage foto: folder `/uploads`, mount `StaticFiles`, validasi tipe & ukuran saat upload. *(NFR-002)*
-  - **Parsial:** mount `/uploads` di `app/main.py:19` dan helper `app/core/file_upload.py`
-    (`validate_image_upload`, `save_upload_file`) sudah siap, **tetapi belum dipakai endpoint mana pun** -> task **BE-49**.
-  - **Verifikasi:** upload JPEG 600KB -> 201 + URL bisa dibuka; `.txt` -> 400; >5MB -> 400.
-- [ ] **[BE-46]** **(baru - hasil audit)** Migration Alembic: tambah kolom lokasi di tabel `laporan`
+- [x] **[BE-08]** Setup local storage foto: folder `/uploads`, mount `StaticFiles`, validasi tipe & ukuran saat upload. *(NFR-002)*
+  - **Lokasi kode:** `app/main.py` (mount `/uploads`), `app/core/file_upload.py`, dan endpoint `app/api/v1/uploads.py` (task BE-49).
+  - **Keputusan:** File disimpan di subfolder terkunci `storage/laporan/` dengan nama acak UUID hex. Validasi MIME (JPEG, PNG, WebP), ukuran maksimal 5MB, dan verifikasi magic bytes gambar.
+  - **Verifikasi (2026-10-05):** Upload JPEG valid -> 201 + URL terlayani HTTP 200 via mount `/uploads/laporan/...`; file `.txt` -> 400; file > 5MB -> 400; file palsu (ekstensi .jpg isi teks) -> 400.
+- [x] **[BE-46]** **(baru - hasil audit)** Migration Alembic: tambah kolom lokasi di tabel `laporan`
       `lat_user`, `long_user`, `lat_exif`, `long_exif` (semua nullable) untuk menyimpan koordinat browser
       dan koordinat EXIF foto saat submit.
   - **FEAT:** prasyarat FEAT-013 validasi lokasi (task BE-22/BE-23) dan FEAT-008.
-  - **Langkah:** `alembic revision --autogenerate -m "tambah kolom lokasi laporan"` dari `backend/`;
-    tambahkan field kosong di `app/models/laporan.py` dan `app/schemas/laporan.py`.
-  - **Verifikasi:** migrasi jalan di DB segar dan DB lama tanpa error; kolom baru nullable sehingga data lama aman.
+  - **Lokasi kode:** `app/models/laporan.py`, `app/schemas/laporan.py`, migrasi `alembic/versions/37c407708e27_tambah_kolom_lokasi_laporan.py`.
+  - **Keputusan:** Keempat kolom bertipe Float dan nullable agar data laporan historis tetap kompatibel tanpa default value semu.
+  - **Verifikasi (2026-10-05):** Migrasi `upgrade head` sukses, `downgrade -1` bersih menghapus 4 kolom, `upgrade head` kembali ke `37c407708e27`. Pydantic schema memvalidasi rentang -90..90 dan -180..180.
 
 ---
 
@@ -260,17 +259,18 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     `tahap_gagal=transform_rth_raw` + 2 baris tahap; API dijalankan langsung: tanpa token `401`,
     token warga `403`, token admin `200` berisi run di atas dengan `mulai`/`selesai` ber-UTC;
     FE `npm run build` lolos dan `riwayatSync()` memanggil `GET /admin/sync-data`.
-    Unit test `tests/unit/test_etl_run_log.py` belum dijalankan di sesi ini.
+    Unit test `pytest tests/unit -q` lolos penuh (**12 passed** in 0.21s: 6 test BE-18 + 6 test BE-19);
+    seluruh 10 skenario otomasi browser Playwright lulus tanpa error.
 
 ---
 
 ## B3. Report Service + Validasi Lokasi Anti Fake-GPS (FEAT-008, 009, 010)
 
-- [ ] **[BE-20]** `POST /reports` - terima kategori masalah, deskripsi, foto (upload wajib), mode identitas,
+- [x] **[BE-20]** `POST /reports` - terima kategori masalah, deskripsi, foto (upload wajib), mode identitas,
       koordinat lokasi pengguna, `public_space_id`.
-  - **Parsial:** endpoint hidup (`app/api/v1/laporan.py:19`, token opsional, anti-spoofing nama sudah benar
-    di `app/services/laporan.py:13`), tetapi body JSON biasa: `foto_url` selalu `null`, tidak ada koordinat.
-  - **Yang kurang:** multipart foto (BE-49) + field lokasi hasil BE-46.
+  - **Lokasi kode:** `app/api/v1/laporan.py`, `app/services/laporan.py`, `app/schemas/laporan.py`.
+  - **Keputusan:** Foto bukti fisik wajib diunggah (string `foto_url` diawali `/uploads/laporan/` dan diverifikasi keberadaannya di disk). Koordinat `lat_user` dan `long_user` opsional (harus berpasangan lengkap bila diisi, rentang -90..90 dan -180..180). Dependency auth memakai `oauth2_scheme_optional` agar pengirim anonim tanpa token tidak tertolak 401, sementara mode `tampilkan_nama` tanpa token ditolak 400 dan nama pelapor diambil aman dari DB akun login (anti-spoofing).
+  - **Verifikasi (2026-10-05):** 11 unit test lulus (`test_laporan.py`), uji black-box R1-R8 (anonim 201, tampilkan nama tanpa token 400, dengan token 201 anti-spoof, tanpa foto 400, foto palsu 400, koordinat parsial 400, koordinat luar rentang 422, tanpa koordinat 201), serta automasi Playwright B1-B13 end-to-end.
 - [ ] **[BE-21]** Simpan foto ke local storage, ekstrak metadata EXIF GPS dari foto (Pillow/exifread).
   - **Belum ada:** `Pillow` tidak ada di `requirements.txt`; tidak ada pemanggilan `save_upload_file`.
 - [ ] **[BE-22]** Logika validasi lokasi: Haversine antara koordinat browser vs koordinat EXIF foto,
@@ -292,15 +292,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
 - [ ] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
   - **Belum ada** (lihat BE-13).
-- [ ] **[BE-49]** **(baru - hasil audit)** Endpoint upload foto `POST /api/v1/uploads` dengan `UploadFile`
+- [x] **[BE-49]** **(baru - hasil audit)** Endpoint upload foto `POST /api/v1/uploads` dengan `UploadFile`
       (multipart), memakai `app/core/file_upload.py` yang sudah siap, kembalikan `{ "url": "/uploads/laporan/xxx.jpg" }`;
       auth opsional mengikuti kebijakan laporan anonim; foto masuk ke `storage/laporan/`.
-  - **FEAT:** FEAT-008 + NFR-002. **Dibutuhkan:** `apps/web/src/features/laporan/pages/FormLaporPage.jsx`
-    kini mengirim `foto_url: null` karena endpoint ini belum ada.
-  - **Langkah:** buat `app/api/v1/uploads.py`, daftarkan di `api.py`; setelah hidup, catat di
-    `docs/API.md` dan `docs/04-api-endpoints.md`.
-  - **Verifikasi:** JPEG 600KB -> 201 + URL bisa diakses lewat `/uploads/...`; `.txt` -> 400; >5MB -> 400;
-    `FormLaporPage` mengirim foto asli dan foto tampil di moderasi.
+  - **FEAT:** FEAT-008 + NFR-002.
+  - **Lokasi kode:** `app/api/v1/uploads.py`, terdaftar di `app/api/v1/api.py`.
+  - **Keputusan:** Endpoint upload dapat diakses publik tanpa login agar pelapor anonim dapat mengunggah bukti fisik. Berkas disimpan di `settings.UPLOAD_DIR / "laporan" / <uuid.hex><ext>`. Validasi MIME whitelist (`image/jpeg`, `image/png`, `image/webp`), batas ukuran 5MB, dan validasi magic bytes.
+  - **Verifikasi (2026-10-05):** Upload JPEG valid mengembalikan HTTP 201 dengan URL `/uploads/laporan/<hex>.jpg` dan dapat diakses publik via mount `/uploads`; upload file non-gambar `.txt` ditolak 400; upload file > 5MB ditolak 400; upload ekstensi jpg berpalsu teks ditolak 400. Integrasi FE-16 di `FormLaporPage` berhasil mengirim berkas dan foto tampil di halaman moderasi admin.
 - [ ] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
       untuk halaman "Laporan Saya".
   - **FEAT:** FEAT-013 PRD (Riwayat "Laporan Saya"). **Dibutuhkan:** `getUserReports` di

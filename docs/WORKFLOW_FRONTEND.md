@@ -71,7 +71,7 @@ Repo sudah **jauh melampaui** gambaran di `docs/WORKFLOWFE.md` dan `docs/Structu
 2. **`route-config.js` menunjuk file yang tidak ada**: `features/data-master/pages/EditRuangPublikPage.jsx` dan `features/shared/pages/NotFoundPage.jsx` belum dibuat. Route `/tentang` juga belum ada di config padahal ada di `App.jsx`.
 3. **`LoginPage.jsx` mem-hardcode `http://localhost:8000/...`** — melanggar `CONVENTIONS.md` §7 (wajib lewat `config/api.js` / `VITE_API_BASE_URL`). Registrasi & login juga menggabung dua panggilan di tempat, bukan lewat `authService.js`.
 4. **`config/categories.js` masih mock** (`MOCK_CATEGORIES`) padahal endpoint `GET /api/v1/categories` sudah ada.
-5. **Foto lapor belum terkirim**: `FormLaporPage` menyetel `fotoFile` ke string dummy dan mengirim `foto_url: null` (belum ada endpoint upload di backend — pantau Fase 2 workflow backend, lalu hubungkan di sini).
+5. **Foto lapor terkirim**: `FormLaporPage` telah terhubung penuh ke `POST /api/v1/uploads` (FE-16, FE-17, BE-20, BE-49). Menggunakan input file asli, validasi tipe file (JPEG/PNG/WebP) dan ukuran berkas (<= 5MB), sequential upload multipart, serta pengambilan koordinat geolokasi browser saat submit. Foto terunggah tampil di Riwayat Laporan dan Detail Moderasi admin.
 6. **"Laporan Saya" belum per-pengguna**: `getUserReports()` hanya meneruskan ke `getReports()` tanpa filter pemilik (butuh dukungan endpoint — ada di Fase 1a workflow backend).
 7. **`config/constants.js` masih placeholder** (`export const CONSTANTS = {};`) — enum status belum dipusatkan (rekomendasi DESIGN.md §3.2.4).
 8. **`EDIT DATA MASTER`**: `KelolaFasilitasPage` sudah terhubung ke `/api/v1/admin/facilities` (daftar, tambah, edit, hapus, impor CSV — BE-53). `DataMasterPage` masih baca-saja karena endpoint tulis ruang publik (`PATCH /public-spaces/{id}`) belum ada; tombol "Edit Master" dan "Impor Data Satu Data" masih `alert()` — pertahankan pesan yang jujur, jangan simulasi sukses palsu.
@@ -115,7 +115,7 @@ Route diambil dari `App.jsx` (sumber yang benar saat ini; rekonsiliasi dengan `r
 | 3 | Warga | Daftar Ruang Publik | `/ruang-publik` | `features/ruang-publik/pages/DaftarRuangPublikPage.jsx` ✓ | `Screen 03` | Ada — verifikasi visual (F4) |
 | 4 | Warga | Detail Ruang Publik | `/ruang-publik/:id` | `features/ruang-publik/pages/DetailRuangPublikPage.jsx` ✓ | `Screen 04` | Ada — verifikasi visual (F4) |
 | 5 | Warga | Detail Fasilitas | bagian dari detail (lihat catatan F4) | — | `Screen 05` | **Belum ada route/view sendiri** — konfirmasi dulu apakah dipisah; jangan digabung diam-diam |
-| 6 | Warga | Form Pelaporan | `/ruang-publik/:id/lapor` | `features/laporan/pages/FormLaporPage.jsx` ✓ | `Screen 06`, `06B` | Ada — foto & mode identitas menyusul (F3) |
+| 6 | Warga | Form Pelaporan | `/ruang-publik/:id/lapor` | `features/laporan/pages/FormLaporPage.jsx` ✓ | `Screen 06`, `06B` | Ada (foto asli, validasi klien, geolokasi jalan, FE-16/17, BE-20/49 selesai) |
 | 7 | Warga | Detail Status Laporan | `/laporan-saya/:id` | `features/laporan/pages/DetailStatusLaporanPage.jsx` ✓ | `Screen 07` | Ada — verifikasi visual (F4) |
 | 8 | Warga | Laporan Saya | `/laporan-saya` | `features/laporan/pages/RiwayatLaporanPage.jsx` ✓ | `Screen 08` | Ada — filter per-user menyusul (F3) |
 | 9 | Pemerintah | Login Pemerintah | `/login-pemerintah` | `features/auth/pages/LoginPemerintahPage.jsx` ✓ | `Screen 09` | Ada — verifikasi visual (F4) |
@@ -153,7 +153,7 @@ Baca: `package.json`, `index.css` (token), `App.jsx`, `route-config.js`, `layout
 **Gerbang:** tidak ada URL hardcode di `features/**` (grep `localhost:8000` hanya boleh ada di `config/`); kategori datang dari API saat backend hidup; `npm run build` sukses.
 
 ### FASE 3 — Alur Laporan End-to-End (butuh backend, koordinasi lintas workflow)
-- **Form lapor**: setelah backend Fase 2 (upload) hidup — ganti foto dummy dengan upload sesungguhnya (`foto_url` dari respons upload), pertahankan preservasi konteks (Ruang Publik + Fasilitas yang sudah dipilih tampil, user tidak perlu memilih ulang), pertahankan mode identitas FEAT-009 (default anonim) yang sudah ada.
+- **Form lapor**: Selesai dihubungkan ke `POST /api/v1/uploads` dan `POST /api/v1/reports` (FE-16, FE-17, BE-20, BE-49), upload berkas asli, validasi ukuran & format foto di klien, pengambilan geolokasi browser, preservasi konteks ruang publik & fasilitas, dan mode identitas.
 - **Laporan Saya**: setelah backend Fase 1a — panggil filter per-pengguna agar hanya laporan milik loginan yang tampil.
 - **Detail status**: pastikan timeline membaca data backend (bukan mock) bila respons sudah tersedia.
 **Gerbang:** alur klik lengkap teruji: beranda → daftar → detail → form lapor → status → laporan saya.
@@ -205,7 +205,7 @@ Sebelum membuat komponen baru: **"Apakah komponen existing sudah menyelesaikan i
 - [ ] Route jadi satu sumber (`route-config.js`), guards bekerja, 404 ada
 - [ ] Tidak ada `fetch`/URL hardcode di luar `config/` + `services/`
 - [ ] Kategori & data real dari API (mock hanya fallback dev)
-- [ ] Alur laporan terhubung backend (foto upload, laporan per-user) saat endpoint siap
+- [x] Alur laporan terhubung backend (foto upload via POST /uploads, koordinat geolokasi, integrasi FormLaporPage)
 - [ ] 12 layar + `/tentang` terbuka, tidak ada error konsol, `npm run build` sukses
 - [ ] Semua layar sudah dibandingkan dengan screenshot Figma & diperbaiki
 - [ ] Responsif + aksesibilitas dasar lolos

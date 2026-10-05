@@ -37,6 +37,12 @@ const request = async (endpoint, options = {}) => {
   return response.json();
 };
 
+export const assetUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 export const api = {
   get: (endpoint, params = {}) => {
     const query = new URLSearchParams(
@@ -47,6 +53,31 @@ export const api = {
   },
   post: (endpoint, body) =>
     request(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  upload: async (endpoint, formData, options = {}) => {
+    const url = `${BASE_URL}${endpoint}`;
+    const token = localStorage.getItem('access_token');
+    const headers = { ...options.headers };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch(url, {
+      ...options,
+      method: 'POST',
+      // Tanpa Content-Type manual: browser harus menambahkan boundary multipart.
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      const error = new Error(`HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      try {
+        const body = await response.json();
+        error.detail = body?.detail;
+      } catch (e) {}
+      throw error;
+    }
+    return response.json();
+  },
   put: (endpoint, body) =>
     request(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   patch: (endpoint, body) =>

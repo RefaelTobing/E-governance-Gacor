@@ -1,9 +1,11 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy import select, and_
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 
+from app.core.config import settings
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.ruang_publik import RuangPublik
@@ -15,6 +17,31 @@ def create_report(
     laporan_in: LaporanCreate,
     user_id: Optional[str] = None
 ) -> Laporan:
+    # Foto wajib dan harus hasil unggahan sistem sendiri, bukan URL bebas.
+    if not laporan_in.foto_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Foto bukti fisik wajib diunggah."
+        )
+    if not laporan_in.foto_url.startswith("/uploads/laporan/") or ".." in laporan_in.foto_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="URL foto tidak valid (harus berada di /uploads/laporan/)."
+        )
+    rel_path = laporan_in.foto_url.removeprefix("/uploads/")
+    if not os.path.isfile(os.path.join(settings.UPLOAD_DIR, rel_path)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File foto tidak ditemukan di server."
+        )
+
+    # Koordinat opsional sampai BE-23, tapi kalau diisi harus berpasangan.
+    if (laporan_in.lat_user is None) != (laporan_in.long_user is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Koordinat lokasi harus lengkap (latitude dan longitude)."
+        )
+
     # Validasi: mode tampilkan_nama memerlukan autentikasi.
     if laporan_in.mode_identitas == "tampilkan_nama" and not user_id:
         raise HTTPException(
@@ -43,6 +70,8 @@ def create_report(
         mode_identitas=laporan_in.mode_identitas,
         nama_pelapor=nama_pelapor,
         foto_url=laporan_in.foto_url,
+        lat_user=laporan_in.lat_user,
+        long_user=laporan_in.long_user,
         status="menunggu_verifikasi"
     )
     db.add(db_laporan)

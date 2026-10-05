@@ -133,12 +133,12 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 | GET | `/api/v1/statistics/testimonials` | — | masih hardcode |
 | GET | `/api/v1/statistics/hero-slides` | — | masih hardcode (emoji rusak, lihat Fase 5) |
 | GET | `/uploads/<path>` | — | static file dari `storage/` |
+| POST | `/api/v1/uploads` | - | Upload file bukti foto laporan (JPEG/PNG/WebP, <= 5MB) |
 
 ### 7.2 Belum ada — dibutuhkan frontend/PRD
 
 | Kebutuhan | PRD | Dibutuhkan oleh | Fase |
 |---|---|---|---|
-| Upload foto laporan (`POST .../uploads` atau multipart di create-report) | FEAT-008 | `FormLaporPage` (foto wajib, kini `foto_url: null`) | 2 |
 | Filter laporan per-pengguna | FEAT-010 | `getUserReports` → "Laporan Saya" | 1a |
 | CRUD ruang publik (admin) | FEAT-012 | halaman `/dashboard/data-master` | 3 |
 | Rate limiting endpoint laporan | NFR-002 | PRD | 4 |
@@ -264,7 +264,7 @@ Sebelum menyatakan backend selesai:
 
 - [ ] Stack hidup: Docker sehat, `alembic current` di head, seed jalan
 - [ ] Fase 1 selesai: laporan per-pengguna, filter tayang per-ruang publik benar, `POST /categories` terproteksi, enum status tervalidasi
-- [ ] Upload foto berfungsi (MIME + 5MB tervalidasi, URL bisa diakses)
+- [x] Upload foto berfungsi (MIME + 5MB tervalidasi, URL bisa diakses)
 - [ ] CRUD data-master admin tersedia dan terproteksi
 - [ ] Rate limiting laporan aktif
 - [ ] `pytest tests\unit` hijau di `.venv`

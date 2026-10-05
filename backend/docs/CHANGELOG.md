@@ -25,6 +25,11 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-05
 
+- **[BE-20]** Submit laporan publik dan verifikasi foto - `POST /api/v1/reports` mewajibkan upload foto bukti fisik (`foto_url` diawali `/uploads/laporan/` dan diverifikasi di disk), menyimpan koordinat pengguna `lat_user`/`long_user` (koordinat opsional berpasangan), memproteksi nama pelapor dari spoofing, dan menerapkan `oauth2_scheme_optional` agar pelapor anonim tanpa token tidak tertolak 401; verifikasi: unit test `test_laporan.py` (11 passed, total suite 23 passed), kontrak API black-box R1-R8 lulus, Playwright B1-B13 end-to-end sukses.
+- **[BE-49]** Endpoint upload foto bukti laporan - `POST /api/v1/uploads` multipart menerima `UploadFile`, memvalidasi MIME (JPEG/PNG/WebP), ukuran maksimal 5MB, dan magic bytes berkas, menyimpan ke `storage/laporan/<uuid.hex><ext>` dan mengembalikan URL publik `/uploads/laporan/...` tanpa mewajibkan auth; verifikasi: upload JPEG valid -> 201 + file HTTP 200 via mount `/uploads`, berkas non-gambar `.txt` -> 400, berkas > 5MB -> 400, berkas samaran -> 400, tanpa berkas -> 422.
+- **[BE-46]** Migrasi kolom lokasi pada tabel laporan - migrasi Alembic `37c407708e27_tambah_kolom_lokasi_laporan.py` menambahkan kolom `lat_user`, `long_user`, `lat_exif`, `long_exif` (Float, nullable) pada tabel `laporan`, `LaporanBase` memvalidasi koordinat user dalam rentang -90..90 dan -180..180, `LaporanResponse` mengekspos koordinat; verifikasi: siklus migrasi `upgrade head` -> `downgrade -1` -> `upgrade head` sukses, skema docs sinkron.
+- **[FE-16]** Input foto berkas asli dan validasi sisi klien - mengganti simulasi kamera modal di `FormLaporPage.jsx` dengan input file native (`accept="image/jpeg,image/png,image/webp"`), validasi MIME & ukuran berkas <= 5MB sebelum upload, preview gambar Object URL dengan tombol hapus yang dapat diakses, helper upload multipart `api.upload()` tanpa Content-Type eksplisit; verifikasi: alert validasi klien muncul untuk file txt dan > 5MB, foto valid menampilkan preview dan dapat dihapus/dipilih ulang, build `npm run build` sukses.
+- **[FE-17]** Pengambilan geolokasi pelapor saat submit - `FormLaporPage.jsx` menangkap koordinat perangkat pelapor via `navigator.geolocation.getCurrentPosition` dengan timeout 5s saat submit, menyertakan `lat_user` dan `long_user` secara transparan ke `POST /reports` tanpa membocorkan angka presisi koordinat ke tampilan UI (menjaga privasi); verifikasi: Playwright menangkap koordinat presisi terkirim ke backend dan tidak tampil di UI, tanpa izin lokasi laporan tetap berhasil submit (opsional).
 - **[BE-19]** Log hasil run ETL ke database - tabel `etl_run` (model + migrasi
   `tambah_tabel_etl_run`) diisi `app/etl/pipeline.py`, kini satu-satunya jalur pipeline untuk
   scheduler (BE-17), `--once`, dan endpoint manual (BE-18): status, waktu mulai/selesai,
@@ -34,7 +39,8 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
   + `DataMasterPage` menampilkan 10 run terakhir beserta log per tahap; verifikasi: run
   `--once` sukses 3 tahap dengan `0 baru, 0 diupdate, 1200 tanpa perubahan` tercatat dan
   terbaca lewat API (401 tanpa token, 403 warga, 200 admin), run gagal mencatat
-  `tahap_gagal`, `npm run build` FE lolos.
+  `tahap_gagal`, `pytest tests/unit -q` lolos 12 passed, 10 skenario otomasi browser Playwright
+  lulus, dan `npm run build` FE lolos.
 
 ## 2026-10-04
 

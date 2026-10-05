@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb } from 'lucide-react';
-import { Button, Input, Card, CardBody, StatusBadge, Skeleton } from '../../../components';
+import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb, Trash2 } from 'lucide-react';
+import { Button, Card, CardBody, StatusBadge, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
-import { createReport } from '../../../services/laporanService';
+import { createReport, uploadFoto } from '../../../services/laporanService';
 
 export const FormLaporPage = () => {
   const { id } = useParams();
@@ -21,9 +21,12 @@ export const FormLaporPage = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState('');
   const [jenisMasalah, setJenisMasalah] = useState('Lampu Mati / Penerangan');
   const [deskripsi, setDeskripsi] = useState('');
-  const [modeIdentitas, setModeIdentitas] = useState('anonim'); // FEAT-009: anonim vs tampilkan_nama
+  const [modeIdentitas, setModeIdentitas] = useState('anonim');
   const [fotoFile, setFotoFile] = useState(null);
-  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState(null);
+  const [fotoError, setFotoError] = useState('');
+  const [isDashedFocused, setIsDashedFocused] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -64,11 +67,70 @@ export const FormLaporPage = () => {
     };
   }, [id, facilityParam]);
 
+  useEffect(() => {
+    return () => {
+      if (fotoPreview) {
+        URL.revokeObjectURL(fotoPreview);
+      }
+    };
+  }, [fotoPreview]);
+
+  const handleFileChange = (e) => {
+    setFotoError('');
+    setErrorMsg('');
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // FE-16: Validasi tipe berkas foto
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const hasValidExt = /\.(jpe?g|png|webp)$/i.test(file.name);
+    if (!allowedTypes.includes(file.type) && !hasValidExt) {
+      setFotoError('Tipe file tidak diizinkan. Hanya file JPEG, PNG, dan WebP yang diperbolehkan.');
+      e.target.value = '';
+      return;
+    }
+
+    // FE-16: Validasi ukuran berkas maksimal 5MB
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setFotoError('Ukuran file melebihi batas maksimal 5MB.');
+      e.target.value = '';
+      return;
+    }
+
+    if (fotoPreview) {
+      URL.revokeObjectURL(fotoPreview);
+    }
+
+    setFotoFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setFotoPreview(objectUrl);
+  };
+
+  const handleHapusFoto = (e) => {
+    e.stopPropagation();
+    if (fotoPreview) {
+      URL.revokeObjectURL(fotoPreview);
+    }
+    setFotoFile(null);
+    setFotoPreview(null);
+    setFotoError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setFotoError('');
 
-    // Validasi enum mode identitas: hanya anonim atau tampilkan_nama.
+    // Validasi foto bukti fisik wajib diunggah
+    if (!fotoFile) {
+      setFotoError('Foto bukti fisik wajib diunggah.');
+      return;
+    }
+
     if (!['anonim', 'tampilkan_nama'].includes(modeIdentitas)) {
       setErrorMsg('Mode identitas tidak valid. Pilih anonim atau tampilkan nama.');
       return;
@@ -77,13 +139,34 @@ export const FormLaporPage = () => {
     setIsSubmitting(true);
 
     try {
+      // FE-17: Ambil koordinat pengguna via Geolocation API
+      let coords = null;
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        try {
+          coords = await new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+              () => resolve(null),
+              { timeout: 5000, enableHighAccuracy: true }
+            );
+          });
+        } catch {
+          coords = null;
+        }
+      }
+
+      // 1. Upload berkas foto (BE-49)
+      const fotoUrl = await uploadFoto(fotoFile);
+
+      // 2. Submit laporan ke backend (BE-20)
       const reportPayload = {
         ruang_publik_id: detail?.id,
         fasilitas_id: selectedFacilityId || null,
         jenis_masalah: jenisMasalah,
         deskripsi: deskripsi,
         mode_identitas: modeIdentitas,
-        foto_url: null
+        foto_url: fotoUrl,
+        ...(coords ? { lat_user: coords.lat, long_user: coords.lng } : {}),
       };
 
       await createReport(reportPayload);
@@ -91,7 +174,8 @@ export const FormLaporPage = () => {
       navigate('/laporan-saya');
     } catch (err) {
       console.error('Gagal mengirim laporan:', err);
-      setErrorMsg('Gagal mengirim laporan ke server. Periksa kembali isian Anda atau coba beberapa saat lagi.');
+      const detailError = err.detail || err.message;
+      setErrorMsg(detailError || 'Gagal mengirim laporan ke server. Periksa kembali isian Anda.');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,12 +202,22 @@ export const FormLaporPage = () => {
       <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <Card>
-            <CardBody style={{ padding: 'var(--space-2xl)', textAlign: 'center' }}>
-              <h1 className="h3" style={{ marginBottom: 'var(--space-sm)' }}>Ruang Publik Tidak Tersedia</h1>
-              <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-lg)' }}>
+            <CardBody style={{ textAlign: 'center', padding: 'var(--space-3xl)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-md)' }}>
+                <Info size={40} color="var(--color-danger)" />
+              </div>
+              <h2 className="h2" style={{ marginBottom: '8px' }}>Gagal Memuat Formulir Lapor</h2>
+              <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-xl)' }}>
                 {fetchError || 'Data ruang publik tidak ditemukan.'}
               </p>
-              <Button variant="outline" onClick={() => navigate('/ruang-publik')}>Kembali ke Ruang Publik</Button>
+              <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
+                <Button variant="primary" onClick={() => window.location.reload()}>
+                  Muat Ulang
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/ruang-publik')}>
+                  Kembali ke Direktori
+                </Button>
+              </div>
             </CardBody>
           </Card>
         </div>
@@ -131,117 +225,133 @@ export const FormLaporPage = () => {
     );
   }
 
+  const fasilitasTersedia = Array.isArray(detail.fasilitas) ? detail.fasilitas : [];
+
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
       {/* BREADCRUMB */}
-      <nav style={{ marginBottom: 'var(--space-md)', fontSize: '14px', color: 'var(--color-text-muted)' }}>
-        <Link to="/home" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>Beranda</Link>
-        {' > '}
+      <nav aria-label="Breadcrumb" style={{ marginBottom: 'var(--space-md)', fontSize: '14px', color: 'var(--color-text-muted)' }}>
+        <Link to="/ruang-publik" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>Ruang Publik</Link>
+        {' / '}
         <Link to={`/ruang-publik/${detail.id}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>{detail.nama}</Link>
-        {' > '}
-        <strong style={{ color: 'var(--color-text-main)' }}>Buat Laporan Fasilitas</strong>
+        {' / '}
+        <span style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>Formulir Laporan</span>
       </nav>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 'var(--space-2xl)' }}>
-        {/* MAIN FORM COLUMN */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-2xl)', alignItems: 'start' }}>
+        {/* MAIN FORM */}
         <div>
-          <span className="badge badge-info" style={{ marginBottom: 'var(--space-xs)' }}>PARTISIPASI WARGA</span>
-          <h1 className="text-display" style={{ marginBottom: '4px' }}>Laporkan Masalah Fasilitas</h1>
-          <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2xl)' }}>
-            Bantu informasikan kondisi fasilitas yang rusak atau membutuhkan perhatian agar dapat segera ditindaklanjuti.
+          <h1 className="h1" style={{ marginBottom: '8px' }}>Laporkan Masalah Fasilitas</h1>
+          <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2xl)' }}>
+            Bantu pengelola menjaga fasilitas umum tetap nyaman, aman, dan terawat dengan melaporkan kerusakan secara cepat.
           </p>
 
+          {errorMsg && (
+            <div
+              role="alert"
+              style={{
+                backgroundColor: 'var(--color-danger-light, #fee2e2)',
+                color: 'var(--color-danger, #b91c1c)',
+                padding: 'var(--space-md)',
+                borderRadius: 'var(--radius-md)',
+                marginBottom: 'var(--space-lg)',
+                fontWeight: 600,
+              }}
+            >
+              {errorMsg}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
-            {errorMsg && (
+            {/* LOKASI RUANG PUBLIK */}
+            <div className="form-group">
+              <label className="form-label">Lokasi Ruang Publik</label>
               <div
-                role="alert"
                 style={{
-                  backgroundColor: '#FEF2F2',
-                  border: '1px solid var(--color-danger)',
-                  color: '#991B1B',
-                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-md)',
+                  padding: 'var(--space-md) var(--space-lg)',
+                  backgroundColor: 'var(--color-bg-subtle, #f8fafc)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)',
-                  marginBottom: 'var(--space-lg)',
-                  fontSize: '14px'
                 }}
               >
-                {errorMsg}
-              </div>
-            )}
-            {/* LOKASI & FASILITAS TERPILIH BOX */}
-            <div style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-lg)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-xl)', border: '1px solid var(--color-primary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
-                <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={14} /> LOKASI TERPILIH (OTOMATIS)
-                </span>
-                <span className="badge badge-success">Tersinkron</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-                <div style={{ backgroundColor: 'white', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-                  <span className="text-caption" style={{ fontWeight: 700 }}>TAMAN KOTA</span>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>{detail.nama} ({detail.wilayah})</div>
-                </div>
-                <div style={{ backgroundColor: 'white', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-                  <span className="text-caption" style={{ fontWeight: 700 }}>SPESIFIKASI FASILITAS</span>
-                  <select
-                    className="form-select"
-                    value={selectedFacilityId}
-                    onChange={(e) => setSelectedFacilityId(e.target.value)}
-                    style={{ marginTop: '2px', padding: '4px 8px', fontSize: '13px' }}
-                  >
-                    {detail.fasilitas.map((f) => (
-                      <option key={f.id} value={f.id}>{f.nama}</option>
-                    ))}
-                  </select>
+                <MapPin size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px' }}>{detail.nama}</div>
+                  <div className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{detail.alamat || detail.wilayah}</div>
                 </div>
               </div>
             </div>
 
-            {/* JENIS MASALAH */}
+            {/* PILIH FASILITAS */}
             <div className="form-group">
-              <label className="form-label">
-                Jenis Masalah <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
+              <label className="form-label" htmlFor="fasilitas-select">
+                Fasilitas Terkait <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
               </label>
               <select
-                className="form-select"
+                id="fasilitas-select"
+                className="form-input"
+                value={selectedFacilityId}
+                onChange={(e) => setSelectedFacilityId(e.target.value)}
+                required
+              >
+                {fasilitasTersedia.length > 0 ? (
+                  fasilitasTersedia.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nama} ({f.kategori || 'Umum'})
+                    </option>
+                  ))
+                ) : (
+                  <option value="">Fasilitas Umum / Area Terbuka</option>
+                )}
+              </select>
+            </div>
+
+            {/* JENIS MASALAH */}
+            <div className="form-group">
+              <label className="form-label" htmlFor="jenis-masalah-select">
+                Jenis Kerusakan / Masalah <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
+              </label>
+              <select
+                id="jenis-masalah-select"
+                className="form-input"
                 value={jenisMasalah}
                 onChange={(e) => setJenisMasalah(e.target.value)}
                 required
               >
                 <option value="Lampu Mati / Penerangan">Lampu Mati / Penerangan</option>
-                <option value="Fasilitas Rusak">Fasilitas Physical Rusak</option>
-                <option value="Masalah Kebersihan">Masalah Kebersihan / Sampah</option>
-                <option value="Bangku Rusak">Bangku / Meja Rusak</option>
-                <option value="Vandalisme">Vandalisme / Coretan</option>
-                <option value="Lainnya">Kendala Lainnya</option>
+                <option value="Fasilitas Rusak / Patah">Fasilitas Rusak / Patah</option>
+                <option value="Toilet Tidak Berfungsi / Kotor">Toilet Tidak Berfungsi / Kotor</option>
+                <option value="Sampah Menumpuk / Liar">Sampah Menumpuk / Liar</option>
+                <option value="Vandalisme / Coretan">Vandalisme / Coretan</option>
+                <option value="Pohon Tumbang / Rawan Roboh">Pohon Tumbang / Rawan Roboh</option>
+                <option value="Lainnya">Lainnya</option>
               </select>
             </div>
 
-            {/* DESKRIPSI SINGKAT */}
+            {/* DESKRIPSI MASALAH */}
             <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="form-label">
-                  Deskripsi Singkat Kendala <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
-                </label>
-                <span className="text-caption">{deskripsi.length}/200</span>
-              </div>
+              <label className="form-label" htmlFor="deskripsi-input">
+                Deskripsi Kondisi Lapangan <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
+              </label>
               <textarea
-                className="form-textarea"
+                id="deskripsi-input"
+                className="form-input"
                 rows={4}
-                maxLength={200}
-                placeholder="Jelaskan letak atau kendala secara singkat dan padat agar teknisi dapat membawa alat yang sesuai."
+                placeholder="Jelaskan detail masalah, perkiraan lokasi spesifik, atau potensi bahaya jika tidak segera diperbaiki..."
                 value={deskripsi}
                 onChange={(e) => setDeskripsi(e.target.value)}
                 required
+                style={{ resize: 'vertical' }}
               />
             </div>
 
-            {/* MODE IDENTITAS (PRD FEAT-009) */}
-            <div className="form-group" style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-lg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
-              <label className="form-label" style={{ marginBottom: '8px' }}>
-                Mode Identitas Pelapor  <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {/* MODE IDENTITAS */}
+            <div className="form-group">
+              <label className="form-label">Identitas Pelapor</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
                   <input
                     type="radio"
@@ -251,7 +361,7 @@ export const FormLaporPage = () => {
                     onChange={() => setModeIdentitas('anonim')}
                   />
                   <span>
-                    <strong>Kirim sebagai Anonim</strong> (Direkomendasikan — Identitas Anda tidak ditampilkan ke publik)
+                    <strong>Anonim</strong> (Data nama dan profil Anda disembunyikan dari publik)
                   </span>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
@@ -271,29 +381,149 @@ export const FormLaporPage = () => {
 
             {/* UNGGAH FOTO BUKTI */}
             <div className="form-group">
-              <label className="form-label">
+              <label className="form-label" htmlFor="input-foto-bukti">
                 Foto Bukti Fisik <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
               </label>
+
+              {fotoError && (
+                <div
+                  role="alert"
+                  style={{
+                    backgroundColor: 'var(--color-danger-light, #fee2e2)',
+                    color: 'var(--color-danger, #b91c1c)',
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {fotoError}
+                </div>
+              )}
+
               <div
+                tabIndex={0}
+                role="button"
+                aria-label="Ambil atau unggah foto bukti fisik"
                 style={{
-                  border: '2px dashed var(--color-border-dark)',
+                  border: isDashedFocused
+                    ? '2px dashed var(--color-primary)'
+                    : '2px dashed var(--color-border-dark)',
+                  outline: isDashedFocused ? '2px solid var(--color-primary)' : 'none',
                   borderRadius: 'var(--radius-lg)',
-                  padding: 'var(--space-2xl)',
+                  padding: fotoPreview ? 'var(--space-md)' : 'var(--space-2xl)',
                   textAlign: 'center',
                   backgroundColor: 'var(--color-surface)',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'border-color 0.2s, outline 0.2s',
                 }}
-                onClick={() => setShowCameraModal(true)}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+                onFocus={() => setIsDashedFocused(true)}
+                onBlur={() => setIsDashedFocused(false)}
               >
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                  <Camera size={28} color="#0F766E" />
-                </div>
-                <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  {fotoFile ? <><CheckCircle2 size={16} /> Foto Terpilih</> : '+ Ambil Foto Langsung atau Unggah'}
-                </div>
-                <p className="text-caption" style={{ marginTop: '4px' }}>
-                  Gunakan kamera untuk mengambil foto kondisi saat ini (PNG/JPG, Maks 5MB).
-                </p>
+                <input
+                  id="input-foto-bukti"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    cursor: 'pointer',
+                    zIndex: fotoPreview ? 1 : 2,
+                  }}
+                  onChange={handleFileChange}
+                />
+
+                {fotoPreview ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 5 }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        maxHeight: '220px',
+                        borderRadius: 'var(--radius-md)',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        backgroundColor: '#f8fafc',
+                      }}
+                    >
+                      <img
+                        src={fotoPreview}
+                        alt="Preview Foto Bukti"
+                        style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'contain' }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        padding: '6px 12px',
+                        backgroundColor: 'var(--color-bg-subtle, #f1f5f9)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '13px',
+                        position: 'relative',
+                        zIndex: 10,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: 'var(--color-primary)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <CheckCircle2 size={16} /> Foto Terpilih ({fotoFile?.name})
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleHapusFoto}
+                        style={{ position: 'relative', zIndex: 20, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <Trash2 size={14} /> Hapus
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                      <Camera size={28} color="#0F766E" />
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        color: 'var(--color-primary)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      + Ambil Foto Langsung atau Unggah
+                    </div>
+                    <p className="text-caption" style={{ marginTop: '4px', color: 'var(--color-text-muted)' }}>
+                      Gunakan kamera untuk mengambil foto kondisi saat ini (PNG/JPG, Maks 5MB).
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -320,10 +550,10 @@ export const FormLaporPage = () => {
 
             {/* SUBMIT BUTTONS */}
             <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-2xl)' }}>
-              <Button type="submit" variant="primary" size="lg" style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Send size={16} /> Kirim Laporan
+              <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Send size={16} /> {isSubmitting ? 'Mengirim Laporan…' : 'Kirim Laporan'}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate(-1)}>
+              <Button variant="outline" size="lg" onClick={() => navigate(-1)} disabled={isSubmitting}>
                 Batal
               </Button>
             </div>
@@ -361,45 +591,13 @@ export const FormLaporPage = () => {
               </h4>
               <ol style={{ paddingLeft: '20px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--color-text-muted)' }}>
                 <li>Pastikan posisi tiang atau fasilitas sesuai dengan titik pin mini peta.</li>
-                <li>Sertakan foto jika memungkinkan untuk mempermudah identifikasi kerusakan suku cadang.</li>
+                <li>Sertakan foto bukti fisik kerusakan agar petugas teknis dapat menyiapkan suku cadang yang tepat.</li>
                 <li>Tidak perlu meninggalkan KTP/NIK. Keterbukaan dan partisipasi Anda adalah prioritas.</li>
               </ol>
             </CardBody>
           </Card>
         </div>
       </div>
-
-      {/* MODAL KAMERA MOBILE (Screen 06B) */}
-      {showCameraModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <Card style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
-            <CardBody style={{ padding: '24px' }}>
-              <h3 className="h3" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Camera size={20} /> Kamera Mobile
-              </h3>
-              <div style={{ height: '260px', backgroundColor: '#000', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', marginBottom: '16px' }}>
-                [ Preview Simulasi Kamera Mobile ]
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button variant="outline" fullWidth onClick={() => setShowCameraModal(false)}>
-                  Batal
-                </Button>
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={() => {
-                    setFotoFile('foto-bukti-fasilitas.jpg');
-                    setShowCameraModal(false);
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <Camera size={16} /> Ambil Foto
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };

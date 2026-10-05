@@ -3,7 +3,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user, get_current_admin, get_db, oauth2_scheme
+from app.api.deps import (
+    get_current_active_user,
+    get_current_admin,
+    get_db,
+    oauth2_scheme_optional,
+)
 from app.models.user import User
 from app.schemas.laporan import (
     LaporanCreate,
@@ -20,7 +25,7 @@ router = APIRouter()
 def create_report(
     laporan_in: LaporanCreate,
     db: Session = Depends(get_db),
-    token: Optional[str] = Depends(oauth2_scheme)
+    token: Optional[str] = Depends(oauth2_scheme_optional)
 ):
     """Kirim laporan baru dari warga."""
     user_id = None

@@ -57,7 +57,8 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `PATCH` | `/api/v1/users/{user_id}` | **Admin** | Ganti nama / reset sandi |
 | `DELETE` | `/api/v1/users/{user_id}` | **Admin** | Nonaktifkan (bukan hapus) |
 | `POST` | `/api/v1/users/{user_id}/activate` | **Admin** | Aktifkan kembali |
-| **Static** ||||
+| **Upload & Static** ||||
+| `POST` | `/api/v1/uploads` | - | Upload file bukti foto laporan (JPEG/PNG/WebP, <= 5MB) |
 | `GET` | `/uploads/<path>` | — | File upload dari `storage/` (via `UPLOAD_DIR`) |
 
 ---
@@ -144,28 +145,57 @@ Query `skip` (0), `limit` (100) → `[{ "id": "taman", "label": "Taman", "icon_n
 
 ---
 
-## 4. Laporan
+## 4. Laporan & Upload
 
-### `POST /api/v1/reports` (FEAT-008/009)
+### `POST /api/v1/uploads` (BE-49)
+Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint publik tanpa mewajibkan auth (mendukung pelaporan anonim). Berkas disimpan di `storage/laporan/<uuid.hex><ext>` dengan nama acak.
+
+- **Content-Type:** `multipart/form-data`
+- **Field:** `file` (`UploadFile`)
+- **Format diizinkan:** `image/jpeg`, `image/png`, `image/webp`
+- **Batas ukuran:** 5 MB (`settings.MAX_UPLOAD_SIZE`)
+- **Validasi:** MIME whitelist, ukuran berkas, dan magic bytes header.
+
+**Response Berhasil (201 Created):**
+```json
+{
+  "url": "/uploads/laporan/9fd34df4046e45458173186dfa329515.jpg"
+}
+```
+
+| Status | Kapan |
+|---|---|
+| `201` | Berkas valid tersimpan di disk, mengembalikan URL unik |
+| `400` | Ekstensi/MIME non-gambar, berkas > 5MB, atau magic bytes rusak/samaran |
+| `422` | Request tanpa field `file` |
+
+### `POST /api/v1/reports` (BE-20 / BE-46)
 Body JSON `LaporanCreate`:
 
 ```json
 {
   "ruang_publik_id": "rth-1a407d88182a",
-  "fasilitas_id": null,
+  "fasilitas_id": "seed-ebf61eee35566d78-1",
   "jenis_masalah": "Fasilitas Rusak",
   "deskripsi": "Lampu jalan taman mati sejak minggu lalu",
   "mode_identitas": "anonim",
-  "foto_url": null
+  "foto_url": "/uploads/laporan/9fd34df4046e45458173186dfa329515.jpg",
+  "lat_user": -6.192,
+  "long_user": 106.823
 }
 ```
+
 | Status | Kapan |
 |---|---|
 | `201` | Berhasil — status awal `menunggu_verifikasi`, timeline `Laporan dikirim` dibuat |
-| `400` | Mode `tampilkan_nama` tapi tanpa token / user tidak ditemukan |
+| `400` | Foto wajib belum diunggah, `foto_url` tidak berprefix `/uploads/laporan/`, file foto tidak ditemukan di disk, mode `tampilkan_nama` tanpa token, atau koordinat parsial |
+| `422` | Koordinat `lat_user` / `long_user` di luar rentang valid (-90..90 dan -180..180) |
 
-Aturan: token **opsional** (kirim header `Authorization` bila login). `nama_pelapor` **tidak pernah** diambil dari payload — diisi server dari user login (anti-spoofing).
-> `foto_url` masih selalu `null` karena **endpoint upload belum ada** — gap FEAT-008.
+Aturan:
+- Dependency auth memakai `oauth2_scheme_optional` agar pengguna anonim tanpa token **tidak tertolak 401**.
+- Foto bukti fisik **wajib diunggah** (`foto_url` tidak boleh kosong).
+- Koordinat browser pengguna bersifat opsional (dapat dikirim null jika browser menolak izin lokasi), namun bila salah satu diisi maka keduanya wajib lengkap.
+- `nama_pelapor` **tidak pernah** diambil dari payload klien; jika login, diambil aman dari database akun user aktif (anti-spoofing).
 
 ### `GET /api/v1/reports`
 Query: `status` (persis, `"semua"` = tanpa filter), `wilayah`, `q` (LIKE jenis_masalah/deskripsi), `skip`, `limit`.
@@ -298,7 +328,6 @@ browser membaca zona waktu yang benar.
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
-| Upload foto (`multipart`) → `{ url }` | 008 | `FormLaporPage` (foto wajib) | `features/report-service.md` |
 | Filter laporan per-pengguna (`mine=true` / `/reports/mine`) | 013 | `getUserReports` → Laporan Saya | `features/report-service.md` |
 | CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |

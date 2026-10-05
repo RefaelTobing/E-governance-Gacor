@@ -1,4 +1,4 @@
-import { api } from '../config/api';
+import { api, assetUrl } from '../config/api';
 import { MOCK_LAPORAN, MOCK_DASHBOARD_STATS, MOCK_MODERASI_STATS } from '../data/mockData';
 
 const IS_DEV = import.meta.env.DEV;
@@ -16,6 +16,7 @@ const transformLaporanResponse = (raw) => {
     modeIdentitas: raw.mode_identitas,
     jenisMasalah: raw.jenis_masalah,
     deskripsi: raw.deskripsi,
+    foto: assetUrl(raw.foto_url),
     fotoUrl: raw.foto_url,
     // Field turunan dari relasi (disediakan backend pada response laporan)
     ruangPublikNama: raw.ruang_publik_nama,
@@ -93,6 +94,18 @@ export const getReportDetail = async (id) => {
     }
     throw error;
   }
+};
+
+/**
+ * Upload berkas foto bukti laporan ke backend (BE-49).
+ * @param {File} file
+ * @returns {Promise<string>} URL path foto (contoh: /uploads/laporan/<hex>.jpg)
+ */
+export const uploadFoto = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const data = await api.upload('/api/v1/uploads', formData);
+  return data.url;
 };
 
 /**

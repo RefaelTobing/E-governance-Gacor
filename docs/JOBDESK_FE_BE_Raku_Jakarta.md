@@ -38,8 +38,10 @@
 ### A2. Modul Publik — Lapor Fasilitas (FEAT-008, 009, 010, sisi klien FEAT-013)
 > **Dependency:** butuh endpoint Backend `POST /reports` (lihat B3) sudah tersedia.
 
-- [ ] **[FE-16]** Form Lapor Fasilitas: input kategori masalah (dropdown), deskripsi (textarea), upload foto (**wajib**, validasi tipe file gambar & ukuran maksimum di sisi klien sebelum submit). *(FEAT-008)*
-- [ ] **[FE-17]** Ambil koordinat lokasi pengguna saat submit (browser Geolocation API) untuk dikirim bersama laporan — dipakai Backend untuk validasi lokasi. *(FEAT-013)*
+- [x] **[FE-16]** Form Lapor Fasilitas: input kategori masalah (dropdown), deskripsi (textarea), upload foto (**wajib**, validasi tipe file gambar & ukuran maksimum di sisi klien sebelum submit). *(FEAT-008)*
+  - Mengganti simulasi kamera modal di `FormLaporPage.jsx` dengan input file native, validasi klien JPEG/PNG/WebP <= 5MB, preview gambar & tombol hapus, sequential upload ke `POST /uploads` sebelum submit laporan.
+- [x] **[FE-17]** Ambil koordinat lokasi pengguna saat submit (browser Geolocation API) untuk dikirim bersama laporan, dipakai Backend untuk validasi lokasi. *(FEAT-013)*
+  - Mengambil geolokasi via `navigator.geolocation.getCurrentPosition` (timeout 5s) saat submit, dikirim sebagai `lat_user` & `long_user` tanpa membocorkan angka presisi di UI publik. Sifat koordinat opsional (gagal/ditolak browser tetap lanjut submit).
 - [ ] **[FE-18]** Komponen pilihan mode identitas: **Anonim** atau **Tampilkan Nama** (wajib dipilih, default Anonim). *(FEAT-009)*
 - [ ] **[FE-19]** Tampilkan status hasil submit ke pengguna: "Laporan tayang" (jika langsung lolos validasi lokasi) atau "Menunggu tinjauan admin" (jika tertandai) — sesuai respons Backend. *(FEAT-010, FEAT-013)*
 - [ ] **[FE-20]** Halaman/section riwayat laporan yang terikat ke tiap ruang publik, ditampilkan di halaman detail (FEAT-13). Tampilkan badge status per laporan (Tayang / Menunggu Tinjauan / Ditolak).
@@ -78,8 +80,9 @@
 - [ ] **[BE-05]** Tambah kolom penanda field-level merge di `ruang_publik` (mis. `field_source` JSON atau tabel terpisah `ruang_publik_edit_log` yang mencatat kolom mana yang pernah diedit manual admin). *(FEAT-012)*
 - [ ] **[BE-06]** Setup JWT auth dasar (login, generate token, dependency untuk proteksi endpoint) + hashing password dengan bcrypt.
 - [ ] **[BE-07]** Setup CORS middleware, whitelist origin FE Publik dan FE Admin secara eksplisit. *(NFR-002)*
-- [ ] **[BE-08]** Setup local storage untuk foto: folder `/uploads`, konfigurasi `StaticFiles` FastAPI untuk serve file, validasi tipe & ukuran file saat upload. *(NFR-002)*
-
+- [x] **[BE-08]** Setup local storage untuk foto: folder `/uploads`, konfigurasi `StaticFiles` FastAPI untuk serve file, validasi tipe & ukuran file saat upload. *(NFR-002)*
+  - Terintegrasi dengan endpoint `POST /api/v1/uploads` (BE-49), mount `/uploads`, verifikasi MIME, magic bytes, dan batasan 5MB.
+ 
 ### B1. Public Space Service — API Ruang Publik (FEAT-001 s/d FEAT-006)
 - [ ] **[BE-09]** Endpoint `GET /public-spaces?lat=&long=&radius=&category=&facilities=` — query berbasis jarak (radius search, mis. pakai rumus Haversine di query SQL) + filter kategori & fasilitas. *(FEAT-001, 004, 005)*
 - [ ] **[BE-10]** Endpoint `GET /public-spaces/{id}` — detail satu ruang publik lengkap dengan fasilitas & foto resmi. *(FEAT-006)*
@@ -96,7 +99,8 @@
 - [x] **[BE-19]** Logging hasil tiap run ETL (jumlah insert/update/skip, error jika ada) untuk ditampilkan di Panel Admin.
 
 ### B3. Report Service + Validasi Lokasi Anti Fake-GPS (FEAT-008, 009, 010, 013)
-- [ ] **[BE-20]** Endpoint `POST /reports` — terima kategori masalah, deskripsi, foto (upload wajib), mode identitas, koordinat lokasi pengguna dari klien, `public_space_id`.
+- [x] **[BE-20]** Endpoint `POST /reports`: terima kategori masalah, deskripsi, foto (upload wajib), mode identitas, koordinat lokasi pengguna dari klien, `public_space_id`.
+  - Menerapkan validasi foto wajib dan keberadaannya di disk, penyimpanan koordinat `lat_user` & `long_user` (BE-46), `oauth2_scheme_optional` untuk submission anonim tanpa token, serta proteksi anti-spoofing nama pelapor. Selesai diverifikasi 2026-10-05.
 - [ ] **[BE-21]** Simpan foto ke local storage, ekstrak metadata EXIF GPS dari file foto (kalau ada) menggunakan library seperti `Pillow`/`exifread`.
 - [ ] **[BE-22]** Logika validasi lokasi: hitung jarak (Haversine) antara (a) koordinat browser saat submit dan (b) koordinat EXIF foto (jika tersedia), masing-masing dibandingkan ke koordinat ruang publik tujuan. *(FEAT-013)*
 - [ ] **[BE-23]** Terapkan aturan **ambang batas 100 meter**: jika salah satu/kedua jarak > 100 m, atau EXIF lokasi tidak tersedia → set status laporan `menunggu_tinjauan`; jika dalam ambang batas → set status `tayang`. *(FEAT-013, FEAT-010)*

@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.base import Base, utcnow
 
@@ -16,6 +16,11 @@ class Laporan(Base):
     nama_pelapor = Column(String(255))
     status = Column(String(50), default="menunggu_verifikasi")
     foto_url = Column(Text)
+    # Lokasi: dari klien (user) dan dari EXIF foto (diisi BE-21).
+    lat_user = Column(Float)
+    long_user = Column(Float)
+    lat_exif = Column(Float)
+    long_exif = Column(Float)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 

@@ -1,4 +1,4 @@
-﻿# features — Report Service (FEAT-008, 009, 010, 013)
+# features: Report Service (FEAT-008, 009, 010, 013)
 
 > **Scope file ini HANYA FEAT-008 (Form Lapor), FEAT-009 (Mode Identitas), FEAT-010 (Visibilitas & Status), FEAT-013 (Riwayat "Laporan Saya")** — sesuai PRD [`../../../docs/PRD.md`](../../../docs/PRD.md).
 > Moderasi admin (FEAT-011) → `moderation-service.md`. Galeri foto (FEAT-007) → `public-space-service.md`.
@@ -15,7 +15,7 @@ Kode terkait:
 
 | FEAT | Judul | Status |
 |---|---|---|
-| 008 | Form Lapor Fasilitas | **Sebagian** — create jalan; **upload foto belum** (gap utama) |
+| 008 | Form Lapor Fasilitas | **Selesai** (BE-20, BE-46, BE-49 selesai; upload foto wajib & geolokasi) |
 | 009 | Mode Identitas Laporan | **Selesai** (anti-spoofing nama dari server) |
 | 010 | Visibilitas & Status Laporan | **Sebagian** — status+timeline jalan; **filter tayang per-ruang publik rusak** |
 | 013 | Riwayat "Laporan Saya" | **Belum ada** — endpoint belum filter per-pengguna |
@@ -27,27 +27,29 @@ Kode terkait:
 **PRD:** form terikat ke 1 titik ruang publik: foto, deskripsi, kategori masalah; wajib kategori + deskripsi; foto opsional/wajib (ditentukan saat desain detail). Prinsip: **"Laporan bisa dibuat dalam <1 menit"** → endpoint harus ringkas, satu kali kirim.
 
 **Implementasi saat ini — `POST /api/v1/reports`:**
-- Body `LaporanCreate`: `ruang_publik_id` (wajib), `deskripsi` (wajib), `jenis_masalah`, `fasilitas_id`, `mode_identitas`, `foto_url`.
-- Token **opsional** (header `Authorization`): anonim kirim tanpa token; mode `tampilkan_nama` wajib token (divalidasi di service).
+- Body `LaporanCreate`: `ruang_publik_id` (wajib), `deskripsi` (wajib), `jenis_masalah` (wajib), `foto_url` (wajib), `fasilitas_id`, `mode_identitas`, `lat_user`, `long_user`.
+- Token **opsional** (header `Authorization` via `oauth2_scheme_optional`): anonim kirim tanpa token; mode `tampilkan_nama` wajib token (divalidasi di service).
+- Validasi foto: `foto_url` wajib berprefix `/uploads/laporan/` dan diverifikasi keberadaannya di disk lokal.
+- Validasi koordinat: `lat_user` & `long_user` opsional, namun bila salah satu diisi keduanya wajib lengkap (-90..90 dan -180..180).
 - Saat create: status `menunggu_verifikasi` + baris timeline `Laporan dikirim` dibuat otomatis.
 - Response `201` + `LaporanResponse`.
 
-### Gap 1 — Upload Foto (wajib dikerjakan)
+### Gap 1: Upload Foto (SELESAI - BE-49 & BE-20)
 
-Saat ini `foto_url` **selalu `null`** — `FormLaporPage` FE mengirim string dummy karena **belum ada endpoint upload**. Padahal `app/core/file_upload.py` **sudah siap dan belum dipakai endpoint mana pun**:
+Upload foto telah selesai diimplementasikan pada `POST /api/v1/uploads` dan diverifikasi end-to-end:
 
-- `validate_image_upload(file)` — cek MIME (`image/jpeg|png|jpg|webp`) + ukuran (≤ `MAX_UPLOAD_SIZE`, default 5 MB)
-- `save_upload_file(file, subfolder)` → nama unik UUID → path publik `/uploads/<subfolder>/<nama>`
+- [x] Endpoint upload foto `POST /api/v1/uploads` (`app/api/v1/uploads.py`, terdaftar di `api.py`):
+  - parameter: `file: UploadFile` multipart. Subfolder dikunci aman pada `laporan` (`storage/laporan/<uuid.hex><ext>`).
+  - auth: **opsional/publik** agar pelapor anonim dapat mengunggah bukti fisik secara bebas.
+  - respons: `201 Created` `{ "url": "/uploads/laporan/<hex>.jpg" }`.
+  - validasi: MIME whitelist (`image/jpeg`, `image/png`, `image/webp`), batas ukuran 5 MB, dan verifikasi magic bytes berkas.
+- [x] `storage/laporan/` dibuat otomatis oleh `main.py` dan `uploads.py`.
+- [x] Dokumentasi `04-api-endpoints.md` + `docs/API.md` telah disinkronkan. Form frontend `FormLaporPage` telah terintegrasi melakukan sequential upload (unggah foto via `api.upload()` -> isi `foto_url` -> submit `POST /reports`).
 
-**Langkah:**
-
-- [ ] Buat endpoint upload, mis. `POST /api/v1/uploads` (router baru `app/api/v1/uploads.py`, daftarkan di `api.py`):
-  - parameter: `file: UploadFile`, `subfolder: Literal["laporan","ruang-publik"]` (atau pisah 2 endpoint) — pakai `python-multipart` yang sudah ada di requirements
-  - auth: **opsional** (ikuti kebijakan laporan anonim — jangan paksa login untuk warga anonim; bila nanti ternyata perlu dibatasi, keputusan dicatat di sini)
-  - respons: `{ "url": "/uploads/laporan/abc123.jpg" }`
-  - galat: `400` untuk MIME salah / >5 MB (pesan dari `file_upload.py` sudah ada)
-- [ ] `storage/laporan/` & `storage/ruang-publik/` sudah dibuat `main.py` saat start — jangan ubah pola.
-- [ ] Setelah ada: update `04-api-endpoints.md` + `docs/API.md`; **beri tahu workflow frontend** bahwa `FormLaporPage` tinggal mengisi `foto_url` dari respons upload.
+**Keputusan Desain:**
+1. **Subfolder terkunci:** Endpoint publik upload foto dikunci hanya ke direktori `laporan` guna mencegah path traversal atau penulisan sembarangan.
+2. **Koordinat opsional berpasangan:** Koordinat `lat_user` dan `long_user` bersifat opsional (agar pengguna yang menolak akses izin lokasi browser tetap dapat melapor masalah fasilitas), namun wajib berpasangan jika diisi. Validasi ambang batas fake-GPS akan diterapkan pada BE-23.
+3. **Fix `oauth2_scheme_optional`:** Endpoint `POST /reports` menggunakan skema OAuth2 dengan `auto_error=False` di `app/api/deps.py` sehingga request anonim tanpa header `Authorization` tidak terblokir HTTP 401 oleh FastAPI.
 
 **Verifikasi:**
 ```bash

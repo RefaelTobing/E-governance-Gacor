@@ -10,6 +10,12 @@ from app.schemas.user import ROLE_ADMIN
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
+# Versi longgar: tanpa header Authorization hasilnya None, bukan 401.
+# Dipakai endpoint yang boleh diakses anonim (kirim laporan, upload foto).
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False
+)
+
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> User:

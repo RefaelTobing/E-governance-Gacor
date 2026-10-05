@@ -90,7 +90,11 @@ Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten
 | `mode_identitas` | VARCHAR(50) default `'tampilkan_nama'` | Nilai: **`anonim`** / **`tampilkan_nama`** (FEAT-009) |
 | `nama_pelapor` | VARCHAR(255) NULL | **Diisi server dari user login** saat mode `tampilkan_nama` — payload klien diabaikan (anti-spoofing) |
 | `status` | VARCHAR(50) default **`'menunggu_verifikasi'`** | Lihat §4 |
-| `foto_url` | TEXT NULL | **Belum pernah terisi** — endpoint upload belum ada (FEAT-008 gap) |
+| `foto_url` | TEXT NULL | URL path foto bukti tersimpan (`/uploads/laporan/<hex>.jpg`) (BE-49, FEAT-008) |
+| `lat_user` | DOUBLE NULL | Latitude posisi perangkat saat submit laporan (BE-46, FE-17) |
+| `long_user` | DOUBLE NULL | Longitude posisi perangkat saat submit laporan (BE-46, FE-17) |
+| `lat_exif` | DOUBLE NULL | Latitude hasil ekstraksi metadata EXIF foto (BE-46, diisi server di BE-21) |
+| `long_exif` | DOUBLE NULL | Longitude hasil ekstraksi metadata EXIF foto (BE-46, diisi server di BE-21) |
 | `created_at` / `updated_at` | DATETIME | `updated_at` auto-update saat row berubah |
 
 ### `laporan_timeline`
@@ -126,6 +130,7 @@ Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten
 | `c1f4a9d2e073_add_ruang_publik_field_source` | Menambah `ruang_publik.field_source` (JSON, nullable) — penanda edit manual admin (BE-05) |
 | `d7b19b0b82cc_tambah_kecamatan_kelurahan_ke_ruang_` | Menambah `ruang_publik.kecamatan` & `kelurahan` (VARCHAR(100), nullable) — kunci natural untuk merge ETL (BE-16) |
 | `tambah_tabel_etl_run` | Menambah tabel `etl_run` - log hasil run ETL per tahap (BE-19) |
+| `37c407708e27_tambah_kolom_lokasi_laporan` | Menambah `laporan.lat_user`, `long_user`, `lat_exif`, `long_exif` (DOUBLE, nullable), koordinat pengguna & EXIF (BE-46) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.

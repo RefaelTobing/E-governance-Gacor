@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from app.schemas.laporan_timeline import LaporanTimelineResponse
@@ -13,6 +13,9 @@ class LaporanBase(BaseModel):
     mode_identitas: Optional[str] = "tampilkan_nama"
     nama_pelapor: Optional[str] = None
     foto_url: Optional[str] = None
+    # Rentang dicek di sini (422); pasangan lengkap lat+long dicek di service (400).
+    lat_user: Optional[float] = Field(None, ge=-90, le=90)
+    long_user: Optional[float] = Field(None, ge=-180, le=180)
 
 class LaporanCreate(LaporanBase):
     pass
@@ -36,6 +39,9 @@ class LaporanResponse(LaporanBase):
     ruang_publik_nama: Optional[str] = None
     wilayah: Optional[str] = None
     fasilitas_nama: Optional[str] = None
+    # EXIF tidak pernah datang dari klien; hanya dibaca dari file saat upload (BE-21).
+    lat_exif: Optional[float] = None
+    long_exif: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 
