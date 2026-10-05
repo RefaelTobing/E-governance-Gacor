@@ -1,0 +1,22 @@
+{
+  "dataset": "geoportal_rptra_koordinat",
+  "sumber": "geoportal",
+  "downloaded_at": "2026-10-05T17:36:28+07:00",
+  "total_rows": 324,
+  "columns": [
+    "OBJECTID",
+    "NAMA_RPTRA",
+    "ALAMAT",
+    "LUAS",
+    "X",
+    "Y",
+    "WADMKD",
+    "WADMKC",
+    "WADMKK"
+  ],
+  "title": "RPTRA_DKI_Jakarta layer 2",
+  "service": "RPTRA_DKI_Jakarta",
+  "layer": 2,
+  "api": "https://jakartasatu.jakarta.go.id/server/rest/services/RPTRA_DKI_Jakarta/FeatureServer/2/query",
+  "portal_url": "https://jakartasatu.jakarta.go.id/server/rest/services/RPTRA_DKI_Jakarta/FeatureServer/2"
+}

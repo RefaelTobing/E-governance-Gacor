@@ -1,0 +1,21 @@
+{
+  "dataset": "satudata_rth",
+  "sumber": "satudata",
+  "downloaded_at": "2026-10-05T17:36:23+07:00",
+  "total_rows": 2545,
+  "columns": [
+    "periode_data",
+    "wilayah",
+    "kecamatan",
+    "kelurahan",
+    "nama_rth",
+    "alamat_rth",
+    "jenis_rth"
+  ],
+  "title": "Data Ruang Terbuka Hijau (RTH)",
+  "periode_data": "2024",
+  "filedata_updated_at": "2025-05-20 17:14:05",
+  "portal_url": "https://satudata.jakarta.go.id/open-data/detail/data-ruang-terbuka-hijau-rth",
+  "api": "https://satudata.jakarta.go.id/backend/api/v2/satudata/detail",
+  "page_url": "data-ruang-terbuka-hijau-rth"
+}

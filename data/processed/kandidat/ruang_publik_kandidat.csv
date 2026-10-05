@@ -1,0 +1,688 @@
+id,nama,kategori_id,wilayah,alamat,latitude,longitude,deskripsi,jam_operasional,tiket_masuk,akses_disabilitas,ramah_hewan,verified,status_general,image_url,kecamatan,kelurahan,tipe
+rth-1dc4fc759425,RPTRA Taman Sena,rptra,Jakarta Utara,"Taman Sena, Jl. Sena Raya, Kel. Semper Barat, Kec. Cilincing",-6.13217163,106.92333123,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-a3f71d672747,RPTRA PANDAWA,rptra,Jakarta Barat,Azalea 2 RT 003 RW 04,-6.18414644,106.76325345,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,RPTRA
+rth-e6a8c77b5a24,RPTRA IKAPOLA,rptra,Jakarta Timur,"Taman IKAPOLA Kav. DKI, Jl. Pondok Kelapa 1B",-6.24713258,106.9350596,,,,,,False,,,Duren Sawit,Pondok Kelapa,RPTRA
+rth-f4c71e27776d,RPTRA PONDOK BAMBU BERSERI,rptra,Jakarta Timur,"Jl. Balai Rakyat 2, RT 013 RW 01",-6.22652791,106.90248255,,,,,,False,,,Duren Sawit,Pondok Bambu,RPTRA
+rth-fc3eb34a0d12,RPTRA Gebang Sari,rptra,Jakarta Timur,"Taman Caliandra, Jl. Gebangsari Dalam V RT. 02/RW 05",-6.31692758,106.9057699,,,,,,False,,,Cipayung,Bambu Apus,RPTRA
+rth-8ede169824bc,RPTRA Gedong Trikora,rptra,Jakarta Timur,"Jl. Trikora Raya, Gg. H. Nipah, RT 003 RW 09",-6.30108979,106.86626407,,,,,,False,,,Pasar Rebo,Gedong,RPTRA
+rth-2e0c2131b554,RPTRA Permata Intan,rptra,Jakarta Timur,"Taman Berlian, Jl. BerlianRW 11",-6.2413058,106.86340798,,,,,,False,,,Jatinegara,Bidara Cina,RPTRA
+rth-025817751be2,RPTRA DUPA WANGI,rptra,Jakarta Barat,"Komplek Greenville, Jalan Mangga 14",-6.17205251,106.77584978,,,,,,False,,,Kebon Jeruk,Kebon Jeruk,RPTRA
+rth-c2461b295bf8,RPTRA Green Bisma,rptra,Jakarta Utara,"Jl.Bisma 21 Rw. 09 Tanjung Priok, Papanggo",-6.12948301,106.86954667,,,,,,False,,,Tanjung Priok,Papanggo,RPTRA
+rth-2a8e1d554e92,RPTRA Sunter Hijau,rptra,Jakarta Utara,"Jl. Sunter Kirana, Sunter Kirana Perumahan Sunter Hijau, Sunter Jaya, Tanjung Priok",-6.15719482,106.8778375,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-7d8f2c2d87d7,RPTRA Dewi Shinta,rptra,Jakarta Utara,"Jl. Tari Klasik, RW. 08 RT. 02, Kelapa Gading, Kelapa Gading Timur",-6.16850147,106.90973273,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,RPTRA
+rth-2d80403a9c5a,RPTRA Taman Gading Tarian,rptra,Jakarta Utara,"Taman Pendet / Jl. Serimpi, RW. 07 RT. 4, 5, 6, 8 , Kelapa Gading, Kelapa Gading Timur",-6.17129622,106.90805275,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,RPTRA
+rth-277bac5b5320,RPTRA Anoa,rptra,Jakarta Utara,"Jl. Anoa Lestari III Rt. 04-05 Rw. 09 Blok G9, Sukapura",-6.14190022,106.91928275,,,,,,False,,,Cilincing,Sukapura,RPTRA
+rth-bedab98fb8f0,RPTRA Manggala Bisma,rptra,Jakarta Utara,"Jl. Bisma 7 Rw. 010 Tanjung Priok, Papanggo",-6.12863033,106.86676744,,,,,,False,,,Tanjung Priok,Papanggo,RPTRA
+rth-335aecf2553d,RPTRA Sunter Muara,rptra,Jakarta Utara,"Jl. Sunter Muara RW. 05 Blok E Tanjung Priok, Sunter Agung",-6.1479142,106.85640353,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-c39314778d19,RPTRA Walang Baru,rptra,Jakarta Utara,"Taman Walang Baru, Kel. Tugu Utara, Kec. Koja",-6.1217594,106.90541844,,,,,,False,,,Koja,Tugu Utara,RPTRA
+rth-aefecd0cc700,RPTRA Pesona Tipar,rptra,Jakarta Utara,"Taman Taruna RT. 012, RW. 04, Kel. Semper Barat, Kec. Cilincing",-6.1336761,106.92768885,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-8db0491c4ebe,RPTRA Gempar Gemilang,rptra,Jakarta Pusat,Jl. Rawa Selatan II RT 003/05,-6.17888385,106.85662112,,,,,,False,,,Johar Baru,Kampung Rawa,RPTRA
+rth-18438b1a9d03,RPTRA,rptra,Jakarta Utara,Jalan Tanjung Wangi No1,-6.1311089,106.79528638,,,,,,False,,,Penjaringan,Penjaringan,RPTRA
+rth-a0c425a4cf14,Taman Monas Sektor Barat dan Silang Barat Daya,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17583094,106.82413812,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-475b74a73180,Median Silang Timur Laut,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17347911,106.82874124,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-d8c264e4ac57,Taman Monas Sektor Timur dan Silang Timur Laut,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17597235,106.82989014,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-b83f4085abf4,Median Silang Tenggara,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17803701,106.82984379,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-bb603475ff93,Median Silang Barat Daya,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17854004,106.82457287,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-2ae47adab87a,Median Silang Barat Laut,taman-kota,Jakarta Pusat,"Jl. Silang Monas, Jakarta Pusat",-6.17281504,106.82454038,,,,,,False,,,Gambir,Gambir,Taman Kota
+rth-1f875e570dd8,RPTRA rasamala,rptra,Jakarta Selatan,"jl. rasamala 3, rt 03, rw 13",-6.23377162,106.8366631,,,,,,False,,,Tebet,Menteng Dalam,RPTRA
+rth-ff4e24848ccc,RPTRA JAKA TERATAI,rptra,Jakarta Timur,"DPPAPP Provinsi DKI Jakarta, Jl. Raya Bekasi Timur Km. 18",-6.18986496,106.90483615,,,,,,False,,,Pulogadung,Jatinegara Kaum,RPTRA
+rth-e59aaf4e7c40,RPTRA Pulogundul,rptra,Jakarta Pusat,"Jalan Kramat Pulo Gundul Rt. 005 Rw. 013 Kel. Tanah Tinggi Kec. Johar Baru, Jakarta Pusat - 10540",-6.18333764,106.84920395,,,,,,False,,,Johar Baru,Tanah Tinggi,RPTRA
+rth-40b94f6321ce,RPTRA Amir Hamzah,rptra,Jakarta Pusat,"Jl Taman Amir Hamzah Rt 01/04 kel Pegangsaan, kec Menteng Jakarta Pusat.",-6.20341037,106.85049521,,,,,,False,,,Menteng,Pegangsaan,RPTRA
+rth-ccead7bc6857,RPTRA Krida Serdang,rptra,Jakarta Pusat,"Gg. Teratai I, RT.9/RW.1, Serdang, Kemayoran",-6.15699598,106.85813742,,,,,,False,,,Kemayoran,Serdang,RPTRA
+rth-b19f48a21935,RPTRA PERMAI,rptra,Jakarta Selatan,"Jl. Bintaro Permai III, Kompleks GOR",-6.25776817,106.76358754,,,,,,False,,,Pesanggrahan,Bintaro,RPTRA
+rth-46076fe25753,RPTRA ANGGREK,rptra,Jakarta Selatan,"Jl. Villa Anggrek, RT 008 RW 12",-6.25278366,106.75500631,,,,,,False,,,Pesanggrahan,Bintaro,RPTRA
+rth-356ac2fb2623,RPTRA PUSPITA,rptra,Jakarta Selatan,"Jl. H. Gari, RT 001 RW 03",-6.25569254,106.75967695,,,,,,False,,,Pesanggrahan,Pesanggrahan,RPTRA
+rth-fc8dab737c30,RPTRA SAHARDJO MENTAS,rptra,Jakarta Selatan,"Jl. Saharjo No. 2, RT 001 RW 08",-6.23662298,106.86140763,,,,,,False,,,Setiabudi,Menteng Atas,RPTRA
+rth-575375fde48a,RPTRA MAWAR,rptra,Jakarta Selatan,"Jl. Mawar, RT 008 RW 02",-6.2857587,106.80466004,,,,,,False,,,Cilandak,Lebak Bulus,RPTRA
+rth-4ed51f343ece,RPTRA MANUNGGAL,rptra,Jakarta Selatan,"Jl. Inpres Manunggal, RT 004 RW 02",-6.24240134,106.74959119,,,,,,False,,,Pesanggrahan,Petukangan Selatan,RPTRA
+rth-5dd6cf3d52f5,RPTRA ANGGREK,rptra,Jakarta Selatan,"Jl. H. Gandun, RT 007 RW 08",-6.29054908,106.79494239,,,,,,False,,,Cilandak,Lebak Bulus,RPTRA
+rth-9c2ad709e94d,RPTRA BAUNG,rptra,Jakarta Selatan,"Jl. H. Baung, RT 005 RW 02",-6.28316634,106.82139227,,,,,,False,,,Pasar Minggu,Kebagusan,RPTRA
+rth-04df529e716f,RPTRA Jatinegara,rptra,Jakarta Timur,"Jl. Swadaya Rawa Buntu RT. 07/014,samping Rusun Pulo Jahe",-6.1981375,106.92358748,,,,,,False,,,Cakung,Jatinegara,RPTRA
+rth-640e1215feaf,Taman Enim,taman-lingkungan,Jakarta Utara,,-6.12643347,106.88382077,,,,,,False,,,,,Taman Lingkungan
+rth-33eacff0f8f7,Refungsi SPBU No. 31-12103 Jl. Pakubuwono VI (tim),taman-lingkungan,Jakarta Selatan,Jl. Pakubuwono VI,-6.23414022,106.79211695,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-b14146ab3119,Taman Petunduan,taman-lingkungan,Jakarta Selatan,,-6.23680094,106.85184173,,,,,,False,,,,,Taman Lingkungan
+rth-b743166750aa,Taman Komplek Polri II,taman-lingkungan,Jakarta Selatan,"Jl. Pengadegan Utara VI, Kel. Pengadegan, Kec. Pancoran",-6.24801099,106.85686911,,,,,,False,,,Pancoran,Pengadegan,Taman Lingkungan
+rth-bbb03781a4a9,Taman Komplek Polri IV,taman-lingkungan,Jakarta Selatan,"Jl. Pengadegan Utara V, Kel. Pengadegan, Kec. Pancoran",-6.24782877,106.85823578,,,,,,False,,,Pancoran,Pengadegan,Taman Lingkungan
+rth-8666c90da918,Taman Waru,taman-interaktif,Jakarta Timur,"Jl. Tanah Merdeka X RW.006 Kel. Kampung Rambutan, Kec. Ciracas, Jakarta Timur",-6.31484327,106.88230263,,,,,,False,,,Ciracas,Rambutan,Taman Interaktif
+rth-63657b381a4a,Tmn Spathodea,taman-interaktif,Jakarta Selatan,Jalan Kebagusan Wates,-6.32192803,106.82333736,,,,,,False,,,Jagakarsa,Jagakarsa,Taman Interaktif
+rth-3e096ca61030,Taman Bluntas,taman-interaktif,Jakarta Timur,"Jl. Manunggal II RW 01 Kel. Ceger Kec. Cipayung, Jakarta Timur",-6.31189601,106.88717625,,,,,,False,,,Cipayung,Ceger,Taman Interaktif
+rth-8d436f9caf35,Taman RTH Jl. Sepat I,taman-interaktif,Jakarta Selatan,"Jl. Sepat I No.68, RT.1/RW.6",-6.30588739,106.83241338,,,,,,False,,,Pasar Minggu,Kebagusan,Taman Interaktif
+rth-519e3b3f3042,Taman Belakang Kantor Lurah Pejaten Barat,taman-lingkungan,Jakarta Selatan,"jl. Siaga Raya, Kel. Pejaten Barat, Kec. Pasar minggu",-6.26955976,106.83756318,,,,,,False,,,Pasar Minggu,Pejaten Barat,Taman Lingkungan
+rth-32118dd44ca1,Jl. Centex Gg. Masjid,taman-interaktif,Jakarta Timur,,-6.32356237,106.87596369,,,,,,False,,,,,Taman Interaktif
+rth-e10652370d13,Jl. Lingkungan III,taman-interaktif,Jakarta Barat,,-6.10697814,106.7106726,,,,,,False,,,,,Taman Interaktif
+rth-4f1cb02b1675,Jagakarsa - SPH 2012,taman-interaktif,Jakarta Selatan,,-6.30425538,106.84351548,,,,,,False,,,,,Taman Interaktif
+rth-ca4ff9a013e5,Jl. Samping Kosambi Baru - SPH 2012,taman-interaktif,Jakarta Barat,,-6.16742269,106.71514887,,,,,,False,,,,,Taman Interaktif
+rth-c21f5d06faab,Biperta Cibubur - milik negara,taman-interaktif,Jakarta Timur,,-6.36388636,106.89910953,,,,,,False,,,,,Taman Interaktif
+rth-90b324388844,"Taman Barito, depan Hero",taman-lingkungan,Jakarta Selatan,,-6.245789,106.79454137,,,,,,False,,,,,Taman Lingkungan
+rth-299b64daeaa6,Taman Tanj. Duren Utara III E (Tm. Apel),taman-lingkungan,Jakarta Barat,"Jl. Tanjung Duren Utara III E, RT.010/RW.03",-6.17039123,106.78375289,,,,,,False,,,Grogol Petamburan,Tanjung Duren Utara,Taman Lingkungan
+rth-7af3956a2932,"Taman Depan PD. Pasar Jaya, Bojong",taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Pakis Raya, RT.9/RW.6",-6.16200451,106.74098119,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-e3a1456fbee9,Taman Buncis,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Bawang Putih II RW. 07",-6.16359871,106.74052664,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-bbe3806e5131,Tmn Galur Sari II,taman-lingkungan,Jakarta Timur,Jl. Galur Sari II,-6.19969224,106.865783,,,,,,False,,,Matraman,Utan Kayu Selatan,Taman Lingkungan
+rth-e187c41934fc,"Taman Pakubuwono, Dep. Apotik",taman-lingkungan,Jakarta Selatan,Jalan Pakubuwono IV,-6.23277679,106.79669839,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-94c02de4cb64,Taman Interaktif,taman-lingkungan,Jakarta Barat,,-6.16998509,106.74758741,,,,,,False,,,,,Taman Lingkungan
+rth-19f4d54029eb,Taman Pakuwon (Tm. Eks. Tenda Biru THI Jelambar Baru),taman-lingkungan,Jakarta Barat,,-6.14638167,106.78851502,,,,,,False,,,,,Taman Lingkungan
+rth-e985c86595fa,Taman Komplek Meruya Ilir Blok H,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok H, Jl. Permata Meruya, RT.03/RW.07",-6.19375231,106.73744886,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-967a2c4e5a96,Taman Komplek Meruya Ilir Blok A.13,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok A, Jl. Wijaya Kusuma, RT.07/RW.04",-6.19977983,106.73753409,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-a8fa69ffe1f2,Tm. Komplek Kebon Jeruk Blok A RW. 08,taman-lingkungan,Jakarta Barat,,-6.19146329,106.7723984,,,,,,False,,,Kebon Jeruk,Kebon Jeruk,Taman Lingkungan
+rth-ddcf5396dc42,GOR Kemanggisan,taman-lingkungan,Jakarta Barat,,-6.18749766,106.79021951,,,,,,False,,,,,Taman Lingkungan
+rth-bcd26eeb5e68,"Taman Radio IV, sisi Kali",taman-lingkungan,Jakarta Selatan,Jalan Radio IV,-6.24678048,106.79392798,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-4cd07f9d36c4,Tmn Kopyor,taman-lingkungan,Jakarta Utara,,-6.17079851,106.90617526,,,,,,False,,,,,Taman Lingkungan
+rth-858157c8c59b,Taman Wijaya I depan PTIK (Trafo),taman-lingkungan,Jakarta Selatan,"Jl. Joko Sutono, Jl. Wijaya I",-6.24455916,106.80835954,,,,,,False,,,Kebayoran Baru,Petogogan,Taman Lingkungan
+rth-b3b95e017d5b,Taman RTH Darmajaya,taman-lingkungan,Jakarta Selatan,"Jl. Widya Chandra V, VIII",-6.2283198,106.81308861,,,,,,False,,,Kebayoran Baru,Senayan,Taman Lingkungan
+rth-e67bfb3b5b65,Taman Pulau-Pulau Mampang,taman-lingkungan,Jakarta Selatan,"Jl. Terusan Kuningan HR. Rasuna Said, Kec. Mampang Prapatan",-6.24025505,106.82564743,,,,,,False,,,Mampang Prapatan,,Taman Lingkungan
+rth-795c9662e60f,Taman Yudistira,taman-lingkungan,Jakarta Barat,,-6.11994732,106.71863857,,,,,,False,,,,,Taman Lingkungan
+rth-79a6306932bf,Taman Mirinda Dalam,taman-lingkungan,Jakarta Barat,,-6.1228997,106.71835134,,,,,,False,,,,,Taman Lingkungan
+rth-31de50380682,Taman Kesenian,taman-interaktif,Jakarta Timur,,-6.22604247,106.90491095,,,,,,False,,,Duren Sawit,Pondok Bambu,Taman Interaktif
+rth-c6351e91f7ef,Tmn.PWI Terminal Lb. Bulus,taman-lingkungan,Jakarta Selatan,"Jl. TB Simatupang, Kel. Lebak Bulus, Kec. Cilandak",-6.28889594,106.77783215,,,,,,False,,,Cilandak,Lebak Bulus,Taman Lingkungan
+rth-89956b1cdc2a,Tmn Martha Tiahahu,taman-lingkungan,Jakarta Selatan,,-6.24323932,106.79869889,,,,,,False,,,,,Taman Lingkungan
+rth-7fae174fa3ac,Tmn FO Permata Hijau,taman-lingkungan,Jakarta Selatan,,-6.21861278,106.78728584,,,,,,False,,,,,Taman Lingkungan
+rth-2449a4c3caa6,Tmn Segitiga depan RS Koja,taman-lingkungan,Jakarta Utara,,-6.10686178,106.900114,,,,,,False,,,,,Taman Lingkungan
+rth-eb0881c8b47a,Tm Interaksi Sosial Lorong V,taman-lingkungan,Jakarta Utara,,-6.10828146,106.89599349,,,,,,False,,,,,Taman Lingkungan
+rth-7670f27b9191,Tmn Mangga Dua ITC 1,taman-lingkungan,Jakarta Utara,,-6.13514435,106.83018949,,,,,,False,,,,,Taman Lingkungan
+rth-aaadbfe57653,Tmn Mangga Dua ITC 2,taman-lingkungan,Jakarta Utara,,-6.1349053,106.8311041,,,,,,False,,,,,Taman Lingkungan
+rth-72afc90886b9,Tmn Vespa,taman-lingkungan,Jakarta Utara,,-6.18005787,106.90621369,,,,,,False,,,,,Taman Lingkungan
+rth-9e878f9eb380,Taman Tulodong bawah VII,taman-lingkungan,Jakarta Selatan,"Jl. Tulodong Bawah V, VII",-6.22920219,106.81131716,,,,,,False,,,Kebayoran Baru,Senayan,Taman Lingkungan
+rth-890dca055923,Taman Segitiga Gandaria,taman-lingkungan,Jakarta Selatan,"Jl.Iskandar Muda, Kec. Kebayoran Lama",-6.24601123,106.78202103,,,,,,False,,,Kebayoran Lama,,Taman Lingkungan
+rth-363f48d49242,Tmn Bandeng,taman-lingkungan,Jakarta Timur,Jl. Taman Bandeng,-6.19680207,106.89742801,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-b9189dfcd083,Taman Sanjaya,taman-lingkungan,Jakarta Selatan,"Jl. Sanjaya II, V",-6.2371893,106.80652925,,,,,,False,,,Kebayoran Baru,Selong,Taman Lingkungan
+rth-5db3f5288ae8,Tmn Senjaya II,taman-lingkungan,Jakarta Selatan,Jalan Sanjaya II,-6.23683347,106.80375235,,,,,,False,,,Kebayoran Baru,Selong,Taman Lingkungan
+rth-643e50d699b1,Refungsi SPBU No. 34-12111 Jl. Pakubuwono VI (brt),taman-lingkungan,Jakarta Selatan,jalan Pakubuwono VI,-6.23551135,106.79011991,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-208a1c51bdd1,Taman Depan Trakindo,taman-lingkungan,Jakarta Selatan,Jalan Cilandak KKO,-6.29309783,106.81607091,,,,,,False,,,,Cilandak Timur,Taman Lingkungan
+rth-a154557180de,Tmn Tunggal,taman-lingkungan,Jakarta Selatan,Jl. Tebet Barat Dalam V C,-6.23635006,106.84745597,,,,,,False,,,Tebet,Tebet Barat,Taman Lingkungan
+rth-c27b52eb0391,Tmn Maengket,taman-lingkungan,Jakarta Utara,JL. MAENGKET,-6.17305199,106.90792389,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,Taman Lingkungan
+rth-bc2eaf1151a5,Tmn Jl. T. Komplek DPR / bangda,taman-lingkungan,Jakarta Selatan,jalan pengadegan selatan,-6.2543488,106.85499464,,,,,,False,,,Pancoran,Pengadegan,Taman Lingkungan
+rth-89b96e7466ee,Ayodia,taman-kota,Jakarta Selatan,Jl. Mahakam,-6.24527813,106.79456267,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Kota
+rth-86036191c94f,Tmn Langsat,taman-lingkungan,Jakarta Selatan,Jl. Langsat,-6.24419539,106.79300782,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-1772ae4ffe01,"Taman Gandaria Tengah I, II, III",taman-lingkungan,Jakarta Selatan,Jl. Gandaria Tengah,-6.24375268,106.78988505,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-0c7a29c75b42,Taman Pintu KA Srengseng Barat,taman-lingkungan,Jakarta Selatan,"Jl. Lenteng Agung Raya, Kel. Srengseng Sawah, Kec. Jagakarsa",-6.34378175,106.8332578,,,,,,False,,,Jagakarsa,Srengseng Sawah,Taman Lingkungan
+rth-de7d435826cf,Taman Lenteng Agung Timur,taman-lingkungan,Jakarta Selatan,"Jl. Raya Lenteng Agung, Kel. Lenteng Agung, Kec. Jagakarsa",-6.34378194,106.83364291,,,,,,False,,,Jagakarsa,Lenteng Agung,Taman Lingkungan
+rth-caed498db40e,Taman Pintu KA Srengseng Timur,taman-lingkungan,Jakarta Selatan,"Jl. Raya Lenteng Agung Kel. Lenteng Agung, Jagakarsa",-6.34378412,106.83346846,,,,,,False,,,Jagakarsa,Lenteng Agung,Taman Lingkungan
+rth-1ee934ddd367,Taman A.A,taman-lingkungan,Jakarta Barat,"Jl. Taman AA, RT.006/RW.02",-6.1528183,106.72585767,,,,,,False,,,Cengkareng,Cengkareng Barat,Taman Lingkungan
+rth-f6318023bbd5,Taman Beringin,taman-lingkungan,Jakarta Barat,"Jl. Beringin I, RT.004/RW.05",-6.1511733,106.72004664,,,,,,False,,,Cengkareng,Cengkareng Barat,Taman Lingkungan
+rth-c0089a027f48,"Taman Batan I,II,III",taman-lingkungan,Jakarta Selatan,jalan rawabambu / komplek batan 2,-6.29705174,106.83920387,,,,,,False,,,Pasar Minggu,Pasar Minggu,Taman Lingkungan
+rth-69dd91ac8f49,"Taman Kuningan Barat, segi-3 / segitiga abdul rahim",taman-lingkungan,Jakarta Selatan,jalan kuningan barat,-6.23987568,106.82531183,,,,,,False,,,Mampang Prapatan,Kuningan Barat,Taman Lingkungan
+rth-cc810585dab6,Taman Sampit,taman-lingkungan,Jakarta Selatan,"Jl. Sampit II,II dan IV",-6.24511895,106.79680443,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-a6b7d7f09dd3,Tmn Tawes,taman-lingkungan,Jakarta Selatan,Jl. Tebet Barat Dalam I D,-6.23416447,106.84591276,,,,,,False,,,Tebet,Tebet Barat,Taman Lingkungan
+rth-19029b4f65fd,Taman Bakti Mulya,taman-lingkungan,Jakarta Barat,"Jalan Bakti Mulya Blok Bakti II No.2, RT.008/RW.02",-6.11578969,106.71473116,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-4fb93bf5d621,Taman Wijaya Kusuma Raya,taman-lingkungan,Jakarta Selatan,"Jl. Wijaya Kusuma, Kel. Pondok Labu, Kec. Cilandak",-6.30264274,106.80106031,,,,,,False,,,Cilandak,Pondok Labu,Taman Lingkungan
+rth-38f6fae2ca31,Tmn Republika,taman-lingkungan,Jakarta Selatan,Jalan Warung Buncit,-6.27975085,106.82908122,,,,,,False,,,Pasar Minggu,Jati Padang,Taman Lingkungan
+rth-3ab7cc82f0fc,Taman Batu,taman-lingkungan,Jakarta Selatan,Jalan Batu Raya,-6.21539082,106.84297965,,,,,,False,,,Setiabudi,Menteng Atas,Taman Lingkungan
+rth-1ee8d2552642,Taman Melati,taman-lingkungan,Jakarta Barat,"Jl. Melati, RT.010/RW.01",-6.14800488,106.72139251,,,,,,False,,,Cengkareng,Cengkareng Barat,Taman Lingkungan
+rth-fbdb58787917,Tmn Batanghari III,taman-lingkungan,Jakarta Pusat,,-6.17545486,106.80859058,,,,,,False,,,Gambir,Cideng,Taman Lingkungan
+rth-529d9403f876,Taman Komplek Meruya Ilir Blok C (Tm. Nagasari),taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok C, Jl. Kamboja Merah, RT.016/RW.04",-6.20018454,106.74050947,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-67296cc284d9,Monas,taman-kota,Jakarta Pusat,,-6.17622212,106.82662474,,,,,,False,,,,,Taman Kota
+rth-427982c0c6dc,Taman Pelopor,taman-lingkungan,Jakarta Barat,"Kavling PTB Tegal Alur, Jl. Pelopor Ujung Blok B5 No.23, RT.1/RW.5",-6.12426749,106.71252219,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-957b06c55165,Taman Anggrek Biru,taman-lingkungan,Jakarta Barat,"Kavling PTB Tegal Alur, Jl. Sumbawa No.30, RT.12/RW.6",-6.12345957,106.72044048,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-7742c2014aad,Taman Segitiga Pondok Pinang,taman-lingkungan,Jakarta Selatan,"Jl. RA, Kartini, Kel. Pondok Pinang, Kec. Kebayoran Lama",-6.28128547,106.77220544,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-d1540a29d03c,Taman Grogol Utara Rw 07,taman-lingkungan,Jakarta Selatan,"Jl. Haji Sairun, Kel. Grogol Utara, Kec. Kebayoran Lama",-6.21829908,106.79360276,,,,,,False,,,Kebayoran Lama,Grogol Utara,Taman Lingkungan
+rth-2c688f01d536,TELUK GONG (TAMAN BETOK),taman-lingkungan,Jakarta Utara,JL. BETOK,-6.13260745,106.77863505,,,,,,False,,,Penjaringan,Pejagalan,Taman Lingkungan
+rth-025d40ddfc9d,THKP,taman-kota,Jakarta Utara,Sebelah tol Ir. Wiyoto Wiyono,-6.13035138,106.78136131,,,,,,False,,,Penjaringan,Pejagalan,Taman Kota
+rth-36e44641ce49,Taman Interaktif Segitiga Intirub Jl Cilitan Besar,taman-interaktif,Jakarta Timur,"Jl. Cililitan Besar (Segitiga Intirub) Kel. Halim Perdana Kusuma Kec. Makasar, Jakarta Timur",-6.26593514,106.87750993,,,,,,False,,,Makasar,Kebon Pala,Taman Interaktif
+rth-6c0ddd14d41c,Taman Melati,taman-interaktif,Jakarta Timur,Jl. Assyafiiyah Gg. H. Mustar RT. 005/003,-6.33429636,106.89947859,,,,,,False,,,Cipayung,Cilangkap,Taman Interaktif
+rth-e4c20e0c4052,Jl. Lingkungan III - SPH 2012,taman-interaktif,Jakarta Barat,Jl. Lingkungan III,-6.11554113,106.71294562,,,,,,False,,,Kalideres,Tegal Alur,Taman Interaktif
+rth-0d7e31e9b368,BUDI MULYA,taman-lingkungan,Jakarta Utara,JL. GOR KECAMATAN PADEMANGAN,-6.1332264,106.83848946,,,,,,False,,,Pademangan,Pademangan Barat,Taman Lingkungan
+rth-f15fdedc2d8b,Taman Anggrek,taman-lingkungan,Jakarta Barat,"Komplek Nusa Indah, Jl. Anggrek V RW.9",-6.14929365,106.74814958,,,,,,False,,,Cengkareng,Cengkareng Timur,Taman Lingkungan
+rth-8cd83fed98a4,Taman Sumur Bor,taman-lingkungan,Jakarta Barat,"Jl. Kemuning Raya, RT.012/RW.05",-6.14716906,106.71802739,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-c840fc5a5048,Taman Permata,taman-lingkungan,Jakarta Barat,Jl.Permata,-6.17001136,106.79537332,,,,,,False,,,Grogol Petamburan,Tomang,Taman Lingkungan
+rth-485356e446e1,Taman Delima IV,taman-lingkungan,Jakarta Barat,"Jl. Delima IV, RT.014/RW.05",-6.17515182,106.78432357,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,Taman Lingkungan
+rth-b942584781b1,Tmn Leuser,taman-lingkungan,Jakarta Selatan,Jl. Lauser Raya,-6.24081916,106.7923227,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-a05dbef4b7d7,TAMAN RPTRA SUNTER JAYA BERSERI,taman-interaktif,Jakarta Utara,JL. BENTENGAN VI,-6.14952846,106.86719291,,,,,,False,,,Tanjung Priok,Sunter Jaya,Taman Interaktif
+rth-713c70f54af4,Taman Pulo Tanjung Barat / pulo pulo kolong tol,taman-lingkungan,Jakarta Selatan,"Jl. TB Simatupang Kel, Tanjung Barat, Jagakarsa",-6.30324848,106.83945019,,,,,,False,,,Jagakarsa,Tanjung Barat,Taman Lingkungan
+rth-40fb5dc3d569,"Taman BPG, depan",taman-lingkungan,Jakarta Selatan,Jl. Nangka,-6.30307476,106.84818025,,,,,,False,,,Jagakarsa,Tanjung Barat,Taman Lingkungan
+rth-3ee5025fe4d1,Tman Wijaya Kusuma IV,taman-lingkungan,Jakarta Selatan,Jl. Wijaya Kusuma,-6.30380609,106.7991679,,,,,,False,,,Cilandak,Pondok Labu,Taman Lingkungan
+rth-f6cb9144edc9,"Taman Sayang Anak, Latumenten",taman-lingkungan,Jakarta Barat,Jl.Latumenten,-6.14987051,106.79411633,,,,,,False,,,Tambora,Jembatan Besi,Taman Lingkungan
+rth-a687f9bb7b79,"Taman PUTL, segi-3",taman-lingkungan,Jakarta Selatan,Jalan Pattimura,-6.23438146,106.80082143,,,,,,False,,,Kebayoran Baru,Selong,Taman Lingkungan
+rth-5c6c4f0b81e0,Taman Dempo I,taman-lingkungan,Jakarta Selatan,"Jl. Dempo I, II,V",-6.23684159,106.79041621,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-13b447ffdf1a,Refungsi SPBU No. 34-12111 jl. Mataram I (tim),taman-lingkungan,Jakarta Selatan,Jl. Mataram 1,-6.23280494,106.79946104,,,,,,False,,,Kebayoran Baru,Selong,Taman Lingkungan
+rth-c888e04fa708,Taman Dempo II,taman-lingkungan,Jakarta Selatan,"Jl. Dempo I, II, V",-6.23866796,106.79100617,,,,,,False,,,Kebayoran Baru,Gunung,Taman Lingkungan
+rth-f44c07b7c6c5,"Taman Gandaria tengah V, dep kel",taman-lingkungan,Jakarta Selatan,Jl. Gandaria Tengah V,-6.24484632,106.79005105,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-6a5bb5dc6278,"Taman Darmawangsa, tanggul",taman-lingkungan,Jakarta Selatan,Jalan Darmawangsa II,-6.25481844,106.8015112,,,,,,False,,,Kebayoran Baru,Pulo,Taman Lingkungan
+rth-9b014d744214,"Taman Darmawangsa, tanggul lanjutan",taman-lingkungan,Jakarta Selatan,jalan Darmawangsa II,-6.25476089,106.80285586,,,,,,False,,,Kebayoran Baru,Pulo,Taman Lingkungan
+rth-fac9075a9371,Taman Belakang PosPolantas Tmn Puring,taman-lingkungan,Jakarta Selatan,Jalan Kyai Maja,-6.24163209,106.78968657,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-4092d0f66080,Refungsi SPBU no. 34-13204 Jl. Mataram (bar),taman-lingkungan,Jakarta Selatan,Jl. Mataram/Jl. Mataram 1/Jl. Sisingamangaraja,-6.2328163,106.79892319,,,,,,False,,,Kebayoran Baru,Selong,Taman Lingkungan
+rth-c8850d14449c,Jl. Kebagusan Raya / Taman Papyrus,taman-interaktif,Jakarta Selatan,Jl. Kebagusan Raya,-6.30066126,106.82570998,,,,,,False,,,Pasar Minggu,Kebagusan,Taman Interaktif
+rth-887ab4e1b6eb,Jl. Kopi,taman-interaktif,Jakarta Timur,Jl. Kopi,-6.34840391,106.86149689,,,,,,False,,,Pasar Rebo,Pekayon,Taman Interaktif
+rth-0ffc7989fcfc,Jl. Pinang,taman-interaktif,Jakarta Timur,Jl. Pinang,-6.32738079,106.89976404,,,,,,False,,,Cipayung,Cipayung,Taman Interaktif
+rth-99fcd5d67129,Jl. Kebagusan Raya,taman-interaktif,Jakarta Selatan,Jl. Kebagusan Raya,-6.29952282,106.82563162,,,,,,False,,,Pasar Minggu,Kebagusan,Taman Interaktif
+rth-d3a778d6f7e7,Taman Bendi Elok,taman-lingkungan,Jakarta Selatan,"Jl, Delman Indah 4, 5",-6.24929827,106.77139422,,,,,,False,,,Kebayoran Lama,Kebayoran Lama Utara,Taman Lingkungan
+rth-f41929ec0a1c,Taman Pirus,taman-lingkungan,Jakarta Selatan,Jl. Pirus,-6.22187358,106.78614752,,,,,,False,,,Kebayoran Lama,,Taman Lingkungan
+rth-18326551de79,TAMAN RPTRA H. OYAR,taman-lingkungan,Jakarta Utara,JL. H. OYAR,-6.17794148,106.91715574,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,Taman Lingkungan
+rth-f7e4e9e399f3,TAMAN RPTRA RAWA BADAK UTARA,taman-lingkungan,Jakarta Utara,JL. INSPEKSI KALI SUNTER,-6.11734099,106.89660452,,,,,,False,,,Koja,Rawa Badak Utara,Taman Lingkungan
+rth-946b9893df9e,Tmn Gabus,taman-lingkungan,Jakarta Timur,Jl. Gabus III,-6.19943045,106.8969102,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-b2b7f5c874da,Taman Ketang-Ketang,taman-lingkungan,Jakarta Timur,"Jl. Ketang-Ketang No.9, RT.3/RW.7",-6.20138934,106.8952686,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-9c6349539278,Tmn Nilam Raya,taman-lingkungan,Jakarta Timur,Jl. Nilam Raya,-6.19890964,106.89439929,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-0c7a56c53af1,Jh. Pulau-pulau jalan RE. Marthadinata,taman-lingkungan,Jakarta Utara,Jl. Marthadinata,-6.1132376,106.87414274,,,,,,False,,,Tanjung Priok,Papanggo,Taman Lingkungan
+rth-8bad6af4369a,Taman Rw.08 Kel. Sunter Agung,taman-interaktif,Jakarta Utara,"Jl. Agung Utara 5D, Rt. 013 Rw. 08",-6.1369311,106.85844539,,,,,,False,,,Tanjung Priok,Sunter Agung,Taman Interaktif
+rth-ade36279c730,Jalur Hijau Duri Kosambi,taman-lingkungan,Jakarta Barat,Jl. Samping Kosambi Baru,-6.16788211,106.71466716,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-cdbf156f9a06,Tmn Malaka Utara V,taman-lingkungan,Jakarta Timur,Jl. Malaka Utara 5,-6.22984132,106.92943948,,,,,,False,,,Duren Sawit,Malaka Sari,Taman Lingkungan
+rth-f8e1dafc6b76,Tmn Lodan V,taman-lingkungan,Jakarta Timur,"Jl. Lodan V No.09, RT.5/RW.5",-6.19468832,106.89600604,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-c093c980362a,Tmn Bandeng III,taman-lingkungan,Jakarta Timur,"Jl. Bandeng III No.13, RT.14/RW.5",-6.19544462,106.89740569,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-51abd77bf250,TAMAN BMW,taman-kota,Jakarta Utara,"Jl. Danau Sunter Barat, Rw.06 Kel. Sunter Agung)",-6.12612293,106.85657507,,,,,,False,,,Tanjung Priok,Sunter Agung,Taman Kota
+rth-1c8290f3afec,Taman Kesenian,taman-lingkungan,Jakarta Timur,"Jl. Kesenian RT. 004,016/09",-6.22605458,106.90488845,,,,,,False,,,Duren Sawit,Duren Sawit,Taman Lingkungan
+rth-47ac2acc67ac,Taman Tener,taman-lingkungan,Jakarta Timur,"Jl. Tener, RT.9/RW.2",-6.18434127,106.88461295,,,,,,False,,,Pulogadung,Kayu Putih,Taman Lingkungan
+rth-782d59542a20,Taman Jl. Lembah Pinang,taman-interaktif,Jakarta Timur,"Jl. Lembah Pinang VIII Blok I4 No.6, RT.7/RW.9",-6.23706991,106.93291528,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Interaktif
+rth-a24f30d1b22a,Taman Ikapola,taman-lingkungan,Jakarta Timur,"Jl. Pd. Kelapa Raya Blok A7 No.13, RT.1/RW.4",-6.24725642,106.934762,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Lingkungan
+rth-8d96d98e3bb2,Taman Janur Kuning,taman-lingkungan,Jakarta Timur,"Jl. Janur Kuning, RT.5/RW.4",-6.24481172,106.93371579,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Lingkungan
+rth-d8b71e24597e,Taman Arabika,taman-lingkungan,Jakarta Timur,"Jl. Arabika III Blok 2 No.1, RT.12/RW.5",-6.2294927,106.94552682,,,,,,False,,,Duren Sawit,Pondok Kopi,Taman Lingkungan
+rth-f47a68b15487,"TAMAN KOLONG TOL, JL. JATI",taman-interaktif,Jakarta Utara,JL. SUNGAI BAMBU RAYA,-6.12985468,106.88985702,,,,,,False,,,Tanjung Priok,Sungai Bambu,Taman Interaktif
+rth-afb881301753,Tmn Pondok Kopi V,taman-lingkungan,Jakarta Timur,Jl. Pondok Kopi V B,-6.22184349,106.94280746,,,,,,False,,,Duren Sawit,Pondok Kopi,Taman Lingkungan
+rth-c8285ae9cf81,Tmn Pondok Kopi II,taman-lingkungan,Jakarta Timur,"Jl. Pondok Kopi II, RT.1/RW.9",-6.21904973,106.9406003,,,,,,False,,,Duren Sawit,Pondok Kopi,Taman Lingkungan
+rth-5b80b9da5836,Jl. Sarang Bango,taman-kota,Jakarta Utara,Jl. Sarang Bango No. 22 RT. 006 RW. 05,-6.12222724,106.96332196,,,,,,False,,,Cilincing,Marunda,Taman Kota
+rth-db3a95de3d32,Taman Kejaksaan,taman-lingkungan,Jakarta Timur,Jl. Kejaksaan,-6.23944649,106.90623447,,,,,,False,,,Duren Sawit,Pondok Bambu,Taman Lingkungan
+rth-e5224c5b6840,TAMAN RTH SEMPER BARAT,taman-interaktif,Jakarta Utara,JL. BELIBIS IV,-6.12966354,106.92629531,,,,,,False,,,Cilincing,Semper Barat,Taman Interaktif
+rth-43785580cd13,Kelurahan MArunda,taman-interaktif,Jakarta Utara,Jl. Sarang Bango RT. 005 RW. 04,-6.12669805,106.95366465,,,,,,False,,,Cilincing,Marunda,Taman Interaktif
+rth-6ff803e5e284,Pekalongan (Taman Gajah),taman-lingkungan,Jakarta Pusat,RT 02 RW 05,-6.19674566,106.82627738,,,,,,False,,,Menteng,Menteng,Taman Lingkungan
+rth-b8f290497795,Taman Palem,taman-interaktif,Jakarta Timur,"Jl. Centex Gg. Galur, Ciracas, Jakarta Timur",-6.32100531,106.87531541,,,,,,False,,,Ciracas,Ciracas,Taman Interaktif
+rth-c628afbd49b7,Taman Lembah Aren,taman-lingkungan,Jakarta Timur,"RT.4/RW.9, Pondok Kelapa, Duren Sawit",-6.23448991,106.93313539,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Lingkungan
+rth-0de33fab672b,Tmn Lembah Nyiur,taman-lingkungan,Jakarta Timur,Jl. Nyiur Duren Sawit,-6.23497348,106.93144842,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Lingkungan
+rth-ca4bd3d32618,Jl.Tanah Abang II (Taman Tulang Bawang),taman-lingkungan,Jakarta Pusat,,-6.17647609,106.80867527,,,,,,False,,,Gambir,Cideng,Taman Lingkungan
+rth-5f1038549990,Taman Bulak Rantai,taman-lingkungan,Jakarta Timur,"Jl. Rantai Timah, RT.3/Rw.5",-6.283487,106.86839579,,,,,,False,,,Kramatjati,Tengah,Taman Lingkungan
+rth-1b1be0af0dd5,Taman Tanah Rendah,taman-lingkungan,Jakarta Pusat,,-6.18477477,106.81443176,,,,,,False,,,,,Taman Lingkungan
+rth-34e1ebcd053c,Taman Segitiga Fachrudin,taman-lingkungan,Jakarta Pusat,,-6.18228001,106.81394987,,,,,,False,,,Tanah Abang,Kampung Bali,Taman Lingkungan
+rth-a9512310cc30,Jalur Hijau/ Taman Sumenep,taman-lingkungan,Jakarta Pusat,Jl. Sumenep RT 011 Rw 04,-6.20014451,106.825512,,,,,,False,,,Menteng,Menteng,Taman Lingkungan
+rth-7f0fc187e8d4,Situlembang,taman-kota,Jakarta Pusat,Jakarta Pusat,-6.19794907,106.8347565,,,,,,False,,,Menteng,Menteng,Taman Kota
+rth-c9a495aa82c8,Suropati,taman-kota,Jakarta Pusat,Jakarta Pusat,-6.19935089,106.83267359,,,,,,False,,,Menteng,Menteng,Taman Kota
+rth-d18c3d3a6e2a,Taman Jl. Janur III,taman-interaktif,Jakarta Timur,"Jl. Janur IIIC Blok A1 No.2, RT.3/RW.4",-6.24639634,106.93418469,,,,,,False,,,Duren Sawit,Pondok Kelapa,Taman Interaktif
+rth-d44705ded5bc,Taman Kramat Jaya Baru V,taman-lingkungan,Jakarta Pusat,"Jl. Kramat Jaya Baru V RT 14 RW 01, Johar Baru,",-6.18519776,106.85332582,,,,,,False,,,Johar Baru,Johar Baru,Taman Lingkungan
+rth-5c0e49bf615c,Segitiga Taman (Jam Kota) Imam Bonjol,taman-lingkungan,Jakarta Pusat,,-6.19645519,106.82480685,,,,,,False,,,,,Taman Lingkungan
+rth-b8cbae8a6a65,Jl. Kalibaru Timur - SPH 2012,taman-interaktif,Jakarta Pusat,Jakarta Pusat,-6.16846409,106.850032,,,,,,False,,,Kemayoran,Utan Panjang,Taman Interaktif
+rth-f990a83ace20,Lapangan Banteng,taman-kota,Jakarta Pusat,Jakarta Pusat,-6.17074423,106.83507046,,,,,,False,,,Sawah Besar,Pasar Baru,Taman Kota
+rth-e3d97cc8f844,Jalur Hijau Jl. Penataran,taman-lingkungan,Jakarta Pusat,,-6.20131059,106.84346364,,,,,,False,,,Menteng,Pegangsaan,Taman Lingkungan
+rth-e3e03aa2a7c9,"Taman Citra Garden 2, Blok N.2",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Kegembiraan I, RT.013/RW.012",-6.14243868,106.71246186,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-0036ee645c1f,"Taman Citra Garden 2, Blok O.5",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Kegembiraan I, RT.014/RW.012",-6.14288288,106.71387547,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-1f242935d7b2,"Taman Citra Garden 2, Blok P.10",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Keselamatan II, RT.015/RW.012",-6.1429668,106.71516007,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-8457fae0e42b,"Tm. Citra Garden 3, Blok A.1 (Pos Gerbang 1)",taman-lingkungan,Jakarta Barat,"Perumahan Citra Garden 3, Jl. Raya Citra Garden 3 Rw. 13",-6.12700784,106.70489658,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-2d7cd1f1d71d,"Tm. Citra Garden 3, Blok B.24 (Pos Gerbang 1)",taman-lingkungan,Jakarta Barat,"Perumahan Citra Garden 3, Jl. Raya Citra Garden 3 Rw. 13",-6.12729427,106.70516939,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-06a859d185f6,"Taman Citra Garden 3, Blok B.7",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Raja Selatan, Rt. 009 Rw. 13, Kel. Pegadungan",-6.12875215,106.70698505,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-f8971269ff4b,"Taman Citra Garden 3, Blok C.3",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Merah RT. 011 RW. 13, Kel. Pegadungan",-6.12874809,106.70856239,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-625e98741a2f,"Taman Citra Garden 3, Blok C.8",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Merah RT. 014 RW. 13, Kel. Pegadungan",-6.12999826,106.70971814,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-e4cb409c3752,"Taman Citra Garden 3, Blok D.8",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Kuning RT. 015 RW. 13, Kel. Pegadungan",-6.12927176,106.71049884,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-0714063ef4df,"Taman Citra Garden 3, Blok D.3",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Kuning RW. 13, Kel. Pegadungan",-6.12802564,106.70933278,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-0e0ea92b4822,"Taman Citra Garden 3, Blok E.2",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3, Jl. Palm Kuning RT. RW. 13, Kel. Pegadungan",-6.1271338,106.7085054,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-189e1ee6b880,Taman Coca Cola,taman-lingkungan,Jakarta Pusat,,-6.16707066,106.87777934,,,,,,False,,,,,Taman Lingkungan
+rth-41983c3e4773,"Taman Citra Garden 2 Ext., Blok BB.2",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13139111,106.6950812,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-83a895ccfb18,"Taman Citra Garden 2 Ext., Blok BB.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RT.07 RW.05,-6.13100756,106.69405179,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-397d3a876860,"Taman Citra Garden 2 Ext., Blok BB.5",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RT.07 RW.05,-6.12995857,106.69378501,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-d9980b00ca74,"Taman Citra Garden 2 Ext., Blok BC.2",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13136588,106.69557963,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-7caac44164e2,"Taman Citra Garden 2 Ext., Blok BD.1",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RT.04 RW.08,-6.13315256,106.69168612,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-736b6cad9926,Taman Pondok Kopi RW.08,taman-lingkungan,Jakarta Timur,"Jl. Pondok Kopi Timur, RW 08",-6.22028584,106.94295106,,,,,,False,,,Duren Sawit,Pondok Kopi,Taman Lingkungan
+rth-4dd38404a6d9,"Taman Darmawangsa VIII, segi-3",taman-lingkungan,Jakarta Selatan,,-6.25233996,106.80610142,,,,,,False,,,,,Taman Lingkungan
+rth-cbc1374109dd,"Taman Darmawangsa VIII, segi-3",taman-lingkungan,Jakarta Selatan,Jl. Dharmawangsa VIII,-6.25194106,106.80522315,,,,,,False,,,Kebayoran Baru,Pulo,Taman Lingkungan
+rth-28678bf133be,"Taman Citra Garden 2 Ext., Blok BE.2",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13173646,106.69510346,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-867160188816,"Taman Citra Garden 2 Ext., Blok BE.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RT.02 RW.08,-6.13220779,106.69411373,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-44caf7c28af8,"Taman Citra Garden 2 Ext., Blok BF.1",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra 2 Utama RW.08,-6.13295233,106.6968111,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-3fd5826f9370,"Taman Citra Garden 2 Ext., Blok BF.2",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13172263,106.69560411,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-e312819da219,"Taman Citra Garden 2 Ext., Blok BF.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RT.08 RW.05,-6.13210006,106.69655378,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-181c9414d5a2,"Taman Citra Garden 2 Ext., Blok BG.1",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.08,-6.13368916,106.69169899,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-4032f53edb91,"Taman Citra Garden 2 Ext., Blok BG.7",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra 2 Utama RW.05,-6.13348891,106.6966881,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-d8c6b2955173,"Taman Citra Garden 2 Ext., Blok BH.1.a",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13393213,106.69815157,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-8783fb4213fe,"Taman Citra Garden 2 Ext., Blok BH.1.b",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13355443,106.69704128,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-15ca3d38dec8,"Taman Citra Garden 2 Ext., Blok BH.7",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13434565,106.69793914,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-a2a2bc6baeb2,"Taman Citra Garden 2 Ext., Blok BH.8",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13444875,106.69818104,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-b040ebccf44e,"Tm. Citra Garden 2 Ext., Blok BH.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13523408,106.69779119,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-f97dc4ef4c38,"Taman Citra Garden 2 Ext., Blok BH.2.a",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13400322,106.69831393,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-ddc105e9e29a,"Taman Citra Garden 2 Ext., Blok BH.2.b",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13442308,106.69932261,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-4f16b3a33f22,"Taman Citra Garden 2 Ext., Blok BI.1",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RT.04 RW.02,-6.13613053,106.69979887,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-73ec062474cf,"Taman Citra Garden 2 Ext., Blok BI.2",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RT.04 RW.02,-6.13493079,106.70048787,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-4e31edd5af3b,"Taman Citra Garden 2 Ext., Blok BI.2.a",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.02,-6.13450714,106.69950052,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-e74a46fa0fb1,"Taman Citra Garden 2 Ext., Blok BI.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.02,-6.13500974,106.70067088,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-82d3510d13fe,"Taman Citra Garden 2 Ext., Blok BI.7",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.02,-6.1353491,106.7002857,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-b4ac2cfb55a2,Taman Rambutan,taman-interaktif,Jakarta Selatan,"Jl. Sadar II No.23, RT.1/RW.2",-6.33084712,106.81137285,,,,,,False,,,Jagakarsa,Ciganjur,Taman Interaktif
+rth-4a8c355189ae,"Taman Citra Garden 2 Ext., Blok BI.8",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.02,-6.13544847,106.7005083,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-5028b7b5a31f,Taman Perumahan TSI (Taman Semanan Indah) BLOK F VII,taman-lingkungan,Jakarta Barat,"Jl. Dharma Puri 6, RW. 16",-6.16965621,106.70904662,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-5b167b3740f2,Taman Perumahan TSI (Taman Semanan Indah) BLOK C VII,taman-lingkungan,Jakarta Barat,"Jl. Dharma Griya V, RW. 12",-6.16774652,106.71160313,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-1ddd0890793a,Taman Perumahan TSI (Taman Semanan Indah) BLOK E IV,taman-lingkungan,Jakarta Barat,"Jl. Dharma Mutiara 1, RW. 12",-6.16697841,106.70876992,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-f40dbc54315a,Taman Perumahan TSI (Taman Semanan Indah) Blok B II,taman-lingkungan,Jakarta Barat,"Jl. Dharma Graha 1, RW. 12",-6.16566043,106.71278089,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-fecd49cc6f24,Taman Perumahan TSI (Taman Semanan Indah) Blok A IV,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permai, RW. 12",-6.16620186,106.71480624,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-a26e3aa509d9,Taman Perumahan TSI (Taman Semanan Indah) Blok A,taman-lingkungan,Jakarta Barat,"Jl. Bukit Hijau Raya, RW. 12",-6.16538789,106.71521783,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-b5d547243af7,Taman Perumahan TSI (Taman Semanan Indah) Blok H VII,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permata I, RW. 12",-6.16973534,106.71221021,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-676380de1328,Taman Perumahan TSI (Taman Semanan Indah) Blok H V,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permata II, RW. 12",-6.16931502,106.7127754,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-5ee53e8c701a,Taman Perumahan TSI (Taman Semanan Indah) Blok H IV,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permata 9, RW. 12",-6.16906909,106.7132105,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-6a812aebb739,"Taman Citra Garden 2 Ext., Blok BI.10",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.02,-6.13616967,106.70073464,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-5cdaf5e0139a,"Taman Citra Garden 2 Ext., Blok BJ.4",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.02,-6.13369291,106.70031766,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-cdad73ba276c,"Taman Citra Garden 2 Ext., Blok BJ.6",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra 2 RW.02,-6.13372207,106.70141578,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-dbbfb6b87ffe,"Taman Citra Garden 2 Ext., Blok BK.7",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13326379,106.69934582,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-8b4afd6ffa73,Jl. Kampung Baru - SPH 2012,taman-interaktif,Jakarta Barat,,-6.17097053,106.7500796,,,,,,False,,,Kembangan,Kembangan Utara,Taman Interaktif
+rth-a74badf191f9,Taman Jeruk Raya B,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Taman Jeruk Raya RT.05 RW. 06",-6.16171448,106.73957701,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-a9eb92e0a03e,"Taman Citra Garden 2 Ext., Blok BK.3",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13252035,106.6976478,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-5770766b32bb,Taman Jl. Pesanggrahan Mas Raya 1,taman-lingkungan,Jakarta Selatan,"Jalan Pesanggrahan Mas Raya, Kelurahan Petukangan Selatan, Kec. Pesanggrahan",-6.24831698,106.74829083,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-1a96d574187d,"Taman Citra Garden 2 Ext., Blok BK.4",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13302798,106.69820406,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-cd9a0c645b0e,Taman Jl. Pesanggrahan Mas Raya 2,taman-lingkungan,Jakarta Selatan,"Jalan Pesanggrahan Mas Raya, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24721649,106.74933809,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-aee6aed2f91a,Taman Segitiga Jl. Griya,taman-lingkungan,Jakarta Selatan,"Jl. Griya, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24764141,106.7471893,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-92b2bd692fe1,Taman Pakis RW. 07,taman-lingkungan,Jakarta Barat,"Jl. Pakis Raya, Rt. 012 Rw. 07",-6.16527205,106.74164855,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-08cda65bcdfe,Taman Waduk Bojong,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Belimbing Raya/Jl. Telaga Bojong, RW.06",-6.16035016,106.73850775,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-6613620c579d,Taman Salam,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Salam III, RW.07",-6.16486681,106.74073394,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-22d931e0980d,Taman Hanoman,taman-lingkungan,Jakarta Barat,"Perumahan Persada Sayang, Jl. Taman Hanoman IV No.1, RT.4/RW.9",-6.16766109,106.73709491,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-cb485d9f3998,Taman Shinta,taman-lingkungan,Jakarta Barat,"Perumahan Persada Sayang, Jl. Jl. Shinta RW.9",-6.16751045,106.73797435,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-e7945518d504,Taman Sugriwa,taman-lingkungan,Jakarta Barat,"Perumahan Persada Sayang, JL. Sugriwa V, Blok A-5/19, RT.9/RW.9",-6.16795872,106.73867796,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-0ebebb7fd665,Taman Wibisana,taman-lingkungan,Jakarta Barat,"Perumahan Persada Sayang, JL. Wibisana 2 RW.9",-6.16915304,106.73710327,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-8b6e2fa9cdb9,Taman Blok A11 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Kemuning Hijau VI RW.10",-6.17076628,106.71410954,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-9ef396e3aace,Taman Gadu PLN Jl. Pendopo,taman-lingkungan,Jakarta Selatan,"Jl. Pendopo, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24713552,106.74800313,,,,,,False,,,,Pesanggrahan,Taman Lingkungan
+rth-9eb700079225,"Taman Citra Garden 2 Ext., Blok BK.6",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Perumahan Citra Utama 2 RW.05,-6.13281039,106.69879235,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-7eddda6d8245,Taman Jl. Griya Perbatasan Jakarta Banten,taman-lingkungan,Jakarta Selatan,"Jalan Griya, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24734497,106.74689243,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-776d8e59c27b,Taman Jl. Griya,taman-lingkungan,Jakarta Selatan,"Jalan Griya, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24814216,106.74716819,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-79ac49de2a36,Taman Jl. Graha 5,taman-lingkungan,Jakarta Selatan,"Jalan Graha 5, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.24522166,106.74893854,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-3fc9b42c25db,"Taman Citra Garden 2 Ext., Blok BK.1",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13302369,106.69713796,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-dcc581791ece,Taman Blok B6 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Seleguri Utama I RW.10",-6.17129414,106.71414024,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-caba0d39547d,Taman Blok F3 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Mahoni Utama I RT.05 RW.09",-6.17032368,106.71564964,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-bd69ad8cd321,Taman Perumahan TSI (Taman Semanan Indah) Blok H III,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permata Raya, RW. 12",-6.16861836,106.71333611,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-8f15fd330063,Taman Perumahan TSI (Taman Semanan Indah) BLOK E VI,taman-lingkungan,Jakarta Barat,"Jl. Dharma Mutiara 2, RW. 12",-6.16769471,106.70862972,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-2249bede00ba,Taman Kencana Indah III,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Kencana Indah RT.005/RW.02",-6.18892156,106.74623697,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-7ff109325e1a,Tm. Kencana Indah II,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Kencana Indah RT.005/RW.02",-6.18942543,106.74612779,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-ca2a1df54350,Taman Kencana Indah I,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Kencana Indah RT.005/RW.02",-6.18996936,106.74597906,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-97e2483958b8,Taman Jl. Pendopo II,taman-lingkungan,Jakarta Selatan,"Jl. Pendopo 2, Kel. Petukangan Selatan, Kec. Pesanggrahan",-6.2464704,106.74870425,,,,,,False,,,Pesanggrahan,Petukangan Selatan,Taman Lingkungan
+rth-c9a5ea48f01f,"Taman Citra Garden 2 Ext., Bundaran",taman-lingkungan,Jakarta Barat,Komplek Citra Garden 2 Ext. Jl. Citra Dua Extension RW.05,-6.13326032,106.69692285,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-bb71869ac8de,Taman Blok E5 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Taman Kosambi Timur Raya RW.9",-6.16931925,106.71787603,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-02de64d83967,Taman Puri Indah Blok A9,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Taman Kembangan Abadi 4-5, RT.003/RW.08",-6.18420562,106.75075743,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-2d9e0f1b4122,Tm. Blok A2 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Kemuning Utama II RT.03 RW.10",-6.1698563,106.71394415,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-e75c306a0437,Jl. Duri Kosambi (Taman Wijaya Kusuma),taman-kota,Jakarta Barat,"Jl. Wijaya Kusuma, RT.007/RW.12",-6.17717328,106.70406344,,,,,,False,,,Kalideres,Semanan,Taman Kota
+rth-9ffc5ee4cb55,Taman Mesjid IV,taman-lingkungan,Jakarta Barat,"Jl. Masjid 4, RT.009/RW.05",-6.14850952,106.72032178,,,,,,False,,,Cengkareng,Cengkareng Barat,Taman Lingkungan
+rth-606d2780ea3c,Taman Jati Raya,taman-lingkungan,Jakarta Barat,Jl. Jati Raya RT.002/RW.012,-6.14700222,106.73761589,,,,,,False,,,Cengkareng,Cengkareng Timur,Taman Lingkungan
+rth-f2e4c8c9ed8d,Taman Gg. Semut,taman-lingkungan,Jakarta Barat,"Jl. Peternakan Raya, Gg. Semut RT.002 RW. 04",-6.14740647,106.77246294,,,,,,False,,,Cengkareng,Kapuk,Taman Lingkungan
+rth-e591e91beca6,Taman Kapuk Mas RW.07,taman-lingkungan,Jakarta Barat,"Komplek Kapuk Mas, Jl. Peternakan RT. 00 RW. 07",-6.14825577,106.76655682,,,,,,False,,,Cengkareng,Kapuk,Taman Lingkungan
+rth-fd64cbee85d7,Taman RW. 07 Komp. Ambon,taman-lingkungan,Jakarta Barat,"Komplek Ambon (Komplek Permata), Jl. Mirah RW. 07",-6.14541227,106.75278624,,,,,,False,,,Cengkareng,Kedaung Kali Angke,Taman Lingkungan
+rth-467b88ac2b35,Tm. Jeruk Raya A,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Taman Jeruk Raya RT.05 RW. 06",-6.16190052,106.73891975,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-7d401f7d127c,Taman Jeruk Bali. RW 05,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl.Bojong Indah Raya RT.06 RW. 05",-6.16094202,106.73579667,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-99281fa53174,Taman Belimbing,taman-lingkungan,Jakarta Barat,"Perumahan Bojong Indah, Jl. Bojong Indah Raya RT.07 RW. 05",-6.1605631,106.7367842,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-5306d066296d,Taman Puri Indah Blok D,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Kembang Sakti I, RT.003/RW.04",-6.18250024,106.74819857,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-1c097d66fbb1,Taman Puri Indah Blok A1,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Taman Kembangan Abadi 1 No.60, RT.001/RW.08",-6.18448732,106.75233067,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-3833966011b9,Taman Citra Garden 5 Blok A.6,taman-lingkungan,Jakarta Barat,"Perumahan CITRA 5, Jl. Perumahan Citra 5, RW.010 Kel. Kamal",-6.11659787,106.70370824,,,,,,False,,,Kalideres,Kamal,Taman Lingkungan
+rth-aadc65528039,Taman Citra Garden 5 Blok B.8,taman-lingkungan,Jakarta Barat,"Perumahan CITRA 5 Blok B.8, Jl. Kelapa Hybrida 1, RT. 005 RW.010 Kel. Kamal",-6.11783267,106.70531261,,,,,,False,,,Kalideres,Kamal,Taman Lingkungan
+rth-27964cddc713,Taman Citra Garden 5 Blok C.2,taman-lingkungan,Jakarta Barat,"Perumahan CITRA 5, Jl. Cengkir 1, RT. 009 RW. 010, Kel. Kamal",-6.11911694,106.7038443,,,,,,False,,,Kalideres,Kamal,Taman Lingkungan
+rth-1838f863c22b,Tmn Cempaka,taman-lingkungan,Jakarta Selatan,,-6.21388018,106.79223239,,,,,,False,,,Kebayoran Lama,Grogol Utara,Taman Lingkungan
+rth-4da87999928a,Taman Citra Garden 5 Blok D.6,taman-lingkungan,Jakarta Barat,"Perumahan CITRA 5, Jl. Kelapa Sawit 6 RT. 010 RW. 010, Kel. Kamal",-6.11801427,106.7027185,,,,,,False,,,Kalideres,Kamal,Taman Lingkungan
+rth-751b2146c63b,Taman Malioboro III,taman-lingkungan,Jakarta Barat,"Kav. PTB Tegal ALur, Jl. Malioboro Gg. Jawa, RT.06 RW.06",-6.12572115,106.72051767,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-d0923d248e50,Taman Malioboro II,taman-lingkungan,Jakarta Barat,"Kav. PTB Tegal Alur, Jl. Malioboro, Gg. Malioboro 6 RW.06",-6.12527564,106.72103625,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-4899b7dad2d0,Taman Blok A Kavling DKI,taman-lingkungan,Jakarta Barat,"Jl. Penyelesaian Tomang II, RT.009 RW.010",-6.19636617,106.72641564,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-664fb24de541,Tmn Galur Sari I,taman-interaktif,Jakarta Timur,Jl. Galur Sari II,-6.20023469,106.86583303,,,,,,False,,,Matraman,Utan Kayu Selatan,Taman Interaktif
+rth-47a1622f0869,Taman Mushollah GG.14,taman-lingkungan,Jakarta Barat,"Kav. PTB Tegal Alur, Jl. Musholla Dalam Gg. 14, RT.002 RW.07",-6.12089332,106.71758408,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-39043b6bd702,Tm. Pinggir Kali Jl. Bima,taman-lingkungan,Jakarta Barat,"Kavling PTB, Jl. Bima Blok J.1 No.20, RT.007/RW.07",-6.1220755,106.71946388,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-fe16c715a0da,Tm. Belakang Pasar Menceng,taman-lingkungan,Jakarta Barat,"Kav. PTB Tegal Alur, Jl. Sumbawa Dalam RW. 06",-6.12578099,106.72148204,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-3e8f773bd3d5,"Taman Citra Garden 1, Blok A.2",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Indah 14 Blok A. RW. 09",-6.15016844,106.69236936,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-8a3804e5c18e,"Taman Citra Garden 1, Blok A.13",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Indah 18 Blok A. RW. 09",-6.14846206,106.69223535,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-7ea5cdf3bf48,"Taman Citra Garden 1, Blok B.11",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Indah 17 Blok B. RW. 09",-6.14861392,106.69411159,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-2d9279f387ae,"Taman Citra Garden 1, Blok C.4",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Hijau 10 Blok C RW.16",-6.14974033,106.69528295,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-c113d7fafc18,"Taman Citra Garden 1, Blok C.12",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Hijau 1 Blok C RT.005/RW.16",-6.14841554,106.69543794,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-1ed9b6ebff25,"Taman Citra Garden3 Ext., Blok B.25",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Sisir RT.002/13, Kel. Pegadungan",-6.12693912,106.70683408,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-6c3b69b8387a,"Taman Citra Garden3 Ext., Blok E.6",taman-lingkungan,Jakarta Barat,Perumahan Citra 3 Ext. Jl. Palem Kipas Blok E.6,-6.12587826,106.70684081,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-496fc0c58963,"Taman Citra Garden3 Ext., Blok E.12",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Kipas Blok E.12, RT.5 RW.13",-6.1262458,106.70772811,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-e16ad75a2453,"Taman Citra Garden3 Ext., Blok F.1",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Raja Barat, RW.13",-6.12544185,106.70641061,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-f49198a9c202,"Taman Citra Garden 5, Blok E.7",taman-lingkungan,Jakarta Barat,"Perumahan CITRA 5 Blok E.7, Jl. Kelapa Gading Permai RW. 16 Kel. Pegadungan",-6.12013122,106.7017293,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-9b1793a528fb,Taman Kopti,taman-lingkungan,Jakarta Barat,"Komplek KOPTI (Koperasi Pengusaha Tahu Tempe Indonesia), Jl. Pemukiman Industri Kecil Swakerta/Jl. Gembus",-6.17062985,106.70071822,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-e586cd2b9d55,"Taman Citra Garden 2, Blok H.6",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Kebahagiaan Barat III, RT.007/RW.012",-6.14338192,106.70537393,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-13918f2f54a9,"Taman Citra Garden 2, Blok I.3",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Kebahagiaan Timur III, RT.009/RW.12",-6.14376437,106.7081843,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-7f486ba860a8,"Taman Citra Garden 2, Blok M.3",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden 2, Jl. Kesetiaan IX, RT.10/RW.12",-6.14255142,106.71042231,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-a0408084454f,Taman Bawang Merah,taman-lingkungan,Jakarta Barat,"Perum Bojong Indah, Jl. Bawang Merah III Blok F1 No.1, RT.5/RW.7",-6.16326525,106.74287228,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-9da433bf0dff,Taman Dahlia Refungsi Dinas,taman-lingkungan,Jakarta Barat,"Komplek Nusa Indah, Jl. Dahlia II RW.9",-6.14994813,106.74806632,,,,,,False,,,Cengkareng,Kapuk,Taman Lingkungan
+rth-61a09f661666,Taman Nusa Indah I (Tm. Melati II/Tm. Kodok),taman-lingkungan,Jakarta Barat,"Komplek Nusa Indah, Jl. Taman Nusa Indah No.58A, RT.5/RW.9",-6.14909852,106.74569302,,,,,,False,,,Cengkareng,Kapuk,Taman Lingkungan
+rth-b2f5a400db0d,"Taman Citra Garden 1, Blok E.4",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Permai 9, Blok E RW. 09",-6.14601097,106.69431981,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-3e9a37b364a4,"Taman Citra Garden 1, Blok F.5",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Permai 2, Blok F RW. 09",-6.14627107,106.69297021,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-9652985d49b1,"Taman Citra Garden 1, Blok G.4",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Elok 8, Blok G RW. 09",-6.14421114,106.69285145,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-35cc5c145376,"Taman Citra Garden 1, Blok H.3",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl.Perumahan Citra I, Blok H RW. 09",-6.14433335,106.69440591,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-b45a4dd1502c,"Taman Citra Garden 1, Blok I.3",taman-lingkungan,Jakarta Barat,"Komplek Citra Garden, Jl. Bukit Lestari, Blok I RT.10 RW.16",-6.14448337,106.69603763,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-353647c4cb1a,Taman Bambu Larangan,taman-lingkungan,Jakarta Barat,"Jl. Kemuning Raya, RT.001/RW.11",-6.14647696,106.71794932,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-486680638527,"Taman Citra Garden3 Ext., Blok A.12",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Raja Barat, RT.03 RW.13",-6.12558977,106.70614061,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-4ea89ac70fb6,"Taman Citra Garden3 Ext., Blok A.14",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Bintang 12 Rt.001/13, Kel. Pegadungan",-6.12528461,106.70530655,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-d4312504291c,"Tm. Citra Garden3 Ext., Blok B.12",taman-lingkungan,Jakarta Barat,"Perumahan Citra 3 Ext. Jl. Palem Raja Timur RT.05 RW.13, Kel. Pegadungan",-6.12610271,106.70655449,,,,,,False,,,Kalideres,Pegadungan,Taman Lingkungan
+rth-2a212676532b,"Taman Permata Hijau, Pulau-pulau",taman-lingkungan,Jakarta Selatan,Jalan Letjen Soepeno,-6.22274646,106.7849321,,,,,,False,,,Kebayoran Lama,Gandaria Utara,Taman Lingkungan
+rth-9a159eb70d20,Tmn Bendungan Jatiluhur VII,taman-lingkungan,Jakarta Pusat,,-6.21440506,106.80943821,,,,,,False,,,Tanah Abang,Bendungan Hilir,Taman Lingkungan
+rth-5f580f1b6ef2,Taman RTH Cipinang Besar Utara,taman-lingkungan,Jakarta Timur,RW.12 RT 10,-6.21935774,106.88453564,,,,,,False,,,Jatinegara,Cipinang Besar Utara,Taman Lingkungan
+rth-372382349f39,Taman Bina Marga I,taman-lingkungan,Jakarta Timur,"Jl. Bina Marga, Cipayung, Jakarta Timur",-6.32748403,106.88785649,,,,,,False,,,Cipayung,Cipayung,Taman Lingkungan
+rth-c80ab6cea581,"Taman Senopati, POm Bensin, segi-3",taman-lingkungan,Jakarta Selatan,Jl. Senopati,-6.23326529,106.81214567,,,,,,False,,,Kebayoran Baru,,Taman Lingkungan
+rth-36e37a1fd497,Taman Viaduct Pejompongan,taman-lingkungan,Jakarta Pusat,,-6.20437379,106.80146131,,,,,,False,,,,,Taman Lingkungan
+rth-6f4fe64bf9e9,Taman Komp. Walikota Blok D,taman-lingkungan,Jakarta Barat,"Komp. Wkjb, Jl. Perumahan Walikota Jakbar, RT.6/RW.004",-6.21422729,106.72449845,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-7aa6e3070222,Taman Komp. DKI Joglo Blok M,taman-lingkungan,Jakarta Barat,"Komplek DKI Joglo Blok M, Jl. Kedaung Raya",-6.22351303,106.73430802,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-65bf56a9aa60,Taman Bina Marga II,taman-lingkungan,Jakarta Timur,"Jl. Bina Marga, Cipayung, Jakarta Timur",-6.3262108,106.88800001,,,,,,False,,,Cipayung,Cipayung,Taman Lingkungan
+rth-2cfd8aef9674,Pulau-Pulau Republika,taman-lingkungan,Jakarta Selatan,,-6.27948653,106.8287278,,,,,,False,,,Pasar Minggu,Ragunan,Taman Lingkungan
+rth-e23057c10f05,Taman Kebon Raya,taman-lingkungan,Jakarta Barat,"Jl. Kebon Raya, RT 001, RW 01",-6.18609749,106.77367014,,,,,,False,,,Kebon Jeruk,Duri Kepa,Taman Lingkungan
+rth-c66fe0fae20e,Taman Garuda (Koramil) II,taman-lingkungan,Jakarta Barat,"Jl. Anggrek Garuda Blok D. II No.7, Palmerah, RT.005/RW.02",-6.19274283,106.79590741,,,,,,False,,,Pal Merah,Kemanggisan,Taman Lingkungan
+rth-0b497f1aad0b,Taman RTH Cipinang Muara,taman-lingkungan,Jakarta Timur,RW 08,-6.21865967,106.89139223,,,,,,False,,,Jatinegara,Cipinang Muara,Taman Lingkungan
+rth-c1ca07402890,Taman Menteng II,taman-lingkungan,Jakarta Barat,"Jl. Menteng II, RT.012/RW.07",-6.18296794,106.78220332,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,Taman Lingkungan
+rth-7df3cb72a85a,Taman Musholah B,taman-lingkungan,Jakarta Barat,"Kavling PTB Tegal Alur, Jl. Mushola Blok B No.10, RT.003/RW.07",-6.12027509,106.7181404,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-79346d1e93a3,Jl. Waringin (Taman Pintar),taman-interaktif,Jakarta Timur,Jl. Waringin Raya,-6.18359641,106.88066223,,,,,,False,,,Pulogadung,Kayu Putih,Taman Interaktif
+rth-5d35546637f5,"Taman Komp Kec, Senen",taman-lingkungan,Jakarta Pusat,Jakarta Pusat,-6.18446107,106.84362015,,,,,,False,,,Senen,Kwitang,Taman Lingkungan
+rth-caacfdb239f9,Taman Alamanda,taman-lingkungan,Jakarta Timur,"Jl. Damai PBSI, Cipayung, Jakarta Timur",-6.33475289,106.89146345,,,,,,False,,,Cipayung,Cipayung,Taman Lingkungan
+rth-c43e672d9dc4,Taman Tanjung,taman-lingkungan,Jakarta Pusat,,-6.19012136,106.83234048,,,,,,False,,,Johar Baru,Gondangdia,Taman Lingkungan
+rth-9e668161aa31,Taman Nusa Indah III,taman-lingkungan,Jakarta Timur,,-6.2210596,106.93384562,,,,,,False,,,,,Taman Lingkungan
+rth-65a7fb964c10,Taman Komodo (Taman Rosliana),taman-lingkungan,Jakarta Barat,"Jl. Anggrek Rosliana 2, RT.002/RW.05",-6.19417405,106.7942942,,,,,,False,,,Pal Merah,Kemanggisan,Taman Lingkungan
+rth-2f069332a1a1,Refungsi SPBU No. 32-10701 Jl. Wahidin (ABRI),taman-lingkungan,Jakarta Pusat,Jakarta Pusat,-6.16736523,106.83911994,,,,,,False,,,Sawah Besar,Pasar Baru,Taman Lingkungan
+rth-c213c95d6c0e,Refungsi SPBU No. 34-10601 Jl. Dr. Wahidin (Swasta,taman-lingkungan,Jakarta Pusat,Jakarta Pusat,-6.16827472,106.83935706,,,,,,False,,,Sawah Besar,Pasar Baru,Taman Lingkungan
+rth-ee53a44d2877,Taman Semanggi (Karet Tengsin),taman-lingkungan,Jakarta Pusat,,-6.21838877,106.81274342,,,,,,False,,,,Karet Semanggi,Taman Lingkungan
+rth-d829c7b5a226,Taman Amandole,taman-lingkungan,Jakarta Barat,"Jl. Wuluh 1 Blok I, RT.009/RW.06",-6.18225343,106.80383129,,,,,,False,,,Pal Merah,Kota Bambu Utara,Taman Lingkungan
+rth-d05149c11e4e,Taman Pramuka,taman-lingkungan,Jakarta Selatan,"Jl. Manggarai Utara VII, Kel. Manggarai, Kec. Tebet",-6.21170672,106.85326337,,,,,,False,,,Tebet,Manggarai,Taman Lingkungan
+rth-a20a1186ed5e,Taman Bund. Slamet Riyadi,taman-lingkungan,Jakarta Timur,"Jl. Slamet Riyadi,",-6.21139232,106.85851529,,,,,,False,,,Matraman,Kebon Manggis,Taman Lingkungan
+rth-7448e7c7af34,Taman Segitiga Menteng Raya,taman-lingkungan,Jakarta Pusat,,-6.18693177,106.83609247,,,,,,False,,,,,Taman Lingkungan
+rth-5f8dc36bca86,Taman Bonang,taman-lingkungan,Jakarta Pusat,RW 10,-6.20417634,106.84657435,,,,,,False,,,Menteng,Pegangsaan,Taman Lingkungan
+rth-529d05167b6f,Taman Anggrek,taman-lingkungan,Jakarta Selatan,Jl. Anggrek II,-6.26649547,106.76861085,,,,,,False,,,Pesanggrahan,Bintaro,Taman Lingkungan
+rth-197ea9439780,Taman Tebet Timur Dalam,taman-lingkungan,Jakarta Selatan,"Jl. Tebet Timur Dalam VII/F, Kel. Tebet Timur, Kec. Tebet",-6.23806138,106.85775014,,,,,,False,,,Tebet,Tebet Timur,Taman Lingkungan
+rth-e9f3825e2213,Taman Malioboro III,taman-lingkungan,Jakarta Barat,,-6.12545882,106.71995961,,,,,,False,,,,,Taman Lingkungan
+rth-e0ce68e7c055,Taman Hadiah Utama III E,taman-lingkungan,Jakarta Barat,"Jl. Jelambar Utama IIIE, RT.002/RW.02",-6.15692835,106.78077962,,,,,,False,,,Grogol Petamburan,Jelambar,Taman Lingkungan
+rth-8671b942de5c,Refungsi SPBU No. 31-13201 Jl. Enim,taman-lingkungan,Jakarta Utara,JL. ENIM,-6.11101819,106.88393941,,,,,,False,,,Tanjung Priok,Sungai Bambu,Taman Lingkungan
+rth-09d2e9f520d1,Taman Kayu Mas Tengah VIII,taman-interaktif,Jakarta Timur,"Jl. Kayu Mas Tengah VIII, Pulo Gadung, Pulo Gadung, Jakarta Timur",-6.18111161,106.89961126,,,,,,False,,,Pulogadung,Pulo Gadung,Taman Interaktif
+rth-2c8fb440e7fd,Taman Jln. Sawo Manggarai,taman-lingkungan,Jakarta Selatan,"Jl. Sawo III, Kel. Manggarai Selatan, Kec. Tebet",-6.21642828,106.84579259,,,,,,False,,,Tebet,Manggarai Selatan,Taman Lingkungan
+rth-c21cf1998747,Taman Trikora,taman-lingkungan,Jakarta Selatan,"Jl. Tebet Barat Dalam VIII J, Kel. Tebet Barat, Kec. Tebet",-6.24070049,106.84821672,,,,,,False,,,Tebet,Tebet Barat,Taman Lingkungan
+rth-ae787d84e844,Taman Seno Lama,taman-lingkungan,Jakarta Selatan,"Jl. Tebet Barat Dalam X C, Kel. Tebet barat, Kec. Tebet",-6.24157876,106.84848585,,,,,,False,,,Tebet,Tebet Barat,Taman Lingkungan
+rth-008667cecbcf,Taman Budhi,taman-lingkungan,Jakarta Selatan,"Jl. Tebet Timur VI/J, Kel. Tebet Timur, Kec. Tebet",-6.23611461,106.85754685,,,,,,False,,,Tebet,Tebet Timur,Taman Lingkungan
+rth-90216456dbfa,Taman Tebet Timur Dalam VI e,taman-lingkungan,Jakarta Selatan,"Jl.Tebet Timur Dalam VI E, kel. Tebet timur, kec. tebet",-6.23570287,106.8575389,,,,,,False,,,Tebet,Tebet Timur,Taman Lingkungan
+rth-c2b57389c155,"Taman Hang Lekir, segi-3",taman-lingkungan,Jakarta Selatan,,-6.23333796,106.79410104,,,,,,False,,,,,Taman Lingkungan
+rth-ec4cfd378bbd,Tmn Danau Buyan,taman-lingkungan,Jakarta Pusat,Jl. Danau Buyan RT 09 RW 03,-6.20867577,106.80944337,,,,,,False,,,Tanah Abang,Bendungan Hilir,Taman Lingkungan
+rth-15be757fea73,Tmn Tanah Mas,taman-lingkungan,Jakarta Timur,,-6.18691418,106.88907759,,,,,,False,,,,,Taman Lingkungan
+rth-8640997980f0,Ciracas,taman-interaktif,Jakarta Timur,Jl. Raya Ciracas RT. 03/06,-6.32766704,106.88093692,,,,,,False,,,Ciracas,Ciracas,Taman Interaktif
+rth-62a0d1c7cd02,Taman Perhubungan III,taman-lingkungan,Jakarta Timur,"Jl. Perhubungan Raya, Jati, Pulo Gadung, Jakarta Timur",-6.20040312,106.89759587,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-6eba12f06b89,Taman Perhubungan IV,taman-lingkungan,Jakarta Timur,"Jl. Perhubungan Raya, Jati, Pulo Gadung, Jakarta Timur",-6.20030195,106.89800888,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-3767bb5010bf,Taman Perhubungan Lama,taman-lingkungan,Jakarta Timur,"Jl. Perhubungan Raya, Jati, Pulo Gadung, Jakarta Timur",-6.19991268,106.89959411,,,,,,False,,,Pulogadung,Jati,Taman Lingkungan
+rth-7b7e9434d1ba,Tmn Malaka Utara IV,taman-lingkungan,Jakarta Timur,Jl. Malaka Utara IV,-6.22997083,106.93048374,,,,,,False,,,Pulogadung,Malaka Sari,Taman Lingkungan
+rth-4eb02c77d11c,Taman Tg Duren Selatan I,taman-lingkungan,Jakarta Barat,"Jl. Tanjung Duren Selatan I, RT.004/RW.002",-6.18328389,106.78401239,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,Taman Lingkungan
+rth-c6360fb935b8,Taman Manggis XIX,taman-lingkungan,Jakarta Barat,"Jl. Manggis IV, Gg. Manggis XIX, RT.010/RW.04",-6.1790445,106.78663954,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,Taman Lingkungan
+rth-4a1d0cc0202c,Taman Pakuwon XVII G,taman-lingkungan,Jakarta Barat,"Komplek Pakuwon Blok G, Jl. Jelambar Selatan 17, RT.006/RW.09",-6.15054915,106.7910234,,,,,,False,,,Grogol Petamburan,Jelambar Baru,Taman Lingkungan
+rth-2ced3d5b0708,Taman Pakuwon XVII F,taman-lingkungan,Jakarta Barat,"Komplek Pakuwon Blok F, Jl. Jelambar 1f/k, RT.007/RW.09",-6.14983891,106.78999772,,,,,,False,,,Grogol Petamburan,Jelambar Baru,Taman Lingkungan
+rth-c2642a97e60e,Taman Mushollah X,taman-lingkungan,Jakarta Barat,"Kav. PTB Tegal Alur, Jl. Musholla Dalam Gg. 10 RT.003 RW.10",-6.12143544,106.71801317,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-420820eaeeba,Taman Kramat,taman-lingkungan,Jakarta Barat,Jl. Kramat RT. 01 RW.09,-6.16280051,106.70263485,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-551b0a32d498,Taman Jembatan Tinggi,taman-lingkungan,Jakarta Pusat,,-6.18856353,106.81304092,,,,,,False,,,,,Taman Lingkungan
+rth-1d324b1405df,Tmn Viaduct Jatinegara,taman-lingkungan,Jakarta Timur,,-6.21456153,106.87360057,,,,,,False,,,,,Taman Lingkungan
+rth-76f39ddea1f8,Tm Viaduct Jatinegara,taman-lingkungan,Jakarta Timur,,-6.21449273,106.8745899,,,,,,False,,,,,Taman Lingkungan
+rth-cc7f27927168,Tmn Pendidikan (Pndk Kopi),taman-lingkungan,Jakarta Timur,,-6.23171883,106.91973376,,,,,,False,,,,,Taman Lingkungan
+rth-efbc445a6fb6,Tmn Casuarina,taman-interaktif,Jakarta Selatan,Jl. Mohamad Kahfi I,-6.35730858,106.7992221,,,,,,False,,,Jagakarsa,Cipedak,Taman Interaktif
+rth-14f81edaecf5,Taman Barito II,taman-lingkungan,Jakarta Selatan,"Jl. Kramat Pela, kel. kramat pela, kec. kebayoran baru",-6.24941406,106.79628594,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-c637e6654522,Taman Elang Bondol,taman-lingkungan,Jakarta Barat,Jl. Daan Mogot,-6.15973549,106.68891063,,,,,,False,,,Kalideres,Kalideres,Taman Lingkungan
+rth-26d84a717409,Taman Musholla A,taman-lingkungan,Jakarta Barat,"Kavling PTB Tegal Alur, Jl. Mushola Blok B No.10, RT.003/RW.07",-6.1205368,106.71832634,,,,,,False,,,Kalideres,Tegal Alur,Taman Lingkungan
+rth-7a0da0efba0a,Taman Tebet Timur Dalam IX A,taman-lingkungan,Jakarta Selatan,Jalan Tebet Timur Dalam IX F,-6.2409435,106.85375874,,,,,,False,,,Tebet,Tebet Timur,Taman Lingkungan
+rth-7610d9f95e6f,Taman Anggrek Dahlia SMP 215,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir, Jl. Mawar Putih, RT.010/RW.04",-6.20104832,106.73688221,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-19355e9af21e,Taman Komp. BPPT,taman-lingkungan,Jakarta Barat,"Komplek BPPT, Jl. Teknologi VIII Blok H15, RT.009/RW.03",-6.19355989,106.75427656,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-13f2f03d4a11,Taman Aries Utama I (Taman Aries Pasar),taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Utama I, RT.007/RW.08.",-6.19492912,106.75096132,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-8c5e826d8b37,Taman Kompleks Aries Blok F16,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries Blok F, Jl. Aries Elok II, RT.008/RW.06",-6.1960583,106.74978409,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-511db0cf3ab6,Taman Aries Blok D.8,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Indah, RT.005/RW.06.",-6.19404001,106.74712975,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-b0ac95aca07f,Taman Komplek Aries Blok A.7,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Mustika,RW.09.",-6.19376438,106.74455291,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-e76e0197e98f,Taman Komplek Aries Blok A.2,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Mustika, RT.004/RW.09.",-6.19430534,106.74459977,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-3d3968d2d580,Taman Belakang Kelurahan Joglo,taman-lingkungan,Jakarta Barat,"Belakang Kantor Lurah Joglo, Jl. Joglo Raya RT.005/RW.08",-6.2209247,106.73539984,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-ba4a5fff2a66,Tmn Danau Bratan,taman-lingkungan,Jakarta Pusat,Jl. Danau Bratan RW 03 (Ex Yayasan Guntur),-6.20967489,106.81020896,,,,,,False,,,Tanah Abang,Bendungan Hilir,Taman Lingkungan
+rth-6ec3525119d1,Taman Durian (Taman Balai Warga RW.08),taman-lingkungan,Jakarta Barat,"Jl. Durian 3, RT. 004 RW. 08",-6.16466333,106.73843489,,,,,,False,,,Cengkareng,Rawa Buaya,Taman Lingkungan
+rth-c1896bf887f4,Taman Komplek Kebersihan,taman-lingkungan,Jakarta Barat,"Komplek Kebersihan Jl. Bambu Larangan, RT.005/RW.17",-6.14100831,106.71738073,,,,,,False,,,Kalideres,Cengkareng Barat,Taman Lingkungan
+rth-c89ec8339510,Taman Delima I,taman-lingkungan,Jakarta Barat,"Jl. Delima I, RT.016/RW.05",-6.17440619,106.78509465,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,Taman Lingkungan
+rth-b62c061fed67,Taman Komp. Pemadam Kebakaran,taman-lingkungan,Jakarta Barat,"Komp. Damkar Joglo, Jl. Kenanga RT.007/RW.02",-6.21879705,106.72452006,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-58dcd8a1d9c3,Taman Sawo,taman-lingkungan,Jakarta Pusat,,-6.19535607,106.83556942,,,,,,False,,,,,Taman Lingkungan
+rth-a0967df0f740,Jl. Kimia Dalam RT 10 RW 01,taman-lingkungan,Jakarta Pusat,,-6.19887485,106.84425462,,,,,,False,,,Menteng,Pegangsaan,Taman Lingkungan
+rth-00965e80066a,Taman BTN 2,taman-lingkungan,Jakarta Barat,"Jl. Delima, RT.006/RW.03",-6.16701055,106.74791349,,,,,,False,,,Kembangan,Kembangan Utara,Taman Lingkungan
+rth-dbc055115935,Taman Aneka Elok Blok AD 3,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Angsana V, RT.013/RW.04",-6.18736956,106.7668551,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-08a57801d0be,Taman Aneka Elok Blok AE 8,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Alamanda VIII, RT.016/RW.04",-6.18510143,106.76667649,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-37082561c20f,Taman Aneka Elok Blok A 10,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Azalea, RT.004/RW.04",-6.18416512,106.76324189,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-27bb4c700d86,Taman Aneka Elok Blok A 11,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Azalea I, RT.003/RW.04",-6.18467171,106.76262185,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-535fa78301a1,Taman Bandengan Utara III,taman-lingkungan,Jakarta Barat,"Jl. Bandengan Utara III, RT.008/RW.11",-6.13598526,106.80032788,,,,,,False,,,Tambora,Pekojan,Taman Lingkungan
+rth-67f66be277ad,Tmn Jl.Buperta Perbatasan Cibubur,taman-lingkungan,Jakarta Timur,,-6.35698255,106.90903018,,,,,,False,,,Cipayung,Pondok Ranggon,Taman Lingkungan
+rth-70427c308188,Taman RTH Matraman,taman-lingkungan,Jakarta Timur,Jl. Pandan,-6.20496967,106.86845506,,,,,,False,,,Matraman,Utan Kayu Selatan,Taman Lingkungan
+rth-e66b3be9d2af,Taman RTH Duren Sawit,taman-lingkungan,Jakarta Timur,Jl. H. Taba,-6.24282564,106.91470335,,,,,,False,,,Duren Sawit,Duren Sawit,Taman Lingkungan
+rth-d37db281eee1,Taman Casia,taman-lingkungan,Jakarta Timur,"Jl. PG Indah No.18, RT.3/RW.11, Pulo Gebang, Cakung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13950",-6.20062599,106.95201807,,,,,,False,,,Cakung,Pulo Gebang,Taman Lingkungan
+rth-34f2b1bd4567,JL. TELUK LANGSA RT. 02,taman-interaktif,Jakarta Utara,JL. TELUK LANGSA,-6.15897362,106.92282985,,,,,,False,,,Cilincing,Sukapura,Taman Interaktif
+rth-dc85787a698e,Taman Tebet Barat Dalam VIII K RW 05,taman-lingkungan,Jakarta Selatan,"Jl, Tebet Barat Dalam VIII K",-6.2405386,106.84968857,,,,,,False,,,Tebet,Tebet Barat,Taman Lingkungan
+rth-b9ca6f5695c3,Kebun Bibit Villa Kelapa Dua,taman-lingkungan,Jakarta Barat,Jl. Inspeksi Kali Pesanggrahan Pos Pengumben RT.001/RW.06,-6.21561279,106.76391513,,,,,,False,,,Kebon Jeruk,Kelapa Dua,Taman Lingkungan
+rth-ff03d934b42c,Taman Komplek THI Belakang Kantor RW.07,taman-lingkungan,Jakarta Barat,"Komplek Taman Harapan Indah Blok Q, Jl. Jatayu V D, RT.007/RW.07",-6.14660596,106.78748125,,,,,,False,,,Grogol Petamburan,Jelambar Baru,Taman Lingkungan
+rth-1e3a9a926c4a,Taman Aneka Elok Blok AD 12,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Angsana IX, RT.011/RW.04",-6.18865513,106.76596647,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-7d9030214af5,"Taman Permata Hijau, Pulau-pulau",taman-lingkungan,Jakarta Selatan,Jalan Permata Berlian,-6.22300324,106.78264932,,,,,,False,,,Kebayoran Lama,Grogol Utara,Taman Lingkungan
+rth-349856c9bbce,"TAMAN JL. DAUA SUNTER UTARA RW,20",taman-lingkungan,Jakarta Utara,JL. GRIYA AYU,-6.13979514,106.85541942,,,,,,False,,,Tanjung Priok,Sunter Agung,Taman Lingkungan
+rth-52b0033956a1,Taman Aneka Elok Blok AC 2,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Agave II, RT.10/RW.04",-6.18855339,106.7632087,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-6f63c52b6592,Taman Tegal Parang Fly Over,taman-lingkungan,Jakarta Selatan,"Jl. Gatot Subroto, Kel. Kuningan Barat, Kec. Mampang Prapatan",-6.23982789,106.83138011,,,,,,False,,,Mampang Prapatan,Kuningan Barat,Taman Lingkungan
+rth-a2c57db5d5b6,Taman Sunrise Garden RW 05 ( I ),taman-lingkungan,Jakarta Barat,"Komplek Sunrise Garden, Jl. Surya Utama II, RT.002/RW.05",-6.17005636,106.76237099,,,,,,False,,,Kebon Jeruk,Kedoya Utara,Taman Lingkungan
+rth-bbff70686b0e,Taman Sunrise Garden RW 05 ( II ),taman-lingkungan,Jakarta Barat,"Komplek Sunrise Garden, Jl. Surya Mulia III Blok 2Q, RT.011/RW.05",-6.17580413,106.76061022,,,,,,False,,,Kebon Jeruk,Kedoya Utara,Taman Lingkungan
+rth-035d28f934e5,Taman Jl. Ciputat Raya samping segitiga pondok pinang,taman-lingkungan,Jakarta Selatan,"Jl. Ciputat Raya, Kel. Pondok Pinang, Kec. Kebayoran Lama",-6.28135303,106.77194108,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-4442daee1252,Taman Bundaran dekat sekolah bakti mulya 400,taman-lingkungan,Jakarta Selatan,"Jl. Kartika Utama, Kel. Pondok Pinang, Kec. Kebayoran lama",-6.27641743,106.77684019,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-537141b8c246,Taman Aneka Elok Blok AA6,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Azalea XII, RT.01/RW.04",-6.18236052,106.76289965,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-41aafdc517c1,Taman Aneka Elok Blok AE 4,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Alamanda II, RT.017/RW.04",-6.18363775,106.7659011,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-f9df8b2b4247,Taman Aneka Elok Blok AB 4,taman-lingkungan,Jakarta Barat,"Kedoya Baru Residence, Jl. Kedoya Akasia II, RT.06/RW.04",-6.18624388,106.76288026,,,,,,False,,,Kebon Jeruk,Kedoya Selatan,Taman Lingkungan
+rth-b3865dc5facd,Taman Pengadegan Barat VII,taman-lingkungan,Jakarta Selatan,"Jl. Pengadegan Barat VII, Kel. Pengadegan, Kec. Pancoran",-6.25008092,106.85428961,,,,,,False,,,Pancoran,Pengadegan,Taman Lingkungan
+rth-bd2f091dfb49,Taman Komplek Meruya Ilir Blok A.17,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok A, Jl. Melur, RT.05/RW.04",-6.19893501,106.73768643,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-849898a402c0,Taman Komplek Polri I,taman-lingkungan,Jakarta Selatan,"Jl. Pengadegan Utara V, Kel. Pengadegan, Kec. Pancoran",-6.24848201,106.85743197,,,,,,False,,,Pancoran,Pengadegan,Taman Lingkungan
+rth-eddd12aa5758,Taman Komplek Kopkamtib,taman-lingkungan,Jakarta Barat,"Komplek Kopkamtib Joglo, Jl. Perumahan Kopkamtib RT.007/RW.02",-6.22022591,106.72705653,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-97a9adb53f53,Taman Alfa Indah Blok B.18,taman-lingkungan,Jakarta Barat,"Komplek Alfa Indah Blok B, Jl. Taman Alfa Indah, RT.11/RW.07",-6.22142163,106.74903969,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-70cc4551bd3e,Taman Aries Utama 3 (Taman Bantaran Kali Aries Sisi Barat),taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Utama III, RT.001/RW.09.",-6.1942478,106.74579931,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-58b3c3fbf4b2,Taman Bantaran Kali Aries Sisi Timur,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Permai I, RT.002/RW.06.",-6.19622191,106.74621348,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-af7bba3c9377,Taman Alfa Indah Blok F,taman-lingkungan,Jakarta Barat,"Komplek Alfa Indah Blok F, Jl. Taman Alfa Indah, RT.09/RW.05",-6.22181269,106.75550935,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-84f18617c642,separator depan hotel arya duta,taman-lingkungan,Jakarta Pusat,,-6.1820402,106.83552289,,,,,,False,,,Gambir,Gambir,Taman Lingkungan
+rth-2f3d69c582d1,Taman Kemang Utara,taman-lingkungan,Jakarta Selatan,"Jl. Kemang Utara IX, Kel. Bangka, Kec. Mampang Prapatan",-6.25764863,106.82468376,,,,,,False,,,Mampang Prapatan,Bangka,Taman Lingkungan
+rth-b9c684dd27fc,Taman Dep.Transmigrasi s/d Dirjen Bangda,taman-lingkungan,Jakarta Selatan,"Jl. Duren Tiga TImur, Kel. Rawajati, Kec. Pancoran",-6.25482363,106.8495741,,,,,,False,,,Pancoran,Rawajati,Taman Lingkungan
+rth-52758c4164e9,Taman Aries Blok A.9,taman-lingkungan,Jakarta Barat,"Komplek Taman Aries, Jl. Aries Mustika III, RW.09.",-6.19371722,106.74512961,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-66e73213b297,Taman Puri Indah Blok D3,taman-lingkungan,Jakarta Barat,"Komplek Puri Indah, Jl. Kembang Sakti II, RW.04",-6.18267142,106.74728383,,,,,,False,,,Kembangan,Kembangan Selatan,Taman Lingkungan
+rth-366acf104ce1,Taman RW. 04 Kedoya Utara,taman-lingkungan,Jakarta Barat,"Komplek Taman Ratu, Jl. Ratu Kamboja, RT.012/RW.07.",-6.16699736,106.76699677,,,,,,False,,,Kebon Jeruk,Kedoya Utara,Taman Lingkungan
+rth-772b0e50d34c,TAMAN RPTRA SUNGAI BAMBU,taman-lingkungan,Jakarta Utara,JL. JATI RAYA,-6.13048135,106.89087168,,,,,,False,,,Tanjung Priok,Sunter Agung,Taman Lingkungan
+rth-7a23fbee186d,Kampung Dukuh,taman-lingkungan,Jakarta Timur,Jl. Behape Raya,-6.29294444,106.87374851,,,,,,False,,,Kramatjati,Kramatjati,Taman Lingkungan
+rth-c408bf8386db,Taman Perumahan TSI (Taman Semanan Indah) Blok B V,taman-lingkungan,Jakarta Barat,"Jl. Dharma Permai II, RW.12",-6.16670015,106.71357425,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-2690a831f32d,Taman Perumahan TSI (Taman Semanan Indah) Blok B VII,taman-lingkungan,Jakarta Barat,"Jl. Dharma Graha III, RW.12",-6.16682686,106.71285749,,,,,,False,,,Kalideres,Semanan,Taman Lingkungan
+rth-0a352a0ec954,Tm. Kebon Jeruk Blok J (Intercon),taman-lingkungan,Jakarta Barat,"Komplek Intercon Blok J, Jl. Taman Hijau RT.002/RW.12",-6.20682805,106.75212818,,,,,,False,,,Kembangan,Srengseng,Taman Lingkungan
+rth-b4f073894440,Tm. Kebon Jeruk Blok Q (Intercon),taman-lingkungan,Jakarta Barat,"Komplek Intercon Blok Q, Jl. Jeruk Joglo Barat RT.006/RW.12",-6.21055357,106.75581657,,,,,,False,,,Kembangan,Srengseng,Taman Lingkungan
+rth-5ef5011bdde8,Taman Komplek Meruya Ilir Blok D.1,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok D, Jl. Berlian Selatan, RT.002/RW.02",-6.19741199,106.7405686,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-dd940b08daf4,Taman Komplek Meruya Ilir Blok D.2,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok D, Jl. Berlian 8, RT.002/RW.02",-6.19689635,106.74126814,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-da441627df5a,Taman Komplek Meruya Ilir Blok D.3,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok D, Jl. Berlian 8, RT.001/RW.02",-6.19664424,106.74166365,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-57ada1d4b66a,Taman Komplek Meruya Ilir Blok B,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok B, Jl. Kenanga, RT.013/RW.04",-6.20199847,106.73924289,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-2fa7ac09f790,Taman Sebrang Kantor Kecamatan,taman-lingkungan,Jakarta Barat,"Jl. Kebon Jeruk Raya, RT.005/RW.01",-6.19849509,106.7648246,,,,,,False,,,Kebon Jeruk,Kebon Jeruk,Taman Lingkungan
+rth-14cd9dddd9fe,Taman Komplek Meruya Ilir Blok J,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok J, Jl. Jamrud 3, RT.017/RW.07",-6.19385534,106.74173751,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-91cb2ee07156,Taman Komplek Meruya Ilir Blok F ( Al-Azhar ),taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok F, Jl. Intan 8, RW.11",-6.19613121,106.73616682,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-d3fe7bd2d916,Taman Komplek Meruya Ilir Blok F1,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok F, Jl. Intan 1, RT.008/RW.11",-6.19592924,106.73697393,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-2c67e3f3cb61,Jalur Hijau Bawah Rel Kereta Api Jl. Srikaya,taman-lingkungan,Jakarta Pusat,,-6.18747933,106.83305158,,,,,,False,,,Menteng,Gondangdia,Taman Lingkungan
+rth-82bfa4fb3ed8,Taman Trikora,taman-lingkungan,Jakarta Timur,Jl. Trikora,-6.30581159,106.86501951,,,,,,False,,,Pasar Rebo,Gedong,Taman Lingkungan
+rth-1d350560c3f1,JL. BISMA RAYA RT. 007 RW. 09,taman-lingkungan,Jakarta Utara,JL. TAMAN BISMA 1-2,-6.13095538,106.86947957,,,,,,False,,,Tanjung Priok,Sunter Agung,Taman Lingkungan
+rth-1b2375bf72d3,Taman RTH Kalisari,taman-interaktif,Jakarta Timur,Jl. Tegalsari,-6.33216376,106.85914715,,,,,,False,,,Pasar Rebo,Kalisari,Taman Interaktif
+rth-fbf2c6e973cf,Tm. Komplek Kebon Jeruk Blok C RW. 08,taman-lingkungan,Jakarta Barat,,-6.19108601,106.77306865,,,,,,False,,,Kebon Jeruk,Kebon Jeruk,Taman Lingkungan
+rth-e685faf4df95,Taman AUP I & II,taman-lingkungan,Jakarta Selatan,"Jl AUP, kel. pasar minggu, kec. pasar minggu",-6.28676352,106.83827059,,,,,,False,,,Pasar Minggu,Pasar Minggu,Taman Lingkungan
+rth-545f4a22c525,Taman Komplek Meruya Ilir Blok E,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok E, Jl. Safir 5, RT.020/RW.04",-6.19729726,106.73818537,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-fc81f43cc1e0,Taman Komplek Meruya Ilir Blok G,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok G, Jl. Topas 4, RT.013/RW.07",-6.19348721,106.73583205,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-2b5e16f5e100,Taman RTH Cipayung,taman-interaktif,Jakarta Timur,Jl. Pengembangan RT. 07/01,-6.33771834,106.89075542,,,,,,False,,,Cipayung,Cipayung,Taman Interaktif
+rth-6dd5cc434e0a,Taman RTH Pisangan Timur,taman-interaktif,Jakarta Timur,Jl. Mugeni II,-6.20846028,106.8778144,,,,,,False,,,Pulogadung,Pisangan Timur,Taman Interaktif
+rth-eaea649a946c,Taman Segitiga Belakang Pos Polantas Tmn Puring,taman-lingkungan,Jakarta Selatan,"Jl. Kyai Maja, Kel. Kramat Pela, Kec. Kebayoran Baru",-6.24127321,106.7896832,,,,,,False,,,Kebayoran Baru,Kramat Pela,Taman Lingkungan
+rth-ab18a22c611a,Taman Komplek Meruya Ilir Blok A.3,taman-lingkungan,Jakarta Barat,"Komplek Meruya Ilir Blok A, Jl. Taman Meruya Irlir, RT.018/RW.04",-6.19918439,106.73821357,,,,,,False,,,Kembangan,Meruya Utara,Taman Lingkungan
+rth-660b212d749c,Taman Jl. RA. Kartini putaran atas tol arah fatmawati,taman-lingkungan,Jakarta Selatan,"Jl. RA. Kartini, Kel. Pondok Pinang, Kec. Kebayoran Lama",-6.28167361,106.77232478,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-340788f3f8b6,Taman Jl. RA. Kartini atas tol putaran arah BSD City,taman-lingkungan,Jakarta Selatan,"Jl. RA. Kartini, Kel. Pondok Pinang, Kec. Kebayoran Lama",-6.28117144,106.77182205,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-c625d09fe9ed,Taman Blok D Perum Taman Ratu RW. 06,taman-lingkungan,Jakarta Barat,"Komplek Taman Ratu, Jl. Ratu Kamboja, RT.004/RW.013.",-6.16697434,106.76849171,,,,,,False,,,Kebon Jeruk,Kedoya Utara,Taman Lingkungan
+rth-b990c1d11bdd,Taman pulo segitiga jl. Ciputat Raya,taman-lingkungan,Jakarta Selatan,"Jl. Ciputat Raya, Kel. Pondok Pinang, Kec. Kebayoran Lama",-6.28086525,106.77206671,,,,,,False,,,Kebayoran Lama,Pondok Pinang,Taman Lingkungan
+rth-433172c91ccc,Taman Blok D4 komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Akasia Hijau IV RT.08 RW.9",-6.16911336,106.71654015,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-cfbc4b5648b9,Taman Blok G komplek Kosambi Baru,taman-lingkungan,Jakarta Barat,"Komplek Kosambi Baru, Jl. Angsana Hijau I, RT.02 RW.9",-6.17129661,106.71687095,,,,,,False,,,Cengkareng,Duri Kosambi,Taman Lingkungan
+rth-a60cd2eea4ec,Taman Jeruk Manis,taman-lingkungan,Jakarta Barat,"Perum Tomang Baru Barat, Jl. Jeruk Manis III, RT. 007 RW.06",-6.18297501,106.77630862,,,,,,False,,,Kebon Jeruk,Duri Kepa,Taman Lingkungan
+rth-f620cb3c10f4,Taman Jeruk Bali,taman-lingkungan,Jakarta Barat,"Perum Tomang Baru Barat, Jl. Jeruk Bali 5, RT. 004 RW.06",-6.18524326,106.77632062,,,,,,False,,,Kebon Jeruk,Duri Kepa,Taman Lingkungan
+rth-ef15758b306f,Taman Alfa Indah Blok A.2,taman-lingkungan,Jakarta Barat,"Komplek Alfa Indah Blok A.2, RT.01/ RW.07",-6.21845164,106.748204,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-48d7d15fb865,Taman Alfa Indah Blok A.19,taman-lingkungan,Jakarta Barat,"Komplek Alfa Indah Blok A.19, Jl. Taman Alfa Indah",-6.22027956,106.74772563,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-6f29cb876186,Taman Alfa Indah Blok B.4,taman-lingkungan,Jakarta Barat,"Komplek Alfa Indah Blok B.3, Jl. Taman Alfa Indah, RT.03/RW.03",-6.22182702,106.7501379,,,,,,False,,,Kembangan,Joglo,Taman Lingkungan
+rth-750e6312c6b9,RPTRA Tanjung Elang Berseri,rptra,Kep. Seribu,Pulau Pramuka RT 002 RW 002,-5.7471765,106.61185361,,,,,,False,,,Kepulauan Seribu Utara,Pulau Panggang,RPTRA
+rth-89f6d477672c,RPTRA Arung Palakka,rptra,Kep. Seribu,Pulau Kelapa Dua RT 003 RW 05,-5.6496873,106.5682909,,,,,,False,,,Kepulauan Seribu Utara,Pulau Kelapa,RPTRA
+rth-381c9c6f0fda,RPTRA Mustika,rptra,Jakarta Pusat,Jl. Petojo Selatan 9 No. 7 RT 007 RW 11,-6.1678776,106.8096751,,,,,,False,,,Gambir,Cideng,RPTRA
+rth-c5e1e4f70a62,RPTRA Kejora,rptra,Jakarta Pusat,Jl. Pembangunan 2 No 12 RT 009 RW 02,-6.1624476,106.8176376,,,,,,False,,,Gambir,Petojo Utara,RPTRA
+rth-224dadcee80d,RPTRA Flamboyan Kejora,rptra,Jakarta Pusat,"Jl. Pembangunan II No. 48, RT 004 RW 07",-6.1632923,106.8146986,,,,,,False,,,Gambir,Petojo Utara,RPTRA
+rth-79c7c9799555,RPTRA Tanah Abang 3,rptra,Jakarta Pusat,Jl. Tanah Abang 3 RT 02 RW 04,-6.176922,106.8148079,,,,,,False,,,Gambir,Petojo Selatan,RPTRA
+rth-4e7bfd7ea60d,RPTRA Pintu Air,rptra,Jakarta Pusat,Jl. Krekot II RT 007 RW 02,-6.1631747,106.8288873,,,,,,False,,,Gambir,Kebon Kelapa,RPTRA
+rth-612ddf41c89f,RPTRA Sahara,rptra,Jakarta Pusat,Jl. Rajawali Selatan 5 RT 002 RW 02,-6.1457063,106.840339,,,,,,False,,,Sawah Besar,Gunung Sahari Utara,RPTRA
+rth-48d730fd9dfc,RPTRA Bandar Kemayoran,rptra,Jakarta Pusat,Jl. Kemayoran Timur 8 RT 012 RW 07,-6.1627452,106.8483273,,,,,,False,,,Kemayoran,Kemayoran,RPTRA
+rth-ee2ca53cc5d6,RPTRA Serdang Baru,rptra,Jakarta Pusat,Jl. Serdang Baru IX RT 010 RW 05,-6.159019,106.8646317,,,,,,False,,,Kemayoran,Serdang,RPTRA
+rth-362b75121033,RPTRA Mutiara Sumur Batu,rptra,Jakarta Pusat,Jl. Mutiara Raya,-6.164372,106.8685657,,,,,,False,,,Kemayoran,Sumur Batu,RPTRA
+rth-1752a6dbced9,RPTRA Kampung Budaya,rptra,Jakarta Pusat,Jl. Utan Panjang 3 No. 41 RT 011 RW 07,-6.1683527,106.8551512,,,,,,False,,,Kemayoran,Utan Panjang,RPTRA
+rth-45c805cb25bc,RPTRA Planet Senen,rptra,Jakarta Pusat,Jl Pasar Senen Dalam VIII RT 006 RW 04,-6.1730826,106.8425755,,,,,,False,,,Senen,Senen,RPTRA
+rth-9f5cb9ba1812,RPTRA Annur,rptra,Jakarta Pusat,Jl H Murtadho XVI RT 008 RW 06,-6.1973599,106.8554587,,,,,,False,,,Senen,Paseban,RPTRA
+rth-fc4168a75333,RPTRA Kampung Benda,rptra,Jakarta Pusat,Jl. Cempaka Putih Tengah XV RT 002 RW 08,-6.1744783,106.8657494,,,,,,False,,,Cempaka Putih,Cempaka Putih Timur,RPTRA
+rth-ad94a0a841f9,RPTRA Beringin,rptra,Jakarta Selatan,Jl Rawasari Barat IX RT 010 RW 01,-6.325867,106.8125001,,,,,,False,,,Jagakarsa,Jagakarsa,RPTRA
+rth-dc95f844408f,RPTRA Matahari,rptra,Jakarta Pusat,Jl. Rawasari Barat VI RT 005 RW 01,-6.1839873,106.8705403,,,,,,False,,,Cempaka Putih,Cempaka Putih Timur,RPTRA
+rth-e1a48d5c735e,RPTRA Anggrek,rptra,Jakarta Pusat,Jl. Rawasari Selatan Komp. Rawa Kerbau RT 016 RW 02,-6.1853519,106.8728927,,,,,,False,,,Cempaka Putih,Cempaka Putih Timur,RPTRA
+rth-deb0e54c7c61,RPTRA Mardani Asri,rptra,Jakarta Pusat,"Jl. Mardani Raya, Gg. A RT 001 RW 05",-6.1813139,106.862003,,,,,,False,,,Cempaka Putih,Cempaka Putih Barat,RPTRA
+rth-b55e0225199b,RPTRA Rawasari Ceria,rptra,Jakarta Pusat,Jl. Percetakan Negara V Gg. H,-6.1916534,106.8582465,,,,,,False,,,Cempaka Putih,Rawasari,RPTRA
+rth-7fb3c21dd61e,RPTRA Gondangdia,rptra,Jakarta Pusat,Jln. Probolinggo No. 1,-6.194818,106.838266,,,,,,False,,,Menteng,Gondangdia,RPTRA
+rth-8b1af867288c,RPTRA Kebon Sirih,rptra,Jakarta Pusat,Jalan Srikaya 14 RT 001 RW 07,-6.1833179,106.8321561,,,,,,False,,,Menteng,Kebon Sirih,RPTRA
+rth-5738273f6cda,RPTRA Taman Guntur,rptra,Jakarta Pusat,"Jl. Danau Bratan No.3, RT 010 RW 03",-6.20968931,106.81022239,,,,,,False,,,Tanah Abang,Bendungan Hilir,RPTRA
+rth-cd95f1522d7e,RPTRA Taman Keuangan,rptra,Jakarta Pusat,"Jl. Penjernihan I, Kompleks Keuangan RW 06",-6.2029245,106.8045455,,,,,,False,,,Tanah Abang,Bendungan Hilir,RPTRA
+rth-435f0bd9e460,RPTRA Intiland Teduh @ Karet Tengsin,rptra,Jakarta Pusat,Jl Karet Ps Baru Barat 1 RT 018 RW 07,-6.2048646,106.8115352,,,,,,False,,,Tanah Abang,Karet Tengsin,RPTRA
+rth-17923dc688cb,RPTRA Segas Segar Berseri,rptra,Jakarta Pusat,Jl Karet Pasar Baru Barat I RT 04 RW 06,-6.2053345,106.8125407,,,,,,False,,,Tanah Abang,Karet Tengsin,RPTRA
+rth-ab5335d071f5,RPTRA Petamburan,rptra,Jakarta Pusat,"Jl. Petamburan, Rusun Petamburan RW 11",-6.1978701,106.8086965,,,,,,False,,,Tanah Abang,Petamburan,RPTRA
+rth-b6bae0501662,RPTRA Bonti,rptra,Jakarta Pusat,Jl. Awaludin 3,-6.2002777,106.8142379,,,,,,False,,,Tanah Abang,Kebon Melati,RPTRA
+rth-483f08ef5673,RPTRA Hati Suci,rptra,Jakarta Pusat,Jl. Hati Suci RT 002 RW 07,-6.183648,106.8171604,,,,,,False,,,Tanah Abang,Kampung Bali,RPTRA
+rth-7984d6007c4d,RPTRA H.Hasbi,rptra,Jakarta Pusat,Gg.H.Hasbi 4 RT.009 RW 03,-6.1822797,106.814895,,,,,,False,,,Tanah Abang,Kampung Bali,RPTRA
+rth-5a4950edfa0d,RPTRA Johar Berseri,rptra,Jakarta Pusat,Jl. Kramat Jaya Baru V RT 014 RW 01,-6.1851423,106.8532631,,,,,,False,,,Johar Baru,Johar Baru,RPTRA
+rth-b7f94b55520c,RPTRA Rawa Indah,rptra,Jakarta Pusat,Jalan Rawa Selatan V RT 017 RW 04,-6.1794666,106.8564284,,,,,,False,,,Johar Baru,Kampung Rawa,RPTRA
+rth-4250d758ac73,RPTRA Rawa Indah Ceria,rptra,Jakarta Pusat,"Jl. Kampung Rawa Sawah No.7, RT 011 RW 03",-6.1806202,106.8529838,,,,,,False,,,Johar Baru,Kampung Rawa,RPTRA
+rth-00f08932fe46,RPTRA Rasela Indah,rptra,Jakarta Pusat,Jl. Rawa Selatan II RT 003 RW 05,-6.179335,106.8587933,,,,,,False,,,Johar Baru,Kampung Rawa,RPTRA
+rth-9cfb0b8d30ab,RPTRA Komando Ceria,rptra,Jakarta Pusat,Jl. Rawa Tengah No.1 RT 004 RW 06,-6.175514,106.856945,,,,,,False,,,Johar Baru,Galur,RPTRA
+rth-42ba48e6fabc,RPTRA Pulo Gundul,rptra,Jakarta Pusat,Jl. Kramat Pulo Gundul RT 005 RW 013,-6.1833997,106.8492248,,,,,,False,,,Johar Baru,Tanah Tinggi,RPTRA
+rth-e2a4b9683438,RPTRA Penjaringan Indah,rptra,Jakarta Utara,Jl. Bandengan Utara 80 RT 006 RW 16,-6.134156,106.796715,,,,,,False,,,Penjaringan,Penjaringan,RPTRA
+rth-1b6d57cf2c8b,RPTRA Rusun Muara Indah,rptra,Jakarta Utara,Jl. Gedong Pompa Rusun Waduk Pluit Blok 12 RT 034 RW 17,-6.1110932,106.8020705,,,,,,False,,,Penjaringan,Penjaringan,RPTRA
+rth-3629b37bb325,RPTRA Kamal Bahari,rptra,Jakarta Utara,"Jl. Kamal Muara No. 38, RT 007 RW 01",-6.095473,106.7189491,,,,,,False,,,Penjaringan,Kamal Muara,RPTRA
+rth-c9553421398d,RPTRA Rusun Kapuk Muara,rptra,Jakarta Utara,Jl. SMP 122 Rusun Kapuk,-6.1356921,106.7628703,,,,,,False,,,Penjaringan,Kapuk Muara,RPTRA
+rth-3d06a5407a8b,RPTRA Villa Kapuk Mas 2,rptra,Jakarta Utara,"Jl. Vikamas Barat 6 Blok E 7, No. 8 RT 003 RW 03",-6.1306405,106.7602108,,,,,,False,,,Penjaringan,Kapuk Muara,RPTRA
+rth-b7d5b88376b8,RPTRA Dharma Suci,rptra,Jakarta Utara,Jl. Jembatan 3 RT 007 RW 16,-6.1328571,106.7923427,,,,,,False,,,Penjaringan,Pejagalan,RPTRA
+rth-717cf6cca254,RPTRA Angke Interaktif,rptra,Jakarta Utara,Jl. Krapu 2 RT 008 RW 01,-6.1093125,106.7697101,,,,,,False,,,Penjaringan,Pluit,RPTRA
+rth-5a0b161d2193,RPTRA Jakpro Asri,rptra,Jakarta Utara,"Jl. Karang Utara, No. 1 RT 007 RW 02.",-6.1120967,106.7804823,,,,,,False,,,Penjaringan,Pluit,RPTRA
+rth-f57ee49e1e01,RPTRA Sunter Jaya Berseri,rptra,Jakarta Utara,"Jl. SKY 4, Bentengan 6 RT 013 RW 05",-6.1491695,106.8671502,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-520f3848f7db,RPTRA Nirmala,rptra,Jakarta Utara,Jl. Binkesmas RW 004,-6.1545711,106.8672842,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-4486a08b4ea8,RPTRA Sunter Mas,rptra,Jakarta Utara,"Sunter Mas Timur No. 1, RW 08",-6.1550172,106.8733303,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-d7720b75bc06,RPTRA Danau Sunter,rptra,Jakarta Utara,Jl. Telaga Murni RT 021 RW 01,-6.1497406,106.8620335,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-4bf411c0ec40,RPTRA Sunter Indah,rptra,Jakarta Utara,"Jl. Sunter Indah VIII, RT 011 RW 12",-6.1515368,106.8767469,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-1c12221dc086,RPTRA Pulo Besar,rptra,Jakarta Utara,Jl. Danau Elok VI RW 11,-6.1554812,106.8809329,,,,,,False,,,Tanjung Priok,Sunter Jaya,RPTRA
+rth-7de45f9570aa,RPTRA Lestari Indah,rptra,Jakarta Utara,Jl. Warakas 1 Gang 26 RT 008 RW 08,-6.1220641,106.8686452,,,,,,False,,,Tanjung Priok,Papanggo,RPTRA
+rth-0c02d0a33aad,RPTRA Sungai Bambu,rptra,Jakarta Utara,Jl. Jati Raya RT 010 RW 06,-6.1303164,106.8907977,,,,,,False,,,Tanjung Priok,Sungai Bambu,RPTRA
+rth-39e10a035fee,RPTRA Bawang Putih,rptra,Jakarta Utara,Jl. Kebon Bawang VII RT 005 RW 06,-6.1144563,106.8918368,,,,,,False,,,Tanjung Priok,Kebon Bawang,RPTRA
+rth-7ff6793badae,RPTRA Sutra Indah 3,rptra,Jakarta Utara,"Jl. Agung Utara 4, Taman Segneg RT 005 RW 09",-6.1374583,106.8595002,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-c230e871a360,RPTRA Sutra Indah 4,rptra,Jakarta Utara,Jl. Agung Permai 4 RT 002 RW 011,-6.1404395,106.8631485,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-cf2ce8b3d170,RPTRA Sutra Indah 1,rptra,Jakarta Utara,"Jl. Sunter Karya Selatan, Taman Blok A, Komp. DKI RT 010 RW 13",-6.1405927,106.8697288,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-8abb90921730,RPTRA Kampung Indah Lestari,rptra,Jakarta Utara,Jl. Ancol Selatan No. 2 RT 007 RW 07,-6.1328776,106.8589188,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-8e654ed7d487,RPTRA Sutra Indah 2,rptra,Jakarta Utara,Jl. Sunter Karya Timur No. 12 RT 012 RW 013,-6.1403433,106.8714368,,,,,,False,,,Tanjung Priok,Sunter Agung,RPTRA
+rth-4fd1bd193dce,RPTRA Sindang Raya,rptra,Jakarta Utara,Jl. Raya Sindang RT 006 RW 09,-6.1122944,106.8968865,,,,,,False,,,Koja,Koja,RPTRA
+rth-946cdf0771fc,RPTRA Tugu Permai,rptra,Jakarta Utara,Komp. Tugu Permai RT 014 RW 02,-6.1259418,106.9125251,,,,,,False,,,Koja,Tugu Utara,RPTRA
+rth-8e52959f7c20,RPTRA Amanah,rptra,Jakarta Utara,Halaman Masjid Raya Jakarta Islamic,-6.1197229,106.9184477,,,,,,False,,,Koja,Tugu Utara,RPTRA
+rth-89d4af7ec078,RPTRA Permata,rptra,Jakarta Utara,"Komplek Pertamina Tugu, Jl. Berlian 2 RT 005 RW 016",-6.1276742,106.914685,,,,,,False,,,Koja,Tugu Utara,RPTRA
+rth-a06a2166b181,RPTRA Rawa Badak Utara,rptra,Jakarta Utara,Jl. Inspeksi Kali Sunter RT 012 RW 08,-6.1173798,106.8965903,,,,,,False,,,Koja,Rawa Badak Utara,RPTRA
+rth-981221808025,RPTRA Radar Pembangunan,rptra,Jakarta Utara,Jl. Inspeksi Kali Sunter RT 005 RW 03,-6.1201875,106.8965625,,,,,,False,,,Koja,Rawa Badak Utara,RPTRA
+rth-bba5c1eb4173,RPTRA Rasela,rptra,Jakarta Utara,Jl. Alur Laut Stadion Rawa Badak RT 009 RW 05,-6.1263435,106.8989507,,,,,,False,,,Koja,Rawa Badak Selatan,RPTRA
+rth-ef32b28febe6,RPTRA Cilincing Berseri,rptra,Jakarta Utara,Jl. Sungai Landak RT 008 RW 08,-6.10169581,106.9380675,,,,,,False,,,Cilincing,Cilincing,RPTRA
+rth-040bf9871cb9,RPTRA Manunggal Juang,rptra,Jakarta Utara,Jl. Manunggal Juang II RT 002 RW 07,-6.1537422,106.9256273,,,,,,False,,,Cilincing,Sukapura,RPTRA
+rth-842815adbc39,RPTRA Taman Pinus,rptra,Jakarta Utara,Jl Pinus 2 RT 004-005 RW 12 Komplek Gading Griya Residence,-6.1402285,106.9176512,,,,,,False,,,Cilincing,Sukapura,RPTRA
+rth-518922404471,RPTRA Marunda,rptra,Jakarta Utara,Rusunawa Marunda Cluster A Blok A9 RT 009 RW 10,-6.0986889,106.9620902,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-cc3a5713c59d,RPTRA Green Marunda,rptra,Jakarta Utara,Rusunawa Marunda Cluster B2 RT 009 RW 11,-6.0958107,106.9633754,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-082842d5abbb,RPTRA Mutiara,rptra,Jakarta Utara,Jl.Marunda Baru RT 008 RW 03,-6.12413269,106.96162211,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-fd2a62a89cf8,RPTRA Sirih Kuning,rptra,Jakarta Utara,Jl. Rusunawa Marunda Blok B6,-6.0957263,106.9643722,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-3b4e88544acc,RPTRA Al Alam,rptra,Jakarta Utara,Rusunawa Marunda Blok C3 RT 012 RW007,-6.09794531,106.96160831,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-dee20633afca,RPTRA Si Pitung,rptra,Jakarta Utara,Rusunawa Marunda Blok D,-6.0962624,106.9614523,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-4308f3f710c9,RPTRA Mangrove,rptra,Jakarta Utara,Jl. Sarang Bangau RT 005 RW 04,-6.1271525,106.9537191,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-5b25ca86e1ec,RPTRA Gabus Pucung,rptra,Jakarta Utara,Rusunawa Marunda Cluster A RT 004 RW 10,-6.0985106,106.9626843,,,,,,False,,,Cilincing,Marunda,RPTRA
+rth-d93c95bb09b7,RPTRA Rorotan Indah,rptra,Jakarta Utara,Jl. Rorotan 10 No. 13 RT 004 RW 07,-6.1548671,106.9587999,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-d016c28e5b6c,RPTRA Malaka Asri,rptra,Jakarta Utara,Jl. Malaka 4 RT 013 RW 06,-6.1488773,106.9597,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-77223c4835d1,RPTRA Pancarona,rptra,Jakarta Utara,"Jl. Rorotan 5, RW 05",-6.1425476,106.950303,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-ddc94078dbad,RPTRA Rorotan Indah 2,rptra,Jakarta Utara,Jl. Rorotan 9 RT 001 RW 007,-6.1548671,106.9587999,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-194e8737f80d,RPTRA Sundiro,rptra,Jakarta Utara,Jl. Rorotan RT 002 RW 14,-6.15022831,106.95389469,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-391d86b36d6b,RPTRA Intiland Teduh@Semper Barat,rptra,Jakarta Utara,Jl. Bengawan Solo RW 01,-6.129701,106.9264304,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-ad9a29c75453,RPTRA Tipar Asri,rptra,Jakarta Utara,Jl. Tipar Timur RT 001 RW 04,-6.1355405,106.9210187,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-9f3bdec8fb39,RPTRA Green Rengas,rptra,Jakarta Utara,Jl. Tipar Selatan VII RT 014 RW 05,-6.1345771,106.9192397,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-5e699f9cca3d,RPTRA Satria Biru,rptra,Jakarta Utara,Komplek Asrama Pemadam RT 005 RW 17,-6.12913,106.9273638,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-54726b2e4c2e,RPTRA Triputra Persada Hijau,rptra,Jakarta Utara,Asrama Dinas Lingkungan Hidup Unit Semper RW 003,-6.1347067,106.9259442,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-de5260e05932,RPTRA Dukuh Manis,rptra,Jakarta Utara,Jl. Pure Dalem RT 011 RW 15,-6.1093861,106.9197885,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-9cd2a46d223a,RPTRA Kapuas Dua Satu Dua,rptra,Jakarta Utara,Jl. Sungai Kapuas II,-6.13013,106.922015,,,,,,False,,,Cilincing,Semper Barat,RPTRA
+rth-d442dc19db5e,RPTRA Patimura,rptra,Jakarta Utara,"Komplek Pertamina Tugu, Jl. Berlian 2 Rt 05 Rw 016",-6.1286727,106.845936,,,,,,False,,,Pademangan,Pademangan Timur,RPTRA
+rth-04b7a53a4faa,RPTRA Budi Mulia,rptra,Jakarta Utara,Jl. Budi Mulia Raya RT 008 RW 016,-6.1325726,106.8397455,,,,,,False,,,Pademangan,Pademangan Barat,RPTRA
+rth-71d4f2645546,RPTRA Biru Laut,rptra,Jakarta Utara,Jl. Biru Laut Tengah RT 009 RW 10,-6.1662423,106.9071577,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,RPTRA
+rth-f5ea1adb33ef,RPTRA Gading Harmoni,rptra,Jakarta Utara,Jl. Janur Kuning III RT 009 RW 15,-6.1642716,106.9020746,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,RPTRA
+rth-e7a5c2631311,RPTRA Gading Tarian,rptra,Jakarta Utara,Jl. Pendet RT 006 RW 08,-6.171114,106.907583,,,,,,False,,,Kelapa Gading,Kelapa Gading Timur,RPTRA
+rth-f037353e028a,RPTRA NKRI,rptra,Jakarta Utara,Jl. Gading Indah Utara X RW.12,-6.1568031,106.9130213,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-398c18c54d60,RPTRA H. Oyar,rptra,Jakarta Utara,Jl. H. Oyar RT 002 RW 02,-6.1777869,106.9169856,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-03361720dd6d,RPTRA Kelapa Nias IX,rptra,Jakarta Utara,Jl. Kelapa Nias IX RT 009 RW 17,-6.1516122,106.9130404,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-0bd821a03fa7,RPTRA Griya Pratama,rptra,Jakarta Utara,Jl. Griya Pratama VII RW 20,-6.17335,106.9129626,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-220743ce4735,RPTRA Gading Ayu,rptra,Jakarta Utara,Jl. Kelapa Hibrida RT 010 RW 15,-6.1440736,106.9108155,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-6bb91cfaa93c,RPTRA Bellyra Taman Taska,rptra,Jakarta Utara,Jl. Taman Taska RT 005 RW 010,-6.1689515,106.911868,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-77d9e4f4977c,RPTRA Kelapa Puan,rptra,Jakarta Utara,Jl. Kelapa Puan Timur V RT 005 RW 12,-6.1616712,106.9119313,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-7575128104b9,RPTRA Kelapa Nias III,rptra,Jakarta Utara,"Jl. Kelapa Nias 3, RT 008 RW 14",-6.153524,106.9106875,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-e35f34c05636,RPTRA Pondok Gading,rptra,Jakarta Utara,Jl. Pegangsaan Indah Barat No.5 RT 003 RW 16,-6.167703,106.9140235,,,,,,False,,,Kelapa Gading,Pegangsaan Dua,RPTRA
+rth-f4849824cbd2,RPTRA Kita Bersaudara,rptra,Jakarta Utara,Jl. Janur Elok VII RT 012 RW 11,-6.1488539,106.9072928,,,,,,False,,,Kelapa Gading,Kelapa Gading Barat,RPTRA
+rth-3dda5fea70cf,RPTRA Sehati,rptra,Jakarta Barat,Jl. Masjid Raya RT 010 RW 02,-6.1488756,106.7205845,,,,,,False,,,Cengkareng,Cengkareng Barat,RPTRA
+rth-9c72efa59211,RPTRA Serasi,rptra,Jakarta Barat,Bina Serasi 3 Taman Komplek Kebersihan RT 013 RW 05,-6.1411748,106.7188223,,,,,,False,,,Cengkareng,Cengkareng Barat,RPTRA
+rth-fae6ffed37bb,RPTRA Duri Kosambi,rptra,Jakarta Barat,Jl. Rusunawa Pesakih Daan Mogot Km.14 RT 014 RW 14,-6.1615446,106.715375,,,,,,False,,,Kalideres,Semanan,RPTRA
+rth-0aafe93ad364,RPTRA Mawar Duri Kosambi,rptra,Jakarta Selatan,Jl. Mawar Utama RT 001 RW 10 Perumahan Kosambi Baru,-6.2972835,106.7701427,,,,,,False,,,Cilandak,Lebak Bulus,RPTRA
+rth-8b6fa7791a1a,RPTRA Intiland Teduh @Rawa Buaya,rptra,Jakarta Pusat,Jl..Bojong Raya No. 01 RT 005 RW 04,-6.2048646,106.8115352,,,,,,False,,,Tanah Abang,Karet Tengsin,RPTRA
+rth-ebcf79e4bc44,RPTRA Sugriwa,rptra,Jakarta Barat,Taman Sugriwa RT 009 RW 009,-6.168049,106.738695,,,,,,False,,,Cengkareng,Rawa Buaya,RPTRA
+rth-cdd14ce9a8c1,RPTRA Cabe Rawit,rptra,Jakarta Barat,Jl. Cabe Rawit 2 RT 009 RW 06,-6.1619168,106.7418015,,,,,,False,,,Cengkareng,Rawa Buaya,RPTRA
+rth-84b2c85bfdee,RPTRA Tawang Mangu Indah,rptra,Jakarta Barat,Jl. Tawang Mangu Terusan RT 001 RW 06,-6.1505826,106.7604858,,,,,,False,,,Cengkareng,Kedaung Kali Angke,RPTRA
+rth-cc4e1435573b,RPTRA Krendang,rptra,Jakarta Barat,Jl. Krendang Selatan RT 005 RW 07,-6.153124,106.801323,,,,,,False,,,Tambora,Krendang,RPTRA
+rth-9274705e8afb,RPTRA Cengkareng Timur Berseri,rptra,Jakarta Barat,Jl. Kayu Besar Outer Ringroad RT 012 RW 11,-6.123577,106.730751,,,,,,False,,,Cengkareng,Cengkareng Timur,RPTRA
+rth-615b88fe6319,RPTRA Puspa Indah,rptra,Jakarta Barat,Jl. Puspa II RT 011 RW 04,-6.1491342,106.7355784,,,,,,False,,,Cengkareng,Cengkareng Timur,RPTRA
+rth-b415ecee1a25,RPTRA Rambutan,rptra,Jakarta Barat,Jl. Tanjung Duren Barat 2,-6.1754634,106.7818847,,,,,,False,,,Grogol Petamburan,Tanjung Duren Utara,RPTRA
+rth-19085dd3f291,RPTRA Mandala,rptra,Jakarta Barat,Jl. Mandala Selatan VI RT 012 RW 04,-6.1721783,106.8001338,,,,,,False,,,Grogol Petamburan,Tomang,RPTRA
+rth-2668928761e4,RPTRA Satria Jelambar,rptra,Jakarta Barat,Jl. Satria III RT 003 RW 04,-6.1639853,106.7883703,,,,,,False,,,Grogol Petamburan,Jelambar,RPTRA
+rth-49cc537c84de,RPTRA Amanah Bunda,rptra,Jakarta Barat,Gg. Manggis 18 RT 010 RW 04,-6.1789656,106.7866464,,,,,,False,,,Grogol Petamburan,Tanjung Duren Selatan,RPTRA
+rth-1cc2d410e430,RPTRA Duta Mas,rptra,Jakarta Barat,Taman Duta Mas Jl. Kusuma 5 Blok D RT 004 RW 12,-6.1480862,106.7811411,,,,,,False,,,Grogol Petamburan,Jelambar Baru,RPTRA
+rth-74da25881ca6,RPTRA Wijaya Kusuma,rptra,Jakarta Barat,Jl. Wijaya RT 001 RW 09,-6.1507599,106.7805172,,,,,,False,,,Grogol Petamburan,Wijaya Kusuma,RPTRA
+rth-844cbb08909b,RPTRA Matahari,rptra,Jakarta Barat,Jl Kebon Jeruk XIII RT 013 RW 05,-6.1547163,106.8198943,,,,,,False,,,Taman Sari,Maphar,RPTRA
+rth-e9bb9e311cc5,RPTRA Kalijodo,rptra,Jakarta Barat,Jl. Pangeran Tubagus Angke No. 19,-6.1426169,106.7900105,,,,,,False,,,Tambora,Angke,RPTRA
+rth-b56b3adf6e4a,RPTRA Dupa Wangi,rptra,Jakarta Barat,"Jl. Mangga 14, RT 007 RW 03",-6.172451,106.7758246,,,,,,False,,,Kebon Jeruk,Duri Kepa,RPTRA
+rth-f11795b9d485,RPTRA Kedoya Utara,rptra,Jakarta Barat,"Jl. Ratu Mawar L No.15, RT 002 RW 01",-6.1641959,106.7660713,,,,,,False,,,Kebon Jeruk,Kedoya Utara,RPTRA
+rth-283ce255c01a,RPTRA Kalideres,rptra,Jakarta Barat,Jl. Bukit Elok 5 Blok G 6 No 11 RT 001 RW 09 Perumahan Citra City 1,-6.1434366,106.6938192,,,,,,False,,,Kalideres,Kalideres,RPTRA
+rth-0b9dc9d12fe1,RPTRA Alur Kemuning,rptra,Jakarta Barat,"Jl. Bhakti Mulya, RT 008 RW 02",-6.1159061,106.7147742,,,,,,False,,,Kalideres,Tegal Alur,RPTRA
+rth-784f525ed1dc,RPTRA Alur Flamboyan,rptra,Jakarta Barat,Jl. Pelopor Ujung RT 001 RW 05,-6.1243216,106.7125359,,,,,,False,,,Kalideres,Tegal Alur,RPTRA
+rth-9510e4f567c6,RPTRA Cambela,rptra,Jakarta Barat,Jl. Kampung Belakang RT 009 RW 03,-6.101335,106.6958779,,,,,,False,,,Kalideres,Kamal,RPTRA
+rth-3d9c83303a0a,RPTRA Poraya,rptra,Jakarta Barat,Jl. Walungan Poncol RT 001 RW 08,-6.11432081,106.69809131,,,,,,False,,,Kalideres,Kamal,RPTRA
+rth-ec4c1b54ed1b,RPTRA Pegadungan,rptra,Jakarta Barat,Komplek Citra 2 Blok M 1 RW 12,-6.1426278,106.7107947,,,,,,False,,,Kalideres,Pegadungan,RPTRA
+rth-a8c291e55aab,RPTRA Nusa Indah,rptra,Jakarta Barat,Perum Citra 5 Blok F3 RT 005 RW 16,-6.1198439,106.7024733,,,,,,False,,,Kalideres,Pegadungan,RPTRA
+rth-b81a1270eeb3,RPTRA Maya Asri 13,rptra,Jakarta Barat,Jl. Kemanggisan Raya RT 002 RW 013,-6.1977138,106.7824005,,,,,,False,,,Pal Merah,Palmerah,RPTRA
+rth-e95001ea9117,RPTRA Jati Pulo Akur,rptra,Jakarta Barat,"Jl. Rawa Pandan No. 2A, RT 011 RW 03",-6.1758026,106.8037483,,,,,,False,,,Pal Merah,Jatipulo,RPTRA
+rth-ea1608a73d50,RPTRA Manggis,rptra,Jakarta Barat,Jl. Anggrek Rosliana II Blok H RW 05,-6.1941589,106.7942224,,,,,,False,,,Pal Merah,Kemanggisan,RPTRA
+rth-8c0181b5a4f8,RPTRA Bambu Kuning,rptra,Jakarta Barat,"Jl. Ks. Tubun 1, Gang Prihatin RT 010 RW 01",-6.1872817,106.8101851,,,,,,False,,,Pal Merah,Kota Bambu Selatan,RPTRA
+rth-e4b299c4dd14,RPTRA Kembangan,rptra,Jakarta Barat,"Jl. Kompas, RT 001 RW 01",-6.1754443,106.7330012,,,,,,False,,,Kembangan,Kembangan Utara,RPTRA
+rth-617502935989,RPTRA Kampung Baru,rptra,Jakarta Barat,Jl.Teratai RT 009 RW 10,-6.1670293,106.7527748,,,,,,False,,,Kembangan,Kembangan Utara,RPTRA
+rth-25553ee8a9be,RPTRA Meruya Utara,rptra,Jakarta Barat,Jl. Melati Taman Meruya Ilir Blok A 6 RT 017 RW 04,-6.2010498,106.7373018,,,,,,False,,,Kembangan,Meruya Utara,RPTRA
+rth-3952bcc09f6b,RPTRA Nusa Indah,rptra,Jakarta Barat,"Jl. Teknologi X No. 9 A Komplek BPPT, RT 009 RW 03",-6.1935885,106.754076,,,,,,False,,,Kembangan,Meruya Utara,RPTRA
+rth-0b5245bc2d91,RPTRA Kecapi 72,rptra,Jakarta Barat,Jl. Kecapi II RT 005 RW 010,-6.2018608,106.726644,,,,,,False,,,Kembangan,Meruya Utara,RPTRA
+rth-a32cd6635b58,RPTRA Mahkota,rptra,Jakarta Barat,Jl. H. Saaba Ujung Komp. Walikota RT 004 RW 03,-6.2137629,106.7237797,,,,,,False,,,Kembangan,Meruya Selatan,RPTRA
+rth-739841e7fc73,RPTRA Menara,rptra,Jakarta Barat,Jl. Menara 7 RT 001 RW 05,-6.21298,106.731174,,,,,,False,,,Kembangan,Meruya Selatan,RPTRA
+rth-1df97439678f,RPTRA Manuver,rptra,Jakarta Barat,Komp. Unilever RT 001 RW 09,-6.2149312,106.7268264,,,,,,False,,,Kembangan,Meruya Selatan,RPTRA
+rth-3a9aacaa1dfb,RPTRA Manunggal,rptra,Jakarta Barat,Jl. Manunggal RT 001 RW 07,-6.2036088,106.7406375,,,,,,False,,,Kembangan,Meruya Selatan,RPTRA
+rth-43ce184db522,RPTRA Edelweiss Pqt,rptra,Jakarta Barat,Jl. Marwah I RT 012 RW 01,-6.2006708,106.7572601,,,,,,False,,,Kembangan,Srengseng,RPTRA
+rth-907f6404af2d,RPTRA Akasia,rptra,Jakarta Selatan,Tebet Barat Raya RT 011 RW 07,-6.2329375,106.8509375,,,,,,False,,,Tebet,Tebet Barat,RPTRA
+rth-54e014c175f2,RPTRA Saharjo Mentas,rptra,Jakarta Selatan,Jl. Doktor Saharjo No. 121 RT 001 RW 08,-6.2193056,106.8451536,,,,,,False,,,Setiabudi,Menteng Atas,RPTRA
+rth-2e38082309fb,RPTRA Ramah Lingkungan,rptra,Jakarta Selatan,"Jl. Kapten Tendean, Gg Jati RT 014 RW 01",-6.242452,106.823277,,,,,,False,,,Mampang Prapatan,Mampang Prapatan,RPTRA
+rth-635d5c7208aa,RPTRA Asoka,rptra,Jakarta Selatan,"Jl. Raya Jatipadang, RT 003 RW 04",-6.2945115,106.8279574,,,,,,False,,,Pasar Minggu,Jati Padang,RPTRA
+rth-171bc2531e8f,RPTRA KKO,rptra,Jakarta Selatan,Jl. Jaya Wijaya IV RT 001 RW 05,-6.2994771,106.8130187,,,,,,False,,,Pasar Minggu,Cilandak Timur,RPTRA
+rth-a4ddf96e7c84,RPTRA Kemuning,rptra,Jakarta Selatan,Jl. Pagujaten Raya RT 016 RW 06,-6.2801409,106.8456833,,,,,,False,,,Pasar Minggu,Pejaten Timur,RPTRA
+rth-6a8f3226370c,RPTRA Bagus,rptra,Jakarta Selatan,Jl. Mansyur RT 07 RW 07,-6.3035616,106.8289076,,,,,,False,,,Pasar Minggu,Kebagusan,RPTRA
+rth-db3e52c5eba9,RPTRA Waru Timbul,rptra,Jakarta Selatan,Jl. Waru RT 013 RW 03,-6.3127221,106.8330329,,,,,,False,,,Pasar Minggu,Kebagusan,RPTRA
+rth-81e0a0c0cf6f,RPTRA Kecapi 137,rptra,Jakarta Selatan,"Jl. Kebagusan Dalam 4, RT 011 RW 04",-6.3139586,106.8309611,,,,,,False,,,Pasar Minggu,Kebagusan,RPTRA
+rth-7838fcd5bb98,RPTRA Intan,rptra,Jakarta Selatan,"Jl. Intan Ujung No. 19, RT 002 RW 02",-6.295221,106.8041843,,,,,,False,,,Cilandak,Cilandak Barat,RPTRA
+rth-c73b096c77fa,RPTRA Bango Krukut Pola,rptra,Jakarta Selatan,"Jl. Bango IV, No. 62, RT 009 RW 03",-6.3043578,106.8073614,,,,,,False,,,Cilandak,Pondok Labu,RPTRA
+rth-903b49a857b5,RPTRA Dwijaya,rptra,Jakarta Selatan,Jl. Dwijaya IV RT 012 RW 01,-6.259789,106.7859663,,,,,,False,,,Kebayoran Baru,Gandaria Utara,RPTRA
+rth-e8477278c01f,RPTRA Taman Sawo,rptra,Jakarta Selatan,Jl. Damai I RT 007 RW 02,-6.2622628,106.8001559,,,,,,False,,,Kebayoran Baru,Cipete Utara,RPTRA
+rth-8ce0d7d79998,RPTRA Tiga Durian,rptra,Jakarta Selatan,Jl. Simpang Tiga Kalibata RT 005 RW 03,-6.2555412,106.8424856,,,,,,False,,,Pancoran,Duren Tiga,RPTRA
+rth-0d8969842488,RPTRA Muawwanah,rptra,Jakarta Selatan,Jl. Masjid Al-Muawaanah Gg. Komplek Guru RT 008 RW 07,-6.3559911,106.8186515,,,,,,False,,,Jagakarsa,Srengseng Sawah,RPTRA
+rth-8578709a0592,RPTRA Citra Betawi,rptra,Jakarta Selatan,"Jl. Wika, RT 004 RW 06",-6.3446033,106.8241436,,,,,,False,,,Jagakarsa,Srengseng Sawah,RPTRA
+rth-4715b11f3c07,RPTRA H. Lele,rptra,Jakarta Selatan,"Jl. H. Lele, RT 001 RW 08",-6.3506759,106.8158667,,,,,,False,,,Jagakarsa,Srengseng Sawah,RPTRA
+rth-495f7752d09c,RPTRA Cinta Aselih,rptra,Jakarta Selatan,Jl. Aselih RT 012 RW 01,-6.3529978,106.7931467,,,,,,False,,,Jagakarsa,Cipedak,RPTRA
+rth-c534ac368c3a,RPTRA Anggrek Bintaro,rptra,Jakarta Selatan,"Jl. Garuda Bawah, Perumahan Villa Anggrek RT 008 RW 12",-6.26405219,106.77052731,,,,,,False,,,Pesanggrahan,Bintaro,RPTRA
+rth-412e6d5884c5,RPTRA Asthabrata,rptra,Jakarta Selatan,Jl. Rawapapan RT 011 RW 06,-6.267262,106.75911,,,,,,False,,,Pesanggrahan,Bintaro,RPTRA
+rth-773477012de6,RPTRA Bhinneka,rptra,Jakarta Selatan,Jl. Swadarma Raya No.72 RT 006 RW 04,-6.2362509,106.7603388,,,,,,False,,,Pesanggrahan,Petukangan Utara,RPTRA
+rth-af6ad4527c7c,RPTRA Petukangan Berseri,rptra,Jakarta Selatan,Jl.Taman Alfa Indah Rt003 Rw07,-6.2247774,106.7530604,,,,,,False,,,Pesanggrahan,Petukangan Utara,RPTRA
+rth-7e63b7407861,RPTRA Puspa Hati,rptra,Jakarta Timur,Jl. Pandan 1 RT002 RW 09,-6.2049696,106.8684739,,,,,,False,,,Matraman,Utan Kayu Selatan,RPTRA
+rth-39041d2b4c23,RPTRA Kayumas,rptra,Jakarta Timur,"Jl. Kayumas Utara 1, RT 006 RW 09",-6.1800119,106.900977,,,,,,False,,,Pulogadung,Pulo Gadung,RPTRA
+rth-3d5351104014,RPTRA Jaka Berseri,rptra,Jakarta Timur,"Rusunawa Jatinegara Kaum Jl. Bekasi Timur Raya No.Km.16 No.30, RT 005 RW 02",-6.2098452,106.9004106,,,,,,False,,,Pulogadung,Jatinegara Kaum,RPTRA
+rth-dc2f249c927f,RPTRA Beringin Indah,rptra,Jakarta Timur,Jl. Rawamangun Muka Barat II,-6.1975973,106.8814212,,,,,,False,,,Pulogadung,Rawamangun,RPTRA
+rth-caf7548eecc0,RPTRA Rusunami Beriman,rptra,Jakarta Timur,"Jl. Mt Haryono, Rusun Bidarcina Blok 2 C, RT 011 RW 16",-6.2426675,106.8683518,,,,,,False,,,Jatinegara,Bidara Cina,RPTRA
+rth-7e9b5e73a4cf,RPTRA Citra Permata,rptra,Jakarta Timur,"Jl. Jatinegara Timur IV No. 65, RT 001 RW 07",-6.2216906,106.8704814,,,,,,False,,,Jatinegara,Rawa Bunga,RPTRA
+rth-5186053b4147,RPTRA CBS Bahagia,rptra,Jakarta Timur,Jl. Griya Wartawan 4 Rusunawa Cipinang Besar Selatan Blok E RT 19 RW 05,-6.230524,106.8820724,,,,,,False,,,Jatinegara,Cipinang Besar Selatan,RPTRA
+rth-c8bd6498dc78,RPTRA Kopi Gandaria,rptra,Jakarta Timur,Jl. Kopi RT 006 RW 03,-6.3480425,106.8613278,,,,,,False,,,Pasar Rebo,Pekayon,RPTRA
+rth-1a0dc800f696,RPTRA Kaca Piring,rptra,Jakarta Timur,Jl. Lapan 1. RT 009 RW 01,-6.3411669,106.8625552,,,,,,False,,,Pasar Rebo,Pekayon,RPTRA
+rth-a46158131d22,RPTRA Penggilingan,rptra,Jakarta Timur,Jl. Rengas Elok Blok A9 RT 010 RW 09,-6.1945386,106.9402433,,,,,,False,,,Cakung,Penggilingan,RPTRA
+rth-f79f73cd5f4a,RPTRA Komarudin,rptra,Jakarta Timur,Rusun Komarudin RT 016 RW 08,-6.208354,106.9425471,,,,,,False,,,Cakung,Penggilingan,RPTRA
+rth-ce86ebe66d35,RPTRA Pulo Gebang Indah,rptra,Jakarta Timur,Jl. Mutiara Pulo Gebang Indah RT 013 RW 11,-6.2010065,106.94968469,,,,,,False,,,Cakung,Pulo Gebang,RPTRA
+rth-e95bc336e9ed,RPTRA Pulo Gebang Permai,rptra,Jakarta Timur,Komplek Perum Pulo Gebang Permai RT 003 RW 13,-6.197514,106.9492272,,,,,,False,,,Cakung,Pulo Gebang,RPTRA
+rth-10907e290904,RPTRA Cahaya Ujung Krawang,rptra,Jakarta Timur,Jl. Komaruddin Gg Bambu RT 001 RW 05,-6.19353589,106.94224939,,,,,,False,,,Cakung,Pulo Gebang,RPTRA
+rth-ea3a3d2ccdad,RPTRA Damai Indah Rawabebek,rptra,Jakarta Timur,"Rusunawa Rawa Bebek, RT 006 RW 01",-6.1992302,106.964912,,,,,,False,,,Cakung,Pulo Gebang,RPTRA
+rth-018355a2ae01,RPTRA Kenanga Berseri,rptra,Jakarta Timur,Jl. Rukem Jaya I RT 002 RW 08,-6.1793847,106.9628334,,,,,,False,,,Cakung,Ujung Menteng,RPTRA
+rth-4a2af8a368ea,RPTRA Menteng Asri,rptra,Jakarta Timur,Jl. Satria RT 006 RW 02,-6.189137,106.9674069,,,,,,False,,,Cakung,Ujung Menteng,RPTRA
+rth-89ac33d06e56,RPTRA Griya Tipar,rptra,Jakarta Timur,RGTC RT 010 RW 10,-6.1689,106.938336,,,,,,False,,,Cakung,Cakung Barat,RPTRA
+rth-7b187100f3e4,RPTRA Cempaka Sari,rptra,Jakarta Timur,Jl. Raya Bekasi Rusun Km.02 RT.04/01,-6.1840068,106.9349069,,,,,,False,,,Cakung,Cakung Barat,RPTRA
+rth-05ddfbea5c92,RPTRA Albo Lestari,rptra,Jakarta Timur,Jl.Tipar Cakung Rusunawa Albo RT 005/08,-6.1680847,106.9337984,,,,,,False,,,Cakung,Cakung Barat,RPTRA
+rth-e0fdf3ce9981,RPTRA Pool Asri,rptra,Jakarta Timur,"Jl.Tipar Cakung Pool Ppd Depo C,RT 01/007",-6.172965,106.93286131,,,,,,False,,,Cakung,Cakung Barat,RPTRA
+rth-8c1ca31f3c36,RPTRA DKI Berseri,rptra,Jakarta Timur,Komplek DKI Blok M RT 011 RW 02,-6.2400943,106.9384331,,,,,,False,,,Duren Sawit,Pondok Kelapa,RPTRA
+rth-5fce402c4eb6,RPTRA Pondok Kelapa Berseri,rptra,Jakarta Timur,Jl. Pondok Kelapa Selatan RT 007 RW 05,-6.2530593,106.9361416,,,,,,False,,,Duren Sawit,Pondok Kelapa,RPTRA
+rth-ce099b1b5394,RPTRA Malaka Sari,rptra,Jakarta Utara,Jl. Delima IV Gg. 2 RT 001 RW 05,-6.1488773,106.9597,,,,,,False,,,Cilincing,Rorotan,RPTRA
+rth-b48d2137d61e,RPTRA Bunga Rampai,rptra,Jakarta Timur,Jl. Bunga Rampai Raya RT 001 RW 09,-6.2246451,106.9336793,,,,,,False,,,Duren Sawit,Malaka Jaya,RPTRA
+rth-0f93e4b0b083,RPTRA Rawajaya,rptra,Jakarta Timur,Jl. Rawajaya RT 007 RW 04,-6.2337591,106.9434364,,,,,,False,,,Duren Sawit,Pondok Kopi,RPTRA
+rth-bc031a380151,RPTRA Pesona,rptra,Jakarta Timur,Jl. Pondok Kopi Timur RT 004 RW 08,-6.2212259,106.9438922,,,,,,False,,,Duren Sawit,Pondok Kopi,RPTRA
+rth-beefecd10c88,RPTRA Vlaboean,rptra,Jakarta Timur,"Jl. Dermaga Baru I No.8, RT.8/RW.16",-6.2206967,106.9060553,,,,,,False,,,Duren Sawit,Klender,RPTRA
+rth-d02aef761efa,RPTRA Pilar Jati,rptra,Jakarta Timur,Jl. Elang Thanesia RT 003 RW 08,-6.2537205,106.91508089,,,,,,False,,,Makasar,Cipinang Melayu,RPTRA
+rth-618a971726b7,RPTRA Cibubur Berseri,rptra,Jakarta Timur,Jl. Andurahman 2 RT 003 RW 10,-6.3608011,106.8800036,,,,,,False,,,Ciracas,Cibubur,RPTRA
+rth-aee7925f7a55,RPTRA Jaya Makmur,rptra,Jakarta Timur,Jl. Jaya Makmur RT 003 RW 07,-6.351329,106.889168,,,,,,False,,,Ciracas,Kelapa Dua Wetan,RPTRA
+rth-4c4702d203fa,RPTRA Dahlia KDW,rptra,Jakarta Timur,Jl. Dahlia RT 008 RW 005,-6.3486987,106.8836871,,,,,,False,,,Ciracas,Kelapa Dua Wetan,RPTRA
+rth-0c143815af2c,RPTRA Susukan Ceria,rptra,Jakarta Timur,Jl. H. Baping RT 007 RW 06,-6.311931,106.87527081,,,,,,False,,,Ciracas,Susukan,RPTRA
+rth-d376d425fe95,RPTRA Tanah Merdeka,rptra,Jakarta Timur,Jl. Tanah Merdeka 7 RT 018 RW 06,-6.3127889,106.8823633,,,,,,False,,,Ciracas,Rambutan,RPTRA
+rth-8408857ac396,RPTRA Tamplas Bambu,rptra,Jakarta Timur,"Jl. Raya Cilangkap, No. 8, RT 004 RW 05",-6.3369914,106.8976269,,,,,,False,,,Cipayung,Cilangkap,RPTRA
+rth-2041a5102dd0,RPTRA Garuda,rptra,Jakarta Timur,Jl. Raya Cilangkap RT 005 RW 01,-6.3423171,106.9035138,,,,,,False,,,Cipayung,Cilangkap,RPTRA
+rth-c8b72594596e,RPTRA Ranggon Kusuma Baru,rptra,Jakarta Timur,Jl. Masjid Nurul Falah RT 004 RW 03,-6.3450568,106.9087046,,,,,,False,,,Cipayung,Pondok Ranggon,RPTRA
+rth-248ff5954d86,RPTRA Tunas Bangsa Bisa,rptra,Jakarta Timur,Jl. Bintang RT 001 RW 06,-6.3446823,106.9115132,,,,,,False,,,Cipayung,Pondok Ranggon,RPTRA
+rth-93c794aa4a5c,RPTRA Bambu Petung,rptra,Jakarta Timur,Jl. Bambu Petung RT 005 RW 05,-6.3213663,106.9021787,,,,,,False,,,Cipayung,Bambu Apus,RPTRA
+rth-01ba1f766ea9,RPTRA Mutiara Rawa Binong,rptra,Jakarta Timur,Jl. Raya Rawa Binong RT 001 RW 10,-6.2981242,106.9046247,,,,,,False,,,Cipayung,Lubang Buaya,RPTRA

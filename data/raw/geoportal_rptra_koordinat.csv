@@ -1,0 +1,325 @@
+﻿OBJECTID,NAMA_RPTRA,ALAMAT,LUAS,X,Y,WADMKD,WADMKC,WADMKK
+1,Tanjung Elang Berseri,Pulau Pramuka RT 002 RW 002,1300.0,106.61185361,-5.7471765,Pulau Panggang,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+2,Tanjong Timor,Pulo Panggang RT 007 RW 003,2042.0,106.60355,-5.7420837,Pulau Panggang,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+3,Nyiur Melambai,Jl. Dermaga Utama RT 007 RW 004,2857.0,106.5735023,-5.6532192,Pulau Kelapa,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+4,Arung Palakka,Pulau Kelapa Dua RT 003 RW 05,1656.0,106.5682909,-5.6496873,Pulau Kelapa,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+5,Harapan Widya Bahari,Pulau Harapan RT 001 RW 002,1500.0,106.5786856,-5.6517745,Pulau Harapan,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+6,Jaga Utara,Pulau Sabira RT 001 RW 003,1285.0,106.46043469,-5.207254,Pulau Harapan,Kepulauan Seribu Utara,Kab. Adm. Kep. Seribu
+7,Amiterdam,Pulau Untung Jawa RT 002 RW 03,1.85,106.7078671,-5.9796528,Pulau Untung Jawa,Kepulauan Seribu Selatan,Kab. Adm. Kep. Seribu
+8,Tidung Ceria,Jl. Kampung Baru Rt 001/01 Pulau Tidung,2914.0,106.49324089,-5.79730019,Pulau Tidung,Kepulauan Seribu Selatan,Kab. Adm. Kep. Seribu
+9,Klanceng Putih,Pulau Lancang RT 001/03,1687.0,106.58577739,-5.92881831,Pulau Pari,Kepulauan Seribu Selatan,Kab. Adm. Kep. Seribu
+10,Kenanga,Jl. Makian No. 1 RT 002 RW 05,2583.0,106.8074041,-6.1670346,Cideng,Gambir,Kota Adm. Jakarta Pusat
+11,Mustika,Jl. Petojo Selatan 9 No. 7 RT 007 RW 11,973.0,106.8096751,-6.1678776,Cideng,Gambir,Kota Adm. Jakarta Pusat
+12,Kejora,Jl. Pembangunan 2 No 12 RT 009 RW 02,1000.0,106.8176376,-6.1624476,Petojo Utara,Gambir,Kota Adm. Jakarta Pusat
+13,Flamboyan Kejora,"Jl. Pembangunan II No. 48, RT 004 RW 07",652.0,106.8146986,-6.1632923,Petojo Utara,Gambir,Kota Adm. Jakarta Pusat
+14,Tanah Abang 3,Jl. Tanah Abang 3 RT 02 RW 04,1031.0,106.8148079,-6.176922,Petojo Selatan,Gambir,Kota Adm. Jakarta Pusat
+15,Melati Duri Pulo,Jl. Petojo Barat V,2227.0,106.8092918,-6.1633672,Duri Pulo,Gambir,Kota Adm. Jakarta Pusat
+16,Pintu Air,Jl. Krekot II RT 007 RW 02,758.0,106.8288873,-6.1631747,Kebon Kelapa,Gambir,Kota Adm. Jakarta Pusat
+17,Jaya Molek,Jl. Krekot Jaya Molek RT 002 RW 07,800.0,106.8303194,-6.1602415,Pasar Baru,Sawah Besar,Kota Adm. Jakarta Pusat
+18,Karang Anyar,Jl. Karang Anyar Utara Raya RW 009,5000.0,106.8273723,-6.1516326,Karang Anyar,Sawah Besar,Kota Adm. Jakarta Pusat
+19,Sahara,Jl. Rajawali Selatan 5 RT 002 RW 02,700.0,106.840339,-6.1457063,Gunung Sahari Utara,Sawah Besar,Kota Adm. Jakarta Pusat
+20,Madusela,J. Mangga Besar XIII No. 1A RT 002 RW 003,5400.0,106.8259555,-6.1460321,Mangga Dua Selatan,Sawah Besar,Kota Adm. Jakarta Pusat
+21,Bandar Kemayoran,Jl. Kemayoran Timur 8 RT 012 RW 07,865.0,106.8483273,-6.1627452,Kemayoran,Kemayoran,Kota Adm. Jakarta Pusat
+22,Harapan Mulia,Harapan Mulia Barat,4436.0,106.8549603,-6.1701533,Harapan Mulia,Kemayoran,Kota Adm. Jakarta Pusat
+23,Krida Serdang,Jl. Bendungan Jago Gang Krida 4 RT 009 RW 01,720.0,106.85815876,-6.15714286,Serdang,Kemayoran,Kota Adm. Jakarta Pusat
+24,Serdang Baru,Jl. Serdang Baru IX RT 010 RW 05,700.0,106.8646317,-6.159019,Serdang,Kemayoran,Kota Adm. Jakarta Pusat
+25,Mutiara Sumur Batu,Jl. Mutiara Raya,1200.0,106.8685657,-6.164372,Sumur Batu,Kemayoran,Kota Adm. Jakarta Pusat
+26,Kampung Budaya,Jl. Utan Panjang 3 No. 41 RT 011 RW 07,513.0,106.8551512,-6.1683527,Utan Panjang,Kemayoran,Kota Adm. Jakarta Pusat
+27,Planet Senen,Jl Pasar Senen Dalam VIII RT 006 RW 04,950.0,106.8425755,-6.1730826,Senen,Senen,Kota Adm. Jakarta Pusat
+28,Mh Thamrin,Jl. Kenari 2 RT 001 RW 04,1300.0,106.8454474,-6.1939798,Kenari,Senen,Kota Adm. Jakarta Pusat
+29,Annur,Jl H Murtadho XVI RT 008 RW 06,350.0,106.8554587,-6.1973599,Paseban,Senen,Kota Adm. Jakarta Pusat
+30,Kampung Benda,Jl. Cempaka Putih Tengah XV RT 002 RW 08,800.0,106.8657494,-6.1744783,Cempaka Putih Timur,Cempaka Putih,Kota Adm. Jakarta Pusat
+31,Beringin,Jl Rawasari Barat IX RT 010 RW 01,1213.0,106.8125001,-6.325867,Jagakarsa,Jagakarsa,Kota Adm. Jakarta Selatan
+32,Matahari,Jl. Rawasari Barat VI RT 005 RW 01,475.0,106.8705403,-6.1839873,Cempaka Putih Timur,Cempaka Putih,Kota Adm. Jakarta Pusat
+33,Anggrek,Jl. Rawasari Selatan Komp. Rawa Kerbau RT 016 RW 02,1500.0,106.8728927,-6.1853519,Cempaka Putih Timur,Cempaka Putih,Kota Adm. Jakarta Pusat
+34,Mardani Asri,"Jl. Mardani Raya, Gg. A RT 001 RW 05",900.0,106.862003,-6.1813139,Cempaka Putih Barat,Cempaka Putih,Kota Adm. Jakarta Pusat
+35,Rawasari Ceria,Jl. Percetakan Negara V Gg. H,510.0,106.8582465,-6.1916534,Rawasari,Cempaka Putih,Kota Adm. Jakarta Pusat
+36,Borobudur,Jl. Borobudur RT 009 RW 02,1750.0,106.847732,-6.2000701,Pegangsaan,Menteng,Kota Adm. Jakarta Pusat
+37,Amir Hamzah,Jl. Taman Amir Hamzah No. 1 RT 001 RW 04,3988.0,106.8505217,-6.2034021,Pegangsaan,Menteng,Kota Adm. Jakarta Pusat
+38,Gondangdia,Jln. Probolinggo No. 1,1600.0,106.838266,-6.194818,Gondangdia,Menteng,Kota Adm. Jakarta Pusat
+39,Kebon Sirih,Jalan Srikaya 14 RT 001 RW 07,1270.0,106.8321561,-6.1833179,Kebon Sirih,Menteng,Kota Adm. Jakarta Pusat
+40,Taman Guntur,"Jl. Danau Bratan No.3, RT 010 RW 03",3600.0,106.81022239,-6.20968931,Bendungan Hilir,Tanah Abang,Kota Adm. Jakarta Pusat
+41,Taman Keuangan,"Jl. Penjernihan I, Kompleks Keuangan RW 06",780.0,106.8045455,-6.2029245,Bendungan Hilir,Tanah Abang,Kota Adm. Jakarta Pusat
+42,Taman Raning,Jl.Taman Rawa Pening 1 RT 013 RW 02,770.0,106.81209239,-6.215665,Bendungan Hilir,Tanah Abang,Kota Adm. Jakarta Pusat
+43,Melati 04,"Jl. Danau Bekuan No.4, RT 011 RW 04",800.0,106.8049096,-6.2079172,Bendungan Hilir,Tanah Abang,Kota Adm. Jakarta Pusat
+44,Rusben 2,Rusun Benhil 2 Jl. Penjernihan I RW 08,1403.0,106.8083893,-6.2003619,Bendungan Hilir,Tanah Abang,Kota Adm. Jakarta Pusat
+45,Intiland Teduh @ Karet Tengsin,Jl Karet Ps Baru Barat 1 RT 018 RW 07,746.0,106.8115352,-6.2048646,Karet Tengsin,Tanah Abang,Kota Adm. Jakarta Pusat
+46,Segas Segar Berseri,Jl Karet Pasar Baru Barat I RT 04 RW 06,900.0,106.8125407,-6.2053345,Karet Tengsin,Tanah Abang,Kota Adm. Jakarta Pusat
+47,Petamburan,"Jl. Petamburan, Rusun Petamburan RW 11",750.0,106.8086965,-6.1978701,Petamburan,Tanah Abang,Kota Adm. Jakarta Pusat
+48,Bonti,Jl. Awaludin 3,1750.0,106.8142379,-6.2002777,Kebon Melati,Tanah Abang,Kota Adm. Jakarta Pusat
+49,Hati Suci,Jl. Hati Suci RT 002 RW 07,1151.0,106.8171604,-6.183648,Kampung Bali,Tanah Abang,Kota Adm. Jakarta Pusat
+50,H.Hasbi,Gg.H.Hasbi 4 RT.009 RW 03,800.0,106.814895,-6.1822797,Kampung Bali,Tanah Abang,Kota Adm. Jakarta Pusat
+51,Johar Berseri,Jl. Kramat Jaya Baru V RT 014 RW 01,570.0,106.8532631,-6.1851423,Johar Baru,Johar Baru,Kota Adm. Jakarta Pusat
+52,Rawa Indah,Jalan Rawa Selatan V RT 017 RW 04,461.0,106.8564284,-6.1794666,Kampung Rawa,Johar Baru,Kota Adm. Jakarta Pusat
+53,Rawa Indah Ceria,"Jl. Kampung Rawa Sawah No.7, RT 011 RW 03",333.0,106.8529838,-6.1806202,Kampung Rawa,Johar Baru,Kota Adm. Jakarta Pusat
+54,Rasela Indah,Jl. Rawa Selatan II RT 003 RW 05,189.0,106.8587933,-6.179335,Kampung Rawa,Johar Baru,Kota Adm. Jakarta Pusat
+55,Komando Ceria,Jl. Rawa Tengah No.1 RT 004 RW 06,600.0,106.856945,-6.175514,Galur,Johar Baru,Kota Adm. Jakarta Pusat
+56,Gempar Gemilang,Jl. Rawa Tengah RT 003 RW 07,300.0,106.856654,-6.1766305,Galur,Johar Baru,Kota Adm. Jakarta Pusat
+57,Pandawa,Jl. Irawan No. 13 RT 008 RW 05,1002.0,106.8506797,-6.1781875,Tanah Tinggi,Johar Baru,Kota Adm. Jakarta Pusat
+58,Pulo Gundul,Jl. Kramat Pulo Gundul RT 005 RW 013,1097.0,106.8492248,-6.1833997,Tanah Tinggi,Johar Baru,Kota Adm. Jakarta Pusat
+59,Rustanti,Jl. Balaldewakiri Rt 005 RW 014,989.0,106.8492847,-6.176187,Tanah Tinggi,Johar Baru,Kota Adm. Jakarta Pusat
+60,Penjaringan Indah,Jl. Bandengan Utara 80 RT 006 RW 16,4300.0,106.796715,-6.134156,Penjaringan,Penjaringan,Kota Adm. Jakarta Utara
+61,Rusun Muara Indah,Jl. Gedong Pompa Rusun Waduk Pluit Blok 12 RT 034 RW 17,2900.0,106.8020705,-6.1110932,Penjaringan,Penjaringan,Kota Adm. Jakarta Utara
+62,Kamal Bahari,"Jl. Kamal Muara No. 38, RT 007 RW 01",1263.0,106.7189491,-6.095473,Kamal Muara,Penjaringan,Kota Adm. Jakarta Utara
+63,Rusun Kapuk Muara,Jl. SMP 122 Rusun Kapuk,675.0,106.7628703,-6.1356921,Kapuk Muara,Penjaringan,Kota Adm. Jakarta Utara
+64,Villa Kapuk Mas 2,"Jl. Vikamas Barat 6 Blok E 7, No. 8 RT 003 RW 03",2475.0,106.7602108,-6.1306405,Kapuk Muara,Penjaringan,Kota Adm. Jakarta Utara
+65,Dharma Suci,Jl. Jembatan 3 RT 007 RW 16,5120.0,106.7923427,-6.1328571,Pejagalan,Penjaringan,Kota Adm. Jakarta Utara
+66,Angke Interaktif,Jl. Krapu 2 RT 008 RW 01,842.0,106.7697101,-6.1093125,Pluit,Penjaringan,Kota Adm. Jakarta Utara
+67,Jakpro Asri,"Jl. Karang Utara, No. 1 RT 007 RW 02.",2000.0,106.7804823,-6.1120967,Pluit,Penjaringan,Kota Adm. Jakarta Utara
+68,Sunter Jaya Berseri,"Jl. SKY 4, Bentengan 6 RT 013 RW 05",2200.0,106.8671502,-6.1491695,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+69,Tunas Harapan,Jl. H. Amsir RT 008 RW 03,954.0,106.8675764,-6.1563196,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+70,Nirmala,Jl. Binkesmas RW 004,1325.0,106.8672842,-6.1545711,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+71,Sunter Mas,"Sunter Mas Timur No. 1, RW 08",900.0,106.8733303,-6.1550172,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+72,Danau Sunter,Jl. Telaga Murni RT 021 RW 01,1700.0,106.8620335,-6.1497406,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+73,Sunter Indah,"Jl. Sunter Indah VIII, RT 011 RW 12",1098.0,106.8767469,-6.1515368,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+74,Sunter Hijau,Jl Sunter Kirana I RT 004 RW 010,954.0,106.8777067,-6.1572583,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+75,Pulo Besar,Jl. Danau Elok VI RW 11,1500.0,106.8809329,-6.1554812,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara
+76,Lestari Indah,Jl. Warakas 1 Gang 26 RT 008 RW 08,800.0,106.8686452,-6.1220641,Papanggo,Tanjung Priok,Kota Adm. Jakarta Utara
+77,Green Bisma,Jl. Bisma 19 Blok C RT 10 RW 09,2725.0,106.8699889,-6.1297463,Papanggo,Tanjung Priok,Kota Adm. Jakarta Utara
+78,Manggala Bisma,"Jl. Bisma 7, Blok B, RT 005 RW 10",5000.0,106.8668212,-6.1287518,Papanggo,Tanjung Priok,Kota Adm. Jakarta Utara
+79,Sungai Bambu,Jl. Jati Raya RT 010 RW 06,3838.0,106.8907977,-6.1303164,Sungai Bambu,Tanjung Priok,Kota Adm. Jakarta Utara
+80,Bawang Putih,Jl. Kebon Bawang VII RT 005 RW 06,2160.0,106.8918368,-6.1144563,Kebon Bawang,Tanjung Priok,Kota Adm. Jakarta Utara
+81,Sutra Indah 3,"Jl. Agung Utara 4, Taman Segneg RT 005 RW 09",2100.0,106.8595002,-6.1374583,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+82,Sutra Indah 4,Jl. Agung Permai 4 RT 002 RW 011,1200.0,106.8631485,-6.1404395,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+83,Sutra Indah 1,"Jl. Sunter Karya Selatan, Taman Blok A, Komp. DKI RT 010 RW 13",2400.0,106.8697288,-6.1405927,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+84,Kampung Indah Lestari,Jl. Ancol Selatan No. 2 RT 007 RW 07,2276.0,106.8589188,-6.1328776,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+85,Sutra Indah 2,Jl. Sunter Karya Timur No. 12 RT 012 RW 013,2448.0,106.8714368,-6.1403433,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+86,Sunter Muara,Jl. Sunter Muara RT 015 RW 05,2568.0,106.856692,-6.1480797,Sunter Agung,Tanjung Priok,Kota Adm. Jakarta Utara
+87,Sindang Raya,Jl. Raya Sindang RT 006 RW 09,480.0,106.8968865,-6.1122944,Koja,Koja,Kota Adm. Jakarta Utara
+88,Walang Baru,Jl. Walang Baru Raya RT 003 RW 15,3882.0,106.9056046,-6.1224334,Tugu Utara,Koja,Kota Adm. Jakarta Utara
+89,Tugu Permai,Komp. Tugu Permai RT 014 RW 02,980.0,106.9125251,-6.1259418,Tugu Utara,Koja,Kota Adm. Jakarta Utara
+90,Amanah,Halaman Masjid Raya Jakarta Islamic,5180.0,106.9184477,-6.1197229,Tugu Utara,Koja,Kota Adm. Jakarta Utara
+91,Permata,"Komplek Pertamina Tugu, Jl. Berlian 2 RT 005 RW 016",1750.0,106.914685,-6.1276742,Tugu Utara,Koja,Kota Adm. Jakarta Utara
+92,Rawa Badak Utara,Jl. Inspeksi Kali Sunter RT 012 RW 08,2000.0,106.8965903,-6.1173798,Rawa Badak Utara,Koja,Kota Adm. Jakarta Utara
+93,Radar Pembangunan,Jl. Inspeksi Kali Sunter RT 005 RW 03,1715.0,106.8965625,-6.1201875,Rawa Badak Utara,Koja,Kota Adm. Jakarta Utara
+94,Rasela,Jl. Alur Laut Stadion Rawa Badak RT 009 RW 05,5061.0,106.8989507,-6.1263435,Rawa Badak Selatan,Koja,Kota Adm. Jakarta Utara
+95,Cilincing Berseri,Jl. Sungai Landak RT 008 RW 08,540.0,106.9380675,-6.10169581,Cilincing,Cilincing,Kota Adm. Jakarta Utara
+96,Manunggal Juang,Jl. Manunggal Juang II RT 002 RW 07,1070.0,106.9256273,-6.1537422,Sukapura,Cilincing,Kota Adm. Jakarta Utara
+97,Taman Pinus,Jl Pinus 2 RT 004-005 RW 12 Komplek Gading Griya Residence,2200.0,106.9176512,-6.1402285,Sukapura,Cilincing,Kota Adm. Jakarta Utara
+98,Anoa,"Jl. Tipar Cakung, Jalan Anoa Lestari RT 004-005 RW 09",1300.0,106.9192635,-6.1420322,Sukapura,Cilincing,Kota Adm. Jakarta Utara
+99,Marunda,Rusunawa Marunda Cluster A Blok A9 RT 009 RW 10,2303.0,106.9620902,-6.0986889,Marunda,Cilincing,Kota Adm. Jakarta Utara
+100,Green Marunda,Rusunawa Marunda Cluster B2 RT 009 RW 11,1150.0,106.9633754,-6.0958107,Marunda,Cilincing,Kota Adm. Jakarta Utara
+101,Mutiara,Jl.Marunda Baru RT 008 RW 03,1150.0,106.96162211,-6.12413269,Marunda,Cilincing,Kota Adm. Jakarta Utara
+102,Sirih Kuning,Jl. Rusunawa Marunda Blok B6,1200.0,106.9643722,-6.0957263,Marunda,Cilincing,Kota Adm. Jakarta Utara
+103,Al Alam,Rusunawa Marunda Blok C3 RT 012 RW007,1200.0,106.96160831,-6.09794531,Marunda,Cilincing,Kota Adm. Jakarta Utara
+104,Si Pitung,Rusunawa Marunda Blok D,1200.0,106.9614523,-6.0962624,Marunda,Cilincing,Kota Adm. Jakarta Utara
+105,Mangrove,Jl. Sarang Bangau RT 005 RW 04,1350.0,106.9537191,-6.1271525,Marunda,Cilincing,Kota Adm. Jakarta Utara
+106,Gabus Pucung,Rusunawa Marunda Cluster A RT 004 RW 10,1200.0,106.9626843,-6.0985106,Marunda,Cilincing,Kota Adm. Jakarta Utara
+107,Rorotan Indah,Jl. Rorotan 10 No. 13 RT 004 RW 07,1700.0,106.9587999,-6.1548671,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+108,Malaka Asri,Jl. Malaka 4 RT 013 RW 06,3000.0,106.9597,-6.1488773,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+109,Pancarona,"Jl. Rorotan 5, RW 05",1300.0,106.950303,-6.1425476,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+110,Rorotan Indah 2,Jl. Rorotan 9 RT 001 RW 007,1700.0,106.9587999,-6.1548671,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+111,Sundiro,Jl. Rorotan RT 002 RW 14,500.0,106.95389469,-6.15022831,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+112,Intiland Teduh@Semper Barat,Jl. Bengawan Solo RW 01,2700.0,106.9264304,-6.129701,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+113,Tipar Asri,Jl. Tipar Timur RT 001 RW 04,1600.0,106.9210187,-6.1355405,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+114,Pesona Tipar,"Kavling Tipar Timur, Jln. Taruna Raya, RT 012 RW 004",1200.0,106.927679,-6.133843,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+115,Green Rengas,Jl. Tipar Selatan VII RT 014 RW 05,1072.0,106.9192397,-6.1345771,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+116,Satria Biru,Komplek Asrama Pemadam RT 005 RW 17,1800.0,106.9273638,-6.12913,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+117,Triputra Persada Hijau,Asrama Dinas Lingkungan Hidup Unit Semper RW 003,1900.0,106.9259442,-6.1347067,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+118,Taman Sena,Asrama Yon Ang Air Jl. Sena Raya RT 001 RW 02,2700.0,106.9229191,-6.132237,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+119,Dukuh Manis,Jl. Pure Dalem RT 011 RW 15,1500.0,106.9197885,-6.1093861,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+120,Kapuas Dua Satu Dua,Jl. Sungai Kapuas II,1408.0,106.922015,-6.13013,Semper Barat,Cilincing,Kota Adm. Jakarta Utara
+121,Patimura,"Komplek Pertamina Tugu, Jl. Berlian 2 Rt 05 Rw 016",2500.0,106.845936,-6.1286727,Pademangan Timur,Pademangan,Kota Adm. Jakarta Utara
+122,Budi Mulia,Jl. Budi Mulia Raya RT 008 RW 016,1800.0,106.8397455,-6.1325726,Pademangan Barat,Pademangan,Kota Adm. Jakarta Utara
+123,Biru Laut,Jl. Biru Laut Tengah RT 009 RW 10,1341.0,106.9071577,-6.1662423,Kelapa Gading Timur,Kelapa Gading,Kota Adm. Jakarta Utara
+124,Gading Harmoni,Jl. Janur Kuning III RT 009 RW 15,1270.0,106.9020746,-6.1642716,Kelapa Gading Timur,Kelapa Gading,Kota Adm. Jakarta Utara
+125,Dewi Shinta,Jl. Tari Klasik RT 005 RW 08,1200.0,106.9097599,-6.168493,Kelapa Gading Timur,Kelapa Gading,Kota Adm. Jakarta Utara
+126,Gading Tarian,Jl. Pendet RT 006 RW 08,1893.0,106.907583,-6.171114,Kelapa Gading Timur,Kelapa Gading,Kota Adm. Jakarta Utara
+127,NKRI,Jl. Gading Indah Utara X RW.12,2224.0,106.9130213,-6.1568031,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+128,H. Oyar,Jl. H. Oyar RT 002 RW 02,1200.0,106.9169856,-6.1777869,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+129,Kelapa Nias IX,Jl. Kelapa Nias IX RT 009 RW 17,3500.0,106.9130404,-6.1516122,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+130,Griya Pratama,Jl. Griya Pratama VII RW 20,127.0,106.9129626,-6.17335,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+131,Gading Ayu,Jl. Kelapa Hibrida RT 010 RW 15,1500.0,106.9108155,-6.1440736,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+132,Bellyra Taman Taska,Jl. Taman Taska RT 005 RW 010,900.0,106.911868,-6.1689515,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+133,Kelapa Puan,Jl. Kelapa Puan Timur V RT 005 RW 12,1750.0,106.9119313,-6.1616712,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+134,Kelapa Nias III,"Jl. Kelapa Nias 3, RT 008 RW 14",1295.0,106.9106875,-6.153524,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+135,Pondok Gading,Jl. Pegangsaan Indah Barat No.5 RT 003 RW 16,569.0,106.9140235,-6.167703,Pegangsaan Dua,Kelapa Gading,Kota Adm. Jakarta Utara
+136,Kita Bersaudara,Jl. Janur Elok VII RT 012 RW 11,2000.0,106.9072928,-6.1488539,Kelapa Gading Barat,Kelapa Gading,Kota Adm. Jakarta Utara
+137,Ceria,"Jl. Rusun Damkar, Bambu Larangan RT 001 RW 05",1.261,106.7224889,-6.1390267,Cengkareng Barat,Cengkareng,Kota Adm. Jakarta Barat
+138,Utama,Jl. Utama Raya RT 009 RW 04,1.75,106.7225787,-6.1503335,Cengkareng Barat,Cengkareng,Kota Adm. Jakarta Barat
+139,Sehati,Jl. Masjid Raya RT 010 RW 02,1750.0,106.7205845,-6.1488756,Cengkareng Barat,Cengkareng,Kota Adm. Jakarta Barat
+140,Serasi,Bina Serasi 3 Taman Komplek Kebersihan RT 013 RW 05,500.0,106.7188223,-6.1411748,Cengkareng Barat,Cengkareng,Kota Adm. Jakarta Barat
+141,Duri Kosambi,Jl. Rusunawa Pesakih Daan Mogot Km.14 RT 014 RW 14,1581.0,106.715375,-6.1615446,Semanan,Kalideres,Kota Adm. Jakarta Barat
+142,Mawar Duri Kosambi,Jl. Mawar Utama RT 001 RW 10 Perumahan Kosambi Baru,1423.0,106.7701427,-6.2972835,Lebak Bulus,Cilandak,Kota Adm. Jakarta Selatan
+143,Intiland Teduh @Rawa Buaya,Jl..Bojong Raya No. 01 RT 005 RW 04,668.0,106.8115352,-6.2048646,Karet Tengsin,Tanah Abang,Kota Adm. Jakarta Pusat
+144,Cempaka,Jl. Cempaka Raya RT 003 RW 12,2500.0,106.7442411,-6.1609787,Rawa Buaya,Cengkareng,Kota Adm. Jakarta Barat
+145,Sugriwa,Taman Sugriwa RT 009 RW 009,989.0,106.738695,-6.168049,Rawa Buaya,Cengkareng,Kota Adm. Jakarta Barat
+146,Carina Sayang,Jl. Taruma Permai RT 004 RW 10,2010.0,106.7446669,-6.1651454,Rawa Buaya,Cengkareng,Kota Adm. Jakarta Barat
+147,Cabe Rawit,Jl. Cabe Rawit 2 RT 009 RW 06,1686.0,106.7418015,-6.1619168,Rawa Buaya,Cengkareng,Kota Adm. Jakarta Barat
+148,Tawang Mangu Indah,Jl. Tawang Mangu Terusan RT 001 RW 06,998.0,106.7604858,-6.1505826,Kedaung Kali Angke,Cengkareng,Kota Adm. Jakarta Barat
+149,Krendang,Jl. Krendang Selatan RT 005 RW 07,2692.0,106.801323,-6.153124,Krendang,Tambora,Kota Adm. Jakarta Barat
+150,Melati Indah,Jl. Taman Nusa Indah RT 005 RW 09,1200.0,106.745756,-6.149362,Kapuk,Cengkareng,Kota Adm. Jakarta Barat
+151,Taman Pedongkelan,Jl. Pedongkelan Raya RT 009 RW 09,1008.0,106.7495008,-6.1505533,Kapuk,Cengkareng,Kota Adm. Jakarta Barat
+152,Cengkareng Timur Berseri,Jl. Kayu Besar Outer Ringroad RT 012 RW 11,1651.0,106.730751,-6.123577,Cengkareng Timur,Cengkareng,Kota Adm. Jakarta Barat
+153,Puspa Indah,Jl. Puspa II RT 011 RW 04,750.0,106.7355784,-6.1491342,Cengkareng Timur,Cengkareng,Kota Adm. Jakarta Barat
+154,Rambutan,Jl. Tanjung Duren Barat 2,2589.0,106.7818847,-6.1754634,Tanjung Duren Utara,Grogol Petamburan,Kota Adm. Jakarta Barat
+156,Mandala,Jl. Mandala Selatan VI RT 012 RW 04,900.0,106.8001338,-6.1721783,Tomang,Grogol Petamburan,Kota Adm. Jakarta Barat
+157,Satria Jelambar,Jl. Satria III RT 003 RW 04,809.0,106.7883703,-6.1639853,Jelambar,Grogol Petamburan,Kota Adm. Jakarta Barat
+158,Amanah Bunda,Gg. Manggis 18 RT 010 RW 04,600.0,106.7866464,-6.1789656,Tanjung Duren Selatan,Grogol Petamburan,Kota Adm. Jakarta Barat
+159,Duta Mas,Taman Duta Mas Jl. Kusuma 5 Blok D RT 004 RW 12,900.0,106.7811411,-6.1480862,Jelambar Baru,Grogol Petamburan,Kota Adm. Jakarta Barat
+160,Wijaya Kusuma,Jl. Wijaya RT 001 RW 09,1100.0,106.7805172,-6.1507599,Wijaya Kusuma,Grogol Petamburan,Kota Adm. Jakarta Barat
+161,Matahari,Jl Kebon Jeruk XIII RT 013 RW 05,700.0,106.8198943,-6.1547163,Maphar,Taman Sari,Kota Adm. Jakarta Barat
+162,Kalijodo,Jl. Pangeran Tubagus Angke No. 19,4850.0,106.7900105,-6.1426169,Angke,Tambora,Kota Adm. Jakarta Barat
+163,Jeruk Manis,Perum Kebon Jeruk Baru Blok 3 A,2376.0,106.7724578,-6.1914503,Kebon Jeruk,Kebon Jeruk,Kota Adm. Jakarta Barat
+164,Dupa Wangi,"Jl. Mangga 14, RT 007 RW 03",2400.0,106.7758246,-6.172451,Duri Kepa,Kebon Jeruk,Kota Adm. Jakarta Barat
+165,Kedoya Utara,"Jl. Ratu Mawar L No.15, RT 002 RW 01",1980.0,106.7660713,-6.1641959,Kedoya Utara,Kebon Jeruk,Kota Adm. Jakarta Barat
+166,Pandawa,Azalea 2 RT 003 RW 04,4800.0,106.7632163,-6.1841382,Kedoya Selatan,Kebon Jeruk,Kota Adm. Jakarta Barat
+167,Kalideres,Jl. Bukit Elok 5 Blok G 6 No 11 RT 001 RW 09 Perumahan Citra City 1,800.0,106.6938192,-6.1434366,Kalideres,Kalideres,Kota Adm. Jakarta Barat
+168,Alur Kemuning,"Jl. Bhakti Mulya, RT 008 RW 02",1035.0,106.7147742,-6.1159061,Tegal Alur,Kalideres,Kota Adm. Jakarta Barat
+169,Alur Anggrek,Jl.Komplek Kebersihan RT 008 RW 04,2200.0,106.71724889,-6.12824831,Tegal Alur,Kalideres,Kota Adm. Jakarta Barat
+170,Alur Dahlia,Jl. Mushola Kavling PTB RT 002 RW 07,2500.0,106.7183261,-6.1205506,Tegal Alur,Kalideres,Kota Adm. Jakarta Barat
+171,Alur Flamboyan,Jl. Pelopor Ujung RT 001 RW 05,1000.0,106.7125359,-6.1243216,Tegal Alur,Kalideres,Kota Adm. Jakarta Barat
+172,Cambela,Jl. Kampung Belakang RT 009 RW 03,1142.0,106.6958779,-6.101335,Kamal,Kalideres,Kota Adm. Jakarta Barat
+173,Poraya,Jl. Walungan Poncol RT 001 RW 08,800.0,106.69809131,-6.11432081,Kamal,Kalideres,Kota Adm. Jakarta Barat
+174,Pegadungan,Komplek Citra 2 Blok M 1 RW 12,788.0,106.7107947,-6.1426278,Pegadungan,Kalideres,Kota Adm. Jakarta Barat
+175,Kenanga,Permata Taman Palem Blok A1 No.51 RT 008 RW /03,3575.0,106.7106938,-6.1331561,Pegadungan,Kalideres,Kota Adm. Jakarta Barat
+176,Nusa Indah,Perum Citra 5 Blok F3 RT 005 RW 16,3273.0,106.7024733,-6.1198439,Pegadungan,Kalideres,Kota Adm. Jakarta Barat
+177,Maya Asri 13,Jl. Kemanggisan Raya RT 002 RW 013,570.0,106.7824005,-6.1977138,Palmerah,Pal Merah ,Kota Adm. Jakarta Barat
+178,Jati Pulo Akur,"Jl. Rawa Pandan No. 2A, RT 011 RW 03",890.0,106.8037483,-6.1758026,Jatipulo,Pal Merah,Kota Adm. Jakarta Barat
+179,Manggis,Jl. Anggrek Rosliana II Blok H RW 05,2200.0,106.7942224,-6.1941589,Kemanggisan,Pal Merah,Kota Adm. Jakarta Barat
+180,Bambu Kuning,"Jl. Ks. Tubun 1, Gang Prihatin RT 010 RW 01",725.0,106.8101851,-6.1872817,Kota Bambu Selatan,Pal Merah,Kota Adm. Jakarta Barat
+181,Kembangan,"Jl. Kompas, RT 001 RW 01",3350.0,106.7330012,-6.1754443,Kembangan Utara,Kembangan,Kota Adm. Jakarta Barat
+182,Kampung Baru,Jl.Teratai RT 009 RW 10,1500.0,106.7527748,-6.1670293,Kembangan Utara,Kembangan,Kota Adm. Jakarta Barat
+183,Meruya Utara,Jl. Melati Taman Meruya Ilir Blok A 6 RT 017 RW 04,5500.0,106.7373018,-6.2010498,Meruya Utara,Kembangan,Kota Adm. Jakarta Barat
+184,Nusa Indah,"Jl. Teknologi X No. 9 A Komplek BPPT, RT 009 RW 03",2200.0,106.754076,-6.1935885,Meruya Utara,Kembangan,Kota Adm. Jakarta Barat
+185,Kecapi 72,Jl. Kecapi II RT 005 RW 010,930.0,106.726644,-6.2018608,Meruya Utara,Kembangan,Kota Adm. Jakarta Barat
+186,Meruya Selatan,Jl. H. Saaba Ujung RT 008 RW 03,2028.0,106.7258273,-6.2115564,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+187,Mahkota,Jl. H. Saaba Ujung Komp. Walikota RT 004 RW 03,2100.0,106.7237797,-6.2137629,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+188,Menara,Jl. Menara 7 RT 001 RW 05,1500.0,106.731174,-6.21298,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+189,Manuver,Komp. Unilever RT 001 RW 09,2200.0,106.7268264,-6.2149312,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+190,Manunggal,Jl. Manunggal RT 001 RW 07,2000.0,106.7406375,-6.2036088,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+191,Edelweiss Pqt,Jl. Marwah I RT 012 RW 01,1008.0,106.7572601,-6.2006708,Srengseng,Kembangan,Kota Adm. Jakarta Barat
+192,Joglo,"Komplek DKI Blok R, RT 012 RW 04",800.0,106.7349149,-6.2224855,Joglo,Kembangan,Kota Adm. Jakarta Barat
+193,Ria Damkar Joglo 2,Jl. Kenanga No.29-56 RT 006 RW 06,2200.0,106.7233144,-6.2188492,Joglo,Kembangan,Kota Adm. Jakarta Barat
+194,Kembangan Selatan,Jl. Kembang Abadi Utama Blok A RT 001 RW 08,2304.0,106.7523564,-6.184518,Kembangan Selatan,Kembangan,Kota Adm. Jakarta Barat
+195,Teratai,Jl Tebet Timur Raya RT 010 RW 10,1800.0,106.8532292,-6.2350191,Tebet Timur,Tebet,Kota Adm. Jakarta Selatan
+196,Taman Mandala,Jl.Tebet Utara IV RT 005 RW 02,2000.0,106.8541891,-6.227363,Tebet Timur,Tebet,Kota Adm. Jakarta Selatan
+197,Akasia,Tebet Barat Raya RT 011 RW 07,2400.0,106.8509375,-6.2329375,Tebet Barat,Tebet,Kota Adm. Jakarta Selatan
+198,Rasamala,Jl. Rasamala 3 RT 003 RW 13,1800.0,106.8367473,-6.2338226,Menteng Dalam,Tebet,Kota Adm. Jakarta Selatan
+199,Flamboyan,Jl. Flamboyan Raya RT 011 RW 10,900.0,106.8402972,-6.2283791,Menteng Dalam,Tebet,Kota Adm. Jakarta Selatan
+200,Pesona Manggarai,"Jl. Manggarai Utara VI, RT 007 RW 01",1080.0,106.853024,-6.213092,Manggarai,Tebet,Kota Adm. Jakarta Selatan
+201,Saharjo Mentas,Jl. Doktor Saharjo No. 121 RT 001 RW 08,800.0,106.8451536,-6.2193056,Menteng Atas,Setiabudi,Kota Adm. Jakarta Selatan
+202,Taman Batu,Jl. Batu Raya No.1 RT 007 RW 07,500.0,106.842967,-6.216043,Menteng Atas,Setiabudi,Kota Adm. Jakarta Selatan
+203,Kebon Sawo,"Jl. Menteng Atas Selatan Gg. 2, RT 001 RW 13,",450.0,106.840451,-6.2186362,Menteng Atas,Setiabudi,Kota Adm. Jakarta Selatan
+204,Ramah Lingkungan,"Jl. Kapten Tendean, Gg Jati RT 014 RW 01",800.0,106.823277,-6.242452,Mampang Prapatan,Mampang Prapatan,Kota Adm. Jakarta Selatan
+205,Belimbing,Jl. Masjid Al-Falah RT 005 RW 02,1000.0,106.8401667,-6.2823343,Pasar Minggu,Pasar Minggu,Kota Adm. Jakarta Selatan
+206,Seruni,Gang H Saibun RT 002 RW 09,966.0,106.8316521,-6.2892527,Jati Padang,Pasar Minggu,Kota Adm. Jakarta Selatan
+207,Asoka,"Jl. Raya Jatipadang, RT 003 RW 04",1600.0,106.8279574,-6.2945115,Jati Padang,Pasar Minggu,Kota Adm. Jakarta Selatan
+208,KKO,Jl. Jaya Wijaya IV RT 001 RW 05,1800.0,106.8130187,-6.2994771,Cilandak Timur,Pasar Minggu,Kota Adm. Jakarta Selatan
+209,Kemuning,Jl. Pagujaten Raya RT 016 RW 06,848.0,106.8456833,-6.2801409,Pejaten Timur,Pasar Minggu,Kota Adm. Jakarta Selatan
+210,Malinjo,Jl. Malinjo No. 07 RT 006 RW 06,1200.0,106.8360245,-6.2789194,Pejaten Barat,Pasar Minggu,Kota Adm. Jakarta Selatan
+211,Bagus,Jl. Mansyur RT 07 RW 07,1900.0,106.8289076,-6.3035616,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan
+212,Baung,Jl. Baung 3 RT 005 RW 02,9900.0,106.8360526,-6.304816,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan
+213,Perdamaian,"Jl.Taiman Ujung, Gg Perdamaian RT 012 RW 06",3000.0,106.8334123,-6.3090392,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan
+214,Waru Timbul,Jl. Waru RT 013 RW 03,1680.0,106.8330329,-6.3127221,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan
+215,Kecapi 137,"Jl. Kebagusan Dalam 4, RT 011 RW 04",2310.0,106.8309611,-6.3139586,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan
+216,Dwi Chandra Loka,"Jl. Peninggaran Timur I, RT 004 RW 09",715.0,106.7772864,-6.2435377,Kebayoran Lama Utara,Kebayoran Lama,Kota Adm. Jakarta Selatan
+217,Delas,Jl. Delaman Asri VII RT 005 RW 11,1500.0,106.7713755,-6.2464569,Kebayoran Lama Utara,Kebayoran Lama,Kota Adm. Jakarta Selatan
+218,Pinang Indah,Jl. H. Muhi VI RT 006 RW 04,2078.0,106.771176,-6.266411,Pondok Pinang,Kebayoran Lama,Kota Adm. Jakarta Selatan
+219,Mangga Ulir,Jl. Kebon Mangga I RT 012 RW 02,1000.0,106.7753766,-6.2356165,Cipulir,Kebayoran Lama,Kota Adm. Jakarta Selatan
+220,Kemandoran,"Jl. Kemandoran 8 Gg Haji Sarmili, RT 005 RW 11",1800.0,106.7867863,-6.213245,Grogol Utara,Kebayoran Lama,Kota Adm. Jakarta Selatan
+221,Kampung Perigi,"Jl. Nimun Raya Gg Kibagus Haji Merah, RT 007 RW 10",1100.0,106.7728967,-6.2583841,Kebayoran Lama Selatan,Kebayoran Lama,Kota Adm. Jakarta Selatan
+222,Intan,"Jl. Intan Ujung No. 19, RT 002 RW 02",1300.0,106.8041843,-6.295221,Cilandak Barat,Cilandak,Kota Adm. Jakarta Selatan
+223,Mawar,Jl. Mawar Indah RT 008 RW 02,2880.0,106.7701427,-6.2972835,Lebak Bulus,Cilandak,Kota Adm. Jakarta Selatan
+224,Anggrek,Jl. H.Gandun RT 007 RW 08,800.0,106.7864335,-6.3083158,Lebak Bulus,Cilandak,Kota Adm. Jakarta Selatan
+225,Pinang Pola,Jl. Pinang 2 RT 004 RW 02,703.0,106.7988908,-6.3100977,Pondok Labu,Cilandak,Kota Adm. Jakarta Selatan
+226,Pola Idaman,Jl. H. Kamang Bawah RT 013 RW 01,1800.0,106.7889024,-6.308736,Pondok Labu,Cilandak,Kota Adm. Jakarta Selatan
+227,Bango Krukut Pola,"Jl. Bango IV, No. 62, RT 009 RW 03",1500.0,106.8073614,-6.3043578,Pondok Labu,Cilandak,Kota Adm. Jakarta Selatan
+228,Bahari,Jl. Bahari Raya RT 09 RW 07,917.0,106.7943144,-6.2793473,Gandaria Selatan,Cilandak,Kota Adm. Jakarta Selatan
+229,Taman Gajah,Jl. Cipete II RT 007 RWM03,1145.0,106.7995927,-6.2773819,Cipete Selatan,Cilandak,Kota Adm. Jakarta Selatan
+230,Tunas Muda,"Jl. Gandaria Tengah 1, RT 003 RW 01",910.0,106.7897845,-6.2434977,Kramat Pela,Kebayoran Baru,Kota Adm. Jakarta Selatan
+231,Dwijaya,Jl. Dwijaya IV RT 012 RW 01,1000.0,106.7859663,-6.259789,Gandaria Utara,Kebayoran Baru,Kota Adm. Jakarta Selatan
+232,Taman Sawo,Jl. Damai I RT 007 RW 02,3715.0,106.8001559,-6.2622628,Cipete Utara,Kebayoran Baru,Kota Adm. Jakarta Selatan
+233,Tiga Durian,Jl. Simpang Tiga Kalibata RT 005 RW 03,2300.0,106.8424856,-6.2555412,Duren Tiga,Pancoran,Kota Adm. Jakarta Selatan
+234,Beringin,"Jl. Jagakarsa Raya Gg. Tohir 2, RT 007 RW 04",2100.0,106.8125001,-6.325867,Jagakarsa,Jagakarsa,Kota Adm. Jakarta Selatan
+235,Taman Matoa,Jl. H.Masmun RT 009 RW 07,1800.0,106.8233042,-6.3291943,Jagakarsa,Jagakarsa,Kota Adm. Jakarta Selatan
+236,Muawwanah,Jl. Masjid Al-Muawaanah Gg. Komplek Guru RT 008 RW 07,1700.0,106.8186515,-6.3559911,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+237,Shibi,"Jl. H Shibi 4, RT 013 RW 02",1293.0,106.8365216,-6.3488516,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+238,Citra Betawi,"Jl. Wika, RT 004 RW 06",1555.0,106.8241436,-6.3446033,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+239,Betawi Ngumpul,Jl. M. Kahfi 2 Gg. Setu RT 006 RW 005,1056.0,106.8289156,-6.3368208,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+240,H. Lele,"Jl. H. Lele, RT 001 RW 08",1052.0,106.8158667,-6.3506759,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+241,Tiga Pesona,Jl. Srengseng Sawah RT 003 RW 11,696.0,106.8298422,-6.3451783,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan
+242,Ciganjur Berseri,"Jl. Pasir I, Perumahan Dinas Guru, RT 001 RW 06",1200.0,106.8045509,-6.3367091,Ciganjur,Jagakarsa,Kota Adm. Jakarta Selatan
+243,Taman Jangkrik,"Jl. Rm. Kahfi 1, Gg. Jangkrik RT 006 RW 05",4400.0,106.8075181,-6.3418384,Ciganjur,Jagakarsa,Kota Adm. Jakarta Selatan
+244,Taman Lenteng Agung,Jl. Laga RT 011 RW 02,2325.0,106.8360167,-6.322885,Lenteng Agung,Jagakarsa,Kota Adm. Jakarta Selatan
+245,Cipedak Gemilang,"Jl Timbul 3 B, RT 008 RW 04",890.0,106.8042165,-6.3530581,Cipedak,Jagakarsa,Kota Adm. Jakarta Selatan
+246,Cendekia,"Jl. Panjang No. 39, RT 006 RW 04",1200.0,106.80485,-6.348617,Cipedak,Jagakarsa,Kota Adm. Jakarta Selatan
+247,Cinta Aselih,Jl. Aselih RT 012 RW 01,800.0,106.7931467,-6.3529978,Cipedak,Jagakarsa,Kota Adm. Jakarta Selatan
+248,Puspita,Jl. H. Gari RT 001 RW 03,700.0,106.76018,-6.253195,Pesanggrahan,Pesanggrahan,Kota Adm. Jakarta Selatan
+249,Abdi Praja,Jl. Pancoran RT 014 RW 01,1200.0,106.7658696,-6.2516538,Pesanggrahan,Pesanggrahan,Kota Adm. Jakarta Selatan
+250,Anggrek Bintaro,"Jl. Garuda Bawah, Perumahan Villa Anggrek RT 008 RW 12",2850.0,106.77052731,-6.26405219,Bintaro,Pesanggrahan,Kota Adm. Jakarta Selatan
+251,Permai,Jl. Bintaro Permai III RT 002 RW 09,550.0,106.76372458,-6.25804615,Bintaro,Pesanggrahan,Kota Adm. Jakarta Selatan
+252,Asthabrata,Jl. Rawapapan RT 011 RW 06,2800.0,106.75911,-6.267262,Bintaro,Pesanggrahan,Kota Adm. Jakarta Selatan
+253,Bhinneka,Jl. Swadarma Raya No.72 RT 006 RW 04,2238.0,106.7603388,-6.2362509,Petukangan Utara,Pesanggrahan,Kota Adm. Jakarta Selatan
+254,Petukangan Berseri,Jl.Taman Alfa Indah Rt003 Rw07,1691.0,106.7530604,-6.2247774,Petukangan Utara,Pesanggrahan,Kota Adm. Jakarta Selatan
+255,Manunggal,Jl. Inpres RT 004 RW 02,2330.0,106.7406375,-6.2036088,Meruya Selatan,Kembangan,Kota Adm. Jakarta Barat
+256,Nusantara,Jl. Inspeksi Kali Pesanggrahan RT 004 RW 007,1912.0,106.7672299,-6.2473142,Ulujami,Pesanggrahan,Kota Adm. Jakarta Selatan
+257,Utakara Beriman,"Jl. Balai Rakyat 2, RT 014 RW 06",2275.0,106.8676951,-6.1960934,Utan Kayu Utara,Matraman,Kota Adm. Jakarta Timur
+258,Utakase Berseri,Jl. Galur Sari V RT 003 RW 01,800.0,106.8657164,-6.1993253,Utan Kayu Selatan,Matraman,Kota Adm. Jakarta Timur
+259,Puspa Hati,Jl. Pandan 1 RT002 RW 09,816.0,106.8684739,-6.2049696,Utan Kayu Selatan,Matraman,Kota Adm. Jakarta Timur
+260,Kayumas,"Jl. Kayumas Utara 1, RT 006 RW 09",1700.0,106.900977,-6.1800119,Pulo Gadung,Pulogadung,Kota Adm. Jakarta Timur
+261,Jaka Teratai,Jl. Raya Bekasi Timur Km 18 RT 007 RW 06,1700.0,106.9060814,-6.1901596,Jatinegara Kaum,Pulogadung,Kota Adm. Jakarta Timur
+262,Jaka Berseri,"Rusunawa Jatinegara Kaum Jl. Bekasi Timur Raya No.Km.16 No.30, RT 005 RW 02",2286.0,106.9004106,-6.2098452,Jatinegara Kaum,Pulogadung,Kota Adm. Jakarta Timur
+263,Beringin Indah,Jl. Rawamangun Muka Barat II,7200.0,106.8814212,-6.1975973,Rawamangun,Pulogadung,Kota Adm. Jakarta Timur
+264,Jati Bersinar,Jl. Komplek Perhubungan Raya No 79 C,1458.0,106.895315,-6.201493,Jati,Pulogadung,Kota Adm. Jakarta Timur
+265,Permata Intan,Jl. Berlian RT 007 RW 11 Cawang Atas,900.0,106.863273,-6.2412637,Bidara Cina,Jatinegara,Kota Adm. Jakarta Timur
+266,Rusunami Beriman,"Jl. Mt Haryono, Rusun Bidarcina Blok 2 C, RT 011 RW 16",1500.0,106.8683518,-6.2426675,Bidara Cina,Jatinegara,Kota Adm. Jakarta Timur
+267,Citra Permata,"Jl. Jatinegara Timur IV No. 65, RT 001 RW 07",2833.0,106.8704814,-6.2216906,Rawa Bunga,Jatinegara,Kota Adm. Jakarta Timur
+268,Wangi Cempedak,"Jl. Berdikari I, RT 001 RW 09",998.0,106.8740368,-6.241059,Cipinang Cempedak,Jatinegara,Kota Adm. Jakarta Timur
+269,CBS Bahagia,Jl. Griya Wartawan 4 Rusunawa Cipinang Besar Selatan Blok E RT 19 RW 05,2900.0,106.8820724,-6.230524,Cipinang Besar Selatan,Jatinegara,Kota Adm. Jakarta Timur
+270,Cibesut,Jl. Swadaya RT 006 RW 14,1700.0,106.8824386,-6.2175649,Cipinang Besar Utara,Jatinegara,Kota Adm. Jakarta Timur
+271,Mustika,Jl. Kerja Bakti No. 23 RT 002 RW 10,1200.0,106.8721479,-6.2784455,Kramatjati,Kramatjati,Kota Adm. Jakarta Timur
+272,Dahlia,Jl. Generasi I RT 06 RW 03,3200.0,106.8660136,-6.284974,Tengah,Kramatjati,Kota Adm. Jakarta Timur
+273,Udara Segar 126,Jl. SMP126 No 101 RT 010 RW 03,2100.0,106.8581259,-6.2774564,Batu Ampar,Kramatjati,Kota Adm. Jakarta Timur
+274,Muara Condet,Jl. Batu Kinyang RT 012 RW 04,2814.0,106.8581259,-6.2774564,Batu Ampar,Kramatjati,Kota Adm. Jakarta Timur
+275,Cililitan,"Jl. Buluh Blok H. Yusuf, No. 73, RT 010 RW 16",3800.0,106.856867,-6.266472,Cililitan,Kramatjati,Kota Adm. Jakarta Timur
+276,Gedong Trikora,Jl. Trikora Raya Gg. Hj. Nipah No.13 RT 003 RW 09,2049.0,106.8663539,-6.3012292,Gedong,Pasar Rebo,Kota Adm. Jakarta Timur
+277,Kopi Gandaria,Jl. Kopi RT 006 RW 03,180.0,106.8613278,-6.3480425,Pekayon,Pasar Rebo,Kota Adm. Jakarta Timur
+278,Kaca Piring,Jl. Lapan 1. RT 009 RW 01,1700.0,106.8625552,-6.3411669,Pekayon,Pasar Rebo,Kota Adm. Jakarta Timur
+279,Jatinegara,Kp. Pulo Jahe RT 007 RW 10,1100.0,106.923239,-6.1982739,Jatinegara,Cakung,Kota Adm. Jakarta Timur
+280,Penggilingan,Jl. Rengas Elok Blok A9 RT 010 RW 09,1700.0,106.9402433,-6.1945386,Penggilingan,Cakung,Kota Adm. Jakarta Timur
+281,Citra Bangsa,Perkampungan Industri Kecil (PIK) Blok G No. 116,1750.0,106.9328123,-6.2059235,Penggilingan,Cakung,Kota Adm. Jakarta Timur
+282,Pulo Indah,"Jl. Boulevard Raya Dalam, Perum Taman Pulo Indah, RT 007 RW 18",1750.0,106.9377818,-6.2015815,Penggilingan,Cakung,Kota Adm. Jakarta Timur
+283,Komarudin,Rusun Komarudin RT 016 RW 08,1175.0,106.9425471,-6.208354,Penggilingan,Cakung,Kota Adm. Jakarta Timur
+284,Caktim Tersenyum,Jl. Pagar Jati RT 015 RW 01,1587.0,106.9578243,-6.1827502,Cakung Timur,Cakung,Kota Adm. Jakarta Timur
+285,Pulo Gebang Indah,Jl. Mutiara Pulo Gebang Indah RT 013 RW 11,1456.0,106.94968469,-6.2010065,Pulo Gebang,Cakung,Kota Adm. Jakarta Timur
+286,Pulo Gebang Permai,Komplek Perum Pulo Gebang Permai RT 003 RW 13,1840.0,106.9492272,-6.197514,Pulo Gebang,Cakung,Kota Adm. Jakarta Timur
+287,Cahaya Ujung Krawang,Jl. Komaruddin Gg Bambu RT 001 RW 05,2300.0,106.94224939,-6.19353589,Pulo Gebang,Cakung,Kota Adm. Jakarta Timur
+288,Damai Indah Rawabebek,"Rusunawa Rawa Bebek, RT 006 RW 01",1840.0,106.964912,-6.1992302,Pulo Gebang,Cakung,Kota Adm. Jakarta Timur
+289,Kenanga Berseri,Jl. Rukem Jaya I RT 002 RW 08,4000.0,106.9628334,-6.1793847,Ujung Menteng,Cakung,Kota Adm. Jakarta Timur
+290,Sangkuriang,Jl. Irigasi RT 002 RW 01,1700.0,106.96036,-6.1844306,Ujung Menteng,Cakung,Kota Adm. Jakarta Timur
+291,Menteng Asri,Jl. Satria RT 006 RW 02,2969.0,106.9674069,-6.189137,Ujung Menteng,Cakung,Kota Adm. Jakarta Timur
+292,Griya Tipar,RGTC RT 010 RW 10,3500.0,106.938336,-6.1689,Cakung Barat,Cakung,Kota Adm. Jakarta Timur
+293,Cempaka Sari,Jl. Raya Bekasi Rusun Km.02 RT.04/01,3118.0,106.9349069,-6.1840068,Cakung Barat,Cakung,Kota Adm. Jakarta Timur
+294,Albo Lestari,Jl.Tipar Cakung Rusunawa Albo RT 005/08,3018.0,106.9337984,-6.1680847,Cakung Barat,Cakung,Kota Adm. Jakarta Timur
+295,Pool Asri,"Jl.Tipar Cakung Pool Ppd Depo C,RT 01/007",1700.0,106.93286131,-6.172965,Cakung Barat,Cakung,Kota Adm. Jakarta Timur
+296,Ratu Karensa Indah,Komplek Perumahan Duren Sawit Baru Blok C6 RT 006/007 RW 01,1978.0,106.91162119,-6.23199319,Duren Sawit,Duren Sawit,Kota Adm. Jakarta Timur
+297,Dursa Bersatu,Jl. Swadaya RT 004 RW 05,2596.0,106.9173141,-6.2353346,Duren Sawit,Duren Sawit,Kota Adm. Jakarta Timur
+298,Pondok Bambu Berseri,Jl. Balai Rakyat III RT 013 RW 01,2500.0,106.9024809,-6.2266767,Pondok Bambu,Duren Sawit,Kota Adm. Jakarta Timur
+299,Ikapola,Jl. Raya Pondok Kelapa Blok A II RT 001 RW 04,750.0,106.935008,-6.2471078,Pondok Kelapa,Duren Sawit,Kota Adm. Jakarta Timur
+300,DKI Berseri,Komplek DKI Blok M RT 011 RW 02,1400.0,106.9384331,-6.2400943,Pondok Kelapa,Duren Sawit,Kota Adm. Jakarta Timur
+301,Pondok Kelapa Berseri,Jl. Pondok Kelapa Selatan RT 007 RW 05,1500.0,106.9361416,-6.2530593,Pondok Kelapa,Duren Sawit,Kota Adm. Jakarta Timur
+302,Malaka Sari,Jl. Delima IV Gg. 2 RT 001 RW 05,1910.0,106.9597,-6.1488773,Rorotan,Cilincing,Kota Adm. Jakarta Utara
+303,Bunga Rampai,Jl. Bunga Rampai Raya RT 001 RW 09,1534.0,106.9336793,-6.2246451,Malaka Jaya,Duren Sawit,Kota Adm. Jakarta Timur
+304,Rawajaya,Jl. Rawajaya RT 007 RW 04,4252.0,106.9434364,-6.2337591,Pondok Kopi,Duren Sawit,Kota Adm. Jakarta Timur
+305,Arabika,Jl. Arabika III RT 012 RW 05,1480.0,106.9455129,-6.2294607,Pondok Kopi,Duren Sawit,Kota Adm. Jakarta Timur
+306,Pesona,Jl. Pondok Kopi Timur RT 004 RW 08,1154.0,106.9438922,-6.2212259,Pondok Kopi,Duren Sawit,Kota Adm. Jakarta Timur
+307,Vlaboean,"Jl. Dermaga Baru I No.8, RT.8/RW.16",1000.0,106.9060553,-6.2206967,Klender,Duren Sawit,Kota Adm. Jakarta Timur
+308,Kampung Pulo Asri,Jl. Ridan RT 003 RW 05,1900.0,106.8842186,-6.2780843,Pinangranti,Makasar,Kota Adm. Jakarta Timur
+309,Kebon Pala Berseri,Jl. Kamboja RT 010 RW 01,1100.0,106.8809346,-6.2632799,Kebon Pala,Makasar,Kota Adm. Jakarta Timur
+310,Pilar Jati,Jl. Elang Thanesia RT 003 RW 08,2000.0,106.91508089,-6.2537205,Cipinang Melayu,Makasar,Kota Adm. Jakarta Timur
+311,Ciracas Prima,Jl. Raya Centex Gg. Sopan RT 003 RW 10,1200.0,106.8766864,-6.3241265,Ciracas,Ciracas,Kota Adm. Jakarta Timur
+312,Cibubur Berseri,Jl. Andurahman 2 RT 003 RW 10,2100.0,106.8800036,-6.3608011,Cibubur,Ciracas,Kota Adm. Jakarta Timur
+313,Jaya Makmur,Jl. Jaya Makmur RT 003 RW 07,800.0,106.889168,-6.351329,Kelapa Dua Wetan,Ciracas,Kota Adm. Jakarta Timur
+314,Dahlia KDW,Jl. Dahlia RT 008 RW 005,800.0,106.8836871,-6.3486987,Kelapa Dua Wetan,Ciracas,Kota Adm. Jakarta Timur
+315,Susukan Ceria,Jl. H. Baping RT 007 RW 06,1400.0,106.87527081,-6.311931,Susukan,Ciracas,Kota Adm. Jakarta Timur
+316,Tanah Merdeka,Jl. Tanah Merdeka 7 RT 018 RW 06,1708.0,106.8823633,-6.3127889,Rambutan,Ciracas,Kota Adm. Jakarta Timur
+317,Payung Tunas Teratai,"Jl. Budi Murni 2, Gg Kreen RT 006 RW 03",1600.0,106.8971337,-6.3310327,Cipayung,Cipayung,Kota Adm. Jakarta Timur
+318,Tamplas Bambu,"Jl. Raya Cilangkap, No. 8, RT 004 RW 05",1500.0,106.8976269,-6.3369914,Cilangkap,Cipayung,Kota Adm. Jakarta Timur
+319,Garuda,Jl. Raya Cilangkap RT 005 RW 01,4711.0,106.9035138,-6.3423171,Cilangkap,Cipayung,Kota Adm. Jakarta Timur
+320,Ranggon Kusuma Baru,Jl. Masjid Nurul Falah RT 004 RW 03,1500.0,106.9087046,-6.3450568,Pondok Ranggon,Cipayung,Kota Adm. Jakarta Timur
+321,Tunas Bangsa Bisa,Jl. Bintang RT 001 RW 06,5082.0,106.9115132,-6.3446823,Pondok Ranggon,Cipayung,Kota Adm. Jakarta Timur
+322,Gebang Sari,Jl. Gebang Sari Dalam RT 002 RW 05,4846.0,106.9056566,-6.3168171,Bambu Apus,Cipayung,Kota Adm. Jakarta Timur
+323,Bambu Petung,Jl. Bambu Petung RT 005 RW 05,1890.0,106.9021787,-6.3213663,Bambu Apus,Cipayung,Kota Adm. Jakarta Timur
+324,Mutiara Rawa Binong,Jl. Raya Rawa Binong RT 001 RW 10,1800.0,106.9046247,-6.2981242,Lubang Buaya,Cipayung,Kota Adm. Jakarta Timur
+641,RPTRA Taman Apel,Jl. Tanjung Duren Utara III B-C RT 008 RW 03,,,,Tanjung Duren Utara,Grogol Petamburan,Kota Adm. Jakarta Barat

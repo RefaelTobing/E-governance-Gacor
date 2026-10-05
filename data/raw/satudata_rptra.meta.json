@@ -1,0 +1,19 @@
+{
+  "dataset": "satudata_rptra",
+  "sumber": "satudata",
+  "downloaded_at": "2026-10-05T17:36:25+07:00",
+  "total_rows": 648,
+  "columns": [
+    "periode_data",
+    "wilayah",
+    "kecamatan",
+    "kelurahan",
+    "nama_rptra"
+  ],
+  "title": "Jumlah Ruang Publik Terpadu Ramah Anak (RPTRA)",
+  "periode_data": "2023",
+  "filedata_updated_at": "2025-07-15 14:30:29",
+  "portal_url": "https://satudata.jakarta.go.id/open-data/detail/jumlah-ruang-publik-terpadu-ramah-anak-rptra",
+  "api": "https://satudata.jakarta.go.id/backend/api/v2/satudata/detail",
+  "page_url": "jumlah-ruang-publik-terpadu-ramah-anak-rptra"
+}

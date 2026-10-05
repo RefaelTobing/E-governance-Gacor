@@ -1,0 +1,31 @@
+{
+  "dataset": "geoportal_rth_koordinat",
+  "sumber": "geoportal",
+  "downloaded_at": "2026-10-05T17:36:27+07:00",
+  "total_rows": 6512,
+  "columns": [
+    "OBJECTID",
+    "NAMA_OBJEK",
+    "JENIS_OBJEK",
+    "LUAS_OBJEK",
+    "X",
+    "Y",
+    "KELURAHAN",
+    "KECAMATAN",
+    "KOTA",
+    "SKPD",
+    "KEPEMILIKAN_OBJEK",
+    "KATEGORI_OBJEK",
+    "PENGELOLA_OBJEK",
+    "ALAMAT_OBJEK",
+    "NO_SERTIFIKAT",
+    "KONDISI_OBJEK",
+    "STATUS",
+    "VERIFIKASI"
+  ],
+  "title": "RTH_SKPD_DKI/RTH_SKPD_DKI_View layer 0",
+  "service": "RTH_SKPD_DKI/RTH_SKPD_DKI_View",
+  "layer": 0,
+  "api": "https://jakartasatu.jakarta.go.id/server/rest/services/RTH_SKPD_DKI/RTH_SKPD_DKI_View/FeatureServer/0/query",
+  "portal_url": "https://jakartasatu.jakarta.go.id/server/rest/services/RTH_SKPD_DKI/RTH_SKPD_DKI_View/FeatureServer/0"
+}
