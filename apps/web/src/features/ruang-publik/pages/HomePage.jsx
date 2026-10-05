@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, AlertCircle, ArrowUpRight, Trees, ClipboardCheck, Clock, Star, Quote, CalendarDays, CheckCircle2 } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -15,95 +15,36 @@ import heroImg2 from '../../../slidderHero/2.png';
 import heroImg3 from '../../../slidderHero/3.jpg';
 import heroImg4 from '../../../slidderHero/4.jpg';
 
-import { MOCK_CATEGORIES, HERO_SLIDES as DEFAULT_HERO_SLIDES, TESTIMONIALS as DEFAULT_TESTIMONIALS, MOCK_STATISTICS as DEFAULT_STATS } from '../../../data/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
-import { getPublicSpaces } from '../../../services/ruangPublikService';
-import { getCategories } from '../../../services/categoryService';
-import { getHomeStatistics, getTestimonials, getHeroSlides } from '../../../services/statsService';
+import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
+import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip } from '../../../components';
+
+const HERO_SLIDES = [
+  {
+    image: heroImg1,
+    title: 'Taman Suropati',
+    location: 'Menteng, Jakarta Pusat'
+  },
+  {
+    image: heroImg2,
+    title: 'Tebet Eco Park',
+    location: 'Tebet, Jakarta Selatan'
+  },
+  {
+    image: heroImg3,
+    title: 'Hutan Kota GBK',
+    location: 'Senayan, Jakarta Pusat'
+  },
+  {
+    image: heroImg4,
+    title: 'Taman Lapangan Banteng',
+    location: 'Sawah Besar, Jakarta Pusat'
+  }
+];
 
 export const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
-  const marqueeTrackRef = useRef(null);
-
-  // Dynamic States for API / Mock Data
-  const [heroSlides, setHeroSlides] = useState(DEFAULT_HERO_SLIDES);
-  const [statistics, setStatistics] = useState(null);
-  const [featuredSpaces, setFeaturedSpaces] = useState([]);
-  const [categories, setCategories] = useState(MOCK_CATEGORIES.filter((cat) => cat.id !== 'semua'));
-  const [testimonials, setTestimonials] = useState(DEFAULT_TESTIMONIALS);
-  const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-
-  // Fetch data placeholder for FastAPI integration
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchHomePageData = async () => {
-      try {
-        setIsLoadingSpaces(true);
-        const spacesData = await getPublicSpaces({ limit: 3 });
-        if (isMounted) {
-          setFeaturedSpaces(Array.isArray(spacesData) ? spacesData : []);
-        }
-      } catch (err) {
-        console.error('Error fetching featured spaces:', err);
-        if (isMounted) {
-          setFeaturedSpaces([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingSpaces(false);
-        }
-      }
-
-      try {
-        const statsData = await getHomeStatistics();
-        if (isMounted && statsData) {
-          setStatistics(statsData);
-        }
-      } catch (err) {
-        console.error('Error fetching statistics:', err);
-        if (isMounted) {
-          setStatistics(DEFAULT_STATS);
-        }
-      }
-
-      try {
-        const categoryData = await getCategories();
-        if (isMounted && categoryData.length > 0) {
-          setCategories(categoryData);
-        }
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-
-      try {
-        const testData = await getTestimonials();
-        if (isMounted && Array.isArray(testData) && testData.length > 0) {
-          setTestimonials(testData);
-        }
-      } catch (err) {
-        console.error('Error fetching testimonials:', err);
-      }
-
-      try {
-        const heroData = await getHeroSlides();
-        if (isMounted && Array.isArray(heroData) && heroData.length > 0) {
-          setHeroSlides(heroData);
-        }
-      } catch (err) {
-        console.error('Error fetching hero slides:', err);
-      }
-    };
-
-    fetchHomePageData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleSearch = (query) => {
     if (query) {
@@ -116,18 +57,6 @@ export const HomePage = () => {
   const handleCategoryClick = (catId) => {
     setActiveCategory(catId);
     navigate(`/ruang-publik?kategori=${catId}`);
-  };
-
-  const handleMarqueeMouseEnter = () => {
-    if (marqueeTrackRef.current) {
-      marqueeTrackRef.current.style.animationPlayState = 'paused';
-    }
-  };
-
-  const handleMarqueeMouseLeave = () => {
-    if (marqueeTrackRef.current) {
-      marqueeTrackRef.current.style.animationPlayState = 'running';
-    }
   };
 
   return (
@@ -334,57 +263,8 @@ export const HomePage = () => {
         `}</style>
       </section>
 
-      {/* SECTION 1: STATISTIK RAKU JAKARTA */}
-      <section className="stat-section">
-        <div className="container">
-          <div className="stat-panel">
-            <div className="stat-panel-head">
-              <h2 className="h2">Ruka Jakarta dalam Angka</h2>
-              <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: 'var(--space-sm) auto 0' }}>
-                Komitmen kami dalam membangun transparansi dan kepedulian warga terhadap ruang publik Jakarta.
-              </p>
-            </div>
-
-            <div className="stat-bar">
-              <div className="stat-cell">
-                <Trees size={26} color="#0F766E" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="stat-value">
-                  {statistics?.totalRuangPublik ?? '-'}
-                </div>
-                <div className="stat-label">Ruang Publik</div>
-              </div>
-
-              <div className="stat-cell">
-                <ClipboardCheck size={26} color="#F59E0B" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="stat-value">
-                  {statistics?.totalLaporanSelesai ?? '-'}
-                </div>
-                <div className="stat-label">Laporan Selesai</div>
-              </div>
-
-              <div className="stat-cell">
-                <CalendarDays size={26} color="#10B981" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="stat-value">
-                  {statistics?.laporanBulanIni ?? '-'}
-                </div>
-                <div className="stat-label">Laporan Bulan Ini</div>
-              </div>
-
-              <div className="stat-cell">
-                <Clock size={26} color="#0284C7" strokeWidth={1.75} style={{ marginBottom: 'var(--space-sm)' }} />
-                <div className="stat-value">
-                  {statistics?.tingkatPenyelesaianPersen != null ? `${statistics.tingkatPenyelesaianPersen}%` : '-'}
-                </div>
-                <div className="stat-label">Tingkat Penyelesaian</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* SECTION 2: RUANG PUBLIK PILIHAN */}
-      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: 'var(--color-surface)' }}>
+      {/* SECTION 1: RUANG PUBLIK PILIHAN */}
+      <section style={{ padding: 'var(--space-4xl) 0' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-2xl)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
             <div>
@@ -538,90 +418,58 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 3: TESTIMONI WARGA RUANGTERBUKA - CONTINUOUS MARQUEE */}
-      <section style={{ padding: 'var(--space-4xl) 0', backgroundColor: 'var(--color-bg-main)', width: '100%' }}>
-        <div className="container" style={{ marginBottom: 'var(--space-2xl)' }}>
-          <div className="home-testimonial-head">
-            <div>
-              <span className="home-testimonial-eyebrow">
-                <Quote size={14} aria-hidden="true" /> Suara Warga
-              </span>
-              <h2 className="h2">Sorotan Suara Warga</h2>
-            </div>
-            <p className="text-body" style={{ color: 'var(--color-text-muted)', maxWidth: '440px' }}>
-              Dengarkan pengalaman mereka dalam menggunakan platform RuangTerbuka Jakarta untuk menjaga fasilitas kota.
-            </p>
-          </div>
-        </div>
+      {/* SECTION 2: CEK KONDISI FASILITAS SEBELUM BERKUNJUNG */}
+      <section style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-4xl) 0' }}>
+        <div className="container" style={{ textAlign: 'center' }}>
+          <h2 className="h2" style={{ marginBottom: 'var(--space-xs)' }}>Cek Kondisi Fasilitas Sebelum Berkunjung</h2>
+          <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3xl)', maxWidth: '600px', margin: '0 auto var(--space-3xl)' }}>
+            Lihat kondisi fasilitas di ruang publik sebelum menentukan tujuanmu agar kegiatan bersantai atau berolahraga tetap nyaman.
+          </p>
 
-        <div 
-          className="testimonial-marquee-container" 
-          onMouseEnter={handleMarqueeMouseEnter}
-          onMouseLeave={handleMarqueeMouseLeave}
-          style={{ overflow: 'hidden', width: '100%', position: 'relative', padding: '40px 16px' }}
-        >
-          <div 
-            ref={marqueeTrackRef}
-            className="testimonial-marquee-track" 
-            style={{ display: 'flex', gap: '24px', animation: 'marquee 80s linear infinite', padding: '20px 0', width: 'max-content', alignItems: 'center' }}
-          >
-            {[...testimonials, ...testimonials].map((t, idx) => (
-              <div
-                key={`${t.id}-${idx}`}
-                style={{
-                  minWidth: '320px',
-                  maxWidth: '320px',
-                  position: 'relative',
-                }}
-                className="testimonial-card-marquee"
-              >
-                <Card
-                  className="card"
-                  style={{
-                    height: '100%',
-                    border: '1px solid var(--color-border)',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '16px',
-                    transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                >
-                  <CardBody style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <div style={{ display: 'flex', gap: '2px', marginBottom: '16px' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          fill={i < t.rating ? "#F59E0B" : "none"} 
-                          color={i < t.rating ? "#F59E0B" : "#CBD5E1"} 
-                        />
-                      ))}
-                    </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-lg)' }}>
+            <Card style={{ textAlign: 'left' }}>
+              <CardBody>
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Gamepad2 size={20} color="#0F766E" />
+                </div>
+                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Playground / Arena Bermain</h4>
+                <p className="text-caption" style={{ marginBottom: '12px' }}>Ayunan, perosotan, dan lantai peredam benturan anak.</p>
+                <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
+              </CardBody>
+            </Card>
 
-                    <div style={{ flex: 1, marginBottom: '20px', position: 'relative' }}>
-                      <Quote size={24} color="var(--color-primary)" style={{ opacity: 0.15, position: 'absolute', top: '-8px', left: '-8px' }} />
-                      <p className="text-body" style={{ 
-                        fontSize: '15px', 
-                        fontStyle: 'italic', 
-                        color: '#334155', 
-                        lineHeight: 1.6,
-                        position: 'relative',
-                        zIndex: 1
-                      }}>
-                        "{t.quote}"
-                      </p>
-                    </div>
+            <Card style={{ textAlign: 'left' }}>
+              <CardBody>
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Lightbulb size={20} color="#0F766E" />
+                </div>
+                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Penerangan Jalur Taman</h4>
+                <p className="text-caption" style={{ marginBottom: '12px' }}>Lampu pedestrian solar cell dan tiang penerangan utama.</p>
+                <StatusBadge status="rusak" customLabel="Status umum: Sebagian Rusak" />
+              </CardBody>
+            </Card>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '15px', color: '#0F172A' }}>{t.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{t.role}</div>
-                      </div>
-                      <span style={{ fontSize: '20px' }} title="Jakarta, Indonesia">{t.emoji}</span>
-                    </div>
-                  </CardBody>
-                </Card>
-              </div>
-            ))}
+            <Card style={{ textAlign: 'left' }}>
+              <CardBody>
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Droplets size={20} color="#0F766E" />
+                </div>
+                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Fasilitas Sanitasi / Toilet</h4>
+                <p className="text-caption" style={{ marginBottom: '12px' }}>Kebersihan toilet umum, kran air, dan wastafel cuci tangan.</p>
+                <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
+              </CardBody>
+            </Card>
+
+            <Card style={{ textAlign: 'left' }}>
+              <CardBody>
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Armchair size={20} color="#0F766E" />
+                </div>
+                <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Bangku & Meja Santai</h4>
+                <p className="text-caption" style={{ marginBottom: '12px' }}>Kenyamanan bangku taman kayu dan gazebo kanopi warga.</p>
+                <StatusBadge status="perlu_perhatian" customLabel="Status umum: Perlu Perhatian" />
+              </CardBody>
+            </Card>
           </div>
         </div>
 

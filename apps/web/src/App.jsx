@@ -11,15 +11,6 @@ import RequireAdmin from './routes/RequireAdmin';
 import { HomePage, DaftarRuangPublikPage, DetailRuangPublikPage } from './features/ruang-publik';
 import { FormLaporPage, RiwayatLaporanPage, DetailStatusLaporanPage } from './features/laporan';
 import { LoginPage, LoginPemerintahPage } from './features/auth';
-import { TentangPage } from './features/tentang';
-import {
-  ProfilDashboardPage,
-  RuangTersimpanPage,
-  EditProfilPage,
-  PengaturanTemaPage,
-  KeamananPage,
-  BantuanPage,
-} from './features/profil';
 
 // Feature Pages Imports - Admin
 import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
@@ -35,30 +26,29 @@ function App() {
           {/* Redirect / ke /home */}
           <Route path="/" element={<Navigate to="/home" replace />} />
 
-          {/* LAYOUT PUBLIK (Phase 5 - 12) */}
-          <Route element={<PublicLayout />}>
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
-            <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
-            <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
-            <Route path="/tentang" element={<TentangPage />} />
-            
-            <Route
-              path="/laporan-saya"
-              element={
-                <RequireAuth>
-                  <RiwayatLaporanPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/laporan-saya/:id"
-              element={
-                <RequireAuth>
-                  <DetailStatusLaporanPage />
-                </RequireAuth>
-              }
-            />
+        {/* LAYOUT PUBLIK (Phase 5 - 12) */}
+        <Route element={<PublicLayout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
+          <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
+          <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
+          
+          <Route
+            path="/laporan-saya"
+            element={
+              <RequireAuth>
+                <RiwayatLaporanPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/laporan-saya/:id"
+            element={
+              <RequireAuth>
+                <DetailStatusLaporanPage />
+              </RequireAuth>
+            }
+          />
 
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login-pemerintah" element={<LoginPemerintahPage />} />
