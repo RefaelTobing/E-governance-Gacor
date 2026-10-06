@@ -16,6 +16,7 @@ import {
 import { MOCK_DASHBOARD_STATS } from '../../../data/mockData';
 import { Button, Card, CardBody, StatusBadge, SearchInput, EmptyState, Skeleton } from '../../../components';
 import { getReports, getDashboardStats } from '../../../services/laporanService';
+import PetaDashboardAdmin from '../components/PetaDashboardAdmin';
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
@@ -160,32 +161,21 @@ export const DashboardPage = () => {
 
       {/* ROW 1: PETA SEBARAN & RINGKASAN KATEGORI */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--space-xl)', marginBottom: 'var(--space-2xl)' }}>
-        {/* Peta Sebaran Laporan Aktif */}
+        {/* Peta Sebaran Ruang Publik */}
         <Card>
           <CardBody>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', gap: '8px', flexWrap: 'wrap' }}>
               <div>
-                <h3 className="h3" style={{ fontSize: '18px' }}>Peta Sebaran Laporan Aktif</h3>
-                <p className="text-caption">Sebaran titik perhatian publik di taman dan ruang komunal kota.</p>
+                <h3 className="h3" style={{ fontSize: '18px' }}>Peta Sebaran Ruang Publik</h3>
+                <p className="text-caption">Seluruh ruang terbuka terdata di Jakarta beserta lokasinya.</p>
               </div>
               <div style={{ display: 'flex', gap: '6px' }}>
-                <span className="badge badge-info">Wilayah Terbuka</span>
-                <span className="badge badge-warning">Titik Insiden</span>
+                <span className="badge badge-success">Terverifikasi</span>
+                <span className="badge badge-neutral">Terdaftar</span>
               </div>
             </div>
 
-            <div style={{ height: '240px', backgroundColor: '#e2e8f0', borderRadius: 'var(--radius-md)', position: 'relative', overflow: 'hidden', backgroundImage: 'radial-gradient(#CBD5E1 1.5px, transparent 1.5px)', backgroundSize: '20px 20px' }}>
-              <div style={{ position: 'absolute', top: '30%', left: '35%', textAlign: 'center' }}>
-                <span style={{ backgroundColor: 'var(--color-warning)', color: 'white', padding: '4px 8px', borderRadius: 'var(--radius-pill)', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={12} color="#FFFFFF" /> Taman Suropati (Lampu Mati)
-                </span>
-              </div>
-              <div style={{ position: 'absolute', top: '60%', left: '55%', textAlign: 'center' }}>
-                <span style={{ backgroundColor: 'var(--color-info)', color: 'white', padding: '4px 8px', borderRadius: 'var(--radius-pill)', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={12} color="#FFFFFF" /> Tebet Eco Park (Kran Bocor)
-                </span>
-              </div>
-            </div>
+            <PetaDashboardAdmin />
           </CardBody>
         </Card>
 
