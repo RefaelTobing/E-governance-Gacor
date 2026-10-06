@@ -122,8 +122,8 @@ curl "http://localhost:8000/api/v1/public-spaces?category=taman&limit=5"
 **Verifikasi:**
 ```bash
 curl "http://localhost:8000/api/v1/facilities"
-curl "http://localhost:8000/api/v1/public-spaces?facilities=Toilet%20Umum&limit=5"
-# → setiap entri hasil punya fasilitas "Toilet Umum" (cek via detail masing-masing)
+curl "http://localhost:8000/api/v1/public-spaces?facilities=Bangku%20Taman&facilities=Pohon%20Peneduh&limit=5"
+# → setiap entri hasil punya kedua fasilitas (cek `fasilitas[]` di respons atau detail masing-masing)
 ```
 
 ---
@@ -133,8 +133,8 @@ curl "http://localhost:8000/api/v1/public-spaces?facilities=Toilet%20Umum&limit=
 **PRD:** nama, kategori, alamat/kelurahan, koordinat, jam operasional, deskripsi, daftar fasilitas; **field yang tidak tersedia ditandai eksplisit "data tidak tersedia"** (bukan dikosongkan).
 
 **Implementasi saat ini:**
-- `GET /public-spaces/{id}` → `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `kategori{...}` + `fasilitas[]` + `foto[]`.
-- Relasi di-eager-load (`joinedload` kategori & fasilitas) → anti N+1.
+- `GET /public-spaces/{id}` → `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `kategori{...}` + `fasilitas[]` + `foto[]` + `stats{baik, perlu_perhatian, rusak}`.
+- Relasi di-eager-load (`joinedload` kategori & fasilitas) → anti N+1. Di list, fasilitas pakai `selectinload` karena `joinedload` koleksi + `LIMIT` memotong baris page.
 - Koordinat ikut diresponse (`latitude`/`longitude`) — FE yang menampilkan di peta.
 - `404` bila id tak ada.
 

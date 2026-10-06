@@ -42,7 +42,10 @@ def read_public_spaces(
     )
     return [
         RuangPublikListResponse.model_validate(ruang, from_attributes=True).model_copy(
-            update={"jarak_km": jarak}
+            update={
+                "jarak_km": jarak,
+                "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
+            }
         )
         for ruang, jarak in hasil
     ]
@@ -72,7 +75,10 @@ def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
     # supaya FE bisa merender galeri tanpa perubahan kontrak saat foto bertambah.
     foto = [ruang.image_url] if ruang.image_url else []
     return RuangPublikDetailResponse.model_validate(ruang, from_attributes=True).model_copy(
-        update={"foto": foto}
+        update={
+            "foto": foto,
+            "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
+        }
     )
 
 

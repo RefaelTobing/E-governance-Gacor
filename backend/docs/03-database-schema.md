@@ -73,10 +73,9 @@ categories ──┐
 | `nama` | VARCHAR(255) NOT NULL | Mis. `Toilet Umum` — dipakai filter FE (`GET /facilities` = aggregate unik) |
 | `kategori` | VARCHAR(100) | Mis. `Sanitasi` |
 | `status` | VARCHAR(50) default `'baik'` | Kamus kondisi: **`baik` · `perlu_perhatian` · `rusak`** |
-| `lokasi_spesifik` | VARCHAR(255) NULL | |
 | `deskripsi` | TEXT NULL | |
 
-Isi tabel: `app/etl/seed_fasilitas.py` (data contoh berprefix `seed-`, idempoten) + buatan admin lewat `/api/v1/admin/facilities` atau impor CSV. Sumber Satu Data tidak punya kolom fasilitas.
+Isi tabel: `app/etl/seed_fasilitas.py` (katalog `data/processed/fasilitas.csv`, baris berprefix `seed-`, idempoten) + buatan admin lewat `/api/v1/admin/facilities` atau impor CSV. Sumber Satu Data tidak punya kolom fasilitas.
 
 ### `laporan`
 | Kolom | Tipe | Catatan |

@@ -29,16 +29,16 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | **Kelola Fasilitas (Admin)** ||||
 | `GET` | `/api/v1/admin/facilities` | **Admin** | Semua baris fasilitas + nama induk (`q`/`kategori`/`status`/`wilayah`, `skip`/`limit`) |
 | `POST` | `/api/v1/admin/facilities` | **Admin** | Tambah fasilitas; `201`, `404` induk tak ada, `400` body tak valid |
-| `PATCH` | `/api/v1/admin/facilities/{id}` | **Admin** | Ubah sebagian field (nama, kategori, status, lokasi, deskripsi, induk) |
+| `PATCH` | `/api/v1/admin/facilities/{id}` | **Admin** | Ubah sebagian field (nama, kategori, status, deskripsi, induk) |
 | `DELETE` | `/api/v1/admin/facilities/{id}` | **Admin** | Hapus; `409` kalau masih jadi rujukan laporan |
 | `POST` | `/api/v1/admin/facilities/import` | **Admin** | Impor CSV `multipart/form-data`; hasil parsial `{created, failed, errors}` |
 | **Sinkronisasi Satu Data (Admin)** ||||
 | `POST` | `/api/v1/admin/sync-data` | **Admin** | Trigger manual pipeline ETL penuh; `409` bila run lain masih berjalan |
 | `GET` | `/api/v1/admin/sync-data` | **Admin** | Riwayat run ETL terakhir (`limit` 1..200, default 20), terbaru di atas |
 | **Ruang Publik** ||||
-| `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter |
+| `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter (`fasilitas[]` ringkas + `stats{}` per baris) |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
-| `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` |
+| `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` + `stats{}` |
 | `GET` | `/api/v1/public-spaces/{id}/reports` | — | Laporan tayang per ruang publik **(bermasalah, lihat §4)** |
 | **Laporan** ||||
 | `POST` | `/api/v1/reports` | Token opsional | Kirim laporan (anonim tanpa token) |
@@ -117,9 +117,11 @@ Header `Authorization: Bearer <token>` → response `UserResponse` (id, name, em
 ```bash
 curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=3&category=taman"
 ```
-Response: array `RuangPublikListResponse` — `id, nama, kategori_id, kategori{...}, wilayah, alamat, latitude, longitude, verified, jarak_km`.
+Response: array `RuangPublikListResponse`: `id, nama, kategori_id, kategori{...}, wilayah, alamat, latitude, longitude, verified, jarak_km, fasilitas[{id, nama, status}], stats{baik, perlu_perhatian, rusak}`.
 
 Catatan: Haversine dihitung **di SQL** (bukan Python). Baris tanpa koordinat selalu dibuang saat pencarian radius. Tanpa `lat/long` → `jarak_km: null`, urutan alfabet.
+
+`fasilitas` sengaja ringkas (3 field) karena tarikan bisa sampai 500 baris; `deskripsi`/`created_at` tidak ikut. `stats` adalah tiga ember yang **saling lepas**; jumlahnya selalu = jumlah baris `fasilitas`, berbeda dengan `GET /public-spaces/stats` yang menghitung dua ember.
 
 ### `GET /api/v1/public-spaces/stats`
 ```json
@@ -128,7 +130,7 @@ Catatan: Haversine dihitung **di SQL** (bukan Python). Baris tanpa koordinat sel
 `status_prima` = fasilitas `status="baik"`; `perlu_perhatian` = semua yang **bukan** baik (termasuk `NULL`).
 
 ### `GET /api/v1/public-spaces/{id}`
-Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` + `foto: ["..."]` (dibungkus dari `image_url` tunggal) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit — FEAT-012). `404` bila id tak ada.
+Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` (penuh) + `foto: ["..."]` (dibungkus dari `image_url` tunggal) + `stats{...}` (versi penuh dari `fasilitas`, kunci sama dengan list) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit, sesuai FEAT-012). `404` bila id tak ada.
 
 ### `GET /api/v1/public-spaces/{id}/reports`
 Laporan tayang untuk 1 ruang publik, query `skip`/`limit`.
@@ -136,8 +138,9 @@ Laporan tayang untuk 1 ruang publik, query `skip`/`limit`.
 
 ### `GET /api/v1/facilities`
 ```json
-[ { "nama": "Toilet Umum", "kategori": "Sanitasi" } ]
+[ { "nama": "Bangku Taman", "kategori": "Perabot" }, { "nama": "Pohon Peneduh", "kategori": "Tanaman" } ]
 ```
+Katalog hasil `SELECT DISTINCT nama, kategori ... ORDER BY nama`: saat ini 12 baris dari `data/processed/fasilitas.csv`, dipakai FE mengisi dropdown filter.
 
 ### `GET /api/v1/categories`
 Query `skip` (0), `limit` (100) → `[{ "id": "taman", "label": "Taman", "icon_name": null }]`.
@@ -257,7 +260,7 @@ Prefix `/api/v1/admin/facilities`, semua butuh role `admin` (`get_current_admin`
 | Endpoint | Body / Query | Catatan |
 |---|---|---|
 | `GET /admin/facilities` | `?q=&kategori=&status=&wilayah=&skip=&limit=` | `limit` 1..500 (default 100). Response punya `ruang_publik_nama` via join |
-| `POST /admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, lokasi_spesifik?, deskripsi? }` | `201`; `400` status di luar `baik/perlu_perhatian/rusak`; `404` induk tak ada |
+| `POST /admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, deskripsi? }` | `201`; `400` status di luar `baik/perlu_perhatian/rusak`; `404` induk tak ada |
 | `PATCH /admin/facilities/{id}` | sebagian field di atas | Field kosong/diisi ulang dinormalisasi (strip, status di-lowercase) |
 | `DELETE /admin/facilities/{id}` | — | `409` bila `laporan.fasilitas_id` masih menunjuk baris ini |
 | `POST /admin/facilities/import` | `file` CSV multipart | Wajib `.csv` ≤1MB, ≤2000 baris, header `nama` + `ruang_publik_id`\|`ruang_publik_nama`; dibuat per baris, baris gagal dikembalikan di `errors` |

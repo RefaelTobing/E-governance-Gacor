@@ -167,10 +167,6 @@ def _bersihkan(data: dict) -> dict:
         data["kategori"] = (data["kategori"] or "").strip() or None
         if data["kategori"] and len(data["kategori"]) > 100:
             raise HTTPException(status_code=400, detail="Kategori maksimal 100 karakter")
-    if "lokasi_spesifik" in data:
-        data["lokasi_spesifik"] = (data["lokasi_spesifik"] or "").strip() or None
-        if data["lokasi_spesifik"] and len(data["lokasi_spesifik"]) > 255:
-            raise HTTPException(status_code=400, detail="Lokasi spesifik maksimal 255 karakter")
     if "deskripsi" in data:
         data["deskripsi"] = (data["deskripsi"] or "").strip() or None
     if "status" in data:
@@ -191,7 +187,6 @@ def _tampilan(fas: Fasilitas) -> AdminFasilitasResponse:
         nama=fas.nama,
         kategori=fas.kategori,
         status=fas.status,
-        lokasi_spesifik=fas.lokasi_spesifik,
         deskripsi=fas.deskripsi,
         created_at=fas.created_at,
         updated_at=fas.updated_at,

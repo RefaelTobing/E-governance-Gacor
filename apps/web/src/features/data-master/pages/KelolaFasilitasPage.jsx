@@ -18,7 +18,6 @@ const FORM_KOSONG = {
   nama: '',
   kategori: '',
   status: 'baik',
-  lokasiSpesifik: '',
   deskripsi: '',
 };
 
@@ -132,7 +131,7 @@ export const KelolaFasilitasPage = () => {
     const q = pencarian.trim().toLowerCase();
     if (!q) return facilities;
     return facilities.filter((f) =>
-      [f.nama, f.ruangPublikNama, f.lokasiSpesifik, f.kategori, f.wilayah]
+      [f.nama, f.ruangPublikNama, f.kategori, f.wilayah]
         .some((nilai) => (nilai || '').toLowerCase().includes(q))
     );
   }, [facilities, pencarian]);
@@ -152,7 +151,6 @@ export const KelolaFasilitasPage = () => {
       nama: fas.nama,
       kategori: fas.kategori || '',
       status: fas.status || 'baik',
-      lokasiSpesifik: fas.lokasiSpesifik || '',
       deskripsi: fas.deskripsi || '',
     });
     setEditingId(fas.id);
@@ -268,7 +266,6 @@ export const KelolaFasilitasPage = () => {
                   <th style={{ padding: '12px' }}>FASILITAS</th>
                   <th style={{ padding: '12px' }}>RUANG PUBLIK</th>
                   <th style={{ padding: '12px' }}>KATEGORI</th>
-                  <th style={{ padding: '12px' }}>LOKASI SPESIFIK</th>
                   <th style={{ padding: '12px' }}>STATUS KONDISI</th>
                   <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
                 </tr>
@@ -280,14 +277,13 @@ export const KelolaFasilitasPage = () => {
                       <td style={{ padding: '12px' }}><Skeleton height="18px" width="140px" /></td>
                       <td style={{ padding: '12px' }}><Skeleton height="18px" width="120px" /></td>
                       <td style={{ padding: '12px' }}><Skeleton height="20px" width="90px" borderRadius="var(--radius-pill)" /></td>
-                      <td style={{ padding: '12px' }}><Skeleton height="18px" width="130px" /></td>
                       <td style={{ padding: '12px' }}><Skeleton height="20px" width="80px" borderRadius="var(--radius-pill)" /></td>
                       <td style={{ padding: '12px', textAlign: 'right' }}><Skeleton height="28px" width="90px" borderRadius="var(--radius-md)" /></td>
                     </tr>
                   ))
                 ) : errorMsg ? (
                   <tr>
-                    <td colSpan="6" style={{ padding: '32px 12px', textAlign: 'center' }}>
+                    <td colSpan="5" style={{ padding: '32px 12px', textAlign: 'center' }}>
                       <EmptyState
                         icon={<AlertTriangle size={24} color="#0F766E" />}
                         title="Data fasilitas gagal dimuat"
@@ -310,7 +306,6 @@ export const KelolaFasilitasPage = () => {
                         )}
                       </td>
                       <td style={{ padding: '12px' }}>{fas.kategori ? <span className="badge badge-info">{fas.kategori}</span> : <span style={{ color: 'var(--color-text-muted)' }}>-</span>}</td>
-                      <td style={{ padding: '12px' }}>{fas.lokasiSpesifik || <span style={{ color: 'var(--color-text-muted)' }}>-</span>}</td>
                       <td style={{ padding: '12px' }}><StatusBadge status={fas.status} /></td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -326,7 +321,7 @@ export const KelolaFasilitasPage = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" style={{ padding: '32px 12px', textAlign: 'center' }}>
+                    <td colSpan="5" style={{ padding: '32px 12px', textAlign: 'center' }}>
                       <EmptyState
                         title={pencarian.trim() ? 'Tidak ada yang cocok' : 'Belum ada fasilitas terdata'}
                         description={
@@ -440,15 +435,6 @@ export const KelolaFasilitasPage = () => {
                 </select>
               </div>
 
-              <Input
-                id="fas-lokasi"
-                name="fas-lokasi"
-                label="Lokasi Spesifik"
-                value={form.lokasiSpesifik}
-                onChange={(e) => setForm({ ...form, lokasiSpesifik: e.target.value })}
-                placeholder="mis. Jalur selatan dekat pintu masuk"
-              />
-
               <div style={{ marginBottom: '16px' }}>
                 <label style={gayaLabel} htmlFor="fas-deskripsi">Deskripsi</label>
                 <textarea
@@ -523,7 +509,7 @@ export const KelolaFasilitasPage = () => {
 
                 <div style={{ backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', padding: '12px', marginBottom: '16px', fontSize: '13px', color: 'var(--color-text-muted)' }}>
                   <p style={{ marginBottom: '6px' }}>Kolom wajib: <strong>nama</strong>, dan salah satu dari <strong>ruang_publik_id</strong> atau <strong>ruang_publik_nama</strong>.</p>
-                  <p style={{ marginBottom: 0 }}>Kolom opsional: <strong>kategori</strong>, <strong>status</strong> (baik, perlu_perhatian, rusak), <strong>lokasi_spesifik</strong>, <strong>deskripsi</strong>. Maksimal 2000 baris per berkas.</p>
+                  <p style={{ marginBottom: 0 }}>Kolom opsional: <strong>kategori</strong>, <strong>status</strong> (baik, perlu_perhatian, rusak), <strong>deskripsi</strong>. Maksimal 2000 baris per berkas.</p>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>

@@ -1,7 +1,7 @@
 from typing import Optional, Sequence
 
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session, contains_eager, joinedload
+from sqlalchemy.orm import Session, contains_eager, joinedload, selectinload
 
 from app.models.base import utcnow
 from app.models.fasilitas import Fasilitas
@@ -47,7 +47,12 @@ def search_ruang_publik(
     """
     jarak = _haversine_km(lat, lng) if lat is not None and lng is not None else None
 
-    stmt = select(RuangPublik).options(joinedload(RuangPublik.kategori))
+    # selectinload, bukan joinedload, untuk fasilitas: joinedload koleksi
+    # berpadu dengan LIMIT sehingga baris page terpotong di tengah eager load.
+    stmt = (
+        select(RuangPublik)
+        .options(joinedload(RuangPublik.kategori), selectinload(RuangPublik.fasilitas))
+    )
 
     # Baris tanpa koordinat tidak bisa diukur jaraknya, jadi selalu dibuang
     # saat pencarian berbasis radius.
@@ -91,6 +96,19 @@ def search_ruang_publik(
 
     stmt = stmt.add_columns(jarak.label("jarak_km"))
     return [(row[0], float(row[1])) for row in db.execute(stmt).unique().all()]
+
+
+def hitung_status_fasilitas(baris: Sequence[Fasilitas]) -> dict[str, int]:
+    """Tiga ember kondisi yang saling lepas, jadi jumlahnya selalu = total baris.
+
+    Nilai di luar kamus dan NULL masuk `perlu_perhatian`; mengabaikannya membuat
+    badge di FE menjumlah lebih kecil dari data yang sebenarnya ada.
+    """
+    hasil = {"baik": 0, "perlu_perhatian": 0, "rusak": 0}
+    for fas in baris:
+        kunci = fas.status if fas.status in ("baik", "rusak") else "perlu_perhatian"
+        hasil[kunci] += 1
+    return hasil
 
 
 def get_ruang_publik(db: Session, ruang_publik_id: str) -> Optional[RuangPublik]:
@@ -140,7 +158,6 @@ def list_fasilitas_admin(
         stmt = stmt.where(
             or_(
                 Fasilitas.nama.ilike(pola),
-                Fasilitas.lokasi_spesifik.ilike(pola),
                 RuangPublik.nama.ilike(pola),
             )
         )
@@ -271,12 +288,8 @@ def import_fasilitas_csv(db: Session, baris: list[dict]) -> dict:
             continue
 
         kategori = (row.get("kategori") or "").strip() or None
-        lokasi = (row.get("lokasi_spesifik") or "").strip() or None
         if kategori and len(kategori) > 100:
             errors.append({"baris": nomor, "pesan": "Kategori maksimal 100 karakter."})
-            continue
-        if lokasi and len(lokasi) > 255:
-            errors.append({"baris": nomor, "pesan": "Lokasi spesifik maksimal 255 karakter."})
             continue
 
         db.add(Fasilitas(
@@ -284,7 +297,6 @@ def import_fasilitas_csv(db: Session, baris: list[dict]) -> dict:
             nama=nama,
             kategori=kategori,
             status=status,
-            lokasi_spesifik=lokasi,
             deskripsi=(row.get("deskripsi") or "").strip() or None,
         ))
         created += 1

@@ -7,7 +7,6 @@ class FasilitasBase(BaseModel):
     nama: str
     kategori: Optional[str] = None
     status: Optional[str] = "baik"
-    lokasi_spesifik: Optional[str] = None
     deskripsi: Optional[str] = None
 
 class FasilitasCreate(FasilitasBase):
@@ -17,7 +16,6 @@ class FasilitasUpdate(BaseModel):
     nama: Optional[str] = None
     kategori: Optional[str] = None
     status: Optional[str] = None
-    lokasi_spesifik: Optional[str] = None
     deskripsi: Optional[str] = None
 
 class FasilitasResponse(FasilitasBase):
@@ -30,6 +28,19 @@ class FasilitasResponse(FasilitasBase):
 class FasilitasFilterOption(BaseModel):
     nama: str
     kategori: Optional[str] = None
+
+
+class FasilitasRingkas(BaseModel):
+    """Baris fasilitas untuk daftar ruang publik.
+
+    Hanya tiga field yang dipakai chip dan badge di FE. Respons daftar
+    memuat 1200 baris per tarikan, jadi `deskripsi`/`created_at` sengaja
+    tidak ikut.
+    """
+
+    id: str
+    nama: str
+    status: Optional[str] = "baik"
 
 
 # Satu-satunya nilai status yang boleh disimpan, supaya badge di FE dan

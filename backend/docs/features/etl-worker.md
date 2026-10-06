@@ -16,7 +16,7 @@ Kode terkait (semua di `app/etl/`):
 - `seed_db.py` — **tahap Load (BE-16):** muat `categories` + `ruang_publik` ke MySQL (`--file`,
   `--reset`, `--pakai-kandidat`); baris sudah ada dicocokkan id → natural key → nama, lalu hanya
   kolom `ETL_OWNED` yang disegarkan (aturan merge di `data-master-service.md` §4)
-- `seed_fasilitas.py` — isi tabel `fasilitas` dengan data contoh per ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
+- `seed_fasilitas.py`: isi tabel `fasilitas` dari katalog `data/processed/fasilitas.csv`, satu baris katalog untuk **semua** ruang publik (`--reset`); **bukan** bagian sinkron data resmi, karena sumber Satu Data tidak punya kolom fasilitas
 - `seed_admin.py` — buat admin pertama (bukan bagian sinkron data; lihat `admin-auth.md` §3)
 - `scheduler.py` — **Penjadwalan (BE-17):** jalankan extract -> transform -> seed berkala lewat
   APScheduler, proses terpisah dari server API (`python -m app.etl.scheduler`, `--once` untuk
@@ -61,7 +61,7 @@ Data:
 | Koordinat terisi | **Ya** — 1200/1200 baris `ruang_publik.csv` punya `latitude`/`longitude` |
 | Kategori konsisten | **Ya** — kolom `tipe` → `kategori_id` lewat `kategori.py`; `kategori_id` lama (`taman`, `jalur-hijau`) dinormalisasi ulang saat transform |
 | Penjadwalan otomatis (BE-17) | **Ada** — `python -m app.etl.scheduler` (APScheduler, proses terpisah dari API); jadwal harian 02:00 WIB lewat `ETL_JADWAL`, kandidat tetap direview manual |
-| Isi tabel `fasilitas` | **Data contoh** lewat `seed_fasilitas.py` — sumber resmi tidak punya kolom fasilitas |
+| Isi tabel `fasilitas` | **Katalog tetap** `data/processed/fasilitas.csv` lewat `seed_fasilitas.py` (12 baris × seluruh ruang publik), sumber resmi tidak punya kolom fasilitas |
 | Endpoint trigger dari admin API | **Ada (BE-18)** — `POST /api/v1/admin/sync-data` (admin-only, pipeline penuh, `409` saat run lain berjalan); kontrak di `04-api-endpoints.md` §8 |
 | Log hasil run per tahap (BE-19) | **Ada**: tabel `etl_run` diisi tiap run (status, mulai/selesai, `tahap_gagal`, `hitung` insert/update/skip, log 100 baris terakhir per tahap) dan dibaca lewat `GET /api/v1/admin/sync-data?limit=` |
 | Pemetaan field lengkap vs sumber | Sebagian atribut (`deskripsi`, `jam_operasional`, dll.) tidak seragam → kolom nullable (PRD §6.3) |
@@ -128,7 +128,7 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 # 3. seed / load (idempoten; sumber bawaan ruang_publik_terbaru.csv; jalankan lagi boleh)
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 
-# 3b. isi fasilitas (data contoh; dilewati untuk lokasi yang sudah punya fasilitas)
+# 3b. isi fasilitas dari katalog (dilewati untuk lokasi yang sudah punya fasilitas)
 ..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas
 
 # 4. ganti total isi tabel (backup DB dulu!), atau seed file lain
@@ -142,7 +142,7 @@ docker compose up -d            # dari root repo; tunggu raku-db healthy
 ```
 
 Keluaran `seed_db`: nama file sumber, jumlah kategori & ruang publik **baru**, **diupdate**, dan tanpa perubahan + total, jumlah kolom yang ditahan penanda edit manual bila ada (plus baris yang cocok tanpa id), lalu baris per kategori.
-Keluaran `seed_fasilitas`: jumlah fasilitas **baru** + total, lalu baris per kategori ruang publik; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
+Keluaran `seed_fasilitas`: katalog yang dipakai, jumlah fasilitas **baru** + total, lalu baris per kategori fasilitas; `--reset` menghapus hanya baris berprefix `seed-` (baris buatan admin lewat API/CSV tetap ada).
 Keluaran `extract_satudata`: nama dataset, jumlah baris & kolom, tanggal rilis sumber (bila ada), nama file di `data/raw/`; dataset gagal tidak menghentikan yang lain, dan membuat keluaran exit code 1.
 Keluaran `transform_rth_raw`: jumlah sumber tersimpan, jumlah buang per alasan, jumlah baris master yang disegarkan/tanpa pasangan, jumlah kandidat; daftar lengkap (79 nama tanpa pasangan, 1 koordinat luar rentang) ada di `transform_laporan.json`.
 Keluaran `scheduler`: log bertimestamp per tahap (stdout & stderr anak proses ikut masuk), ringkasan durasi run, dan baris ERROR bila satu tahap gagal lalu run dibatalkan.
@@ -256,8 +256,8 @@ PRD §5: "Proses berkala (cron job/scheduled task)". Kini ada scheduler sendiri,
 - [x] **Master aman:** `ruang_publik.csv` tetap 1200 baris dengan isi sama sebelum & sesudah transform (tidak pernah dibuka untuk ditulis) (2026-10-04)
 - [x] **Guard kandidat:** `seed_db --file .../kandidat/ruang_publik_kandidat.csv` ditolak exit 1; `seed_db --file .../ruang_publik_terbaru.csv` → `0 baru (total 1200)` (2026-10-04)
 - [x] **Idempoten:** jalankan `seed_db` dua kali berturut-turut → keluaran kedua `0 baru` dan total tidak berubah (2026-10-04)
-- [x] **Idempoten fasilitas:** `seed_fasilitas` dua kali berturut-turut → kedua kali `0 baru`, total tetap 5428; `--reset` lalu seed ulang → jumlahnya sama persis (2026-10-04)
-- [x] **Fasilitas admin aman:** ruang publik yang sudah punya fasilitas (dibuat lewat `POST /admin/facilities`) dilewati `seed_fasilitas` (2026-10-04)
+- [x] **Idempoten fasilitas:** `seed_fasilitas` dua kali berturut-turut → kedua kali `0 baru`, total tetap 14400 (12 katalog × 1200 ruang publik); `--reset` lalu seed ulang → `14400 baru` lagi, jumlahnya sama persis (2026-10-06)
+- [x] **Fasilitas admin aman:** hapus 12 baris seed satu ruang publik + buat 1 baris lewat `POST /admin/facilities` → `seed_fasilitas` lanjut `0 baru` dan baris admin tetap 1; baris dihapus via `DELETE` lalu seed ulang → `12 baru`, total kembali 14400 (2026-10-06)
 - [x] **Merge field-level (BE-16):** edit `nama` + `latitude` lewat `mark_fields_edited()` -> seed ulang -> nilai edit bertahan dan tercatat `2 kolom ditahan`; `longitude` tanpa penanda dibetulkan balik dari CSV; `field_source` 0 baris disentuh seed (2026-10-04)
 - [x] **Load update + backfill (BE-16):** seed pertama `0 baru, 1018 diupdate` (koordinat disegarkan + `kecamatan`/`kelurahan` terisi 1006 baris), diulang 2x -> `0 diupdate`; selisih kolom `ETL_OWNED` vs `ruang_publik_terbaru.csv` = 0; `verified` 1200 True tak tersentuh (2026-10-04)
 - [x] **Pencocokan tanpa id (BE-16):** baris uji ber-id baru dengan natural key kandidat -> masuk jalur update `natural key`, 687 kandidat -> 48 jalur update + 639 insert, tanpa duplikat; baris uji dibersihkan setelah uji, DB kembali 1200 baris (2026-10-04)

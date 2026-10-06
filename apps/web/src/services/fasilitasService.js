@@ -16,7 +16,6 @@ const keTampilan = (row) => ({
   nama: row.nama,
   kategori: row.kategori,
   status: row.status,
-  lokasiSpesifik: row.lokasi_spesifik,
   deskripsi: row.deskripsi,
   createdAt: row.created_at,
 });
@@ -60,7 +59,6 @@ export const createFacility = async (payload) => {
       nama: payload.nama,
       kategori: payload.kategori || null,
       status: payload.status,
-      lokasi_spesifik: payload.lokasiSpesifik || null,
       deskripsi: payload.deskripsi || null,
     });
     return keTampilan(data);
@@ -75,7 +73,6 @@ export const updateFacility = async (id, payload) => {
       nama: payload.nama,
       kategori: payload.kategori || null,
       status: payload.status,
-      lokasi_spesifik: payload.lokasiSpesifik || null,
       deskripsi: payload.deskripsi || null,
     });
     return keTampilan(data);

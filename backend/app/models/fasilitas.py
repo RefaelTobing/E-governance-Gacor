@@ -11,7 +11,6 @@ class Fasilitas(Base):
     nama = Column(String(255), nullable=False)
     kategori = Column(String(100))
     status = Column(String(50), default="baik")
-    lokasi_spesifik = Column(String(255))
     deskripsi = Column(Text)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)

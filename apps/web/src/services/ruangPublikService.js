@@ -7,6 +7,16 @@ import { MOCK_RUANG_PUBLIK, MOCK_RUANG_PUBLIK_METRICS } from '../data/mockData';
 const IS_DEV = import.meta.env.DEV;
 
 /**
+ * Backend memakai snake_case (perlu_perhatian); UI memakai camelCase.
+ * Nilai kosong ditekan ke 0 supaya badge tidak pernah menampilkan undefined.
+ */
+const keStats = (raw) => ({
+  baik: raw?.baik ?? 0,
+  perluPerhatian: raw?.perlu_perhatian ?? 0,
+  rusak: raw?.rusak ?? 0,
+});
+
+/**
  * Ambil daftar ruang publik dari backend FastAPI.
  * Fallback otomatis ke mockData jika backend belum berjalan saat mode development.
  * 
@@ -36,7 +46,7 @@ export const getPublicSpaces = async (params = {}) => {
     });
 
     const items = Array.isArray(data) ? data : data?.items ?? [];
-    return items;
+    return items.map((item) => ({ ...item, stats: keStats(item.stats) }));
   } catch (error) {
     if (IS_DEV) {
       console.info('[ruangPublikService] FastAPI belum terhubung, menggunakan fallback mockData.');
@@ -131,7 +141,7 @@ export const getPublicSpaceDetail = async (id) => {
       image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
       fasilitas: data.fasilitas || [],
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
-      stats: data.stats || { baik: 0, perluPerhatian: 0, rusak: 0 },
+      stats: keStats(data.stats),
       jamOperasional: data.jam_operasional || data.jamOperasional || 'TBA',
       ramahHewan: data.ramah_hewan || data.ramahHewan || 'TBA',
       aksesDisabilitas: data.akses_disabilitas || data.aksesDisabilitas || 'TBA',

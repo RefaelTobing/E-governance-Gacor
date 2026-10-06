@@ -60,7 +60,7 @@ Ruang publik & kategori berasal dari hasil ETL di `data/processed/` — jalankan
 ..\.venv\Scripts\python.exe -m app.etl.seed_db
 ```
 
-Fasilitas tidak punya sumber data resmi (file Satu Data tak punya kolom fasilitas), jadi diisi terpisah oleh `seed_fasilitas` — data contoh per ruang publik, dilewati untuk lokasi yang sudah punya fasilitas (termasuk buatan admin):
+Fasilitas tidak punya sumber data resmi (file Satu Data tak punya kolom fasilitas), jadi diisi terpisah oleh `seed_fasilitas`: katalog tetap `data/processed/fasilitas.csv`, satu katalog untuk semua ruang publik, status `baik`; dilewati untuk lokasi yang sudah punya fasilitas (termasuk buatan admin):
 
 ```powershell
 ..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas

@@ -3,7 +3,7 @@ from typing import Dict, Optional, List
 from datetime import datetime
 from decimal import Decimal
 from app.schemas.category import CategoryResponse
-from app.schemas.fasilitas import FasilitasResponse
+from app.schemas.fasilitas import FasilitasResponse, FasilitasRingkas
 
 class RuangPublikBase(BaseModel):
     nama: str
@@ -49,9 +49,12 @@ class RuangPublikListResponse(BaseModel):
     longitude: Optional[Decimal] = None
     verified: Optional[bool] = False
     jarak_km: Optional[float] = None
+    fasilitas: List[FasilitasRingkas] = []
+    stats: Dict[str, int] = {}
 
     model_config = ConfigDict(from_attributes=True)
 
 class RuangPublikDetailResponse(RuangPublikResponse):
     fasilitas: List[FasilitasResponse] = []
     foto: List[str] = []
+    stats: Dict[str, int] = {}

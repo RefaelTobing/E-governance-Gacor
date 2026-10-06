@@ -155,11 +155,13 @@ Body JSON, `id` wajib diisi manual (bukan auto-increment).
 
 ### `GET /api/v1/facilities`
 
-Daftar fasilitas unik hasil di-aggregate dari seluruh ruang publik. Dipakai
-FE untuk mengisi dropdown filter.
+Daftar fasilitas unik, dipakai FE untuk mengisi dropdown filter. Hasil
+`SELECT DISTINCT nama, kategori ... ORDER BY nama`; saat ini 12 baris (katalog
+`data/processed/fasilitas.csv`). Beda dengan `GET /api/v1/admin/facilities` di
+bawah, yang mengembalikan tiap baris per ruang publik (14400 baris).
 
 ```json
-[ { "nama": "Toilet Umum", "kategori": "Sanitasi" } ]
+[ { "nama": "Bangku Taman", "kategori": "Perabot" } ]
 ```
 
 ### `GET /api/v1/admin/facilities` (admin)
@@ -171,10 +173,11 @@ Butuh token admin; warga → `403`.
 ### `POST /api/v1/admin/facilities` (admin)
 
 ```json
-{ "nama": "Toilet Umum", "ruang_publik_id": "taman-abc", "status": "baik" }
+{ "nama": "Kursi Roda", "ruang_publik_id": "rth-09107c86114d", "status": "baik" }
 ```
 
 `201` + baris terbaru; `400` bila `status` di luar enum; `404` bila induk tak ada.
+`ruang_publik_id` wajib id yang benar-benar ada.
 
 ### `PATCH /api/v1/admin/facilities/{id}` (admin)
 
@@ -266,7 +269,8 @@ Pencarian utama di website.
 | `skip` | int | 0 | ≥ 0 |
 | `limit` | int | 100 | 1..500 |
 
-`facilities` diulang per nilai: `?facilities=Toilet&facilities=Lapangan`.
+`facilities` diulang per nilai, harus persis sama dengan nama di
+`GET /api/v1/facilities`: `?facilities=Pohon%20Peneduh&facilities=Bangku%20Taman`.
 
 ```bash
 curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radius=3"
@@ -275,20 +279,35 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 ```json
 [
   {
-    "id": "rth-1a407d88182a",
-    "nama": "AMENITIS JH. JL. DR. SOEMARNO",
-    "kategori_id": "jalur-hijau",
-    "kategori": { "id": "jalur-hijau", "label": "Jalur Hijau" },
+    "id": "rth-09107c86114d",
+    "nama": "Buperta Cibubur",
+    "kategori_id": "taman-interaktif",
+    "kategori": { "id": "taman-interaktif", "label": "Taman Interaktif", "icon_name": "Dumbbell" },
     "wilayah": "Jakarta Timur",
-    "alamat": "AMENITIS JH. JL. DR. SOEMARNO",
-    "latitude": null,
-    "longitude": null,
-    "verified": false,
-    "jarak_km": null
+    "alamat": null,
+    "latitude": "-6.36388636",
+    "longitude": "106.89910953",
+    "verified": true,
+    "jarak_km": null,
+    "fasilitas": [
+      { "id": "seed-b4555c91a1fb0d46-01", "nama": "Pohon Peneduh", "status": "baik" },
+      { "id": "seed-b4555c91a1fb0d46-04", "nama": "Bangku Taman", "status": "baik" },
+      { "id": "seed-b4555c91a1fb0d46-12", "nama": "Papan Informasi Tata Tertib Taman", "status": "baik" }
+    ],
+    "stats": { "baik": 12, "perlu_perhatian": 0, "rusak": 0 }
   }
 ]
 ```
 
+> `fasilitas` di atas dipotong jadi 3 entri supaya contoh pendek; baris
+> sebenarnya ada **12 per ruang publik** (katalog `data/processed/fasilitas.csv`),
+> id `seed-<hash>-<urutan>` mengikuti urutan katalog. `stats` tetap menghitung
+> semua 12.
+>
+> `stats` adalah tiga ember **saling lepas** (`baik` + `perlu_perhatian` +
+> `rusak` = jumlah baris fasilitas), berbeda dengan
+> `GET /api/v1/public-spaces/stats` yang cuma punya dua ember.
+>
 > `jarak_km` bernilai `null` kalau `lat`/`long` tidak dikirim. Field ini dihitung
 > ulang di Python, bukan lewat query SQL.
 >
@@ -300,7 +319,9 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 
 ### `GET /api/v1/public-spaces/{ruang_publik_id}`
 
-Detail lengkap. Menambahkan `fasilitas` (array), `foto` (array), `field_source`
+Detail lengkap. Menambahkan `fasilitas` (array **penuh**, 12 baris dengan
+`deskripsi`/`created_at`/`ruang_publik_id`), `foto` (array), `stats` (versi
+penuh dari `fasilitas`, kunci sama dengan list), `field_source`
 (objek penanda kolom hasil edit admin, `null` bila belum pernah diedit), serta
 `kecamatan` dan `kelurahan` (kolom baru dari merge ETL, `null` bila sumber tidak
 punya) di atas field yang sama dengan response list.

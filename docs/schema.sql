@@ -44,7 +44,6 @@ CREATE TABLE fasilitas (
    nama VARCHAR(255) NOT NULL,
    kategori VARCHAR(100),
    status VARCHAR(50) DEFAULT 'baik',
-   lokasi_spesifik VARCHAR(255),
    deskripsi TEXT,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

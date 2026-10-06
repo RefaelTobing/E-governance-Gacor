@@ -365,17 +365,9 @@ export const DetailRuangPublikPage = () => {
           {detail.fasilitas.map((fas) => (
             <Card key={fas.id} style={{ borderColor: fas.status === 'rusak' ? 'var(--color-danger)' : 'var(--color-border)' }}>
               <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '180px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <h4 className="h3" style={{ fontSize: '16px' }}>{fas.nama}</h4>
-                    <StatusBadge status={fas.status} />
-                  </div>
-                  <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-                    {fas.deskripsi}
-                  </p>
-                  <span className="text-caption" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px' }}>
-                    <MapPin size={12} color="var(--color-text-muted)" /> {fas.lokasiSpesifik}
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <h4 className="h3" style={{ fontSize: '16px' }}>{fas.nama}</h4>
+                  <StatusBadge status={fas.status} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -439,13 +431,11 @@ export const DetailRuangPublikPage = () => {
                 <StatusBadge status={selectedFacility.status} />
               </div>
 
-              <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                {selectedFacility.deskripsi}
-              </p>
-
-              <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '24px', fontSize: '14px' }}>
-                <strong>Lokasi Spesifik:</strong> {selectedFacility.lokasiSpesifik}
-              </div>
+              {selectedFacility.deskripsi && (
+                <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  {selectedFacility.deskripsi}
+                </p>
+              )}
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Button variant="outline" fullWidth onClick={() => setSelectedFacility(null)}>

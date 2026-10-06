@@ -88,7 +88,8 @@ cd "d:\Ruka Jakarta\backend"
 ..\.venv\Scripts\python.exe -m app.etl.seed_fasilitas
 ```
 
-Tanpa langkah kedua, `/dashboard/fasilitas` dan filter fasilitas publik kosong.
+Tanpa langkah kedua, `/dashboard/fasilitas`, filter fasilitas publik, dan daftar
+fasilitas di halaman detail kosong.
 
 Lihat `backend/docs/features/etl-worker.md` untuk urutan lengkap (`extract_satudata`,
 `read_raw`, `transform_rth_raw`). Seed membaca `data/processed/ruang_publik.csv` (1200

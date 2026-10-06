@@ -1,11 +1,15 @@
-"""Isi tabel fasilitas untuk ruang publik yang belum punya fasilitas.
+"""Isi tabel fasilitas dari katalog di data/processed/fasilitas.csv.
 
 Tabel `fasilitas` tidak punya sumber data resmi: file Satu Data di
-`data/processed/` tidak punya kolom fasilitas sama sekali, jadi tanpa script ini
+`data/processed/` tidak punya kolom fasilitas, jadi tanpa script ini
 halaman `/dashboard/fasilitas`, filter fasilitas publik (`GET /facilities`), dan
 halaman detail ruang publik selalu kosong.
 
-Isinya **data contoh**, dibuat mengikuti kategori tiap ruang publik:
+Katalognya sendiri ditulis manusia di `data/processed/fasilitas.md`, lalu
+diturunkan sekali menjadi `fasilitas.csv`. Tiap baris katalog dipasang ke
+**semua** ruang publik, dengan `status` "baik" dan `deskripsi` kosong: katalog
+hanya menyebut keberadaan fasilitas, bukan kondisinya. Kondisi berubah lewat
+edit admin atau laporan warga.
 
     python -m app.etl.seed_fasilitas             # isi ruang publik yang belum punya fasilitas
     python -m app.etl.seed_fasilitas --reset     # hapus baris hasil seed (id diawali "seed-")
@@ -21,9 +25,10 @@ Idempoten dan tidak menimpa kerja admin:
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
-import random
 from collections import Counter
+from pathlib import Path
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -33,117 +38,54 @@ from app.models.fasilitas import Fasilitas
 from app.models.laporan import Laporan
 from app.models.ruang_publik import RuangPublik
 
-# (nama fasilitas, kategori) per kategori ruang publik. Nama dipilih agar ikut
-# muncul sebagai opsi filter di GET /api/v1/facilities.
-KATALOG: dict[str, list[tuple[str, str]]] = {
-    "taman-kota": [
-        ("Toilet Umum", "Sanitasi"),
-        ("Jalur Lari", "Olahraga"),
-        ("Area Parkir", "Parkir"),
-        ("Penerangan Jalan", "Penerangan"),
-        ("Pos Penjagaan", "Keamanan"),
-        ("Tempat Sampah", "Kebersihan"),
-        ("Bangku Taman", "Perabot"),
-    ],
-    "taman-lingkungan": [
-        ("Toilet Umum", "Sanitasi"),
-        ("Area Bermain Anak", "Rekreasi"),
-        ("Jalur Lari", "Olahraga"),
-        ("Penerangan Jalan", "Penerangan"),
-        ("Tempat Sampah", "Kebersihan"),
-        ("Bangku Taman", "Perabot"),
-        ("Kran Air Minum", "Sanitasi"),
-    ],
-    "rptra": [
-        ("Area Bermain Anak", "Rekreasi"),
-        ("Toilet Umum", "Sanitasi"),
-        ("Ruang Serbaguna", "Bangunan"),
-        ("Parkir Sepeda", "Parkir"),
-        ("Penerangan Jalan", "Penerangan"),
-        ("Tempat Sampah", "Kebersihan"),
-        ("Bangku Taman", "Perabot"),
-        ("Pos Penjagaan", "Keamanan"),
-    ],
-    "taman-interaktif": [
-        ("Peralatan Fitness Outdoor", "Olahraga"),
-        ("Jalur Lari", "Olahraga"),
-        ("Area Bermain Anak", "Rekreasi"),
-        ("Toilet Umum", "Sanitasi"),
-        ("Penerangan Jalan", "Penerangan"),
-        ("Parkir Sepeda", "Parkir"),
-        ("Tempat Sampah", "Kebersihan"),
-    ],
-}
+PROCESSED_DIR = Path(__file__).resolve().parents[3] / "data" / "processed"
+KATALOG_CSV = PROCESSED_DIR / "fasilitas.csv"
 
-# Untuk ruang publik tanpa kategori (kolom kategori_id NULL).
-KATALOG_UMUM: list[tuple[str, str]] = [
-    ("Toilet Umum", "Sanitasi"),
-    ("Tempat Sampah", "Kebersihan"),
-    ("Penerangan Jalan", "Penerangan"),
-    ("Bangku Taman", "Perabot"),
-]
 
-LOKASI = [
-    "sisi utara",
-    "sisi selatan",
-    "sisi timur",
-    "sisi barat",
-    "dekat pintu masuk",
-    "dekat jalur utama",
-    "dekat area bermain",
-    "sepanjang pagar",
-]
+def baca_katalog(path: Path = KATALOG_CSV) -> list[tuple[str, str | None]]:
+    """Katalog (nama, kategori) dari CSV; nama wajib unik supaya id seed stabil."""
+    if not path.exists():
+        raise SystemExit(f"katalog fasilitas tidak ditemukan: {path}")
 
-# Distribusi kondisi: wajar untuk data contoh, bukan hasil inspeksi nyata.
-STATUS = [("baik", 80), ("perlu_perhatian", 15), ("rusak", 5)]
+    with open(path, encoding="utf-8-sig", newline="") as berkas:
+        baris = list(csv.DictReader(berkas))
 
-DESKRIPSI_SEED = "Data contoh hasil seed; perbarui lewat Edit bila kondisi terbaru berbeda."
+    if not baris or "nama" not in (baris[0] or {}):
+        raise SystemExit(f"{path.name} tidak layak dipakai: header wajib punya kolom nama")
+
+    hasil: list[tuple[str, str | None]] = []
+    dilihat: set[str] = set()
+    for nomor, row in enumerate(baris, start=2):
+        nama = (row.get("nama") or "").strip()
+        if not nama:
+            raise SystemExit(f"{path.name} baris {nomor}: nama kosong")
+        if nama.casefold() in dilihat:
+            raise SystemExit(f"{path.name} baris {nomor}: nama {nama!r} ganda")
+        dilihat.add(nama.casefold())
+
+        kategori = (row.get("kategori") or "").strip() or None
+        if kategori and len(kategori) > 100:
+            raise SystemExit(f"{path.name} baris {nomor}: kategori lebih dari 100 karakter")
+        hasil.append((nama, kategori))
+
+    return hasil
 
 
 def _id_seed(ruang_publik_id: str, urutan: int) -> str:
-    """Id stabil per ruang publik; diawali "seed-" supaya --reset bisa memilih."""
+    """Id stabil per ruang publik; diawali "seed-" supaya --reset bisa memilih.
+
+    Urutan dua digit supaya pengurutan string mengikuti urutan katalog, bukan
+    menyelipkan -10 di depan -2.
+    """
     potongan = hashlib.sha1(ruang_publik_id.encode("utf-8")).hexdigest()[:16]
-    return f"seed-{potongan}-{urutan}"
+    return f"seed-{potongan}-{urutan:02d}"
 
 
-def _pilih_status(rng: random.Random) -> str:
-    gulir = rng.randrange(100)
-    berjalan = 0
-    for status, bobot in STATUS:
-        berjalan += bobot
-        if gulir < berjalan:
-            return status
-    return STATUS[0][0]
-
-
-def _baris_fasilitas(rp: RuangPublik, rng: random.Random) -> list[Fasilitas]:
-    katalog = KATALOG.get(rp.kategori_id or "") or KATALOG_UMUM
-    kandidat = katalog[:]
-    rng.shuffle(kandidat)
-    jumlah = rng.randint(3, min(6, len(kandidat)))
-
-    baris: list[Fasilitas] = []
-    for urutan, (nama, kategori) in enumerate(kandidat[:jumlah], start=1):
-        status = _pilih_status(rng)
-        deskripsi = DESKRIPSI_SEED
-        if status != "baik":
-            deskripsi = f"{DESKRIPSI_SEED} Kondisi tercatat: {status.replace('_', ' ')}."
-        baris.append(
-            Fasilitas(
-                id=_id_seed(rp.id, urutan),
-                ruang_publik_id=rp.id,
-                nama=nama,
-                kategori=kategori,
-                status=status,
-                lokasi_spesifik=f"Area {rng.choice(LOKASI)}",
-                deskripsi=deskripsi,
-            )
-        )
-    return baris
-
-
-def seed_fasilitas(db: Session) -> tuple[int, Counter]:
+def seed_fasilitas(db: Session, katalog: list[tuple[str, str | None]] | None = None) -> tuple[int, Counter]:
     """Isi fasilitas untuk ruang publik yang belum punya baris fasilitas."""
+    if katalog is None:
+        katalog = baca_katalog()
+
     sudah_ada = set(db.scalars(select(Fasilitas.ruang_publik_id).distinct()).all())
     id_terdaftar = set(db.scalars(select(Fasilitas.id)).all())
 
@@ -152,13 +94,20 @@ def seed_fasilitas(db: Session) -> tuple[int, Counter]:
     for rp in db.scalars(select(RuangPublik).order_by(RuangPublik.id)).all():
         if rp.id in sudah_ada:
             continue
-        for baris in _baris_fasilitas(rp, random.Random(rp.id)):
-            if baris.id in id_terdaftar:
+        for urutan, (nama, kategori) in enumerate(katalog, start=1):
+            baris_id = _id_seed(rp.id, urutan)
+            if baris_id in id_terdaftar:
                 continue
-            db.add(baris)
+            db.add(Fasilitas(
+                id=baris_id,
+                ruang_publik_id=rp.id,
+                nama=nama,
+                kategori=kategori,
+                status="baik",
+            ))
             baru += 1
-            id_terdaftar.add(baris.id)
-            per_kategori[rp.kategori_id or "(tanpa kategori)"] += 1
+            id_terdaftar.add(baris_id)
+            per_kategori[kategori or "(tanpa kategori)"] += 1
     db.commit()
     return baru, per_kategori
 
@@ -188,6 +137,7 @@ def reset(db: Session) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--reset", action="store_true", help="hapus baris hasil seed lalu keluar")
+    parser.add_argument("--katalog", help="path katalog CSV; default data/processed/fasilitas.csv")
     args = parser.parse_args()
 
     with SessionLocal() as db:
@@ -195,9 +145,11 @@ def main() -> None:
             reset(db)
             return
 
+        katalog = baca_katalog(Path(args.katalog) if args.katalog else KATALOG_CSV)
         sebelum = db.scalar(select(Fasilitas.id).limit(1))
-        baru, per_kategori = seed_fasilitas(db)
+        baru, per_kategori = seed_fasilitas(db, katalog)
         total = db.scalar(select(func.count()).select_from(Fasilitas))
+        print(f"katalog     : {len(katalog)} fasilitas dari {KATALOG_CSV.name}")
         print(f"fasilitas   : {baru} baru (total {total})")
         if baru == 0:
             print("            : tidak ada ruang publik tanpa fasilitas; tidak ada yang diubah")

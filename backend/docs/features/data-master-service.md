@@ -26,7 +26,7 @@ Kode terkait:
 - Tabel `ruang_publik` & `fasilitas` sudah punya kolom lengkap yang dibutuhkan edit (deskripsi, jam operasional, fasilitas status, dll.).
 - Skema Pydantic update (`RuangPublikUpdate`) sudah tersedia — mempercepat implementasi (tinggal pakai).
 - ETL (`seed_db`, BE-16) **insert baris baru + update terbatas**: hanya kolom `ETL_OWNED`, hanya untuk kolom yang belum tercatat di `field_source` → edit admin otomatis aman (lihat §4).
-- Tabel `fasilitas` terisi oleh `app/etl/seed_fasilitas.py` (data contoh, idempoten) — sumber Satu Data tidak punya kolom fasilitas.
+- Tabel `fasilitas` terisi oleh `app/etl/seed_fasilitas.py` (katalog `data/processed/fasilitas.csv`, idempoten), sumber Satu Data tidak punya kolom fasilitas.
 
 ---
 
@@ -52,7 +52,7 @@ Pola wajib untuk seluruh endpoint di bawah: `_: User = Depends(get_current_admin
 | Method & Path | Body | Perilaku |
 |---|---|---|
 | `GET /api/v1/admin/facilities` | `?q=&kategori=&status=&wilayah=&skip=&limit=` | Semua baris fasilitas + `ruang_publik_nama` (join eksplisit + `contains_eager`) |
-| `POST /api/v1/admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, lokasi_spesifik?, deskripsi? }` | Tambah fasilitas; `201`; `404` induk tak ada |
+| `POST /api/v1/admin/facilities` | `{ nama, ruang_publik_id, kategori?, status?, deskripsi? }` | Tambah fasilitas; `201`; `404` induk tak ada |
 | `PATCH /api/v1/admin/facilities/{id}` | sebagian field di atas | Ubah sebagian; `404` bila tak ada |
 | `DELETE /api/v1/admin/facilities/{id}` | — | Hapus; `laporan.fasilitas_id` FK dipakai → **tolak dengan `409`** kalau masih ada laporan |
 | `POST /api/v1/admin/facilities/import` | `file` CSV multipart | Impor masal; jawaban parsial `{created, failed, errors}` |
