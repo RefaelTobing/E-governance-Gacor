@@ -111,26 +111,23 @@ curl -X POST http://localhost:8000/api/v1/reports -H "Content-Type: application/
 - `GET /api/v1/reports/{id}` → detail + timeline (terbuka; pelapor bisa memantau — walau belum terfilter kepemilikan, lihat FEAT-013).
 - Daftar status kanonik (lihat `03-database-schema.md` §4): `menunggu_verifikasi → diverifikasi → dalam_penanganan → selesai` / `ditolak`.
 
-**GAP TERVERIFIKASI — filter tayang per-ruang publik selalu kosong:**
+**GAP SELESAI (BE-47, 2026-10-06) — filter tayang per-ruang publik pernah selalu kosong:**
 
-`services/laporan.py::get_reports_by_ruang_publik` menyaring:
+Dulu `services/laporan.py::get_reports_by_ruang_publik` menyaring `status IN ("disetujui","tayang_otomatis")`
+— nilai yang tidak pernah dibuat sistem mana pun → `GET /api/v1/public-spaces/{id}/reports` selalu `[]`.
 
-```python
-Laporan.status.in_(["disetujui", "tayang_otomatis"])   # ❌ nilai ini TIDAK PERNAH dibuat sistem mana pun
-```
+**Yang sudah dikerjakan:**
 
-Akibatnya `GET /api/v1/public-spaces/{id}/reports` **selalu mengembalikan `[]`** — riwayat laporan publik per titik (inti FEAT-010 & motivasi produk di PRD §2) tidak pernah tampil.
+- [x] Daftar filter diganti ke **status berarti "sudah tayang"** tunggal:
+      `STATUS_TAYANG = ("diverifikasi", "dalam_penanganan", "selesai")` di `app/schemas/laporan.py`
+      (`menunggu_verifikasi` = belum tayang; `ditolak` = tidak tayang).
+- [x] Konstanta dipakai ulang di galeri foto (FEAT-007, `gabung_foto` di BE-48) — satu daftar, tidak diduplikasi.
+- [x] Sinkronkan `docs/API.md` + `04-api-endpoints.md` (filter dan status bug lama diperbarui).
+- [x] Unit test regresi `tests/unit/test_public_space_reports.py` (6 skenario, lulus).
 
-**Langkah perbaikan:**
+**Sisa keputusan:**
 
-- [ ] Ganti daftar filter menjadi **status yang berarti "sudah tayang"** — daftar tunggal yang sama dipakai di seluruh sistem:
-  ```
-  tayang = ("diverifikasi", "dalam_penanganan", "selesai")
-  ```
-  (`menunggu_verifikasi` = belum tayang; `ditolak` = tidak tayang.)
-- [ ] Jadikan daftar ini **konstanta bersama** (mis. di `services/laporan.py` atau modul `app/core/status.py`) dan **pakai ulang** di galeri foto (FEAT-007) — jangan definisikan dua kali.
-- [ ] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? Saat ini semua status terlihat publik. Rekomendasi MVP: daftar publik umum ikut memakai daftar tayang; daftar admin tetap semua (moderasi perlu melihat antrian).
-- [ ] Sinkronkan `docs/API.md`.
+- [ ] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? Saat ini semua status terlihat publik (query `status=` opsional). Rekomendasi MVP: daftar publik umum ikut memakai daftar tayang; daftar admin tetap semua (moderasi perlu melihat antrian).
 
 **Verifikasi:**
 ```bash

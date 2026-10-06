@@ -31,17 +31,17 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 | Bagian | Task | Selesai | Parsial | Belum |
 |---|---|---|---|---|
-| B0 Setup & Fondasi | 9 | 8 | 1 | 0 |
-| B1 Public Space Service | 7 | 3 | 1 | 3 |
-| B2 ETL Worker | 6 | 5 | 0 | 1 |
-| B3 Report Service | 10 | 2 | 1 | 7 |
+| B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
+| B1 Public Space Service | 7 | 7 | 0 | 0 |
+| B2 ETL Worker | 6 | 6 | 0 | 0 |
+| B3 Report Service | 10 | 3 | 1 | 6 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **20** | **8** | **28** |
+| **Total** | **56** | **27** | **6** | **23** |
 
 ---
 
@@ -56,13 +56,19 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 - [x] **[BE-03]** Setup Alembic untuk database migration.
   - **Lokasi kode:** `backend/alembic.ini`, `backend/alembic/env.py`,
     `alembic/versions/34fc1fc4d761_initial_schema.py`, `alembic/versions/b7e2c1049a3f_add_user_is_active.py`.
-- [ ] **[BE-04]** Rancang & buat skema tabel awal: `ruang_publik`, `kategori`, `fasilitas`, relasi fasilitas,
+- [x] **[BE-04]** Rancang & buat skema tabel awal: `ruang_publik`, `kategori`, `fasilitas`, relasi fasilitas,
       `laporan`, `pengguna` (role publik/admin), kolom `lat`/`long` yang mendukung query jarak.
-  - **Parsial:** tabel `categories`, `users`, `ruang_publik`, `fasilitas`, `laporan`, `laporan_timeline` sudah ada
-    (lihat `docs/03-database-schema.md`). Kolom lokasi pelapor/EXIF telah ditambahkan via BE-46. Kurang: relasi fasilitas memakai `fasilitas.ruang_publik_id` 1-FK, bukan tabel join many-to-many
-    seperti tertulis di jobdesk (perilaku filter FEAT-005 sudah jalan lewat query aggregate - keputusan perlu
-    dicatat, jangan diubah tanpa koordinasi FE).
-  - **Verifikasi:** `alembic current` di head (`37c407708e27`), `docs/schema.sql` cocok dengan model.
+  - **Lokasi kode:** tabel `categories`, `users`, `ruang_publik`, `fasilitas`, `laporan`, `laporan_timeline`
+    (lihat `docs/03-database-schema.md`, SQL rujukan `docs/schema.sql`). Kolom lokasi pelapor/EXIF via BE-46,
+    `lat`/`long` ruang publik bertipe `DECIMAL(10,8)`/`DECIMAL(11,8)` (akurat ~1,1 cm) + index untuk query jarak.
+  - **Keputusan (relasi fasilitas):** pakai 1-FK `fasilitas.ruang_publik_id`, **bukan** tabel join
+    many-to-many seperti jobdesk. Alasan: fasilitas adalah baris atribut per induk (12 katalog nama dipakai
+    filter FEAT-005 lewat query aggregate di `services/ruang_publik.py:88`), tidak ada entitas fasilitas
+    global yang dipakai lintas tempat; migrasi ke pivot = rombak filter/CRUD/seed/response dan mengubah
+    kontrak FE — dilarang tanpa koordinasi FE (lihat baris catatan task ini). Role `warga`/`admin`
+    (jobdesk menulis `publik`/`admin` — nama kolom tidak berpengaruh ke API, cukup dicatat di sini).
+  - **Verifikasi (2026-10-06):** `alembic current` = `tambah_tabel_ruang_publik_foto (head)`;
+    `docs/schema.sql` cocok dengan model (selisih terakhir `users.is_active` ditutup pada entri ini).
 - [x] **[BE-05]** Tambah kolom penanda field-level merge di `ruang_publik` (`field_source` JSON atau tabel
       `ruang_publik_edit_log` yang mencatat kolom mana yang pernah diedit manual admin). *(FEAT-012)*
   - **Lokasi kode:** kolom `field_source` di `app/models/ruang_publik.py`, migrasi
@@ -100,31 +106,37 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/api/v1/ruang_publik.py:15`, `app/services/ruang_publik.py:29` (Haversine di SQL).
   - Mendukung juga `q`, `wilayah`, `skip`, `limit`.
 - [x] **[BE-10]** `GET /public-spaces/{id}` - detail lengkap dengan fasilitas & foto. *(FEAT-006)*
-  - **Lokasi kode:** `app/api/v1/ruang_publik.py:61` (membungkus `image_url` jadi list `foto[]`).
+  - **Lokasi kode:** `app/api/v1/ruang_publik.py:61` (`foto[]` hasil `crud_ruang_publik.gabung_foto` — foto resmi + laporan tayang).
 - [x] **[BE-11]** `GET /categories` dan `GET /facilities` untuk populate filter FE. *(FEAT-004, 005)*
   - **Lokasi kode:** `app/api/v1/categories.py:11`, `app/api/v1/fasilitas.py:13`.
   - **Catatan:** `POST /categories` ikut ada tapi belum terproteksi -> task **BE-54**.
-- [ ] **[BE-12]** `GET /public-spaces/{id}/reports` - daftar laporan yang **sudah tayang**. *(FEAT-007, 010)*
-  - **Parsial + BUG:** endpoint ada (`app/api/v1/ruang_publik.py:79`), tetapi
-    `app/services/laporan.py:148` menyaring `status IN ("disetujui", "tayang_otomatis")` - nilai itu
-    **tidak pernah ada** di database (kamus status di atas). Akibatnya endpoint selalu mengembalikan `[]`.
-  - **Perbaikan -> task BE-47.**
-- [ ] **[BE-13]** Unit test (pytest) untuk logika radius search & kombinasi filter.
-  - **Belum ada:** folder `backend/tests/` tidak ada; `pytest.ini` menunjuk `testpaths = tests`.
-    Catatan: file test memang di-`.gitignore` (lihat `docs/06-testing-strategy.md`), jadi test dibuat lokal.
-- [ ] **[BE-47]** **(baru - hasil audit)** Fix filter laporan tayang di `GET /public-spaces/{id}/reports`:
-      ganti kamus status menjadi `diverifikasi`, `dalam_penanganan`, `selesai` (kecuali ada keputusan produk lain,
-      catat di `docs/API.md`), plus unit test regresi supaya bug ini tidak kembali.
+- [x] **[BE-12]** `GET /public-spaces/{id}/reports` - daftar laporan yang **sudah tayang**. *(FEAT-007, 010)*
+  - **Lokasi kode:** `app/api/v1/ruang_publik.py:79`, filter `services/laporan.py:177` memakai `STATUS_TAYANG`.
+  - **Diselesaikan oleh BE-47.**
+- [x] **[BE-13]** Unit test (pytest) untuk logika radius search & kombinasi filter.
+  - **Lokasi kode:** `backend/tests/unit/test_ruang_publik.py` (11 test: radius, filter kategori/fasilitas/q/wilayah/kombinasi+paginasi, stats).
+  - **Verifikasi:** `python -m pytest tests/unit -q` -> 40 passed. Test lokal saja (file test di-`.gitignore`, lihat `docs/06-testing-strategy.md`).
+- [x] **[BE-47]** **(baru - hasil audit)** Fix filter laporan tayang di `GET /public-spaces/{id}/reports`:
+      ganti kamus status menjadi `STATUS_TAYANG = ("diverifikasi", "dalam_penanganan", "selesai")`,
+      didefinisikan di `app/schemas/laporan.py` (dipakai bersama BE-51 nanti).
   - **FEAT:** FEAT-010. **Memperbaiki BE-12.**
   - **Verifikasi:** setujui satu laporan via `PATCH /reports/{id}/status` -> endpoint ini mengembalikannya;
     laporan `menunggu_verifikasi` dan `ditolak` tidak tampil.
-- [ ] **[BE-48]** **(baru - hasil audit)** Galeri foto multi-foto ruang publik: tabel `ruang_publik_foto`,
+- [x] **[BE-48]** **(baru - hasil audit)** Galeri foto multi-foto ruang publik: tabel `ruang_publik_foto`,
       endpoint `GET /admin/public-spaces/{id}/photos` + `POST` (upload) + `DELETE`, migrasikan kolom tunggal
       `image_url` jadi baris foto pertama; response `GET /public-spaces/{id}` menyertakan foto resmi
       **digabung** dengan foto laporan yang sudah tayang.
   - **FEAT:** FEAT-007 (dukung FE-14 Galeri Foto di FE Publik).
-  - **Verifikasi:** setelah ada 2 foto resmi + 1 laporan tayang, response detail menampilkan ketiganya
-    tanpa duplikat, urutan stabil.
+  - **Lokasi kode:** `app/models/ruang_publik_foto.py`, `app/api/v1/foto_ruang_publik.py`
+    (dipasang di `api.py` prefix `/admin/public-spaces`), service `list_foto_resmi`/`tambah_foto`/
+    `hapus_foto`/`gabung_foto` di `app/services/ruang_publik.py`, migrasi
+    `alembic/versions/tambah_tabel_ruang_publik_foto.py`.
+  - **Keputusan:** Opsi B sederhana — tabel hanya foto resmi (tanpa kolom `sumber`/`laporan_id`);
+    foto laporan di-merge langsung dari tabel `laporan` dengan `STATUS_TAYANG`, jadi tidak butuh
+    sinkronisasi. `image_url` tetap dipertahankan: ikut tampil bila belum punya baris foto.
+  - **Verifikasi (2026-10-06):** `pytest tests/unit -q` -> 51 passed (`test_foto_ruang_publik.py` 11 test:
+    401/403, CRUD+upload, merge tanpa duplikat, urutan stabil, detail 200/404); `alembic upgrade head` sukses,
+    backfill teruji (seed `image_url` -> 1 baris, `downgrade -1` + `upgrade head` kembali bersih).
 
 ---
 
@@ -271,8 +283,15 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/api/v1/laporan.py`, `app/services/laporan.py`, `app/schemas/laporan.py`.
   - **Keputusan:** Foto bukti fisik wajib diunggah (string `foto_url` diawali `/uploads/laporan/` dan diverifikasi keberadaannya di disk). Koordinat `lat_user` dan `long_user` opsional (harus berpasangan lengkap bila diisi, rentang -90..90 dan -180..180). Dependency auth memakai `oauth2_scheme_optional` agar pengirim anonim tanpa token tidak tertolak 401, sementara mode `tampilkan_nama` tanpa token ditolak 400 dan nama pelapor diambil aman dari DB akun login (anti-spoofing).
   - **Verifikasi (2026-10-05):** 11 unit test lulus (`test_laporan.py`), uji black-box R1-R8 (anonim 201, tampilkan nama tanpa token 400, dengan token 201 anti-spoof, tanpa foto 400, foto palsu 400, koordinat parsial 400, koordinat luar rentang 422, tanpa koordinat 201), serta automasi Playwright B1-B13 end-to-end.
-- [ ] **[BE-21]** Simpan foto ke local storage, ekstrak metadata EXIF GPS dari foto (Pillow/exifread).
-  - **Belum ada:** `Pillow` tidak ada di `requirements.txt`; tidak ada pemanggilan `save_upload_file`.
+- [x] **[BE-21]** Ekstrak metadata EXIF GPS dari foto saat submit laporan (Pillow).
+  - **Lokasi kode:** `app/core/exif_utils.py` (fungsi `extract_gps_from_file` — baca file, parse GPS EXIF,
+    konversi DMS ke desimal, tangani file rusak/tiada EXIF dengan `(None, None)`); dipanggil di
+    `app/services/laporan.py:80` setelah timeline dibuat — `lat_exif`/`long_exif` diisi hanya bila
+    foto punya GPS EXIF, selainnya tetap `NULL` (tidak menggagalkan submit).
+  - **Dependensi:** `Pillow>=12.0` (sudah di `requirements.txt`).
+  - **Verifikasi (2026-10-06):** `pytest tests/unit -q` → 53 passed (2 test baru:
+    `test_create_exif_gps_terisi` — foto dengan EXIF GPS (-6.175, 106.827) → `lat_exif`/`long_exif`
+    terisi; `test_create_foto_tanpa_exif` — foto tanpa EXIF → `lat_exif`/`long_exif` = `None`).
 - [ ] **[BE-22]** Logika validasi lokasi: Haversine antara koordinat browser vs koordinat EXIF foto,
       masing-masing dibandingkan ke koordinat ruang publik tujuan. *(FEAT-013 - validasi lokasi)*
   - **Belum ada:** butuh kolom hasil **BE-46** dan EXIF hasil **BE-21**. Haversine sudah ada contohnya di

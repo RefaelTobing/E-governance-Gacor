@@ -4,12 +4,13 @@ Sumber: `docs/schema.sql` + model SQLAlchemy di `backend/app/models/` (kode = ke
 
 ---
 
-## 1. Tujuh Tabel & Relasi
+## 1. Delapan Tabel & Relasi
 
 ```
 categories ──┐
              ├──< ruang_publik ──┬──< fasilitas ──┐
- users ───────┴──────┬───────────┘                │
+ users ───────┴──────┬───────────┤                │
+                     │           └──< ruang_publik_foto
                      └──< laporan >────────────────┘
                              └──< laporan_timeline
 
@@ -20,7 +21,8 @@ categories ──┐
 |---|---|---|
 | `categories` | `models/category.py` | Di-referensikan `ruang_publik.kategori_id` |
 | `users` | `models/user.py` | Di-referensikan `laporan.user_id` (opsional) |
-| `ruang_publik` | `models/ruang_publik.py` | FK `kategori_id → categories.id`; induk `fasilitas` & `laporan` (cascade delete) |
+| `ruang_publik` | `models/ruang_publik.py` | FK `kategori_id → categories.id`; induk `fasilitas`, `laporan` & `ruang_publik_foto` (cascade delete) |
+| `ruang_publik_foto` | `models/ruang_publik_foto.py` | FK `ruang_publik_id → ruang_publik.id` (wajib); foto resmi galeri (BE-48) |
 | `fasilitas` | `models/fasilitas.py` | FK `ruang_publik_id → ruang_publik.id` (wajib); induk `laporan` |
 | `laporan` | `models/laporan.py` | FK `user_id` (opsional), `ruang_publik_id` (wajib), `fasilitas_id` (opsional) |
 | `laporan_timeline` | `models/laporan_timeline.py` | FK `laporan_id → laporan.id`, cascade delete |
@@ -45,7 +47,7 @@ categories ──┐
 | `email` | VARCHAR(255) NOT NULL | Diseragamkan **lowercase** di titik masuk (Pydantic validator) |
 | `password_hash` | VARCHAR(255) | bcrypt — tidak pernah plaintext |
 | `role` | VARCHAR(20) default `'warga'` | Nilai: `warga`, `admin` |
-| `is_active` | BOOLEAN | **Ada di migrasi** `b7e2c1049a3f_add_user_is_active.py` (tidak ada di `schema.sql` lama — kode menang) |
+| `is_active` | BOOLEAN NOT NULL default TRUE | Migrasi `b7e2c1049a3f_add_user_is_active.py`; sudah sinkron dengan `docs/schema.sql` (2026-10-06, BE-04) |
 | `created_at` / `updated_at` | DATETIME | `utcnow` |
 
 ### `ruang_publik`
@@ -61,7 +63,7 @@ categories ──┐
 | `jam_operasional`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan` | VARCHAR(255) NULL | Atribut tidak seragam antar dataset (PRD §6.3) |
 | `verified` | BOOLEAN default FALSE | |
 | `status_general` | VARCHAR(50) NULL | |
-| `image_url` | TEXT NULL | **Satu foto** — dibungkus jadi list `foto[]` di response detail (lihat §5) |
+| `image_url` | TEXT NULL | Foto resmi lama; **di-backfill jadi baris pertama `ruang_publik_foto`** (migrasi `tambah_tabel_ruang_publik_foto`), tetap ditampilkan bila belum punya baris foto (lihat §5) |
 | `field_source` | JSON NULL | Penanda field hasil **edit manual admin**: `{"deskripsi": "2026-10-03T14:44:38"}`. **`NULL` = belum pernah diedit manual**, aman ditimpa ETL (FEAT-012, task BE-05). Ditulis lewat `mark_fields_edited()` di `app/services/ruang_publik.py`, ikut di response detail. |
 | `kecamatan`, `kelurahan` | VARCHAR(100) NULL | Dipakai **kunci natural** saat merge ETL (BE-16, migrasi `d7b19b0b82cc`); ikut file sumber & response detail, diisi/backfill oleh seed |
 
@@ -76,6 +78,20 @@ categories ──┐
 | `deskripsi` | TEXT NULL | |
 
 Isi tabel: `app/etl/seed_fasilitas.py` (katalog `data/processed/fasilitas.csv`, baris berprefix `seed-`, idempoten) + buatan admin lewat `/api/v1/admin/facilities` atau impor CSV. Sumber Satu Data tidak punya kolom fasilitas.
+
+**Keputusan relasi (BE-04, 2026-10-06):** fasilitas memakai **1-FK** `ruang_publik_id`, bukan tabel join many-to-many seperti jobdesk. Setiap baris = atribut milik satu induk (katalog 12 nama dipakai filter FEAT-005 lewat query aggregate), tidak ada entitas fasilitas global lintas tempat; pivot hanya menambah migrasi data dan merombak filter/CRUD/seed/response beserta kontrak FE. Jangan diubah tanpa koordinasi FE.
+
+### `ruang_publik_foto`
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| `id` | VARCHAR(50) PK | UUID hex |
+| `ruang_publik_id` | VARCHAR(50) FK wajib, index | Induk `ruang_publik`, cascade delete lewat ORM |
+| `foto_url` | TEXT NOT NULL | Path relatif `/uploads/ruang-publik/<hex>.jpg` |
+| `created_at` / `updated_at` | DATETIME | `created_at` menentukan urutan galeri resmi (terlama dulu) |
+
+Isi tabel: migrasi `tambah_tabel_ruang_publik_foto` (backfill dari `image_url`) + admin lewat
+`GET/POST/DELETE /api/v1/admin/public-spaces/{id}/photos` (BE-48). Hanya **foto resmi** — foto laporan
+tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabung_foto`.
 
 ### `laporan`
 | Kolom | Tipe | Catatan |
@@ -152,7 +168,10 @@ menunggu_verifikasi  →  diverifikasi  →  dalam_penanganan  →  selesai
 - Timeline dibuat otomatis: saat create (`Laporan dikirim`) dan setiap `PATCH /reports/{id}/status`.
 - Konsumsi FE: filter tab `Laporan Saya`, badge, stepper detail, aksi moderasi (`dalam_penanganan`, `selesai`, `ditolak`).
 
-**Gap terverifikasi:** nilai `disetujui` / `tayang_otomatis` yang ditulis di `services/laporan.py::get_reports_by_ruang_publik` **tidak pernah dibuat oleh sistem mana pun** → filter itu selalu kosong. Perbaikannya ada di `features/moderation-service.md` (FEAT-010/011).
+**Bug lama, sudah diperbaiki (BE-47):** filter `services/laporan.py::get_reports_by_ruang_publik` pernah memakai
+`disetujui` / `tayang_otomatis` — nilai yang tidak pernah dibuat sistem mana pun → selalu kosong. Sekarang
+memakai konstanta `STATUS_TAYANG` (`diverifikasi`, `dalam_penanganan`, `selesai`) di `schemas/laporan.py`;
+regresinya dijaga `tests/unit/test_public_space_reports.py`. Galeri foto (BE-48) memakai konstanta yang sama.
 
 Kamus **kondisi fasilitas** (`fasilitas.status`) terpisah: `baik` · `perlu_perhatian` · `rusak` (jangan tertukar dengan status laporan).
 
@@ -162,7 +181,7 @@ Kamus **kondisi fasilitas** (`fasilitas.status`) terpisah: `baik` · `perlu_perh
 
 | Field | Perilaku | Alasan |
 |---|---|---|
-| `ruang_publik.image_url` (1 kolom) | Response detail `GET /public-spaces/{id}` mengembalikan **`foto: [image_url]` (list)** | Kontrak FE sudah list; saat foto bertambah, hanya isi list yang berubah (lihat `api/v1/ruang_publik.py`) |
+| `ruang_publik.image_url` (1 kolom) | Response detail `GET /public-spaces/{id}` mengembalikan **`foto: list[str]`** hasil `gabung_foto` (BE-48): baris `ruang_publik_foto` + `image_url` bila belum punya baris + `foto_url` laporan tayang | Kontrak FE tetap list; isi list bertambah saat foto resmi/laporan bertambah (lihat `api/v1/ruang_publik.py`) |
 | `jarak_km` | **Dihitung di Python/SQL**, tidak ada kolomnya | `null` bila `lat`/`long` tidak dikirim |
 | `laporan.ruang_publik_nama`, `wilayah`, `fasilitas_nama` | Properti turunan relasi (eager load `joinedload`) | Memperkaya response tanpa join manual di FE |
 | `user` (di `LaporanDetailResponse`) | Relasi user ikut ter-serialize untuk detail | Bisa `null` untuk laporan anonim |
@@ -185,8 +204,12 @@ Masalah: data resmi di-ETL ulang berkala, tetapi **edit manual admin tidak boleh
 - Penanda field-level **sudah ada** (BE-05): kolom `ruang_publik.field_source` diisi oleh `mark_fields_edited()`
   tiap kali admin menyunting suatu kolom (endpoint edit admin = task BE-33). ETL
   **lewati kolom yang sudah tercatat di `field_source`**, tanpa perlu mengandalkan flag baris.
-- Foto pengguna (FEAT-007) tersimpan **terpisah dari kolom `image_url` resmi** — bila tabel galeri dibuat nanti, relasinya ke `ruang_publik_id` sehingga penghapusan/penimpaan data resmi tidak ikut menghapus foto.
-- Saat ini galeri foto laporan belum ada (lihat gap di `features/public-space-service.md` §Galeri).
+- Foto pengguna (FEAT-007) tersimpan **terpisah dari kolom `image_url` resmi**: tabel `ruang_publik_foto`
+  (BE-48) hanya menampung foto resmi, relasinya ke `ruang_publik_id` sehingga penghapusan/penimpaan data
+  resmi tidak ikut menghapus foto laporan — foto laporan memang tidak ikut terhapus karena tidak pernah
+  masuk tabel ini (di-merge dari `laporan` saat request).
+- Galeri foto laporan **sudah ada** (BE-48): `GET /public-spaces/{id}` menggabungkan foto resmi + laporan
+  `STATUS_TAYANG` lewat `gabung_foto` — lihat `features/public-space-service.md` §FEAT-007.
 
 ---
 

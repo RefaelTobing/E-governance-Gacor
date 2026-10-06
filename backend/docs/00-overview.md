@@ -58,10 +58,10 @@ Kode di backend/app/ (kebenaran akhir bila konflik dengan dokumen lama)
 | 004 | Filter Kategori | `features/public-space-service.md` | Ada |
 | 005 | Filter Fasilitas | `features/public-space-service.md` | Ada |
 | 006 | Halaman Detail Ruang Publik | `features/public-space-service.md` | Ada |
-| 007 | Galeri Foto | `features/public-space-service.md` | Sebagian (foto resmi; foto laporan belum) |
+| 007 | Galeri Foto | `features/public-space-service.md` | Ada (foto resmi + foto laporan tayang tergabung — BE-48) |
 | 008 | Form Lapor Fasilitas | `features/report-service.md` | Sebagian (endpoint create ada; upload foto belum) |
 | 009 | Mode Identitas Laporan | `features/report-service.md` | Ada |
-| 010 | Visibilitas & Status Laporan | `features/report-service.md` | Sebagian (filter tayang per-ruang publik rusak — lihat gap) |
+| 010 | Visibilitas & Status Laporan | `features/report-service.md` | Sebagian (filter tayang per-ruang publik diperbaiki BE-47; sisa: keputusan filter `GET /reports` publik) |
 | 011 | Moderasi Laporan (Admin) | `features/moderation-service.md` | Sebagian (update status ada; validasi enum belum) |
 | 012 | Manajemen Data Master | `features/data-master-service.md` | Sebagian (merge ETL jalan, BE-16; endpoint edit admin `PATCH` = BE-33 belum) |
 | 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Belum (filter per-pengguna belum ada) |

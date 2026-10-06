@@ -27,6 +27,9 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}` | — | Detail satu ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}/reports` | — | Laporan pada satu ruang publik |
+| `GET` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Daftar foto resmi ruang publik |
+| `POST` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Unggah foto resmi (multipart `file`) |
+| `DELETE` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos/{foto_id}` | **Admin** | Hapus foto resmi |
 | `POST` | `/api/v1/uploads` | - | Upload file foto bukti fisik (JPEG/PNG/WebP, <= 5MB) |
 | `POST` | `/api/v1/reports` | Opsional | Submit laporan masalah fasilitas (foto wajib, koordinat opsional) |
 | `GET` | `/api/v1/reports` | - | Daftar laporan masyarakat (filter status, wilayah, query) |
@@ -320,8 +323,11 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 ### `GET /api/v1/public-spaces/{ruang_publik_id}`
 
 Detail lengkap. Menambahkan `fasilitas` (array **penuh**, 12 baris dengan
-`deskripsi`/`created_at`/`ruang_publik_id`), `foto` (array), `stats` (versi
-penuh dari `fasilitas`, kunci sama dengan list), `field_source`
+`deskripsi`/`created_at`/`ruang_publik_id`), `foto` (array — **galeri gabungan**:
+foto resmi dari tabel `ruang_publik_foto` urut terlama + `foto_url` laporan
+ber-status `diverifikasi`/`dalam_penanganan`/`selesai` urut terbaru, tanpa
+duplikat; `image_url` lama ikut tampil bila belum punya baris foto), `stats`
+(versi penuh dari `fasilitas`, kunci sama dengan list), `field_source`
 (objek penanda kolom hasil edit admin, `null` bila belum pernah diedit), serta
 `kecamatan` dan `kelurahan` (kolom baru dari merge ETL, `null` bila sumber tidak
 punya) di atas field yang sama dengan response list.
@@ -338,11 +344,35 @@ curl http://localhost:8000/api/v1/public-spaces/<id>
 ### `GET /api/v1/public-spaces/{ruang_publik_id}/reports`
 
 Laporan yang sudah tayang untuk satu ruang publik. Query `skip` / `limit`
-sama seperti list di atas.
+sama seperti list di atas. Tayang = status `diverifikasi` / `dalam_penanganan` /
+`selesai` (konstanta `STATUS_TAYANG` di `backend/app/schemas/laporan.py`).
 
 ```bash
 curl "http://localhost:8000/api/v1/public-spaces/<id>/reports?limit=20"
 ```
+
+### `GET /api/v1/admin/public-spaces/{ruang_publik_id}/photos` (admin)
+
+Daftar foto resmi satu ruang publik (tabel `ruang_publik_foto`), urut paling
+lama. `404` bila ruang publik tak ada. Foto laporan tayang **tidak** ikut di
+sini — yang muncul di galeri publik lewat `GET /public-spaces/{id}`.
+
+### `POST /api/v1/admin/public-spaces/{ruang_publik_id}/photos` (admin)
+
+`multipart/form-data`, field `file` (JPEG/PNG/WebP, validasi magic bytes +
+ukuran seperti upload laporan). `201` + baris foto baru; file disimpan ke
+`uploads/ruang-publik/`.
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/admin/public-spaces/<id>/photos" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" -F "file=@foto.jpg"
+```
+
+### `DELETE /api/v1/admin/public-spaces/{ruang_publik_id}/photos/{foto_id}` (admin)
+
+Hapus satu foto resmi (file di disk dibiarkan agar path lama tidak rusak).
+`200` + baris yang terhapus; `404` bila foto tak ada atau bukan milik ruang
+publik tersebut.
 
 ---
 

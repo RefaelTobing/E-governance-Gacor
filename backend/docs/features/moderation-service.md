@@ -65,12 +65,10 @@ Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, 
 `payload.status` diterima **string bebas** → admin (atau pemanggil API dengan token admin) bisa menulis status tak dikenal seperti `langsung_selesai`, yang merusak badge/stepper FE dan statistik.
 
 **Langkah:**
-- [ ] Definisikan daftar status kanonik di satu tempat (lihat `03-database-schema.md` §4):
-  ```
-  menunggu_verifikasi, diverifikasi, dalam_penanganan, selesai, ditolak
-  ```
-  Bila belum ada modul bersama, buat `app/core/status.py` (atau konstanta di `app/schemas/laporan.py`) berisi `STATUS_LAPORAN: frozenset[...]` + `STATUS_TAYANG` (untuk FEAT-010/007).
-- [ ] Validasi di schema `LaporanStatusUpdate` (`field_validator`) **atau** di router → balas `422`/`400` dengan pesan berisi daftar nilai yang sah.
+- [x] Daftar status kanonik didefinisikan di satu tempat — `STATUS_KANONIK` (5 status) dan `STATUS_TAYANG`
+      di `app/schemas/laporan.py` (dibuat saat BE-47; lihat `03-database-schema.md` §4).
+      `STATUS_LAPORAN` di `app/core/status.py` tidak jadi dibuat — cukup di `schemas/laporan.py`.
+- [ ] Validasi di schema `LaporanStatusUpdate` (`field_validator`) **atau** di router → balas `422`/`400` dengan pesan berisi daftar nilai yang sah. (Konstanta sudah siap dipakai.)
 - [ ] (Opsional, disarankan) Validasi transisi: `selesai`/`ditolak` tidak bisa kembali ke `menunggu_verifikasi` — **hanya bila kebutuhan produk jelas**; kalau ragu, cukup validasi nilai dulu (MVP).
 - [ ] Tambahkan test: kirim status ngawur → 4xx; kirim `selesai` → 200 + timeline entry baru.
 
@@ -82,11 +80,11 @@ curl -X PATCH http://localhost:8000/api/v1/reports/<id>/status \
 curl ... -d '{"status":"selesai"}'                # → 200, timeline bertambah
 ```
 
-### Gap 2 — Filter tayang di `get_reports_by_ruang_publik` (dampak FEAT-010)
+### Gap 2 — Filter tayang di `get_reports_by_ruang_publik` (dampak FEAT-010) — **SELESAI (BE-47)**
 
-Filter memakai `("disetujui","tayang_otomatis")` yang **tidak pernah ada** → `GET /public-spaces/{id}/reports` selalu `[]`.
-
-**Langkah:** **pengerjaannya ada di `report-service.md` FEAT-010** — di file ini hanya catatan: setelah perbaikan, gunakan konstanta `STATUS_TAYANG` yang sama, **jangan** menulis daftar kedua.
+Filter lama memakai `("disetujui","tayang_otomatis")` yang tidak pernah ada → endpoint selalu `[]`.
+Sekarang memakai konstanta `STATUS_TAYANG` di `app/schemas/laporan.py` (satu-satunya daftar tayang;
+dipakai juga galeri foto BE-48). Regresi dijaga `tests/unit/test_public_space_reports.py`.
 
 ### Gap 3 — (koordinasi) Statistik hardcode & mojibake
 

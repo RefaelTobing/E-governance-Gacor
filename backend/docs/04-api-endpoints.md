@@ -38,8 +38,12 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | **Ruang Publik** ||||
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter (`fasilitas[]` ringkas + `stats{}` per baris) |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
-| `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` + `stats{}` |
-| `GET` | `/api/v1/public-spaces/{id}/reports` | — | Laporan tayang per ruang publik **(bermasalah, lihat §4)** |
+| `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` (resmi + laporan tayang, BE-48) + `stats{}` |
+| `GET` | `/api/v1/public-spaces/{id}/reports` | — | Laporan tayang per ruang publik (filter `STATUS_TAYANG`, BE-47) |
+| **Kelola Foto Ruang Publik (Admin)** ||||
+| `GET` | `/api/v1/admin/public-spaces/{id}/photos` | **Admin** | Daftar foto resmi, urut terlama |
+| `POST` | `/api/v1/admin/public-spaces/{id}/photos` | **Admin** | Unggah foto resmi (multipart `file`) → `201` |
+| `DELETE` | `/api/v1/admin/public-spaces/{id}/photos/{foto_id}` | **Admin** | Hapus satu foto resmi; `404` bila tak ada |
 | **Laporan** ||||
 | `POST` | `/api/v1/reports` | Token opsional | Kirim laporan (anonim tanpa token) |
 | `GET` | `/api/v1/reports` | — | Daftar laporan (filter status/wilayah/q) |
@@ -130,11 +134,26 @@ Catatan: Haversine dihitung **di SQL** (bukan Python). Baris tanpa koordinat sel
 `status_prima` = fasilitas `status="baik"`; `perlu_perhatian` = semua yang **bukan** baik (termasuk `NULL`).
 
 ### `GET /api/v1/public-spaces/{id}`
-Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` (penuh) + `foto: ["..."]` (dibungkus dari `image_url` tunggal) + `stats{...}` (versi penuh dari `fasilitas`, kunci sama dengan list) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit, sesuai FEAT-012). `404` bila id tak ada.
+Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` (penuh) + `foto: ["..."]` + `stats{...}` (versi penuh dari `fasilitas`, kunci sama dengan list) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit, sesuai FEAT-012). `404` bila id tak ada.
+
+`foto[]` = **galeri gabungan** hasil `services/ruang_publik.gabung_foto` (BE-48): foto resmi dari tabel
+`ruang_publik_foto` (urut terlama, `image_url` lama ikut bila belum punya baris) + `foto_url` laporan
+ber-status `STATUS_TAYANG` (urut terbaru), duplikat dibuang. Kontrak tetap `list[str]`.
 
 ### `GET /api/v1/public-spaces/{id}/reports`
-Laporan tayang untuk 1 ruang publik, query `skip`/`limit`.
-> ⚠ **Bug terverifikasi:** filter di service memakai `status IN ("disetujui","tayang_otomatis")` — nilai itu tidak pernah ada di DB → selalu `[]`. Perbaikan: `features/moderation-service.md` (FEAT-010).
+Laporan tayang untuk 1 ruang publik, query `skip`/`limit`. Filter memakai `STATUS_TAYANG`
+(`diverifikasi`/`dalam_penanganan`/`selesai`, definisi tunggal di `schemas/laporan.py`) — bug lama
+(`status IN ("disetujui","tayang_otomatis")` yang selalu menghasilkan `[]`) sudah diperbaiki oleh **BE-47**;
+regresinya dijaga `tests/unit/test_public_space_reports.py`.
+
+### Kelola foto resmi (admin, BE-48)
+Prefix `/api/v1/admin/public-spaces`, semua butuh role `admin`; tanpa token → `401`, warga → `403`.
+
+| Endpoint | Body | Catatan |
+|---|---|---|
+| `GET /admin/public-spaces/{id}/photos` | — | `404` bila ruang publik tak ada. Response `list[RuangPublikFotoResponse]` |
+| `POST /admin/public-spaces/{id}/photos` | `multipart` field `file` | Validasi gambar (MIME + magic bytes + ukuran), disimpan ke `uploads/ruang-publik/`; `201` |
+| `DELETE /admin/public-spaces/{id}/photos/{foto_id}` | — | `404` bila foto tak ada atau bukan milik `{id}`. File di disk dibiarkan |
 
 ### `GET /api/v1/facilities`
 ```json
@@ -337,7 +356,6 @@ browser membaca zona waktu yang benar.
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
 | Rate limit `POST /reports` | NFR-002 | — | `features/report-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |
-| Galeri foto laporan lolos moderasi | 007 | halaman detail | `features/public-space-service.md` |
 
 ---
 

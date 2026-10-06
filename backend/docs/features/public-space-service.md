@@ -4,10 +4,10 @@
 > Definisi fitur lain ada di file fitur lain — jangan melebar ke topik laporan/moderasi di sini.
 
 Kode terkait:
-- Router: `app/api/v1/ruang_publik.py`, `app/api/v1/fasilitas.py`
+- Router: `app/api/v1/ruang_publik.py`, `app/api/v1/fasilitas.py`, `app/api/v1/foto_ruang_publik.py`
 - Service: `app/services/ruang_publik.py`
 - Schema: `app/schemas/ruang_publik.py`
-- Model: `app/models/ruang_publik.py`, `app/models/fasilitas.py`
+- Model: `app/models/ruang_publik.py`, `app/models/fasilitas.py`, `app/models/ruang_publik_foto.py`
 
 ---
 
@@ -21,7 +21,7 @@ Kode terkait:
 | 004 | Filter Kategori | **Selesai** |
 | 005 | Filter Berdasarkan Fasilitas | **Selesai** |
 | 006 | Halaman Detail Ruang Publik | **Selesai** (penandaan "data tidak tersedia" = tugas FE) |
-| 007 | Galeri Foto | **Sebagian** — foto resmi 1/file; foto laporan belum masuk galeri |
+| 007 | Galeri Foto | **Selesai (BE-48)** — foto resmi multi-foto + foto laporan tayang tergabung |
 
 ---
 
@@ -154,43 +154,48 @@ curl "http://localhost:8000/api/v1/public-spaces/<id>"
 
 **PRD:** foto ruang publik = gabungan sumber data resmi **dan** unggahan pengguna; **foto hasil laporan (FEAT-008) otomatis masuk galeri setelah lolos moderasi.**
 
-**Implementasi saat ini:**
-- Sisi resmi: kolom `ruang_publik.image_url` (satu URL). Router detail **membungkusnya jadi list** `foto: [image_url]` agar kontrak FE tidak berubah saat foto bertambah (lihat `api/v1/ruang_publik.py` komentar di kode).
-- Sisi foto laporan: **BELUM ADA.** `laporan.foto_url` saja belum pernah terisi karena endpoint upload belum ada, apalagi mekanisme "foto lolos moderasi → galeri".
-
-**Gap & langkah (urut):**
-
-1. Endpoint upload foto → **prasyarat** untuk `laporan.foto_url` (pengerjaan di `features/report-service.md`, FEAT-008 — di luar file ini, hanya disebut sebagai dependensi).
-2. Putuskan representasi galeri (pilih satu, catat keputusan):
-   - **Opsi A (tanpa tabel baru):** galeri = `foto[]` berisi `image_url` + `foto_url` dari laporan berstatus tayang (`diverifikasi`/`dalam_penanganan`/`selesai`) milik ruang_publik tersebut → query gabungan di service detail.
-   - **Opsi B (tabel baru `ruang_publik_foto`):** kolom `id, ruang_publik_id, foto_url, sumber(resmi|laporan), laporan_id NULL, created_at` → lebih rapi untuk merge FEAT-012, tapi butuh migrasi Alembic.
-   Rekomendasi untuk MVP: **Opsi A** (cukup untuk "otomatis masuk galeri setelah moderasi", tanpa migrasi).
-3. Rumus "lolos moderasi" mengikuti daftar status tayang yang **sama** dengan FEAT-010 (lihat `features/moderation-service.md` — perbaikan filter tayang juga menyentuh rumus ini; jangan definisikan dua daftar status tayang yang berbeda).
-4. Sinkronkan `docs/API.md` + `04-api-endpoints.md` bila response berubah.
+**Implementasi saat ini (selesai, BE-48):**
+- **Keputusan: Opsi B versi sederhana.** Tabel `ruang_publik_foto` (`id, ruang_publik_id, foto_url, created_at, updated_at`)
+  hanya menyimpan **foto resmi** — tanpa kolom `sumber`/`laporan_id`, karena foto laporan di-merge langsung
+  dari tabel `laporan` setiap request (tidak butuh sinkronisasi saat status laporan berubah).
+- Sisi resmi: kolom `image_url` lama tetap ada; migrasi `tambah_tabel_ruang_publik_foto` melakukan **backfill**
+  (satu baris per ruang publik yang punya `image_url`). Admin kelola lewat
+  `GET/POST/DELETE /api/v1/admin/public-spaces/{id}/photos` (upload ke folder `uploads/ruang-publik`).
+- Sisi foto laporan: `services/ruang_publik.gabung_foto` mengambil `laporan.foto_url` ber-status
+  **`STATUS_TAYANG`** (`diverifikasi`/`dalam_penanganan`/`selesai`) — daftar status yang sama persis dengan
+  FEAT-010 (satu definisi di `schemas/laporan.py`, tidak diduplikasi).
+- Urutan stabil: foto resmi terlama dulu, lalu laporan tayang terbaru dulu; duplikat dibuang.
+  `image_url` yang belum punya baris foto ikut tampil sebagai foto pertama.
 
 **Checklist:**
 
-- [ ] Keputusan Opsi A/B tertulis di sini/di commit message
-- [ ] `GET /public-spaces/{id}` mengembalikan foto resmi + foto laporan tayang (bila Opsi A)
-- [ ] Setelah sebuah laporan di-`PATCH` status jadi `selesai`, foto-nya muncul di galeri ruang publik terkait
-- [ ] `foto[]` tetap berupa list meski `image_url` masih satu
+- [x] Keputusan Opsi A/B tertulis di sini/di commit message (Opsi B sederhana, lihat atas)
+- [x] `GET /public-spaces/{id}` mengembalikan foto resmi + foto laporan tayang
+- [x] Setelah sebuah laporan di-`PATCH` status jadi `selesai`, foto-nya muncul di galeri ruang publik terkait
+      (langsung dari tabel `laporan`, tanpa langkah sinkronisasi)
+- [x] `foto[]` tetap berupa list meski `image_url` masih satu
 
-**Verifikasi:**
+**Verifikasi (2026-10-06):**
 ```bash
-# sebelum: catat foto[] detail
-curl "http://localhost:8000/api/v1/public-spaces/<id>"
-# setelah ada laporan tayang dengan foto:
-curl "http://localhost:8000/api/v1/public-spaces/<id>"   # foto[] bertambah
+# 1. foto resmi + laporan tayang tergabung tanpa duplikat
+curl "http://localhost:8000/api/v1/public-spaces/<id>"          # foto[] berisi keduanya
+# 2. kelola foto resmi (admin)
+curl -X POST "http://localhost:8000/api/v1/admin/public-spaces/<id>/photos" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" -F "file=@foto.jpg"   # 201
+# 3. otomatisasi: pytest tests/unit/test_foto_ruang_publik.py    # 11 passed
+# 4. migrasi: alembic upgrade head / downgrade -1 / upgrade head # backfill teruji
 ```
 
 ---
 
 ## Verifikasi Akhir File Ini (semua FEAT 001–007)
 
-- [ ] Radius menyaring benar (uji radius kecil vs besar) — satuan terdokumentasi
-- [ ] Urutan terdekat aktif saat `lat/long` dikirim, `jarak_km` terhitung
-- [ ] Filter kategori + fasilitas + wilayah + q bisa dikombinasikan
-- [ ] `/public-spaces/stats` mengembalikan 3 metrik
-- [ ] Detail: 200 lengkap / 404 tidak ada; `foto[]` list
-- [ ] Tidak ada endpoint baru di luar FEAT 001–007 yang dicampur ke file ini (laporan → `report-service.md`)
-- [ ] `04-api-endpoints.md` & `docs/API.md` masih sinkron dengan kode
+- [x] Radius menyaring benar (uji radius kecil vs besar) — satuan terdokumentasi (km; `tests/unit/test_ruang_publik.py`)
+- [x] Urutan terdekat aktif saat `lat/long` dikirim, `jarak_km` terhitung (test urut menaik + `null` tanpa titik acuan)
+- [x] Filter kategori + fasilitas + wilayah + q bisa dikombinasikan (test kombinasi + `skip`/`limit`)
+- [x] `/public-spaces/stats` mengembalikan 3 metrik (test `TestStats`, termasuk NULL tidak dihitung prima)
+- [x] Detail: 200 lengkap / 404 tidak ada; `foto[]` list (test di `test_foto_ruang_publik.py`)
+- [x] Tidak ada endpoint baru di luar FEAT 001–007 yang dicampur ke file ini (laporan → `report-service.md`; foto admin = FEAT-007)
+- [x] `04-api-endpoints.md` & `docs/API.md` masih sinkron dengan kode (diperbarui 2026-10-06 untuk BE-47/BE-48)
+
+Semua item di atas diverifikasi otomatis: `cd backend && python -m pytest tests/unit -q` -> **51 passed**.

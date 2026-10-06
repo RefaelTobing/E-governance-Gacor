@@ -10,6 +10,7 @@ CREATE TABLE users (
    email VARCHAR(255) NOT NULL,
    password_hash VARCHAR(255) NOT NULL,
    role VARCHAR(20) DEFAULT 'warga',
+   is_active BOOLEAN NOT NULL DEFAULT TRUE,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -50,6 +51,17 @@ CREATE TABLE fasilitas (
    FOREIGN KEY (ruang_publik_id) REFERENCES ruang_publik(id)
 );
 
+CREATE TABLE ruang_publik_foto (
+   id VARCHAR(50) PRIMARY KEY,
+   ruang_publik_id VARCHAR(50) NOT NULL,
+   foto_url TEXT NOT NULL,
+   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+   FOREIGN KEY (ruang_publik_id) REFERENCES ruang_publik(id)
+);
+
+CREATE INDEX ix_ruang_publik_foto_ruang_publik_id ON ruang_publik_foto (ruang_publik_id);
+
 CREATE TABLE laporan (
    id VARCHAR(50) PRIMARY KEY,
    user_id VARCHAR(36),
@@ -80,4 +92,15 @@ CREATE TABLE laporan_timeline (
    description TEXT,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    FOREIGN KEY (laporan_id) REFERENCES laporan(id)
+);
+
+CREATE TABLE etl_run (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   pemicu VARCHAR(20) NOT NULL,
+   status VARCHAR(20) NOT NULL,
+   mulai DATETIME NOT NULL,
+   selesai DATETIME,
+   tahap_gagal VARCHAR(50),
+   hitung JSON,
+   tahap JSON
 );
