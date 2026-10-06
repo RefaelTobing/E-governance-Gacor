@@ -21,6 +21,8 @@ class Laporan(Base):
     long_user = Column(Float)
     lat_exif = Column(Float)
     long_exif = Column(Float)
+    jarak_browser_rp = Column(Float)
+    jarak_exif_rp = Column(Float)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 

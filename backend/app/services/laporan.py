@@ -7,10 +7,12 @@ from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.core.exif_utils import extract_gps_from_file
+from app.core.utils import haversine_km
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.ruang_publik import RuangPublik
 from app.schemas.laporan import LaporanCreate, LaporanUpdate, STATUS_TAYANG
+from app.services import ruang_publik as crud_ruang_publik
 from app.services import user as crud_user
 
 def create_report(
@@ -93,8 +95,22 @@ def create_report(
     if lat_exif is not None and lon_exif is not None:
         db_laporan.lat_exif = lat_exif
         db_laporan.long_exif = lon_exif
-        db.commit()
-        db.refresh(db_laporan)
+
+    rp = crud_ruang_publik.get_ruang_publik(db, laporan_in.ruang_publik_id)
+    if rp and rp.latitude is not None and rp.longitude is not None:
+        rp_lat = float(rp.latitude)
+        rp_lon = float(rp.longitude)
+        if laporan_in.lat_user is not None and laporan_in.long_user is not None:
+            db_laporan.jarak_browser_rp = haversine_km(
+                laporan_in.lat_user, laporan_in.long_user, rp_lat, rp_lon
+            )
+        if lat_exif is not None and lon_exif is not None:
+            db_laporan.jarak_exif_rp = haversine_km(
+                lat_exif, lon_exif, rp_lat, rp_lon
+            )
+
+    db.commit()
+    db.refresh(db_laporan)
 
     return db_laporan
 

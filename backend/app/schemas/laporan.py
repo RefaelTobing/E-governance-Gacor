@@ -52,6 +52,8 @@ class LaporanResponse(LaporanBase):
     # EXIF tidak pernah datang dari klien; hanya dibaca dari file saat upload (BE-21).
     lat_exif: Optional[float] = None
     long_exif: Optional[float] = None
+    jarak_browser_rp: Optional[float] = None
+    jarak_exif_rp: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 
