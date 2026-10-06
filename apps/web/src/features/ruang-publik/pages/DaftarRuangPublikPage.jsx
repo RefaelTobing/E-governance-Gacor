@@ -256,9 +256,6 @@ export const DaftarRuangPublikPage = () => {
         }}
       >
         <div style={{ maxWidth: '640px' }}>
-          <span className="text-caption" style={{ fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <Globe size={14} /> EKSPLORASI KOTA HIJAU • PEMBARUAN FASILITAS TERKINI
-          </span>
           <h1 className="text-display" style={{ marginTop: '4px', marginBottom: '8px' }}>
             Ruang Publik di Jakarta
           </h1>
