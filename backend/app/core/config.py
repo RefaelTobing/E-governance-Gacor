@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ADMIN_SEED_EMAIL: str = ""
     ADMIN_SEED_PASSWORD: str = ""
 
+    # Ambang validasi lokasi anti fake-GPS (BE-23), dalam meter. Laporan hanya
+    # auto-tayang bila kedua jarak (browser & EXIF ke ruang publik) <= nilai ini.
+    # Nilai sama dengan VITE_FAKE_GPS_THRESHOLD_M di FE (hanya untuk teks bantuan UI).
+    FAKE_GPS_THRESHOLD_M: int = 100
+
     # Jadwal pipeline ETL (cron 5 field, zona WIB), hanya dibaca
     # `python -m app.etl.scheduler`. Default "0 2 * * *" = tiap hari 02:00 WIB.
     ETL_JADWAL: str = "0 2 * * *"

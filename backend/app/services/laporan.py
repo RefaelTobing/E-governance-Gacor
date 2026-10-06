@@ -109,6 +109,31 @@ def create_report(
                 lat_exif, lon_exif, rp_lat, rp_lon
             )
 
+    # BE-23: auto-tayang hanya bila kedua jarak (browser & EXIF) ada dan <= ambang.
+    # Selain itu tetap menunggu_verifikasi: tanpa EXIF, tanpa koordinat browser,
+    # RP tanpa koordinat, atau salah satu/kedua jarak melampaui ambang.
+    ambang_km = settings.FAKE_GPS_THRESHOLD_M / 1000
+    jarak_browser = db_laporan.jarak_browser_rp
+    jarak_exif = db_laporan.jarak_exif_rp
+    lolos_validasi = (
+        jarak_browser is not None
+        and jarak_exif is not None
+        and jarak_browser <= ambang_km
+        and jarak_exif <= ambang_km
+    )
+    if lolos_validasi:
+        db_laporan.status = "diverifikasi"
+        db.add(LaporanTimeline(
+            laporan_id=db_laporan.id,
+            status="diverifikasi",
+            title="Lolos validasi lokasi",
+            description=(
+                f"Jarak browser {jarak_browser * 1000:.0f} m dan EXIF "
+                f"{jarak_exif * 1000:.0f} m dari ruang publik (ambang "
+                f"{settings.FAKE_GPS_THRESHOLD_M} m) - laporan otomatis tayang."
+            ),
+        ))
+
     db.commit()
     db.refresh(db_laporan)
 
