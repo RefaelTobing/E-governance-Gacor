@@ -52,6 +52,27 @@ export const getAllFacilities = async () => {
   return semua;
 };
 
+/**
+ * Seluruh baris fasilitas dikelompokkan per ruang publik.
+ * Endpoint admin tunggal; hasil dipakai layar daftar & detail fasilitas.
+ */
+export const getAllFacilitiesGrouped = async () => {
+  const data = await api.get('/api/v1/admin/facilities/by-ruang');
+  const groups = {};
+  Object.entries(data || {}).forEach(([ruangId, rows]) => {
+    groups[ruangId] = rows.map((row) => ({
+      id: row.id,
+      ruangPublikId: row.ruang_publik_id,
+      nama: row.nama,
+      kategori: row.kategori,
+      status: row.status,
+      deskripsi: row.deskripsi,
+      createdAt: row.created_at,
+    }));
+  });
+  return groups;
+};
+
 export const createFacility = async (payload) => {
   try {
     const data = await api.post('/api/v1/admin/facilities', {

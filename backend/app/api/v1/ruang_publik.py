@@ -52,13 +52,16 @@ def read_public_spaces(
 
 
 @router.get("/stats")
-def read_public_spaces_stats(db: Session = Depends(get_db)):
+def read_public_spaces_stats(
+    q: Optional[str] = Query(None, description="Saring total ruang publik berdasarkan nama/alamat"),
+    db: Session = Depends(get_db),
+):
     """Ringkasan metrik ruang publik untuk halaman daftar.
 
     Dideklarasikan sebelum route /{ruang_publik_id} agar path "/stats" tidak
     tertangkap sebagai id ruang publik.
     """
-    return crud_ruang_publik.get_public_spaces_stats(db)
+    return crud_ruang_publik.get_public_spaces_stats(db, q=q)
 
 
 @router.get("/{ruang_publik_id}", response_model=RuangPublikDetailResponse)

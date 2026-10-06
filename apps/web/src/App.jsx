@@ -16,6 +16,7 @@ import { TentangPage } from './features/tentang';
 // Feature Pages Imports - Admin
 import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
 import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
+import DetailFasilitasRuangPublikPage from './features/data-master/pages/DetailFasilitasRuangPublikPage';
 
 // Feature Pages Imports - Profil Warga
 import {
@@ -98,6 +99,7 @@ function App() {
             <Route path="/dashboard/moderasi/:laporanId" element={<DetailModerasiPage />} />
             <Route path="/dashboard/data-master" element={<DataMasterPage />} />
             <Route path="/dashboard/fasilitas" element={<KelolaFasilitasPage />} />
+            <Route path="/dashboard/fasilitas/:ruangPublikId" element={<DetailFasilitasRuangPublikPage />} />
             <Route path="/dashboard/petugas" element={<PetugasLapanganPage />} />
             <Route path="/dashboard/kelola-admin" element={<KelolaAdminPage />} />
           </Route>

@@ -78,8 +78,11 @@ export const getPublicSpaces = async (params = {}) => {
         );
       }
 
+      const mulai = skip || 0;
       if (limit) {
-        results = results.slice(0, limit);
+        results = results.slice(mulai, mulai + limit);
+      } else if (mulai) {
+        results = results.slice(mulai);
       }
 
       return results;
@@ -164,9 +167,11 @@ export const getPublicSpaceDetail = async (id) => {
 /**
  * Ambil statistik ringkasan ruang publik (total terdata, kondisi prima, dll).
  */
-export const getPublicSpacesStats = async () => {
+export const getPublicSpacesStats = async (params = {}) => {
   try {
-    const raw = await api.get('/api/v1/public-spaces/stats');
+    const raw = await api.get('/api/v1/public-spaces/stats', {
+      q: params.q || undefined,
+    });
     // Normalisasi ke key yang dibaca UI (DaftarRuangPublikPage).
     return {
       totalTerdata: raw.total_ruang_publik,

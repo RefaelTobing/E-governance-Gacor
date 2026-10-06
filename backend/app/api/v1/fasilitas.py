@@ -37,6 +37,33 @@ def read_facilities(db: Session = Depends(get_db)):
 
 # Endpoint di bawah ini khusus admin panel (halaman /dashboard/fasilitas).
 
+@admin_router.get("/by-ruang", response_model=dict)
+def list_fasilitas_by_ruang(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Kelompokkan seluruh fasilitas per ruang publik.
+
+    Layar Kelola Fasilitas menampilkan satu baris per ruang publik, jadi
+    endpoint ini mengembalikan peta `ruang_publik_id -> daftar fasilitas`
+    dalam satu tarikan, bukan baris datar per fasilitas.
+    """
+    rows = crud_ruang_publik.list_fasilitas_admin(db, limit=5000)
+    groups: dict[str, list] = {}
+    for fas in rows:
+        groups.setdefault(fas.ruang_publik_id, []).append(
+            {
+                "id": fas.id,
+                "nama": fas.nama,
+                "kategori": fas.kategori,
+                "status": fas.status,
+                "deskripsi": fas.deskripsi,
+                "ruang_publik_id": fas.ruang_publik_id,
+            }
+        )
+    return groups
+
+
 @admin_router.get("", response_model=List[AdminFasilitasResponse])
 def list_fasilitas(
     q: Optional[str] = None,

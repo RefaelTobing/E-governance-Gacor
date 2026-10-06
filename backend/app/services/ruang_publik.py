@@ -79,7 +79,8 @@ def search_ruang_publik(
         search_pattern = f"%{q}%"
         stmt = stmt.where(
             (RuangPublik.nama.ilike(search_pattern)) |
-            (RuangPublik.alamat.ilike(search_pattern))
+            (RuangPublik.alamat.ilike(search_pattern)) |
+            (RuangPublik.wilayah.ilike(search_pattern))
         )
 
     if fasilitas:
@@ -372,15 +373,25 @@ def import_fasilitas_csv(db: Session, baris: list[dict]) -> dict:
     return {"created": created, "failed": len(errors), "errors": errors}
 
 
-def get_public_spaces_stats(db: Session) -> dict:
+def get_public_spaces_stats(db: Session, q: Optional[str] = None) -> dict:
     """Ringkasan metrik ruang publik untuk halaman daftar.
 
     `status_prima` menghitung fasilitas berstatus "baik" saja; NULL tidak
     dihitung sebagai baik. `perlu_perhatian` adalah kebalikannya: semua yang
     bukan "baik", termasuk yang NULL, jadi query-nya harus menangkap NULL
     secara eksplisit karena `status != "baik"` saja tidak menyertakannya.
+
+    `q` hanya menyaring `total_ruang_publik`. Hitungan fasilitas bersifat
+    global dan tidak ikut disaring, karena pemakai statistik publik tidak
+    pernah mengirim `q`.
     """
-    total_ruang_publik = db.query(RuangPublik).count()
+    total_stmt = db.query(func.count(RuangPublik.id))
+    if q:
+        pola = f"%{q}%"
+        total_stmt = total_stmt.filter(
+            or_(RuangPublik.nama.ilike(pola), RuangPublik.alamat.ilike(pola))
+        )
+    total_ruang_publik = total_stmt.scalar() or 0
 
     status_prima = (
         db.query(Fasilitas)

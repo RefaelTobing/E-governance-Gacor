@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const SelectDropdown = ({ options, value, onChange, className = '', ariaLabel = 'Pilih opsi' }) => {
+const SelectDropdown = ({ options, value, onChange, className = '', ariaLabel = 'Pilih opsi', placement = 'down' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const triggerRef = useRef(null);
@@ -73,7 +73,7 @@ const SelectDropdown = ({ options, value, onChange, className = '', ariaLabel = 
         <ChevronDown className={`select-dropdown-chevron ${isOpen ? 'open' : ''}`} size={16} aria-hidden="true" />
       </button>
       {isOpen && (
-        <div className="select-dropdown-menu" id={listboxId} role="listbox" aria-label={ariaLabel}>
+        <div className={`select-dropdown-menu ${placement === 'up' ? 'select-dropdown-menu-up' : ''}`} id={listboxId} role="listbox" aria-label={ariaLabel}>
           {options.map((option, index) => (
             <button
               key={option}
