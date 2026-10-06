@@ -493,6 +493,10 @@ Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anoni
 - **Auth:** Opsional (bisa diakses tanpa token via `oauth2_scheme_optional`).
 - **Foto:** **Wajib** (`foto_url` harus diawali `/uploads/laporan/` dan diverifikasi ada di disk).
 - **Koordinat:** Opsional. Jika salah satu diisi (`lat_user` atau `long_user`), keduanya **wajib lengkap**. Rentang latitude `-90..90`, longitude `-180..180`.
+- **Validasi lokasi anti fake-GPS (ambang 100 meter):** backend membandingkan jarak Haversine (a) koordinat browser dan (b) koordinat EXIF foto ke koordinat ruang publik tujuan, lalu menentukan `status` di response:
+  - **Kedua jarak ada dan <= 100 m** -> `status = "diverifikasi"` (langsung tayang) + timeline kedua "Lolos validasi lokasi".
+  - **Selain itu** (EXIF tidak ada, koordinat browser tidak dikirim, ruang publik tanpa koordinat, atau salah satu/kedua jarak > 100 m) -> `status = "menunggu_verifikasi"` (antre moderasi admin).
+  - Nilai ambang: `FAKE_GPS_THRESHOLD_M` di `.env` backend (default `100`), disamakan dengan `VITE_FAKE_GPS_THRESHOLD_M` FE (hanya teks bantuan UI).
 
 **Contoh Payload (Anonim):**
 ```json
@@ -526,20 +530,26 @@ Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anoni
   "long_user": 106.823,
   "lat_exif": null,
   "long_exif": null,
+  "jarak_browser_rp": 123.456,
+  "jarak_exif_rp": null,
   "created_at": "2026-10-05T19:15:20"
 }
 ```
 
 | Kasus | Skenario | Status | Keterangan |
 |---|---|---|---|
-| R1 | Anonim tanpa header auth, foto valid, koordinat ada | `201` | `nama_pelapor` & `user_id` null, status `menunggu_verifikasi` |
+| R1 | Anonim tanpa header auth, foto valid, koordinat ada | `201` | `nama_pelapor` & `user_id` null |
 | R2 | `mode_identitas=tampilkan_nama` tanpa token | `400` | Silakan login atau pilih mode anonim |
 | R3 | `mode_identitas=tampilkan_nama` + Bearer token | `201` | `nama_pelapor` diisi nama DB (anti-spoofing) |
 | R4 | Body tanpa `foto_url` | `400` | Foto bukti fisik wajib diunggah |
 | R5 | `foto_url` bukan `/uploads/laporan/` atau berkas tidak ada | `400` | Berkas foto tidak valid / tidak ditemukan |
 | R6 | Hanya kirim `lat_user` tanpa `long_user` | `400` | Koordinat lokasi harus lengkap |
 | R7 | `lat_user` di luar rentang (-90..90) | `422` | Validasi schema Pydantic |
-| R8 | Submit tanpa koordinat sama sekali | `201` | Koordinat opsional, tersimpan null |
+| R8 | Submit tanpa koordinat sama sekali | `201` | Koordinat opsional, tersimpan null, status `menunggu_verifikasi` |
+| R9 | EXIF & browser masing-masing <= 100 m dari RP | `201` | `status = diverifikasi` (langsung tayang), timeline 2 entri |
+| R10 | EXIF <= 100 m tapi browser > 100 m (atau sebaliknya) | `201` | `status = menunggu_verifikasi` |
+| R11 | Foto tanpa EXIF GPS (koordinat browser dekat) | `201` | `status = menunggu_verifikasi` |
+| R12 | EXIF dekat tapi koordinat browser tidak dikirim | `201` | `status = menunggu_verifikasi` |
 
 ### `GET /api/v1/reports`
 

@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 4 | 1 | 5 |
+| B3 Report Service | 10 | 6 | 1 | 3 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **28** | **6** | **22** |
+| **Total** | **56** | **30** | **6** | **20** |
 
 ---
 
@@ -297,19 +297,28 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/core/utils.py` (`haversine_km(lat1, lon1, lat2, lon2) -> km`); integrasi di
     `app/services/laporan.py` setelah ekstraksi EXIF BE-21 — `jarak_browser_rp` (koordinat browser vs
     ruang publik) dan `jarak_exif_rp` (koordinat EXIF vs ruang publik) dihitung bila kedua pasangan
-    koordinat tersedia, selainnya `NULL`; kolom `DECIMAL(8,3)` di model `laporan`, skema
+    koordinat tersedia, selainnya `NULL`; kolom `Float` (km, hasil `haversine_km`) di model `laporan`, skema
     `LaporanResponse`, migrasi `74d05cd21291_tambah_kolom_jarak_laporan.py` (sudah `upgrade head`).
   - **Dependensi:** kolom hasil **BE-46** dan EXIF hasil **BE-21** (keduanya sudah ada).
   - **Verifikasi (2026-10-06):** `pytest tests/unit -q` → 57 passed (4 test baru: 3 di
     `tests/unit/test_utils.py` — titik sama = 0 km, Jakarta-Bandung ~118 km, kutub 0°..180° ~20.000 km;
     `test_create_laporan_jarak_terisi` — submit laporan dekat ruang publik → `jarak_browser_rp` terisi
     < 1 km, `jarak_exif_rp` `None` tanpa EXIF).
-- [ ] **[BE-23]** Ambang batas 100 meter: salah satu/kedua jarak > 100 m atau EXIF tidak ada ->
+- [x] **[BE-23]** Ambang batas 100 meter: salah satu/kedua jarak > 100 m atau EXIF tidak ada ->
       status `menunggu_verifikasi`; dalam ambang batas -> tayang. *(FEAT-013, FEAT-010)*
-  - **Belum ada:** status saat ini selalu `menunggu_verifikasi` tanpa perhitungan apa pun.
-  - **Catatan:** ambang di FE memakai `VITE_FAKE_GPS_THRESHOLD_M=50` (`.env.example` FE) sementara PRD menyebut
-    100 m - **samakan satu nilai** dan catat di `docs/API.md` sebelum task ini dikerjakan.
-  - **Verifikasi:** 4 skenario PRD bagian 8 (lokasi valid, lokasi jauh, foto tanpa EXIF, EXIF vs browser bertentangan).
+  - **Lokasi kode:** blok `lolos_validasi` di `app/services/laporan.py` (akhir `create_report`);
+    nilai ambang `FAKE_GPS_THRESHOLD_M` (meter) di `app/core/config.py` + `backend/.env.example`.
+  - **Keputusan:**
+    1. "tayang" dipetakan ke `diverifikasi` (status kanonik anggota `STATUS_TAYANG`; kamus tidak punya
+       nilai `tayang`/`menunggu_tinjauan` seperti ditulis jobdesk lama), "menunggu tinjauan" =
+       `menunggu_verifikasi`. Koordinat browser **wajib** (kondisi ketat: geolocation ditolak -> menunggu).
+    2. Lolos -> `status = "diverifikasi"` + timeline kedua "Lolos validasi lokasi" (jarak meter + ambang
+       di description); gagal -> tetap 1 entri "Laporan dikirim".
+    3. Ambang diseragamkan: FE `VITE_FAKE_GPS_THRESHOLD_M` 50 -> **100** (`.env.example` FE), dicatat
+       di `docs/API.md` bagian `POST /api/v1/reports`.
+  - **Verifikasi (2026-10-06):** `pytest tests/unit -q` -> 62 passed (5 skenario baru: valid ->
+    `diverifikasi` + timeline 2; jauh, tanpa EXIF, EXIF vs browser bertentangan, EXIF dekat tanpa
+    koordinat browser -> `menunggu_verifikasi`).
 - [ ] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
   - **Parsial:** status sudah ikut di `GET /reports/{id}` dan response submit, tetapi endpoint itu publik
     dan tidak dibatasi pemilik -> lihat **BE-50** dan **BE-52**.
@@ -317,8 +326,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Belum ada** endpoint maupun UI di FE.
 - [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
   - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
-- [ ] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
-  - **Belum ada** (lihat BE-13).
+- [x] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
+  - **Lokasi kode:** `tests/unit/test_laporan.py` - 5 test BE-23
+    (`test_create_lokasi_valid_auto_tayang`, `test_create_lokasi_jauh_menunggu`,
+    `test_create_tanpa_exif_browser_dekat_menunggu`, `test_create_exif_browser_bertentangan_menunggu`,
+    `test_create_exif_dekat_tanpa_koordinat_browser_menunggu`).
+  - **Verifikasi (2026-10-06):** kelima test lulus bersama suite (62 passed); ditutup bersama BE-23
+    karena isinya = verifikasi task itu.
 - [x] **[BE-49]** **(baru - hasil audit)** Endpoint upload foto `POST /api/v1/uploads` dengan `UploadFile`
       (multipart), memakai `app/core/file_upload.py` yang sudah siap, kembalikan `{ "url": "/uploads/laporan/xxx.jpg" }`;
       auth opsional mengikuti kebijakan laporan anonim; foto masuk ke `storage/laporan/`.
