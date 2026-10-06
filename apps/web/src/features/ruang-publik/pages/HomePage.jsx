@@ -400,7 +400,7 @@ export const HomePage = () => {
                       </div>
 
                       <div style={{ marginTop: 'auto' }}>
-                        <Button variant="secondary" fullWidth onClick={() => navigate(`/ruang-publik/${featuredSpaces[0].id}`)}>
+                        <Button variant="secondary" className="ruang-publik-detail-button" fullWidth onClick={() => navigate(`/ruang-publik/${featuredSpaces[0].id}`)}>
                           Lihat Detail Ruang
                         </Button>
                       </div>
@@ -436,8 +436,8 @@ export const HomePage = () => {
                       </div>
 
                       <div style={{ marginTop: 'auto', paddingTop: 'var(--space-sm)' }}>
-                        <Button variant="outline" size="sm" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
-                          Lihat Detail
+<Button variant="secondary" className="ruang-publik-detail-button" size="sm" fullWidth onClick={() => navigate(`/ruang-publik/${item.id}`)}>
+                           Lihat Detail Ruang
                         </Button>
                       </div>
                     </CardBody>

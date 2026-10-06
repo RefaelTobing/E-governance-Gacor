@@ -215,6 +215,18 @@ h3, .h3 {
   border-color: var(--color-accent-hover, #D97706);
 }
 
+.ruang-publik-detail-button {
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent, #F59E0B);
+  border-color: var(--color-accent, #F59E0B);
+  color: #FFFFFF;
+}
+
+.ruang-publik-detail-button:hover:not(:disabled) {
+  background-color: var(--color-accent-hover, #D97706);
+  border-color: var(--color-accent-hover, #D97706);
+}
+
 .btn-outline {
   background-color: transparent;
   border-color: var(--color-text-main);
@@ -247,6 +259,16 @@ h3, .h3 {
   font-size: 12px;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
+}
+
+.btn.btn-sm.ruang-publik-detail-button,
+.btn.ruang-publik-detail-button {
+  border-radius: var(--radius-pill) !important;
+}
+
+.ruang-publik-list-card {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 .ruang-publik-filter {

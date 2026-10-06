@@ -450,7 +450,7 @@ export const DaftarRuangPublikPage = () => {
       ) : filteredList.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
           {itemTerlihat.map((item) => (
-            <Card key={item.id} hoverable>
+            <Card key={item.id} hoverable className="ruang-publik-list-card">
               <div className="kartu-ruang">
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                   <img src={item.image} alt={item.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -497,7 +497,7 @@ export const DaftarRuangPublikPage = () => {
                     <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={14} color="var(--color-text-muted)" /> Jam Operasional: <strong>{item.jamOperasional}</strong>
                     </span>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/ruang-publik/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Button variant="secondary" className="ruang-publik-detail-button" size="sm" onClick={() => navigate(`/ruang-publik/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       Lihat Detail Ruang <ArrowRight size={14} />
                     </Button>
                   </div>

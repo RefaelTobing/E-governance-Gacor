@@ -199,11 +199,12 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
                   <br />
                   <button
                     onClick={() => navigate(`/ruang-publik/${item.id}`)}
-                    style={{
-                      backgroundColor: '#047857',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
+className="ruang-publik-detail-button"
+                     style={{
+                       backgroundColor: 'var(--color-accent, #F59E0B)',
+                       color: 'white',
+                       border: 'none',
+                       borderRadius: 'var(--radius-pill)',
                       padding: '6px 14px',
                       fontSize: '12px',
                       fontWeight: 700,
@@ -212,7 +213,7 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
                       marginTop: '8px',
                     }}
                   >
-                    Lihat Detail →
+                    Lihat Detail Ruang →
                   </button>
                 </div>
               </Popup>
