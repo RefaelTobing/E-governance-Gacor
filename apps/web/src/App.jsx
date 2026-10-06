@@ -12,6 +12,12 @@ import { HomePage, DaftarRuangPublikPage, DetailRuangPublikPage } from './featur
 import { FormLaporPage, RiwayatLaporanPage, DetailStatusLaporanPage } from './features/laporan';
 import { LoginPage, LoginPemerintahPage } from './features/auth';
 import { TentangPage } from './features/tentang';
+
+// Feature Pages Imports - Admin
+import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
+import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
+
+// Feature Pages Imports - Profil Warga
 import {
   ProfilDashboardPage,
   RuangTersimpanPage,
@@ -20,10 +26,6 @@ import {
   KeamananPage,
   BantuanPage,
 } from './features/profil';
-
-// Feature Pages Imports - Admin
-import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
-import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
 
 function App() {
   return (

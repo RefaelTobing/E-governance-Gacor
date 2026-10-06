@@ -10,6 +10,7 @@ export const routes = [
   { path: "/ruang-publik/:id/lapor", component: "features/laporan/pages/FormLaporPage", layout: "public" },
   { path: "/laporan-saya", component: "features/laporan/pages/RiwayatLaporanPage", layout: "public", protected: true },
   { path: "/laporan-saya/:id", component: "features/laporan/pages/DetailStatusLaporanPage", layout: "public", protected: true },
+  { path: "/tentang", component: "features/tentang/pages/TentangPage", layout: "public" },
   { path: "/login", component: "features/auth/pages/LoginPage", layout: "public" },
   { path: "/login-pemerintah", component: "features/auth/pages/LoginPemerintahPage", layout: "public" },
 
