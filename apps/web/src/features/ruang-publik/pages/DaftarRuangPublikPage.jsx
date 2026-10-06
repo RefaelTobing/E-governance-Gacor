@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Globe, RotateCcw, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
+import { Button, SearchInput, SelectDropdown, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import { JAKARTA_CENTER } from '../../../config/constants';
 import { getCategories } from '../../../services/categoryService';
@@ -14,6 +14,15 @@ const RADIUS_MIN = 1;
 const RADIUS_MAX = 1000;
 const RADIUS_BAWAAN = 700;
 const PER_HALAMAN = 12;
+const SORT_OPTIONS = ['Paling Relevan', 'Jarak Terdekat', 'Kondisi Terbaik'];
+const SORT_LABELS = {
+  relevan: 'Paling Relevan',
+  terdekat: 'Jarak Terdekat',
+  kondisi: 'Kondisi Terbaik'
+};
+const SORT_LABELS_TO_VALUE = Object.fromEntries(
+  Object.entries(SORT_LABELS).map(([value, label]) => [label, value])
+);
 const radiusDariUrl = (nilai) => {
   const km = Number(nilai);
   if (!Number.isFinite(km) || km <= 0) return null;
@@ -299,7 +308,7 @@ export const DaftarRuangPublikPage = () => {
       </div>
 
       {/* SEARCH & FILTER BAR */}
-      <div className="card" style={{ padding: 'var(--space-lg)', marginBottom: 'var(--space-xl)' }}>
+      <div className="card ruang-publik-filter-card" style={{ padding: 'var(--space-lg)', marginBottom: 'var(--space-xl)' }}>
         <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
             <SearchInput
@@ -309,22 +318,20 @@ export const DaftarRuangPublikPage = () => {
               style={{ borderRadius: 'var(--radius-pill)' }}
             />
           </div>
-          <select
-            className="form-select"
+          <SelectDropdown
+            options={MOCK_WILAYAH}
             value={selectedWilayah}
-            onChange={(e) => setSelectedWilayah(e.target.value)}
-            style={{ width: '180px', borderRadius: 'var(--radius-pill)' }}
-          >
-            {MOCK_WILAYAH.map((w) => (
-              <option key={w} value={w}>{w}</option>
-            ))}
-          </select>
+            onChange={setSelectedWilayah}
+            className="ruang-publik-filter-wrapper"
+            ariaLabel="Pilih wilayah"
+          />
           <Button 
             variant="outline" 
             size="sm" 
+            className="ruang-publik-filter"
             onClick={requestLocation}
             disabled={isGeoLoading}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: 'var(--radius-pill)' }}
+            style={{ gap: '6px' }}
           >
             <Navigation size={14} /> 
             {isGeoLoading ? 'Mencari Lokasi...' : 'Gunakan Lokasi Saya'}
@@ -405,11 +412,13 @@ export const DaftarRuangPublikPage = () => {
         <h3 className="h3">Menampilkan {filteredList.length} Ruang Publik</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Urutkan:</span>
-          <select className="form-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ width: '160px', padding: '6px 12px' }}>
-            <option value="relevan">Paling Relevan</option>
-            <option value="terdekat">Jarak Terdekat</option>
-            <option value="kondisi">Kondisi Terbaik</option>
-          </select>
+          <SelectDropdown
+            options={SORT_OPTIONS}
+            value={SORT_LABELS[sortBy]}
+            onChange={(label) => setSortBy(SORT_LABELS_TO_VALUE[label])}
+            ariaLabel="Urutkan ruang publik"
+            className="ruang-publik-filter-wrapper"
+          />
         </div>
       </div>
 

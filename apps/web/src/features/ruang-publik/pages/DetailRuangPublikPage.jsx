@@ -61,6 +61,7 @@ export const DetailRuangPublikPage = () => {
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState(null);
+  const [facilityFilter, setFacilityFilter] = useState('semua');
   const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
@@ -102,6 +103,10 @@ export const DetailRuangPublikPage = () => {
       return nextState;
     });
   };
+
+  const filteredFacilities = detail?.fasilitas?.filter((facility) => (
+    facilityFilter === 'semua' || facility.status === facilityFilter
+  )) || [];
 
   const centerCoords = detail?.koordinat
     ? [detail.koordinat.lat, detail.koordinat.lng]
@@ -360,39 +365,71 @@ export const DetailRuangPublikPage = () => {
           </div>
         </div>
 
-        {/* Facility Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-lg)' }}>
-          {detail.fasilitas.map((fas) => (
-            <Card key={fas.id} style={{ borderColor: fas.status === 'rusak' ? 'var(--color-danger)' : 'var(--color-border)' }}>
-              <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '180px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <h4 className="h3" style={{ fontSize: '16px' }}>{fas.nama}</h4>
-                  <StatusBadge status={fas.status} />
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    onClick={() => setSelectedFacility(fas)}
+        <Card className="facility-list-panel">
+          <CardBody style={{ padding: 0 }}>
+            <div className="facility-list-toolbar">
+              <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+                Pilih fasilitas untuk melihat rincian atau mengirim laporan.
+              </p>
+              <div className="facility-filter-group" role="group" aria-label="Filter kondisi fasilitas">
+                {[
+                  ['semua', 'Semua'],
+                  ['baik', 'Baik'],
+                  ['perlu_perhatian', 'Perlu Perhatian'],
+                  ['rusak', 'Rusak']
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`facility-filter-button ${facilityFilter === value ? 'is-active' : ''}`}
+                    onClick={() => setFacilityFilter(value)}
+                    aria-pressed={facilityFilter === value}
                   >
-                    Rincian Fasilitas
-                  </Button>
-                  <Button
-                    variant={fas.status === 'rusak' ? 'danger' : 'primary'}
-                    size="sm"
-                    fullWidth
-                    onClick={() => navigate(`/ruang-publik/${detail.id}/lapor?fasilitas=${fas.id}`)}
-                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                  >
-                    <AlertCircle size={14} /> Lapor Kerusakan
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {filteredFacilities.length === 0 ? (
+              <div className="facility-list-empty">
+                <p className="text-body">Tidak ada fasilitas dengan kondisi tersebut.</p>
+                <button type="button" className="facility-reset-filter" onClick={() => setFacilityFilter('semua')}>
+                  Tampilkan semua fasilitas
+                </button>
+              </div>
+            ) : (
+              <div className="facility-list" role="list">
+                {filteredFacilities.map((fas) => (
+                  <div className="facility-list-row" key={fas.id} role="listitem">
+                    <div className="facility-list-info">
+                      <div className="facility-list-title-row">
+                        <h4 className="h3" style={{ fontSize: '16px' }}>{fas.nama}</h4>
+                        <StatusBadge status={fas.status} />
+                      </div>
+                      <p className="text-small facility-list-description">{fas.deskripsi}</p>
+                      <span className="text-caption facility-list-location">
+                        <MapPin size={12} /> {fas.lokasiSpesifik}
+                      </span>
+                    </div>
+                    <div className="facility-list-actions">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedFacility(fas)}>
+                        Rincian
+                      </Button>
+                      <Button
+                        variant={fas.status === 'rusak' ? 'danger' : 'primary'}
+                        size="sm"
+                        onClick={() => navigate(`/ruang-publik/${detail.id}/lapor?fasilitas=${fas.id}`)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <AlertCircle size={14} /> Lapor
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardBody>
+        </Card>
       </section>
 
       {/* BANNER CTA LAPORKAN MASALAH */}
