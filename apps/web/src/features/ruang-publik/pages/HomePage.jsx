@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 
 // Import Hero Images
 import heroImg1 from '../../../slidderHero/1.jpg';
@@ -15,10 +14,9 @@ import heroImg2 from '../../../slidderHero/2.png';
 import heroImg3 from '../../../slidderHero/3.jpg';
 import heroImg4 from '../../../slidderHero/4.jpg';
 
-import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
+import { MOCK_CATEGORIES } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
-import { getCategories } from '../../../services/categoryService';
 
 const HERO_SLIDES = [
   {
@@ -48,8 +46,6 @@ export const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
 
-  // Dynamic States for API / Mock Data
-  const [categories, setCategories] = useState(() => MOCK_CATEGORIES.filter((cat) => cat.id !== 'semua'));
   const [featuredSpaces, setFeaturedSpaces] = useState([]);
   const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
 
@@ -58,7 +54,6 @@ export const HomePage = () => {
 
     const fetchHomePageData = async () => {
       try {
-        setIsLoadingSpaces(true);
         const spacesData = await getPublicSpaces({ limit: 3 });
         if (isMounted) {
           setFeaturedSpaces(Array.isArray(spacesData) ? spacesData : []);
@@ -72,15 +67,6 @@ export const HomePage = () => {
         if (isMounted) {
           setIsLoadingSpaces(false);
         }
-      }
-
-      try {
-        const categoryData = await getCategories();
-        if (isMounted && Array.isArray(categoryData) && categoryData.length > 0) {
-          setCategories(categoryData.filter((cat) => cat.id !== 'semua'));
-        }
-      } catch (err) {
-        console.error('Error fetching categories:', err);
       }
     };
 
@@ -251,7 +237,7 @@ export const HomePage = () => {
 
           {/* Quick Category Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
-            {categories.map((cat) => (
+            {MOCK_CATEGORIES.map((cat) => (
               <CategoryChip
                 key={cat.id}
                 category={cat}

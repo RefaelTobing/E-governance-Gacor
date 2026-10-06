@@ -40,10 +40,10 @@ function App() {
         {/* LAYOUT PUBLIK (Phase 5 - 12) */}
         <Route element={<PublicLayout />}>
           <Route path="/home" element={<HomePage />} />
+          <Route path="/tentang" element={<TentangPage />} />
           <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
           <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
           <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
-          <Route path="/tentang" element={<TentangPage />} />
           
           <Route
             path="/laporan-saya"
