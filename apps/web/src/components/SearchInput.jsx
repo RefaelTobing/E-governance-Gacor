@@ -34,8 +34,8 @@ export const SearchInput = ({
           onChange={onChange}
           placeholder={placeholder}
           className="form-input"
-          style={{ paddingLeft: '42px' }}
           {...props}
+          style={{ paddingLeft: '42px', ...props.style }}
         />
       </div>
       {onSearch && (

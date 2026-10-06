@@ -309,13 +309,14 @@ export const DaftarRuangPublikPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Cari nama ruang publik, jalan, atau fasilitas..."
+              style={{ borderRadius: 'var(--radius-pill)' }}
             />
           </div>
           <select
             className="form-select"
             value={selectedWilayah}
             onChange={(e) => setSelectedWilayah(e.target.value)}
-            style={{ width: '180px' }}
+            style={{ width: '180px', borderRadius: 'var(--radius-pill)' }}
           >
             {MOCK_WILAYAH.map((w) => (
               <option key={w} value={w}>{w}</option>
@@ -326,12 +327,12 @@ export const DaftarRuangPublikPage = () => {
             size="sm" 
             onClick={requestLocation}
             disabled={isGeoLoading}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: 'var(--radius-pill)' }}
           >
             <Navigation size={14} /> 
             {isGeoLoading ? 'Mencari Lokasi...' : 'Gunakan Lokasi Saya'}
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Button variant="ghost" size="sm" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: 'var(--radius-pill)' }}>
             <RotateCcw size={14} /> Reset Filter
           </Button>
         </div>
@@ -365,7 +366,7 @@ export const DaftarRuangPublikPage = () => {
             step={1}
             value={selectedRadius}
             onChange={(e) => setSelectedRadius(Number(e.target.value))}
-            style={{ width: '100%', accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+            style={{ width: '100%', accentColor: 'var(--color-primary)', cursor: 'pointer', borderRadius: 'var(--radius-pill)' }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{RADIUS_MIN} km</span>
