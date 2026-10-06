@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 3 | 1 | 6 |
+| B3 Report Service | 10 | 4 | 1 | 5 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **27** | **6** | **23** |
+| **Total** | **56** | **28** | **6** | **22** |
 
 ---
 
@@ -292,10 +292,18 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-06):** `pytest tests/unit -q` → 53 passed (2 test baru:
     `test_create_exif_gps_terisi` — foto dengan EXIF GPS (-6.175, 106.827) → `lat_exif`/`long_exif`
     terisi; `test_create_foto_tanpa_exif` — foto tanpa EXIF → `lat_exif`/`long_exif` = `None`).
-- [ ] **[BE-22]** Logika validasi lokasi: Haversine antara koordinat browser vs koordinat EXIF foto,
+- [x] **[BE-22]** Logika validasi lokasi: Haversine antara koordinat browser vs koordinat EXIF foto,
       masing-masing dibandingkan ke koordinat ruang publik tujuan. *(FEAT-013 - validasi lokasi)*
-  - **Belum ada:** butuh kolom hasil **BE-46** dan EXIF hasil **BE-21**. Haversine sudah ada contohnya di
-    `app/services/ruang_publik.py:13` (bisa dipakai ulang).
+  - **Lokasi kode:** `app/core/utils.py` (`haversine_km(lat1, lon1, lat2, lon2) -> km`); integrasi di
+    `app/services/laporan.py` setelah ekstraksi EXIF BE-21 — `jarak_browser_rp` (koordinat browser vs
+    ruang publik) dan `jarak_exif_rp` (koordinat EXIF vs ruang publik) dihitung bila kedua pasangan
+    koordinat tersedia, selainnya `NULL`; kolom `DECIMAL(8,3)` di model `laporan`, skema
+    `LaporanResponse`, migrasi `74d05cd21291_tambah_kolom_jarak_laporan.py` (sudah `upgrade head`).
+  - **Dependensi:** kolom hasil **BE-46** dan EXIF hasil **BE-21** (keduanya sudah ada).
+  - **Verifikasi (2026-10-06):** `pytest tests/unit -q` → 57 passed (4 test baru: 3 di
+    `tests/unit/test_utils.py` — titik sama = 0 km, Jakarta-Bandung ~118 km, kutub 0°..180° ~20.000 km;
+    `test_create_laporan_jarak_terisi` — submit laporan dekat ruang publik → `jarak_browser_rp` terisi
+    < 1 km, `jarak_exif_rp` `None` tanpa EXIF).
 - [ ] **[BE-23]** Ambang batas 100 meter: salah satu/kedua jarak > 100 m atau EXIF tidak ada ->
       status `menunggu_verifikasi`; dalam ambang batas -> tayang. *(FEAT-013, FEAT-010)*
   - **Belum ada:** status saat ini selalu `menunggu_verifikasi` tanpa perhitungan apa pun.
