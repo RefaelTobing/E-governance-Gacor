@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -16,7 +16,9 @@ import heroImg3 from '../../../slidderHero/3.jpg';
 import heroImg4 from '../../../slidderHero/4.jpg';
 
 import { MOCK_RUANG_PUBLIK, MOCK_CATEGORIES } from '../../../config/mockData';
-import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip } from '../../../components';
+import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
+import { getPublicSpaces } from '../../../services/ruangPublikService';
+import { getCategories } from '../../../services/categoryService';
 
 const HERO_SLIDES = [
   {
@@ -45,6 +47,49 @@ export const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+
+  // Dynamic States for API / Mock Data
+  const [categories, setCategories] = useState(() => MOCK_CATEGORIES.filter((cat) => cat.id !== 'semua'));
+  const [featuredSpaces, setFeaturedSpaces] = useState([]);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHomePageData = async () => {
+      try {
+        setIsLoadingSpaces(true);
+        const spacesData = await getPublicSpaces({ limit: 3 });
+        if (isMounted) {
+          setFeaturedSpaces(Array.isArray(spacesData) ? spacesData : []);
+        }
+      } catch (err) {
+        console.error('Error fetching featured spaces:', err);
+        if (isMounted) {
+          setFeaturedSpaces([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingSpaces(false);
+        }
+      }
+
+      try {
+        const categoryData = await getCategories();
+        if (isMounted && Array.isArray(categoryData) && categoryData.length > 0) {
+          setCategories(categoryData.filter((cat) => cat.id !== 'semua'));
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchHomePageData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSearch = (query) => {
     if (query) {
@@ -82,7 +127,7 @@ export const HomePage = () => {
             }}
             style={{ width: '100%', height: '100%' }}
           >
-            {heroSlides.map((slide, index) => (
+            {HERO_SLIDES.map((slide, index) => (
               <SwiperSlide key={index} style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <img
                   src={slide.image}

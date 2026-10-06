@@ -11,10 +11,21 @@ import RequireAdmin from './routes/RequireAdmin';
 import { HomePage, DaftarRuangPublikPage, DetailRuangPublikPage } from './features/ruang-publik';
 import { FormLaporPage, RiwayatLaporanPage, DetailStatusLaporanPage } from './features/laporan';
 import { LoginPage, LoginPemerintahPage } from './features/auth';
+import { TentangPage } from './features/tentang';
 
 // Feature Pages Imports - Admin
 import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
 import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
+
+// Feature Pages Imports - Profil Warga
+import {
+  ProfilDashboardPage,
+  RuangTersimpanPage,
+  EditProfilPage,
+  PengaturanTemaPage,
+  KeamananPage,
+  BantuanPage,
+} from './features/profil';
 
 function App() {
   return (
@@ -32,6 +43,7 @@ function App() {
           <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
           <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
           <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
+          <Route path="/tentang" element={<TentangPage />} />
           
           <Route
             path="/laporan-saya"
