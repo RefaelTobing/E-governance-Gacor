@@ -71,9 +71,9 @@ def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
             detail="Ruang publik tidak ditemukan",
         )
 
-    # image_url masih satu kolom tunggal di sumber data; dibungkus jadi list
-    # supaya FE bisa merender galeri tanpa perubahan kontrak saat foto bertambah.
-    foto = [ruang.image_url] if ruang.image_url else []
+    # Galeri digabung dari tabel foto resmi + laporan tayang; `image_url` lama
+    # ikut tampil lewat gabung_foto sehingga kontrak response tidak berubah.
+    foto = crud_ruang_publik.gabung_foto(db, ruang)
     return RuangPublikDetailResponse.model_validate(ruang, from_attributes=True).model_copy(
         update={
             "foto": foto,

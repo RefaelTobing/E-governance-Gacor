@@ -1,12 +1,15 @@
 from typing import Optional, Sequence
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, contains_eager, joinedload, selectinload
 
 from app.models.base import utcnow
 from app.models.fasilitas import Fasilitas
+from app.models.laporan import Laporan
 from app.models.ruang_publik import RuangPublik
+from app.models.ruang_publik_foto import RuangPublikFoto
 from app.schemas.fasilitas import STATUS_FASILITAS, FasilitasUpdate
+from app.schemas.laporan import STATUS_TAYANG
 
 # Radius bumi rata-rata dalam km, dipakai rumus Haversine.
 EARTH_RADIUS_KM = 6371.0
@@ -17,13 +20,18 @@ def _haversine_km(lat: float, lng: float):
     # terjadi di database, bukan setelah semua baris ditarik ke Python.
     lat_rad = func.radians(lat)
     lng_rad = func.radians(lng)
+    haversine_mid = (
+        func.cos(lat_rad)
+        * func.cos(func.radians(RuangPublik.latitude))
+        * func.cos(func.radians(RuangPublik.longitude) - lng_rad)
+        + func.sin(lat_rad) * func.sin(func.radians(RuangPublik.latitude))
+    )
+    # case() menggantikan func.least(1.0, ...): MySQL punya LEAST, SQLite tidak,
+    # jadi pembatasan kosinus 1.0 diungkap sebagai percabangan portabel.
     return EARTH_RADIUS_KM * func.acos(
-        func.least(
-            1.0,
-            func.cos(lat_rad)
-            * func.cos(func.radians(RuangPublik.latitude))
-            * func.cos(func.radians(RuangPublik.longitude) - lng_rad)
-            + func.sin(lat_rad) * func.sin(func.radians(RuangPublik.latitude)),
+        case(
+            (haversine_mid > 1.0, 1.0),
+            else_=haversine_mid,
         )
     )
 
@@ -118,6 +126,64 @@ def get_ruang_publik(db: Session, ruang_publik_id: str) -> Optional[RuangPublik]
         .where(RuangPublik.id == ruang_publik_id)
     )
     return db.scalars(stmt).unique().first()
+
+
+def list_foto_resmi(db: Session, ruang_publik_id: str) -> list[RuangPublikFoto]:
+    """Baris foto resmi urut paling tua dulu; `id` sebagai pemecah seri."""
+    stmt = (
+        select(RuangPublikFoto)
+        .where(RuangPublikFoto.ruang_publik_id == ruang_publik_id)
+        .order_by(RuangPublikFoto.created_at.asc(), RuangPublikFoto.id.asc())
+    )
+    return list(db.scalars(stmt).all())
+
+
+def tambah_foto(db: Session, ruang_publik_id: str, foto_url: str) -> RuangPublikFoto:
+    foto = RuangPublikFoto(ruang_publik_id=ruang_publik_id, foto_url=foto_url)
+    db.add(foto)
+    db.commit()
+    db.refresh(foto)
+    return foto
+
+
+def hapus_foto(db: Session, foto: RuangPublikFoto) -> None:
+    db.delete(foto)
+    db.commit()
+
+
+def gabung_foto(db: Session, ruang_publik: RuangPublik) -> list[str]:
+    """Galeri publik: foto resmi + foto laporan yang sudah tayang, tanpa duplikat.
+
+    Urutan stabil agar halaman FE tidak berpindah-pindah antar request:
+    foto resmi terlama lebih dulu (dengan `image_url` bila berubah setelah
+    backfill, diselipkan paling depan), lalu laporan tayang terbaru lebih dulu.
+    """
+    resmi = [foto.foto_url for foto in list_foto_resmi(db, ruang_publik.id)]
+
+    # image_url bisa diperbarui sumber data tanpa lewat tabel foto, jadi
+    # tampilkan sebagai foto pertama bila belum ada barisnya.
+    if ruang_publik.image_url and ruang_publik.image_url not in resmi:
+        resmi.insert(0, ruang_publik.image_url)
+
+    laporan_stmt = (
+        select(Laporan.foto_url)
+        .where(
+            Laporan.ruang_publik_id == ruang_publik.id,
+            Laporan.status.in_(STATUS_TAYANG),
+            Laporan.foto_url.isnot(None),
+            Laporan.foto_url != "",
+        )
+        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
+    )
+    tayang = list(db.scalars(laporan_stmt).all())
+
+    terlihat: set[str] = set()
+    hasil: list[str] = []
+    for url in resmi + tayang:
+        if url not in terlihat:
+            terlihat.add(url)
+            hasil.append(url)
+    return hasil
 
 
 def list_fasilitas(db: Session) -> list[tuple[str, Optional[str]]]:

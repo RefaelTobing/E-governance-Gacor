@@ -6,10 +6,11 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 
 from app.core.config import settings
+from app.core.exif_utils import extract_gps_from_file
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.ruang_publik import RuangPublik
-from app.schemas.laporan import LaporanCreate, LaporanUpdate
+from app.schemas.laporan import LaporanCreate, LaporanUpdate, STATUS_TAYANG
 from app.services import user as crud_user
 
 def create_report(
@@ -86,7 +87,15 @@ def create_report(
     )
     db.add(timeline)
     db.commit()
-    
+
+    exif_path = os.path.join(settings.UPLOAD_DIR, laporan_in.foto_url.removeprefix("/uploads/"))
+    lat_exif, lon_exif = extract_gps_from_file(exif_path)
+    if lat_exif is not None and lon_exif is not None:
+        db_laporan.lat_exif = lat_exif
+        db_laporan.long_exif = lon_exif
+        db.commit()
+        db.refresh(db_laporan)
+
     return db_laporan
 
 def get_report_by_id(db: Session, laporan_id: str) -> Optional[Laporan]:
@@ -174,7 +183,7 @@ def get_reports_by_ruang_publik(
         )
         .where(
             Laporan.ruang_publik_id == ruang_publik_id,
-            Laporan.status.in_(["disetujui", "tayang_otomatis"])
+            Laporan.status.in_(STATUS_TAYANG)
         )
         .order_by(Laporan.created_at.desc())
         .offset(skip)

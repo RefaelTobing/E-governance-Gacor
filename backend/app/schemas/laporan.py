@@ -4,6 +4,16 @@ from datetime import datetime
 from app.schemas.laporan_timeline import LaporanTimelineResponse
 from app.schemas.user import UserResponse
 
+STATUS_KANONIK = (
+    "menunggu_verifikasi",
+    "diverifikasi",
+    "dalam_penanganan",
+    "selesai",
+    "ditolak",
+)
+STATUS_TAYANG = ("diverifikasi", "dalam_penanganan", "selesai")
+
+
 class LaporanBase(BaseModel):
     user_id: Optional[str] = None
     ruang_publik_id: str

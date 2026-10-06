@@ -31,3 +31,9 @@ class RuangPublik(Base):
     kategori = relationship("Category")
     fasilitas = relationship("Fasilitas", back_populates="ruang_publik", cascade="all, delete-orphan")
     laporan = relationship("Laporan", back_populates="ruang_publik", cascade="all, delete-orphan")
+    foto_resmi = relationship(
+        "RuangPublikFoto",
+        back_populates="ruang_publik",
+        cascade="all, delete-orphan",
+        order_by="RuangPublikFoto.created_at.asc(), RuangPublikFoto.id.asc()",
+    )

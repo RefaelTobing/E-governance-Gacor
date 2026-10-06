@@ -58,3 +58,13 @@ class RuangPublikDetailResponse(RuangPublikResponse):
     fasilitas: List[FasilitasResponse] = []
     foto: List[str] = []
     stats: Dict[str, int] = {}
+
+
+class RuangPublikFotoResponse(BaseModel):
+    id: str
+    ruang_publik_id: str
+    foto_url: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
