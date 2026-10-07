@@ -82,9 +82,24 @@ Status:
 
 ## A6. Task Tambahan (Bug Fix & Improvement)
 
+Ringkasan status:
+
+| ID | Status | Task |
+| --- | --- | --- |
+| FE-34 | ✅ | Kolom alamat di halaman Kelola Fasilitas |
+| FE-35 | ✅ | Kartu peta sebaran dashboard jadi kotak |
+| FE-36 | ✅ | Detail ruang publik wajib login |
+| FE-37 | ✅ | Guest tidak boleh menyimpan ruang |
+| FE-38 | ✅ | Hapus opsi "Paling Relevan" |
+| FE-39 | ✅ | Hapus gambar dummy "Area Pelaporan" |
+| FE-40 | ✅ | Label "Kondisi Baik" konsisten |
+| FE-41 | ✅ | Pengaturan page size 10/20/50/100 |
+| FE-42 | ✅ | Status fasilitas HomePage jadi Baik |
+| FE-43 | ✅ | Tampilan session admin di navbar publik |
+
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:** `apps/web/src/features/data-master/pages/KelolaFasilitasPage.jsx`
 
@@ -104,35 +119,36 @@ Status:
 
 ---
 
-### FE-35. Ubah marker peta sebaran menjadi kotak (Admin/Public)
+### FE-35. Ubah kartu peta sebaran dashboard menjadi kotak
 
-**Status:** ❌
+**Status:** ✅
 
-**File utama:** `apps/web/src/features/ruang-publik/components/PetaSebaranLokasi.jsx`
+Catatan: permintaan awal adalah mengubah bentuk pin marker, tetapi maksud sebenarnya
+adalah mengubah kontainer/kartu peta pada dashboard dari persegi panjang menjadi kotak.
+Pin marker dikembalikan ke bentuk semula.
+
+**File utama:** `apps/web/src/features/moderasi/pages/DashboardPage.jsx`
 
 **File terkait:** `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
 
 **Pekerjaan:**
 
-1. Identifikasi peta dashboard yang dimaksud dan samakan bentuk marker bila diperlukan.
-2. Ubah fungsi `createCustomIcon` pada line 27-44:
-   - Ganti `border-radius: 50% 50% 50% 0` menjadi `border-radius: 4px` (kotak).
-   - Hapus `transform: rotate(-45deg)`.
-   - Sesuaikan `iconAnchor` agar marker tetap tepat pada koordinat (misalnya `[12, 12]` untuk kotak 24x24px).
-3. Pastikan marker tetap jelas pada berbagai zoom level.
-4. Uji popup dan navigasi ke detail setelah perubahan.
+1. Ubah grid dashboard dari `1fr 340px` menjadi `repeat(auto-fit, minmax(340px, 1fr))` agar kartu peta dan ringkasan kategori seimbang.
+2. Ubah tinggi peta dari `320px` tetap menjadi `aspectRatio: 1 / 1` dengan `maxHeight: 520px` supaya area peta berbentuk kotak.
+3. Kembalikan marker ke bentuk pin semula (`border-radius: 50% 50% 50% 0` + `rotate(-45deg)`) di `PetaDashboardAdmin.jsx` dan `PetaSebaranLokasi.jsx`.
 
 **Acceptance criteria:**
 
-- Marker berbentuk kotak/persegi, bukan pin tetesan.
-- Marker berada tepat pada koordinat ruang publik.
-- Popup dan klik marker tetap berfungsi normal.
+- Kartu peta sebaran di dashboard berbentuk kotak, bukan persegi panjang memanjang.
+- Marker tetap berbentuk pin.
+- Popup dan klik marker berfungsi normal.
+- Layout responsif pada layar kecil.
 
 ---
 
 ### FE-36. Detail ruang publik wajib login
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:** `apps/web/src/App.jsx`
 
@@ -167,7 +183,7 @@ Status:
 
 ### FE-37. Guest tidak boleh menyimpan ruang
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
 
@@ -245,7 +261,7 @@ const toggleSaveSpace = (spaceId) => {
 
 ### FE-38. Hapus opsi "Paling Relevan" dari filter Urutkan
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
 
@@ -275,33 +291,32 @@ const [sortBy, setSortBy] = useState('terdekat');
 
 ---
 
-### FE-39. Perbaiki gambar Area Pelaporan di Detail Ruang Publik
+### FE-39. Hapus gambar dummy "Area Pelaporan" di Form Lapor
 
-**Status:** ❌
+**Status:** ✅
 
-**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+Catatan: awalnya salah diubah menjadi peta mini di section detail, tetapi maksud sebenarnya
+adalah menghapus blok gambar dummy pada sidebar form laporan.
+
+**File utama:** `apps/web/src/features/laporan/pages/FormLaporPage.jsx`
 
 **Pekerjaan:**
 
-1. Identifikasi section "Peta Akses & Batas Kawasan" yang saat ini menampilkan foto ruang publik dengan overlay "Spot Utama" (line ~298-309).
-2. Ganti gambar foto dengan:
-   - **Preview peta Leaflet kecil** menunjukkan lokasi ruang publik (static map atau mini MapContainer), ATAU
-   - **Gambar placeholder peta** jika foto khusus area pelaporan belum tersedia, ATAU
-   - **Peta interaktif mini** yang bisa diklik untuk membuka peta besar.
-3. Hindari menggunakan gambar dekoratif ruang publik sebagai representasi area pelaporan.
-4. Pastikan overlay atau label sesuai dengan isi gambar (misalnya "Lokasi Ruang Publik" bukan "Spot Utama").
+1. Hapus blok gambar `detail.image` dengan overlay `AREA PELAPORAN` yang ada di sidebar kanan form laporan (sekitar line 657-663).
+2. Pertahankan info teks (jam operasional, status penerangan) dan kotak info biru.
+3. Kembalikan section "Peta Akses & Batas Kawasan" di detail ruang publik ke gambar foto semula (revisi dari percobaan peta mini).
 
 **Acceptance criteria:**
 
-- Section gambar menampilkan representasi visual lokasi yang relevan, bukan foto ruang publik generik.
-- Jika memakai peta mini, marker harus tepat pada koordinat ruang publik.
-- Layout tidak rusak pada layar mobile.
+- Sidebar form laporan tidak lagi menampilkan gambar dummy "Area Pelaporan".
+- Section detail ruang publik menampilkan gambar lokasi seperti semula.
+- Layout sidebar dan detail tetap rapi.
 
 ---
 
 ### FE-40. Samakan label status fasilitas menjadi "Kondisi Baik"
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:**
 - `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
@@ -330,59 +345,52 @@ const [sortBy, setSortBy] = useState('terdekat');
 
 ---
 
-### FE-41. Tambahkan pengaturan jumlah data per halaman (Page Size)
+### FE-41. Pengaturan jumlah data per halaman (Page Size: 10/20/50/100)
 
-**Status:** ❌
+**Status:** ✅
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
 
 **Pekerjaan:**
 
-1. Tambahkan state `pageSize` dengan default 12:
-
-```jsx
-const [pageSize, setPageSize] = useState(12);
-```
-
-2. Ganti konstanta `PER_HALAMAN` dengan state `pageSize` pada perhitungan pagination (line 160-164).
-
-3. Tambahkan dropdown pengaturan jumlah data per halaman di atas atau di samping sorting:
-
-```jsx
-<SelectDropdown
-  options={['12', '24', '48']}
-  value={String(pageSize)}
-  onChange={(val) => setPageSize(Number(val))}
-  ariaLabel="Jumlah per halaman"
-/>
-```
-
-4. Reset halaman ke 1 saat `pageSize` berubah:
-
-```jsx
-useEffect(() => {
-  setSearchParams((prev) => {
-    const next = new URLSearchParams(prev);
-    next.delete('halaman');
-    return next;
-  });
-}, [pageSize, setSearchParams]);
-```
-
-5. (Opsional) Simpan pilihan page size ke `localStorage` agar tetap konsisten antar session.
+1. Tetapkan pilihan page size menjadi `PAGE_SIZE_OPTIONS = [10, 20, 50, 100]` (default 10).
+2. Letakkan dropdown pilihan di bar navigasi paginasi bawah, sejajar dengan teks "Halaman X dari Y".
+3. Simpan pilihan ke `localStorage` (`ruka_page_size`) agar persisten antar-sesi.
+4. Reset nomor halaman ke 1 saat pilihan ukuran halaman berubah.
 
 **Acceptance criteria:**
 
-- User dapat memilih jumlah data per halaman: 12, 24, atau 48.
-- Halaman otomatis reset ke halaman 1 saat jumlah per halaman berubah.
-- Daftar dan pagination tetap sinkron.
-- Tidak ada overflow atau layout rusak pada mobile.
+- Dropdown menampilkan opsi 10, 20, 50, dan 100 per halaman.
+- Tampil di bar navigasi paginasi bawah.
+- Pilihan persisten di `localStorage`.
+- Nomor halaman otomatis kembali ke halaman 1 saat ukuran diubah.
 
 ---
 
 ### FE-42. Section "Cek Kondisi Fasilitas" di HomePage: semua status jadi Baik
 
-**Status:** ❌
+**Status:** ✅
+
+---
+
+### FE-43. Tampilan session admin di navbar publik (PublicLayout)
+
+**Status:** ✅
+
+**File utama:** `apps/web/src/layouts/PublicLayout.jsx`
+
+**Pekerjaan:**
+
+1. Tambahkan cabang khusus saat `user && (role === 'admin' || role === 'dinas')` di area `navbar-actions`.
+2. Tampilkan tombol **"Dashboard"** (pindah ke `/dashboard`) dan tombol **"Keluar"** (`logout()`).
+3. Pengelola yang logout diarahkan ke `/login-pemerintah`.
+4. Cegah session admin tersisa yang membuat navbar tampil "Masuk/Register" padahal sedang terautentikasi.
+
+**Acceptance criteria:**
+
+- Akun pengelola yang login melihat tombol Dashboard dan Keluar di navbar publik.
+- Klik Keluar membersihkan localStorage dan mengarahkan ke login pemerintah.
+- Pengunjung tanpa login tetap melihat tombol Masuk dan Register.
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
 
@@ -408,30 +416,28 @@ useEffect(() => {
 
 ## Prioritas Rekomendasi (Diperbarui)
 
-### Prioritas Tinggi (Security & UX Kritikal)
+### Sudah Selesai
 
-1. **FE-36** — Detail ruang publik wajib login (security + konsistensi)
-2. **FE-37** — Guest tidak boleh menyimpan ruang (bug keamanan)
-3. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
-4. **FE-38** — Hapus "Paling Relevan" (consistency)
-5. **FE-40** — Samakan label "Kondisi Baik" (consistency)
+- **FE-34** — Kolom alamat di kelola fasilitas
+- **FE-35** — Kartu peta sebaran dashboard jadi kotak
+- **FE-36** — Detail ruang publik wajib login
+- **FE-37** — Guest tidak boleh menyimpan ruang
+- **FE-38** — Hapus "Paling Relevan"
+- **FE-39** — Hapus gambar dummy "Area Pelaporan"
+- **FE-40** — Label "Kondisi Baik" konsisten
+- **FE-41** — Pengaturan page size 10/20/50/100
+- **FE-42** — Status fasilitas HomePage jadi Baik
+- **FE-43** — Tampilan session admin di navbar publik
 
-### Prioritas Menengah (Admin Workflow & Polish)
+### Prioritas Berikutnya
 
-6. **FE-34** — Kolom alamat di kelola fasilitas (admin UX)
-7. **FE-39** — Perbaiki gambar area pelaporan (visual accuracy)
-8. **FE-41** — Pengaturan page size (user flexibility)
-9. **FE-42** — Status baik semua di HomePage (consistency)
-10. **FE-28** — Trigger manual ETL dari UI (admin operasional)
-11. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
-
-### Prioritas Rendah (Nice-to-Have)
-
-12. **FE-35** — Marker kotak di peta (visual preference)
-13. **FE-08** — Clustering marker (performance)
-14. **FE-15** — Integrasi OSRM routing (advanced feature)
-15. **FE-12** — Filter fasilitas multi-select
-16. **FE-21** dan **FE-26** — Fitur flag laporan
+1. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
+2. **FE-28** — Trigger manual ETL dari UI (admin operasional)
+3. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
+4. **FE-08** — Clustering marker (performance)
+5. **FE-15** — Integrasi OSRM routing (advanced feature)
+6. **FE-12** — Filter fasilitas multi-select
+7. **FE-21** dan **FE-26** — Fitur flag laporan
 
 ---
 
