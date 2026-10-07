@@ -654,14 +654,6 @@ export const FormLaporPage = () => {
         <div>
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
-              <div style={{ position: 'relative', height: '140px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '16px' }}>
-                <img src={detail.image} alt={detail.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', padding: '12px', color: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                  <span className="text-caption" style={{ color: 'var(--color-primary-light)', fontWeight: 700 }}>AREA PELAPORAN</span>
-                  <strong style={{ fontSize: '16px' }}>{detail.nama}</strong>
-                </div>
-              </div>
-
               <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div><strong>Jam Operasional:</strong> {detail.jamOperasional}</div>
                 <div><strong>Status Penerangan:</strong> <StatusBadge status="perlu_perhatian" customLabel="Sebagian Butuh Pemeliharaan" /></div>

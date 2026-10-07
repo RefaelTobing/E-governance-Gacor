@@ -476,7 +476,7 @@ export const HomePage = () => {
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Penerangan Jalur Taman</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Lampu pedestrian solar cell dan tiang penerangan utama.</p>
-                <StatusBadge status="rusak" customLabel="Status umum: Sebagian Rusak" />
+                 <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
               </CardBody>
             </Card>
 
@@ -498,7 +498,7 @@ export const HomePage = () => {
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Bangku & Meja Santai</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Kenyamanan bangku taman kayu dan gazebo kanopi warga.</p>
-                <StatusBadge status="perlu_perhatian" customLabel="Status umum: Perlu Perhatian" />
+                 <StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
               </CardBody>
             </Card>
           </div>

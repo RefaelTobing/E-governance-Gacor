@@ -160,7 +160,7 @@ export const DashboardPage = () => {
       </div>
 
       {/* ROW 1: PETA SEBARAN & RINGKASAN KATEGORI */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--space-xl)', marginBottom: 'var(--space-2xl)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-xl)', marginBottom: 'var(--space-2xl)' }}>
         {/* Peta Sebaran Ruang Publik */}
         <Card>
           <CardBody>

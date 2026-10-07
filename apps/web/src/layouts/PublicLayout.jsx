@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import Logo from '../components/Logo';
@@ -9,9 +9,17 @@ import ProfileDropdown from '../components/ProfileDropdown';
 export const PublicLayout = () => {
   const { user, role, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Cek apakah halaman saat ini adalah halaman auth (login, register, login pemerintah)
   const isAuthPage = location.pathname.startsWith('/login') || location.pathname === '/login-pemerintah';
+
+  // Akun pengelola (admin/dinas) tidak memakai ProfileDropdown warga, jadi
+  // tombol keluar disediakan langsung agar session tidak tertinggal tanpa jalan keluar.
+  const handleLogout = () => {
+    logout();
+    navigate('/login-pemerintah');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -59,6 +67,20 @@ export const PublicLayout = () => {
               </Link>
             ) : user && role !== 'admin' ? (
               <ProfileDropdown />
+            ) : user ? (
+              <>
+                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                  <Button variant="outline" size="sm">Dashboard</Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  aria-label="Keluar dari akun pengelola"
+                >
+                  Keluar
+                </Button>
+              </>
             ) : (
               <>
                 <Link to="/login">

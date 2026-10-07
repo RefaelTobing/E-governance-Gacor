@@ -109,26 +109,29 @@ export const KelolaFasilitasPage = () => {
           <CardBody style={{ padding: 0 }}>
             <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                <thead>
-                  <tr style={{ backgroundColor: 'var(--color-bg-main)', borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-                    <th style={{ padding: '12px' }}>RUANG PUBLIK</th>
-                    <th style={{ padding: '12px' }}>WILAYAH</th>
-                    <th style={{ padding: '12px' }}>FASILITAS STANDAR</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
-                  </tr>
-                </thead>
+                 <thead>
+                   <tr style={{ backgroundColor: 'var(--color-bg-main)', borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
+                     <th style={{ padding: '12px' }}>RUANG PUBLIK</th>
+                     <th style={{ padding: '12px' }}>ALAMAT</th>
+                     <th style={{ padding: '12px' }}>WILAYAH</th>
+                     <th style={{ padding: '12px' }}>FASILITAS STANDAR</th>
+                     <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
+                   </tr>
+                 </thead>
                 <tbody>
                   {ruangPublik.map((ruang) => {
                     const jumlah = jumlahFasilitas[ruang.id] || 0;
                     return (
-                      <tr key={ruang.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: '14px 12px', minWidth: '260px' }}>
-                          <strong style={{ display: 'block' }}>{ruang.nama}</strong>
-                          <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                            <MapPin size={12} /> {ruang.alamat || 'Alamat belum tersedia'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px' }}>{ruang.wilayah || '-'}</td>
+                       <tr key={ruang.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                         <td style={{ padding: '14px 12px', minWidth: '240px' }}>
+                           <strong style={{ display: 'block' }}>{ruang.nama}</strong>
+                         </td>
+                         <td style={{ padding: '14px 12px', minWidth: '240px' }}>
+                           <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                             <MapPin size={12} /> {ruang.alamat || 'Alamat belum tersedia'}
+                           </span>
+                         </td>
+                         <td style={{ padding: '14px 12px' }}>{ruang.wilayah || '-'}</td>
                         <td style={{ padding: '14px 12px' }}>
                           <span className={`badge ${jumlah === STANDAR_FASILITAS.length ? 'badge-success' : jumlah > 0 ? 'badge-warning' : 'badge-neutral'}`}>
                             {jumlah}/{STANDAR_FASILITAS.length} tersedia

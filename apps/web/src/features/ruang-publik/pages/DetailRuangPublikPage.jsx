@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Trees,
   MapPin,
@@ -22,6 +22,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+import { useAuth } from '../../../context/AuthContext';
+import { useProfil } from '../../../context/ProfilContext';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -56,6 +58,9 @@ const createCustomIcon = (color = '#0F766E') =>
 export const DetailRuangPublikPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, token } = useAuth();
+  const { toggleSaveSpace, isSpaceSaved } = useProfil();
   const mapSectionRef = useRef(null);
 
   const [detail, setDetail] = useState(null);
@@ -115,6 +120,15 @@ export const DetailRuangPublikPage = () => {
   const urlPetunjukArah = centerCoords
     ? `https://www.google.com/maps/dir/?api=1&destination=${centerCoords[0]},${centerCoords[1]}`
     : null;
+  const isSaved = detail ? isSpaceSaved(detail.id) : false;
+
+  const handleSaveSpace = () => {
+    if (!user || !token) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    toggleSaveSpace(detail.id);
+  };
 
   if (isLoading) {
     return (
@@ -187,8 +201,8 @@ export const DetailRuangPublikPage = () => {
           <Button variant="outline" size="sm" onClick={() => alert('Link telah disalin!')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <Share2 size={14} /> Bagikan
           </Button>
-          <Button variant="outline" size="sm" onClick={() => alert('Ruang publik disimpan ke favorit!')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <Bookmark size={14} /> Simpan Ruang
+          <Button variant="outline" size="sm" onClick={handleSaveSpace} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Bookmark size={14} /> {isSaved ? 'Tersimpan' : 'Simpan Ruang'}
           </Button>
         </div>
       </div>
@@ -303,7 +317,7 @@ export const DetailRuangPublikPage = () => {
               />
               <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ backgroundColor: 'white', padding: '8px 16px', borderRadius: 'var(--radius-pill)', fontWeight: 700, boxShadow: 'var(--shadow-md)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={14} color="#0F766E" /> Spot Utama {detail.nama}
+                  <MapPin size={14} color="#0F766E" /> Lokasi {detail.nama}
                 </div>
               </div>
             </div>

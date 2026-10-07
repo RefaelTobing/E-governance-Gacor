@@ -2,11 +2,30 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ProfilContext = createContext();
 
+// Bookmark dipisahkan per akun supaya browser yang sama tidak berbagi
+// daftar tersimpan antar pengguna. Tamu (belum login) tidak menyimpan apa pun.
+const bacaUserId = () => {
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) return null;
+    const user = JSON.parse(storedUser);
+    return user?.id || null;
+  } catch {
+    return null;
+  }
+};
+
+const kunciSavedSpaces = (userId) => `ruka_saved_spaces_${userId}`;
+
 export const ProfilProvider = ({ children }) => {
-  // Bookmark ruang publik tersimpan
+  const [storageOwner, setStorageOwner] = useState(bacaUserId);
+
+  // Bookmark ruang publik tersimpan milik pengguna yang sedang login.
   const [savedSpaces, setSavedSpaces] = useState(() => {
+    const userId = bacaUserId();
+    if (!userId) return [];
     try {
-      const stored = localStorage.getItem('ruka_saved_spaces');
+      const stored = localStorage.getItem(kunciSavedSpaces(userId));
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -40,9 +59,28 @@ export const ProfilProvider = ({ children }) => {
     }
   });
 
+  // Ikuti pergantian akun: saat user login/logout, muat ulang bookmark milik
+  // akun tersebut (atau kosongkan untuk tamu) sebelum menulis kembali.
   useEffect(() => {
-    localStorage.setItem('ruka_saved_spaces', JSON.stringify(savedSpaces));
-  }, [savedSpaces]);
+    const userId = bacaUserId();
+    if (userId === storageOwner) return;
+    setStorageOwner(userId);
+    if (!userId) {
+      setSavedSpaces([]);
+      return;
+    }
+    try {
+      const stored = localStorage.getItem(kunciSavedSpaces(userId));
+      setSavedSpaces(stored ? JSON.parse(stored) : []);
+    } catch {
+      setSavedSpaces([]);
+    }
+  }, [storageOwner]);
+
+  useEffect(() => {
+    if (!storageOwner) return;
+    localStorage.setItem(kunciSavedSpaces(storageOwner), JSON.stringify(savedSpaces));
+  }, [savedSpaces, storageOwner]);
 
   useEffect(() => {
     localStorage.setItem('ruka_theme', theme);
@@ -70,6 +108,9 @@ export const ProfilProvider = ({ children }) => {
   }, [localProfile]);
 
   const toggleSaveSpace = (spaceId) => {
+    // Bookmark hanya untuk pengguna terautentikasi; tamu tidak boleh menyimpan.
+    const userId = bacaUserId();
+    if (!userId) return;
     setSavedSpaces((prev) =>
       prev.includes(spaceId) ? prev.filter((id) => id !== spaceId) : [...prev, spaceId]
     );

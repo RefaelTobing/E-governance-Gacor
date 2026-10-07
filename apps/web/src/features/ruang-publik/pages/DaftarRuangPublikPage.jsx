@@ -13,10 +13,17 @@ import 'leaflet/dist/leaflet.css';
 const RADIUS_MIN = 1;
 const RADIUS_MAX = 1000;
 const RADIUS_BAWAAN = 700;
-const PER_HALAMAN = 12;
-const SORT_OPTIONS = ['Paling Relevan', 'Jarak Terdekat', 'Kondisi Terbaik'];
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const ukuranHalamanAwal = () => {
+  try {
+    const tersimpan = Number(localStorage.getItem('ruka_page_size'));
+    return PAGE_SIZE_OPTIONS.includes(tersimpan) ? tersimpan : PAGE_SIZE_OPTIONS[0];
+  } catch {
+    return PAGE_SIZE_OPTIONS[0];
+  }
+};
+const SORT_OPTIONS = ['Jarak Terdekat', 'Kondisi Terbaik'];
 const SORT_LABELS = {
-  relevan: 'Paling Relevan',
   terdekat: 'Jarak Terdekat',
   kondisi: 'Kondisi Terbaik'
 };
@@ -39,7 +46,8 @@ export const DaftarRuangPublikPage = () => {
   const [searchTerm, setSearchTerm] = useState(queryParam);
   const [selectedWilayah, setSelectedWilayah] = useState('Semua Wilayah');
   const [selectedKategori, setSelectedKategori] = useState(categoryParam);
-  const [sortBy, setSortBy] = useState('relevan');
+  const [sortBy, setSortBy] = useState('terdekat');
+  const [ukuranHalaman, setUkuranHalaman] = useState(ukuranHalamanAwal);
   const [selectedRadius, setSelectedRadius] = useState(() => {
     const radiusParam = searchParams.get('radius');
     return radiusDariUrl(radiusParam) ?? RADIUS_BAWAAN;
@@ -157,11 +165,11 @@ export const DaftarRuangPublikPage = () => {
     });
   }, [spaces, searchTerm, selectedKategori, selectedWilayah, selectedRadius, sortBy]);
 
-  const totalHalaman = Math.max(1, Math.ceil(filteredList.length / PER_HALAMAN));
+  const totalHalaman = Math.max(1, Math.ceil(filteredList.length / ukuranHalaman));
   const halamanDariUrl = Number(searchParams.get('halaman')) || 1;
   const halamanAktif = Math.min(Math.max(1, halamanDariUrl), totalHalaman);
-  const indexAwal = (halamanAktif - 1) * PER_HALAMAN;
-  const itemTerlihat = filteredList.slice(indexAwal, indexAwal + PER_HALAMAN);
+  const indexAwal = (halamanAktif - 1) * ukuranHalaman;
+  const itemTerlihat = filteredList.slice(indexAwal, indexAwal + ukuranHalaman);
 
   const tulisHalaman = (params, nomor) => {
     const berikut = new URLSearchParams(params);
@@ -198,6 +206,11 @@ export const DaftarRuangPublikPage = () => {
 
     setSearchParams((prev) => tulisHalaman(prev, halamanAktif), { replace: true });
   }, [isLoading, halamanDariUrl, halamanAktif, setSearchParams]);
+
+  useEffect(() => {
+    localStorage.setItem('ruka_page_size', String(ukuranHalaman));
+    setSearchParams((prev) => tulisHalaman(prev, 1), { replace: true });
+  }, [ukuranHalaman, setSearchParams]);
 
   const nomorHalaman = (() => {
     const kandidat = [1, totalHalaman, halamanAktif - 1, halamanAktif, halamanAktif + 1]
@@ -293,7 +306,7 @@ export const DaftarRuangPublikPage = () => {
             </div>
           </div>
           <div style={{ borderLeft: '1px solid var(--color-border)', paddingLeft: 'var(--space-xl)', textAlign: 'center' }}>
-            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>STATUS PRIMA</span>
+            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>KONDISI BAIK</span>
             <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)' }}>
               {angka(metrics?.statusPrima)}
             </div>
@@ -412,13 +425,13 @@ export const DaftarRuangPublikPage = () => {
         <h3 className="h3">Menampilkan {filteredList.length} Ruang Publik</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Urutkan:</span>
-          <SelectDropdown
-            options={SORT_OPTIONS}
-            value={SORT_LABELS[sortBy]}
-            onChange={(label) => setSortBy(SORT_LABELS_TO_VALUE[label])}
-            ariaLabel="Urutkan ruang publik"
-            className="ruang-publik-filter-wrapper"
-          />
+           <SelectDropdown
+             options={SORT_OPTIONS}
+             value={SORT_LABELS[sortBy]}
+             onChange={(label) => setSortBy(SORT_LABELS_TO_VALUE[label])}
+             ariaLabel="Urutkan ruang publik"
+             className="ruang-publik-filter-wrapper"
+           />
         </div>
       </div>
 
@@ -517,7 +530,7 @@ export const DaftarRuangPublikPage = () => {
 
       {/* Paginasi. Nomor halaman disembunyikan di layar sempit karena tidak
           muat; posisi tetap terbaca lewat teks "Halaman X dari Y". */}
-      {!isLoading && totalHalaman > 1 && (
+      {!isLoading && filteredList.length > 0 && (
         <nav
           aria-label="Navigasi halaman daftar ruang publik"
           style={{
@@ -529,9 +542,22 @@ export const DaftarRuangPublikPage = () => {
             flexWrap: 'wrap'
           }}
         >
-          <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>
-            Halaman {halamanAktif} dari {totalHalaman}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+              Halaman {halamanAktif} dari {totalHalaman}
+            </span>
+            <label className="text-small" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-muted)' }}>
+              Tampilkan
+              <SelectDropdown
+                options={PAGE_SIZE_OPTIONS.map(String)}
+                value={String(ukuranHalaman)}
+                onChange={(value) => setUkuranHalaman(Number(value))}
+                ariaLabel="Jumlah ruang per halaman"
+                className="select-dropdown-inline"
+              />
+              per halaman
+            </label>
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', flexWrap: 'wrap' }}>
             <Button

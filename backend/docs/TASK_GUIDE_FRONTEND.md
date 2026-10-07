@@ -80,9 +80,9 @@ Status:
 | FE-32 | ⚠️ | Build production frontend publik dan admin, serta konfigurasi environment production. |
 | FE-33 | ❌ | Deploy frontend publik dan admin ke domain atau subdomain terpisah. |
 
-## A6. Tambahan Task Baru
+## A6. Task Tambahan (Bug Fix & Improvement)
 
-### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas
+### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
 **Status:** ❌
 
@@ -90,19 +90,21 @@ Status:
 
 **Pekerjaan:**
 
-1. Tambahkan header tabel `ALAMAT`.
-2. Tambahkan sel alamat khusus menggunakan `ruang.alamat`.
-3. Pindahkan alamat yang saat ini berada di bawah nama ruang publik ke kolom baru tersebut.
-4. Tampilkan `Alamat belum tersedia` jika data alamat kosong.
-5. Pertahankan kolom nama ruang publik hanya untuk nama.
+1. Tambahkan header tabel `ALAMAT` (line ~115).
+2. Tambahkan sel `<td>` khusus untuk alamat menggunakan `ruang.alamat || 'Alamat belum tersedia'`.
+3. Hapus rendering alamat yang saat ini berada di bawah nama ruang publik (line 127-129).
+4. Pertahankan kolom nama ruang publik hanya untuk nama, tanpa ikon MapPin dan alamat.
+5. Pastikan layout tabel tidak overflow pada layar kecil.
 
 **Acceptance criteria:**
 
-- Tabel memiliki kolom Ruang Publik, Alamat, Wilayah, Fasilitas Standar, dan Aksi.
+- Tabel memiliki kolom: Ruang Publik, Alamat, Wilayah, Fasilitas Standar, Aksi.
 - Alamat tidak lagi tampil di bawah nama ruang publik.
-- Layout tabel tidak overflow pada layar kecil.
+- Layout tabel responsif tanpa scroll horizontal pada layar mobile.
 
-### FE-35. Ubah marker peta sebaran menjadi kotak
+---
+
+### FE-35. Ubah marker peta sebaran menjadi kotak (Admin/Public)
 
 **Status:** ❌
 
@@ -113,15 +115,20 @@ Status:
 **Pekerjaan:**
 
 1. Identifikasi peta dashboard yang dimaksud dan samakan bentuk marker bila diperlukan.
-2. Ubah marker custom berbentuk pin/tetesan menjadi kotak.
-3. Gunakan ukuran, warna status, border, dan anchor yang tetap jelas pada zoom rendah maupun tinggi.
-4. Pastikan marker tetap dapat dipilih dengan mouse, keyboard, dan perangkat sentuh.
+2. Ubah fungsi `createCustomIcon` pada line 27-44:
+   - Ganti `border-radius: 50% 50% 50% 0` menjadi `border-radius: 4px` (kotak).
+   - Hapus `transform: rotate(-45deg)`.
+   - Sesuaikan `iconAnchor` agar marker tetap tepat pada koordinat (misalnya `[12, 12]` untuk kotak 24x24px).
+3. Pastikan marker tetap jelas pada berbagai zoom level.
+4. Uji popup dan navigasi ke detail setelah perubahan.
 
 **Acceptance criteria:**
 
-- Marker berbentuk kotak, bukan pin tetesan atau persegi panjang.
-- Marker tetap berada tepat di titik koordinatnya.
-- Popup dan navigasi ke detail tetap bekerja.
+- Marker berbentuk kotak/persegi, bukan pin tetesan.
+- Marker berada tepat pada koordinat ruang publik.
+- Popup dan klik marker tetap berfungsi normal.
+
+---
 
 ### FE-36. Detail ruang publik wajib login
 
@@ -133,64 +140,300 @@ Status:
 
 **Pekerjaan:**
 
-1. Bungkus route `/ruang-publik/:id` dengan `RequireAuth`.
+1. Bungkus route `/ruang-publik/:id` (line 46) dengan komponen `RequireAuth`:
+
+```jsx
+<Route
+  path="/ruang-publik/:id"
+  element={
+    <RequireAuth>
+      <DetailRuangPublikPage />
+    </RequireAuth>
+  }
+/>
+```
+
 2. Pastikan pengguna belum login diarahkan ke `/login`.
-3. Simpan halaman asal di `state.from` agar pengguna kembali ke detail yang dituju setelah login.
-4. Pastikan route admin tetap memakai `RequireAdmin` setelah autentikasi.
+3. Simpan `state.from` untuk redirect setelah login berhasil.
+4. Pastikan route admin tetap memakai `RequireAdmin` tanpa terpengaruh perubahan ini.
 
 **Acceptance criteria:**
 
-- Guest tidak dapat melihat halaman detail ruang publik.
-- Setelah login, pengguna kembali ke detail ruang publik yang sebelumnya dibuka.
+- Guest tidak dapat melihat halaman detail ruang publik tanpa login.
+- Setelah login, pengguna otomatis kembali ke halaman detail yang sebelumnya dibuka.
 - Pengguna terautentikasi dapat mengakses detail tanpa redirect berulang.
 
-### FE-37. Simpan ruang hanya untuk pengguna yang login
+---
+
+### FE-37. Guest tidak boleh menyimpan ruang
 
 **Status:** ❌
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
 
-**File terkait:** `apps/web/src/context/ProfilContext.jsx`, `apps/web/src/context/AuthContext.jsx`
+**File terkait:**
+- `apps/web/src/context/ProfilContext.jsx`
+- `apps/web/src/context/AuthContext.jsx`
 
 **Pekerjaan:**
 
-1. Ganti tombol simpan yang saat ini hanya menampilkan alert dengan aksi simpan nyata.
-2. Gunakan `useAuth` untuk memastikan user dan token tersedia sebelum penyimpanan dijalankan.
-3. Gunakan `toggleSaveSpace` dan `isSpaceSaved` dari `ProfilContext`.
-4. Jika belum login, arahkan pengguna ke login dengan `state.from` menuju halaman detail saat ini.
-5. Ubah label tombol mengikuti state, misalnya `Simpan Ruang` dan `Tersimpan`.
-6. Tambahkan defense-in-depth pada context agar penyimpanan tidak dapat dipanggil saat tidak ada autentikasi.
-7. Pisahkan data ruang tersimpan per pengguna, jangan gunakan satu key localStorage global untuk seluruh akun.
+1. Import `useAuth` dan `useProfil`:
+
+```jsx
+import { useAuth } from '../../../context/AuthContext';
+import { useProfil } from '../../../context/ProfilContext';
+```
+
+2. Tambahkan hook di komponen (line ~60):
+
+```jsx
+const { user, token } = useAuth();
+const { toggleSaveSpace, isSpaceSaved } = useProfil();
+const isSaved = isSpaceSaved(detail.id);
+```
+
+3. Ganti tombol simpan (line 190-192):
+
+```jsx
+<Button
+  variant="outline"
+  size="sm"
+  onClick={() => {
+    if (!user || !token) {
+      alert('Silakan login untuk menyimpan ruang publik.');
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    toggleSaveSpace(detail.id);
+  }}
+  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+>
+  <Bookmark size={14} /> {isSaved ? 'Tersimpan' : 'Simpan Ruang'}
+</Button>
+```
+
+4. (Opsional defense-in-depth) Tambahkan guard di `ProfilContext.jsx` pada `toggleSaveSpace` (line 72-76):
+
+```jsx
+const toggleSaveSpace = (spaceId) => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('toggleSaveSpace dipanggil tanpa autentikasi');
+    return;
+  }
+
+  setSavedSpaces((prev) =>
+    prev.includes(spaceId)
+      ? prev.filter((id) => id !== spaceId)
+      : [...prev, spaceId]
+  );
+};
+```
+
+5. Pisahkan data ruang tersimpan per pengguna (opsional improvement):
+   - Gunakan key localStorage seperti `ruka_saved_spaces_${userId}`.
+   - Saat logout, hapus data tersimpan user tersebut atau kosongkan state.
 
 **Acceptance criteria:**
 
-- Guest tidak dapat menyimpan ruang publik.
-- Setelah login, user dapat menyimpan dan membatalkan simpan ruang.
-- State tombol berubah sesuai status penyimpanan.
+- Guest tidak dapat menyimpan ruang publik; klik tombol mengarahkan ke login.
+- User login dapat menyimpan dan membatalkan simpan ruang.
+- State tombol berubah sesuai status: `Simpan Ruang` atau `Tersimpan`.
 - Ruang tersimpan akun A tidak tampil pada akun B di browser yang sama.
 
-## Prioritas Rekomendasi
+---
 
-### Prioritas tinggi
+### FE-38. Hapus opsi "Paling Relevan" dari filter Urutkan
 
-1. FE-36: Proteksi login pada detail ruang publik.
-2. FE-37: Perbaiki simpan ruang agar hanya tersedia bagi pengguna login.
-3. FE-19: Tampilkan hasil submit laporan berdasarkan respons backend.
-4. FE-25: Ganti titik presisi hardcode pada detail moderasi dengan data laporan.
+**Status:** ❌
 
-### Prioritas menengah
+**File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
 
-1. FE-34: Pisahkan kolom alamat pada kelola fasilitas.
-2. FE-28: Tambahkan trigger sinkronisasi ETL di panel admin.
-3. FE-12: Filter fasilitas multi-select.
-4. FE-14: Gabungkan galeri foto resmi dengan foto laporan tayang.
+**Pekerjaan:**
 
-### Prioritas rendah
+1. Hapus `'Paling Relevan'` dari `SORT_OPTIONS` (line 17):
 
-1. FE-35: Ubah bentuk marker peta menjadi kotak.
-2. FE-08: Tambahkan clustering marker.
-3. FE-15: Tambahkan routing OSRM.
-4. FE-21 dan FE-26: Fitur flag laporan dan moderasi flag.
+```jsx
+const SORT_OPTIONS = ['Jarak Terdekat', 'Kondisi Terbaik'];
+```
+
+2. Hapus `relevan: 'Paling Relevan'` dari `SORT_LABELS` (line 18-22).
+
+3. Ubah default `sortBy` dari `'relevan'` ke `'terdekat'` (line 42):
+
+```jsx
+const [sortBy, setSortBy] = useState('terdekat');
+```
+
+4. Pastikan URL lama dengan `?sort=relevan` tidak menyebabkan error; fallback ke `'terdekat'`.
+
+**Acceptance criteria:**
+
+- Dropdown urutkan hanya menampilkan "Jarak Terdekat" dan "Kondisi Terbaik".
+- Default sorting adalah "Jarak Terdekat".
+- Tidak ada error saat membuka URL lama dengan parameter sort lain.
+
+---
+
+### FE-39. Perbaiki gambar Area Pelaporan di Detail Ruang Publik
+
+**Status:** ❌
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Identifikasi section "Peta Akses & Batas Kawasan" yang saat ini menampilkan foto ruang publik dengan overlay "Spot Utama" (line ~298-309).
+2. Ganti gambar foto dengan:
+   - **Preview peta Leaflet kecil** menunjukkan lokasi ruang publik (static map atau mini MapContainer), ATAU
+   - **Gambar placeholder peta** jika foto khusus area pelaporan belum tersedia, ATAU
+   - **Peta interaktif mini** yang bisa diklik untuk membuka peta besar.
+3. Hindari menggunakan gambar dekoratif ruang publik sebagai representasi area pelaporan.
+4. Pastikan overlay atau label sesuai dengan isi gambar (misalnya "Lokasi Ruang Publik" bukan "Spot Utama").
+
+**Acceptance criteria:**
+
+- Section gambar menampilkan representasi visual lokasi yang relevan, bukan foto ruang publik generik.
+- Jika memakai peta mini, marker harus tepat pada koordinat ruang publik.
+- Layout tidak rusak pada layar mobile.
+
+---
+
+### FE-40. Samakan label status fasilitas menjadi "Kondisi Baik"
+
+**Status:** ❌
+
+**File utama:**
+- `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
+- `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+- `apps/web/src/features/tentang/pages/TentangPage.jsx`
+
+**Pekerjaan:**
+
+1. **HomePage.jsx** (line 468, 490): Status badge sudah memakai "Kondisi Baik" — tidak perlu diubah.
+
+2. **DaftarRuangPublikPage.jsx** (line 296-298): Ganti label "STATUS PRIMA" menjadi "KONDISI BAIK":
+
+```jsx
+<span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>KONDISI BAIK</span>
+```
+
+3. **TentangPage.jsx** (line 237-239, 324-325): Label sudah memakai "Kondisi Baik" — tidak perlu diubah.
+
+4. Pastikan semua referensi ke `metrics?.statusPrima` tetap berfungsi (hanya label yang berubah, bukan key data).
+
+**Acceptance criteria:**
+
+- Semua label statistik menggunakan istilah konsisten "Kondisi Baik", bukan "Status Prima".
+- Tidak ada perubahan pada nilai atau key data dari API.
+- Tidak ada visual yang rusak setelah perubahan label.
+
+---
+
+### FE-41. Tambahkan pengaturan jumlah data per halaman (Page Size)
+
+**Status:** ❌
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Tambahkan state `pageSize` dengan default 12:
+
+```jsx
+const [pageSize, setPageSize] = useState(12);
+```
+
+2. Ganti konstanta `PER_HALAMAN` dengan state `pageSize` pada perhitungan pagination (line 160-164).
+
+3. Tambahkan dropdown pengaturan jumlah data per halaman di atas atau di samping sorting:
+
+```jsx
+<SelectDropdown
+  options={['12', '24', '48']}
+  value={String(pageSize)}
+  onChange={(val) => setPageSize(Number(val))}
+  ariaLabel="Jumlah per halaman"
+/>
+```
+
+4. Reset halaman ke 1 saat `pageSize` berubah:
+
+```jsx
+useEffect(() => {
+  setSearchParams((prev) => {
+    const next = new URLSearchParams(prev);
+    next.delete('halaman');
+    return next;
+  });
+}, [pageSize, setSearchParams]);
+```
+
+5. (Opsional) Simpan pilihan page size ke `localStorage` agar tetap konsisten antar session.
+
+**Acceptance criteria:**
+
+- User dapat memilih jumlah data per halaman: 12, 24, atau 48.
+- Halaman otomatis reset ke halaman 1 saat jumlah per halaman berubah.
+- Daftar dan pagination tetap sinkron.
+- Tidak ada overflow atau layout rusak pada mobile.
+
+---
+
+### FE-42. Section "Cek Kondisi Fasilitas" di HomePage: semua status jadi Baik
+
+**Status:** ❌
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
+
+**Pekerjaan:**
+
+1. Ubah status badge pada semua kartu fasilitas (line 452-504) menjadi `status="baik"`:
+
+```jsx
+<StatusBadge status="baik" customLabel="Status umum: Kondisi Baik" />
+```
+
+2. Hapus kartu dengan status `"rusak"` dan `"perlu_perhatian"` ATAU ubah semua menjadi `"baik"`.
+
+3. Pastikan teks deskripsi masih realistis meskipun statusnya baik semua.
+
+**Acceptance criteria:**
+
+- Semua kartu di section "Cek Kondisi Fasilitas Sebelum Berkunjung" menampilkan badge hijau "Kondisi Baik".
+- Tidak ada status "Rusak" atau "Perlu Perhatian".
+- Visual badge konsisten dengan status lain di aplikasi.
+
+---
+
+## Prioritas Rekomendasi (Diperbarui)
+
+### Prioritas Tinggi (Security & UX Kritikal)
+
+1. **FE-36** — Detail ruang publik wajib login (security + konsistensi)
+2. **FE-37** — Guest tidak boleh menyimpan ruang (bug keamanan)
+3. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
+4. **FE-38** — Hapus "Paling Relevan" (consistency)
+5. **FE-40** — Samakan label "Kondisi Baik" (consistency)
+
+### Prioritas Menengah (Admin Workflow & Polish)
+
+6. **FE-34** — Kolom alamat di kelola fasilitas (admin UX)
+7. **FE-39** — Perbaiki gambar area pelaporan (visual accuracy)
+8. **FE-41** — Pengaturan page size (user flexibility)
+9. **FE-42** — Status baik semua di HomePage (consistency)
+10. **FE-28** — Trigger manual ETL dari UI (admin operasional)
+11. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
+
+### Prioritas Rendah (Nice-to-Have)
+
+12. **FE-35** — Marker kotak di peta (visual preference)
+13. **FE-08** — Clustering marker (performance)
+14. **FE-15** — Integrasi OSRM routing (advanced feature)
+15. **FE-12** — Filter fasilitas multi-select
+16. **FE-21** dan **FE-26** — Fitur flag laporan
+
+---
 
 ## Verifikasi Setiap Implementasi
 
@@ -200,3 +443,4 @@ Status:
 4. Uji navigasi keyboard dan fokus tombol/link.
 5. Uji akses guest serta user login untuk perubahan yang berhubungan dengan autentikasi.
 6. Periksa Network browser untuk memastikan payload dan respons API sesuai kontrak backend.
+7. Pastikan tidak ada console error setelah perubahan.

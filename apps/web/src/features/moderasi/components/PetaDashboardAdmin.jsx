@@ -24,10 +24,10 @@ const MAX_MARKERS = 500;
 
 const createSpaceIcon = () => L.divIcon({
   className: '',
-  html: '<div style="width:18px;height:18px;background:#0F766E;border:3px solid white;border-radius:50%;box-shadow:0 1px 5px rgba(15,23,42,.35)"></div>',
+  html: '<div style="width:18px;height:18px;background:#0F766E;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 5px rgba(15,23,42,.35)"></div>',
   iconSize: [18, 18],
-  iconAnchor: [9, 9],
-  popupAnchor: [0, -10],
+  iconAnchor: [9, 18],
+  popupAnchor: [0, -20],
 });
 
 const RecenterMap = ({ center }) => {
@@ -112,7 +112,7 @@ const PetaDashboardAdmin = () => {
   }
 
   return (
-    <div style={{ position: 'relative', height: '320px', width: '100%' }}>
+    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', maxHeight: '520px' }}>
       <MapContainer
         center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]}
         zoom={DEFAULT_ZOOM}

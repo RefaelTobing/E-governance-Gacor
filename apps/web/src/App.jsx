@@ -43,7 +43,14 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/tentang" element={<TentangPage />} />
           <Route path="/ruang-publik" element={<DaftarRuangPublikPage />} />
-          <Route path="/ruang-publik/:id" element={<DetailRuangPublikPage />} />
+          <Route
+            path="/ruang-publik/:id"
+            element={
+              <RequireAuth>
+                <DetailRuangPublikPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/ruang-publik/:id/lapor" element={<FormLaporPage />} />
           
           <Route
