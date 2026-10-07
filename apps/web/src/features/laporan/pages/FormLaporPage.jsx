@@ -1,9 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb, Trash2 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { createReport, uploadFoto } from '../../../services/laporanService';
+
+const createPrecisionIcon = () =>
+  L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        background-color: #0F766E;
+        width: 32px;
+        height: 32px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      "></div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+  });
+
+const PetaKlikHandler = ({ onPick }) => {
+  useMapEvents({
+    click: (e) => onPick({ lat: e.latlng.lat, lng: e.latlng.lng }),
+  });
+  return null;
+};
+
+const getFacilityCoords = (facility) => {
+  const lat = Number.parseFloat(facility?.latitude ?? facility?.koordinat?.lat);
+  const lng = Number.parseFloat(facility?.longitude ?? facility?.koordinat?.lng);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    return { lat, lng };
+  }
+  return null;
+};
 
 export const FormLaporPage = () => {
   const { id } = useParams();
@@ -28,6 +65,8 @@ export const FormLaporPage = () => {
   const [isDashedFocused, setIsDashedFocused] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -43,6 +82,7 @@ export const FormLaporPage = () => {
           if (defaultFac) {
             setSelectedFacilityId(defaultFac.id);
           }
+          setSelectedLocation(getFacilityCoords(defaultFac) || data.koordinat || null);
         } else if (isMounted) {
           setFetchError('Data ruang publik tidak ditemukan.');
         }
@@ -74,6 +114,15 @@ export const FormLaporPage = () => {
       }
     };
   }, [fotoPreview]);
+
+  // Ganti fasilitas → pin kembali ke koordinat fasilitas tersebut
+  // (fallback koordinat ruang publik) supaya titik presisi tidak tertukar.
+  useEffect(() => {
+    if (!detail) return;
+    const fasilitas = Array.isArray(detail.fasilitas) ? detail.fasilitas : [];
+    const facility = fasilitas.find((f) => f.id === selectedFacilityId);
+    setSelectedLocation(getFacilityCoords(facility) || detail.koordinat || null);
+  }, [selectedFacilityId, detail]);
 
   const handleFileChange = (e) => {
     setFotoError('');
@@ -131,6 +180,12 @@ export const FormLaporPage = () => {
       return;
     }
 
+    // Jika ruang publik memiliki koordinat, titik presisi wajib tersedia.
+    if (detail?.koordinat && !selectedLocation) {
+      setErrorMsg('Titik presisi fasilitas belum ditentukan pada peta.');
+      return;
+    }
+
     if (!['anonim', 'tampilkan_nama'].includes(modeIdentitas)) {
       setErrorMsg('Mode identitas tidak valid. Pilih anonim atau tampilkan nama.');
       return;
@@ -167,6 +222,12 @@ export const FormLaporPage = () => {
         mode_identitas: modeIdentitas,
         foto_url: fotoUrl,
         ...(coords ? { lat_user: coords.lat, long_user: coords.lng } : {}),
+        ...(selectedLocation
+          ? {
+              lat_lokasi_pilihan: selectedLocation.lat,
+              long_lokasi_pilihan: selectedLocation.lng,
+            }
+          : {}),
       };
 
       await createReport(reportPayload);
@@ -527,33 +588,62 @@ export const FormLaporPage = () => {
               </div>
             </div>
 
-            {/* TITIK PRESISI FASILITAS (PETA PIN) */}
-            <div className="form-group">
-              <label className="form-label">Titik Presisi Fasilitas di Peta</label>
-              <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-                <div style={{ position: 'relative', height: '160px', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <MapPin size={24} color="#0F766E" />
-                    </div>
-                    <span className="badge badge-info" style={{ marginTop: '4px' }}>Posisi Koordinat Presisi</span>
-                  </div>
-                </div>
-                <div style={{ padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--color-surface)' }}>
-                  <span className="text-caption">Posisi: Sisi Teuku Umar / Pedestrian Utama</span>
-                  <Button variant="outline" size="sm" onClick={() => alert('Geser pin pada peta untuk menyesuaikan lokasi presisi.')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <MapPin size={14} /> Ubah Posisi Pin
-                  </Button>
-                </div>
-              </div>
-            </div>
+             {/* TITIK PRESISI FASILITAS (PETA PIN) */}
+             <div className="form-group">
+               <label className="form-label">Titik Presisi Fasilitas di Peta</label>
+               <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                 {selectedLocation ? (
+                   <div style={{ height: '260px', width: '100%', position: 'relative', zIndex: 1 }}>
+                     <MapContainer
+                       center={[selectedLocation.lat, selectedLocation.lng]}
+                       zoom={17}
+                       style={{ height: '100%', width: '100%' }}
+                       scrollWheelZoom
+                     >
+                       <TileLayer
+                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                       />
+                       <PetaKlikHandler onPick={setSelectedLocation} />
+                       <Marker
+                         position={[selectedLocation.lat, selectedLocation.lng]}
+                         icon={createPrecisionIcon()}
+                         draggable
+                         eventHandlers={{
+                           dragend: (event) => {
+                             const position = event.target.getLatLng();
+                             setSelectedLocation({ lat: position.lat, lng: position.lng });
+                           },
+                         }}
+                       />
+                     </MapContainer>
+                   </div>
+                 ) : (
+                   <div style={{ height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: 'var(--color-bg-main)', color: 'var(--color-text-muted)' }}>
+                     <MapPin size={24} />
+                     <p className="text-small" style={{ margin: 0 }}>Koordinat lokasi fasilitas belum tersedia.</p>
+                   </div>
+                 )}
+                 <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: 'var(--color-surface)' }}>
+                   <strong className="text-caption">Geser pin atau klik peta untuk memilih lokasi fasilitas.</strong>
+                   <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
+                     Pin ini menunjukkan lokasi fasilitas yang dilaporkan, bukan lokasi HP Anda.
+                   </span>
+                   {selectedLocation && (
+                     <span className="text-caption" style={{ color: 'var(--color-primary)' }}>
+                       Koordinat: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                     </span>
+                   )}
+                 </div>
+               </div>
+             </div>
 
             {/* SUBMIT BUTTONS */}
             <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-2xl)' }}>
               <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Send size={16} /> {isSubmitting ? 'Mengirim Laporan…' : 'Kirim Laporan'}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate(-1)} disabled={isSubmitting}>
+               <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)} disabled={isSubmitting}>
                 Batal
               </Button>
             </div>

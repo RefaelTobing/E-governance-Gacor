@@ -26,6 +26,9 @@ class LaporanBase(BaseModel):
     # Rentang dicek di sini (422); pasangan lengkap lat+long dicek di service (400).
     lat_user: Optional[float] = Field(None, ge=-90, le=90)
     long_user: Optional[float] = Field(None, ge=-180, le=180)
+    # Titik presisi fasilitas yang dipilih warga pada peta (bukan lokasi HP).
+    lat_lokasi_pilihan: Optional[float] = Field(None, ge=-90, le=90)
+    long_lokasi_pilihan: Optional[float] = Field(None, ge=-180, le=180)
 
 class LaporanCreate(LaporanBase):
     pass
@@ -52,6 +55,8 @@ class LaporanResponse(LaporanBase):
     # EXIF tidak pernah datang dari klien; hanya dibaca dari file saat upload (BE-21).
     lat_exif: Optional[float] = None
     long_exif: Optional[float] = None
+    lat_lokasi_pilihan: Optional[float] = None
+    long_lokasi_pilihan: Optional[float] = None
     jarak_browser_rp: Optional[float] = None
     jarak_exif_rp: Optional[float] = None
 

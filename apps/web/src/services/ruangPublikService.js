@@ -135,6 +135,16 @@ export const getPublicSpaceDetail = async (id) => {
     const data = await api.get(`/api/v1/public-spaces/${id}`);
     const lat = Number.parseFloat(data.latitude);
     const lng = Number.parseFloat(data.longitude);
+    const fasilitas = (Array.isArray(data.fasilitas) ? data.fasilitas : []).map((facility) => {
+      const facilityLat = Number.parseFloat(facility.latitude ?? facility.koordinat?.lat);
+      const facilityLng = Number.parseFloat(facility.longitude ?? facility.koordinat?.lng);
+      return {
+        ...facility,
+        koordinat: Number.isFinite(facilityLat) && Number.isFinite(facilityLng)
+          ? { lat: facilityLat, lng: facilityLng }
+          : null,
+      };
+    });
     return {
       ...data,
       koordinat: Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null,
@@ -142,7 +152,7 @@ export const getPublicSpaceDetail = async (id) => {
         ? data.kategori.label || data.kategori_id || 'Umum'
         : (data.kategori || data.kategori_id || 'Umum'),
       image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
-      fasilitas: data.fasilitas || [],
+      fasilitas,
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
       stats: keStats(data.stats),
       jamOperasional: data.jam_operasional || data.jamOperasional || 'TBA',

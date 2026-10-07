@@ -19,6 +19,8 @@ class Laporan(Base):
     # Lokasi: dari klien (user) dan dari EXIF foto (diisi BE-21).
     lat_user = Column(Float)
     long_user = Column(Float)
+    lat_lokasi_pilihan = Column(Float)
+    long_lokasi_pilihan = Column(Float)
     lat_exif = Column(Float)
     long_exif = Column(Float)
     jarak_browser_rp = Column(Float)

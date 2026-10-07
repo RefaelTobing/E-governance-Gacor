@@ -44,6 +44,11 @@ def create_report(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Koordinat lokasi harus lengkap (latitude dan longitude)."
         )
+    if (laporan_in.lat_lokasi_pilihan is None) != (laporan_in.long_lokasi_pilihan is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Koordinat titik presisi fasilitas harus lengkap (latitude dan longitude)."
+        )
 
     # Validasi: mode tampilkan_nama memerlukan autentikasi.
     if laporan_in.mode_identitas == "tampilkan_nama" and not user_id:
@@ -75,6 +80,8 @@ def create_report(
         foto_url=laporan_in.foto_url,
         lat_user=laporan_in.lat_user,
         long_user=laporan_in.long_user,
+        lat_lokasi_pilihan=laporan_in.lat_lokasi_pilihan,
+        long_lokasi_pilihan=laporan_in.long_lokasi_pilihan,
         status="menunggu_verifikasi"
     )
     db.add(db_laporan)

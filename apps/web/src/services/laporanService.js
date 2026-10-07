@@ -22,6 +22,9 @@ const transformLaporanResponse = (raw) => {
     ruangPublikNama: raw.ruang_publik_nama,
     fasilitasNama: raw.fasilitas_nama,
     wilayah: raw.wilayah,
+    lokasiPilihan: raw.lat_lokasi_pilihan != null && raw.long_lokasi_pilihan != null
+      ? { lat: raw.lat_lokasi_pilihan, lng: raw.long_lokasi_pilihan }
+      : null,
     // statusLabel murni untuk tampilan; status asli tetap dipakai untuk logika/API
     statusLabel: raw.status
       ? raw.status
