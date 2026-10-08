@@ -120,7 +120,7 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-03
 
-- **Dokumen** - buat `TASK_GUIDE_BACKEND.md` (audit 56 task BE-01 s/d BE-56: 9 selesai,
+- **Dokumen** - buat `TASK_GUIDE_BACKEND.md` (audit 56 task BE-01 s/d BE-56: 9 selesai, 
   12 parsial, 35 belum) dari jobdesk induk + hasil audit kode `backend/app/`.
 - **Dokumen** - buat `CHANGELOG.md` ini beserta aturan pencatatan, dan pasang aturannya di
   `TASK_GUIDE_BACKEND.md` (Cara Baca + Definition of Done) serta `GIT_WORKFLOW.md` (bagian 7).

@@ -69,10 +69,27 @@ def create_report(
             )
         nama_pelapor = user.name
 
+    # Pastikan ruang publik ada di database
+    rp = crud_ruang_publik.get_ruang_publik(db, laporan_in.ruang_publik_id)
+    if not rp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ruang publik dengan ID '{laporan_in.ruang_publik_id}' tidak ditemukan di database."
+        )
+
+    # Validasi fasilitas_id bila diisi
+    fasilitas_id = laporan_in.fasilitas_id
+    if fasilitas_id:
+        from app.models.fasilitas import Fasilitas
+        fas = db.query(Fasilitas).filter(Fasilitas.id == fasilitas_id).first()
+        if not fas:
+            # Bila ID fasilitas tidak valid/lama, jangan gagalkan laporan (fallback None)
+            fasilitas_id = None
+
     db_laporan = Laporan(
         user_id=user_id,
         ruang_publik_id=laporan_in.ruang_publik_id,
-        fasilitas_id=laporan_in.fasilitas_id,
+        fasilitas_id=fasilitas_id,
         jenis_masalah=laporan_in.jenis_masalah,
         deskripsi=laporan_in.deskripsi,
         mode_identitas=laporan_in.mode_identitas,

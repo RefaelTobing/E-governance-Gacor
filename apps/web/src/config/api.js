@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 const request = async (endpoint, options = {}) => {
   const url = `${BASE_URL}${endpoint}`;
@@ -18,7 +18,17 @@ const request = async (endpoint, options = {}) => {
     ...options,
   };
 
-  const response = await fetch(url, config);
+  let response;
+  try {
+    response = await fetch(url, config);
+  } catch (networkError) {
+    console.error(`Gagal menghubungi server pada ${url}:`, networkError);
+    const err = new Error(
+      `Gagal terhubung ke server backend (${networkError.message}). Periksa apakah backend aktif di port 8000.`
+    );
+    err.originalError = networkError;
+    throw err;
+  }
 
   if (!response.ok) {
     const error = new Error(`HTTP error! status: ${response.status}`);
@@ -40,7 +50,8 @@ const request = async (endpoint, options = {}) => {
 export const assetUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+  const base = BASE_URL || '';
+  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
 };
 
 export const api = {
@@ -60,13 +71,23 @@ export const api = {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const response = await fetch(url, {
-      ...options,
-      method: 'POST',
-      // Tanpa Content-Type manual: browser harus menambahkan boundary multipart.
-      headers,
-      body: formData,
-    });
+    let response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        method: 'POST',
+        // Tanpa Content-Type manual: browser harus menambahkan boundary multipart.
+        headers,
+        body: formData,
+      });
+    } catch (networkError) {
+      console.error(`Gagal mengunggah berkas ke ${url}:`, networkError);
+      const err = new Error(
+        `Gagal mengunggah berkas (${networkError.message}). Periksa apakah backend aktif di port 8000.`
+      );
+      err.originalError = networkError;
+      throw err;
+    }
     if (!response.ok) {
       const error = new Error(`HTTP error! status: ${response.status}`);
       error.status = response.status;

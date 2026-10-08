@@ -19,16 +19,43 @@ app = FastAPI(
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # Set all CORS enabled origins
+_origins = [
+    settings.FRONTEND_PUBLIC_URL,
+    settings.FRONTEND_ADMIN_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_PUBLIC_URL, settings.FRONTEND_ADMIN_URL],
+    allow_origins=_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import logging
+    from fastapi.responses import JSONResponse
+    logging.exception("Unhandled error pada %s %s: %s", request.method, request.url, exc)
+    response = JSONResponse(
+        status_code=500,
+        content={"detail": f"Terjadi kesalahan di server: {str(exc)}"},
+    )
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "message": "API is running"}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+

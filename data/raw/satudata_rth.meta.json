@@ -1,7 +1,7 @@
 {
   "dataset": "satudata_rth",
   "sumber": "satudata",
-  "downloaded_at": "2026-10-05T17:36:23+07:00",
+  "downloaded_at": "2026-10-07T20:05:21+07:00",
   "total_rows": 2545,
   "columns": [
     "periode_data",
