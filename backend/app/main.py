@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.middleware.rate_limit import RateLimitMiddleware
 
 # Pastikan folder penyimpanan ada
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
@@ -17,6 +18,10 @@ app = FastAPI(
 
 # Mount direktori upload untuk diserve sebagai static file di path /uploads
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+
+# Rate limit dipasang sebelum CORS: middleware terakhir yang ditambah = terluar,
+# jadi CORS harus paling akhir supaya header tetap menempel pada respons 429.
+app.add_middleware(RateLimitMiddleware)
 
 # Set all CORS enabled origins
 _origins = [
