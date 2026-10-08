@@ -25,6 +25,8 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ## 2026-10-08
 
+- **[BE-50]** Endpoint "Laporan Saya" - `GET /api/v1/reports/mine` (`read_my_reports` di `app/api/v1/laporan.py`, token wajib `get_current_active_user`, dideklarasikan sebelum `GET /{laporan_id}`): daftar laporan milik pemanggil semua status lewat `get_reports(..., user_id=)` yang sudah siap, filter `status`/`q`/`wilayah` tetap terkombinasi, laporan anonim dibuat-saat-login tetap muncul di pemiliknya, admin = laporan sendiri; verifikasi: `pytest tests -q` 89 passed (6 test baru). FEAT-013 selesai; B3 Report Service **10/10 (tuntas)**.
+
 - **[BE-26]** Rate-limiting `POST /reports` & `POST /uploads` - `RateLimitMiddleware` ASGI murni (`app/middleware/rate_limit.py`, dipasang di `app/main.py` sebelum CORS): sliding window in-process, kunci hybrid user-id (token valid) atau IP, 10 percobaan / 10 menit (`RATE_LIMIT_ENABLED/MAX/WINDOW_S` di `config.py` + `.env.example`); semua percobaan dihitung (termasuk 400/422), tolak -> 429 + `Retry-After`; reset store di `tests/conftest.py`; verifikasi: `pytest tests -q` 83 passed (6 test baru). B3 Report Service kini 9/10.
 
 - **[BE-24]** Endpoint status laporan untuk pelapor - `GET /api/v1/reports/{id}/status` (`read_report_status` di `app/api/v1/laporan.py`, skema `LaporanStatusResponse`): laporan berpemilik hanya terbaca pemilik (token wajib) atau admin, laporan anonim penuh dibuka dengan bukti id UUID; response hanya `id`/`status`/`created_at`/`updated_at`/`timeline` tanpa deskripsi, foto, dan nama pelapor; dokumentasi `docs/API.md`, `04-api-endpoints.md`, dan `features/report-service.md` sinkron; verifikasi: `pytest tests/unit -q` 70 passed (7 test akses baru). B3 Report Service kini 7/10.

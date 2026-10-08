@@ -47,6 +47,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | **Laporan** ||||
 | `POST` | `/api/v1/reports` | Token opsional | Kirim laporan (anonim tanpa token) |
 | `GET` | `/api/v1/reports` | — | Daftar laporan (filter status/wilayah/q) |
+| `GET` | `/api/v1/reports/mine` | **Login** | Riwayat laporan milik pemanggil, semua status (BE-50) |
 | `GET` | `/api/v1/reports/{id}` | — | Detail + timeline |
 | `GET` | `/api/v1/reports/{id}/status` | Token opsional | Status + timeline untuk pelapor (BE-24) |
 | `POST` | `/api/v1/reports/{id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
@@ -226,7 +227,9 @@ Aturan:
 
 ### `GET /api/v1/reports`
 Query: `status` (persis, `"semua"` = tanpa filter), `wilayah`, `q` (LIKE jenis_masalah/deskripsi), `skip`, `limit`.
-> ⚠ **Gap FEAT-013:** belum ada param pemilik → "Laporan Saya" akan melihat semua laporan. Service `get_reports()` **sudah menerima `user_id`** — tinggal router. Rincian: `features/report-service.md`.
+
+### `GET /api/v1/reports/mine` (BE-50, FEAT-013)
+Riwayat "Laporan Saya": daftar laporan milik pemanggil, **semua status** (termasuk `menunggu_verifikasi`/`ditolak`). Auth wajib (`Bearer` token) → `401` tanpa token atau token rusak. Query sama dengan `GET /reports` (`status`, `wilayah`, `q`, `skip`, `limit`) dan tetap terkombinasi dengan pemilik. Laporan anonim yang dibuat sambil login tetap muncul di sini (`user_id` terisi, identitas tetap tertutup untuk publik). Admin melihat laporan dia sendiri; semua-laporan-admin = `GET /admin/reports` (BE-52).
 
 ### `GET /api/v1/reports/{id}`
 `LaporanDetailResponse` = field laporan + `user{...}` (bisa null) + `timeline[{status,title,description,created_at,...}]`. `404` bila tak ada.
@@ -381,7 +384,6 @@ browser membaca zona waktu yang benar.
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
-| Filter laporan per-pengguna (`mine=true` / `/reports/mine`) | 013 | `getUserReports` → Laporan Saya | `features/report-service.md` |
 | CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |

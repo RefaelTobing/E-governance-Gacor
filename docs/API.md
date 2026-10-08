@@ -565,6 +565,22 @@ Daftar laporan masyarakat. Parameter query:
 - `q`: filter kata kunci pencarian
 - `skip`, `limit`: pagination (default limit 100)
 
+### `GET /api/v1/reports/mine`
+
+Riwayat "Laporan Saya" (FEAT-013, BE-50): daftar laporan milik pemanggil, **semua status**
+(termasuk `menunggu_verifikasi`/`ditolak`), termasuk laporan anonim yang dibuat sambil login
+(identitas tetap tertutup di publik). Parameter query sama dengan `GET /reports` dan tetap
+terkombinasi dengan filter pemilik. Admin melihat laporan dia sendiri; semua-laporan-admin ada
+di `GET /admin/reports` (BE-52).
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| M1 | Token valid, punya beberapa laporan | `200` | Hanya laporan milik pemanggil, urut `created_at` desc |
+| M2 | Tanpa header `Authorization` | `401` | Token wajib |
+| M3 | Token rusak/kedaluwarsa | `401` | `verify_token` gagal / user tidak aktif |
+| M4 | `?status=diverifikasi` + token | `200` | Filter status terkombinasi dengan pemilik |
+| M5 | Token admin | `200` | Hanya laporan admin itu sendiri |
+
 ### `GET /api/v1/reports/{report_id}`
 
 Detail satu laporan masyarakat lengkap dengan timeline tahapan penanganan fasilitas.

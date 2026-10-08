@@ -64,7 +64,7 @@ Kode di backend/app/ (kebenaran akhir bila konflik dengan dokumen lama)
 | 010 | Visibilitas & Status Laporan | `features/report-service.md` | Sebagian (filter tayang per-ruang publik diperbaiki BE-47; sisa: keputusan filter `GET /reports` publik) |
 | 011 | Moderasi Laporan (Admin) | `features/moderation-service.md` | Sebagian (update status ada; validasi enum belum) |
 | 012 | Manajemen Data Master | `features/data-master-service.md` | Sebagian (merge ETL jalan, BE-16; endpoint edit admin `PATCH` = BE-33 belum) |
-| 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Belum (filter per-pengguna belum ada) |
+| 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Selesai (BE-50: `GET /reports/mine`) |
 | 014 | Autentikasi & Otorisasi Admin | `features/admin-auth.md` | Ada (gap: `POST /categories` belum terproteksi) |
 | — | Sinkronisasi Satu Data Jakarta | `features/etl-worker.md` | Sebagian (Extract + Transform + Load + penjadwalan BE-14/15/16/17 + trigger admin BE-18 + log hasil run ke DB BE-19 ada; 687 kandidat menunggu review) |
 

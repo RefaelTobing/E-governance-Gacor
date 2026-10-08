@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 9 | 0 | 1 |
+| B3 Report Service | 10 | 10 | 0 | 0 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **33** | **5** | **18** |
+| **Total** | **56** | **34** | **5** | **17** |
 
 ---
 
@@ -379,15 +379,27 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/api/v1/uploads.py`, terdaftar di `app/api/v1/api.py`.
   - **Keputusan:** Endpoint upload dapat diakses publik tanpa login agar pelapor anonim dapat mengunggah bukti fisik. Berkas disimpan di `settings.UPLOAD_DIR / "laporan" / <uuid.hex><ext>`. Validasi MIME whitelist (`image/jpeg`, `image/png`, `image/webp`), batas ukuran 5MB, dan validasi magic bytes.
   - **Verifikasi (2026-10-05):** Upload JPEG valid mengembalikan HTTP 201 dengan URL `/uploads/laporan/<hex>.jpg` dan dapat diakses publik via mount `/uploads`; upload file non-gambar `.txt` ditolak 400; upload file > 5MB ditolak 400; upload ekstensi jpg berpalsu teks ditolak 400. Integrasi FE-16 di `FormLaporPage` berhasil mengirim berkas dan foto tampil di halaman moderasi admin.
-- [ ] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
+- [x] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
       untuk halaman "Laporan Saya".
   - **FEAT:** FEAT-013 PRD (Riwayat "Laporan Saya"). **Dibutuhkan:** `getUserReports` di
     `apps/web/src/services/laporanService.js` kini memanggil `GET /reports` tanpa filter pemilik,
     jadi "Laporan Saya" berpotensi menampilkan laporan orang lain.
-  - **Langkah:** service `get_reports()` di `app/services/laporan.py:76` **sudah menerima `user_id`** -
-    tambahkan param di router (atau buat path terpisah `/reports/mine`), wajib `Depends(get_current_active_user)`.
-  - **Verifikasi:** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan milik pemanggil;
-    tanpa token -> 401.
+  - **Lokasi kode:** route `read_my_reports` di `app/api/v1/laporan.py` (dideklarasikan **sebelum**
+    `GET /{laporan_id}` supaya "mine" tidak tertangkap sebagai id), meneruskan `user_id=user.id`
+    ke service `get_reports()` (`app/services/laporan.py:185`, tidak diubah); test di
+    `tests/unit/test_laporan.py` (6 test BE-50).
+  - **Keputusan:** (1) **Opsi B** path terpisah `/reports/mine` dengan
+    `Depends(get_current_active_user)` — 401 otomatis tanpa token; (2) isi = **semua status**
+    milik sendiri (termasuk `menunggu_verifikasi`/`ditolak`) dan laporan anonim yang dibuat saat
+    login (`user_id` tetap terisi); (3) filter `status`/`q`/`wilayah` tetap bisa dikombinasi;
+    (4) admin dengan token sendiri tetap hanya melihat laporan dia sendiri (semua-laporan = BE-52);
+    (5) response memakai `LaporanResponse` penuh (milik sendiri, FE `transformLaporanResponse`
+    tak perlu diubah).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **89 passed** (6 test baru: isolasi antar-user,
+    401 tanpa token/token rusak sekaligus bukti route menang sebelum `/{laporan_id}`, kombinasi
+    `?status=`, laporan anonim-saat-login tetap miliknya, daftar publik tetap tanpa auth, admin
+    hanya milik sendiri). Konsumen FE (`RiwayatLaporanPage` + `ProfilDashboardPage`) tinggal ganti
+    URL ke `GET /reports/mine` (dikerjakan sesi FE).
 
 ---
 

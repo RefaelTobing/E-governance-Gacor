@@ -178,9 +178,8 @@ Aturan: **perubahan manual admin terhadap data ETL tidak boleh hilang** saat see
 
 ### FASE 1 — Perbaiki Kontrak yang Salah / Bocor
 **1a. Laporan per-pengguna (FEAT-010).**
-`GET /api/v1/reports` tidak punya parameter pemilik → "Laporan Saya" di FE menampilkan semua laporan. Service `get_reports()` di `app/services/laporan.py` **sudah menerima `user_id`** — yang belum ada param-nya di router.
-- Tambahkan query param opsional `mine=true` (baca token, filter `user_id`) atau buat `GET /api/v1/reports/mine` (token wajib). Pilih salah satu, catat di `API.md`.
-- **Verifikasi:** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan laporan milik pemanggil.
+`GET /api/v1/reports` tidak punya parameter pemilik → "Laporan Saya" di FE menampilkan semua laporan. Service `get_reports()` di `app/services/laporan.py` **sudah menerima `user_id`** — yang belum ada param-nya di router. **Selesai BE-50 (2026-10-08):** dipilih `GET /api/v1/reports/mine` (token wajib, `get_current_active_user`), semua status milik sendiri, filter `status/q/wilayah` terkombinasi, tercatat di `docs/API.md` + `04-api-endpoints.md`.
+- **Verifikasi (lulus):** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan laporan milik pemanggil; tanpa token → 401.
 
 **1b. Fix filter laporan per-ruang publik.**
 `get_reports_by_ruang_publik()` menyaring `status IN ("disetujui", "tayang_otomatis")` — nilai itu **tidak pernah ada** di database (kamus status di §6). Akibatnya `GET /public-spaces/{id}/reports` selalu `[]`.
