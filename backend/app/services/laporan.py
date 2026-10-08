@@ -327,6 +327,36 @@ def get_moderasi_stats(db: Session) -> dict:
         "selesai_pekan_ini": selesai_pekan_ini,
     }
 
+def get_flagged_reports(
+    db: Session, skip: int = 0, limit: int = 100
+) -> list[Laporan]:
+    """Daftar laporan yang di-flag pengguna lain untuk admin (BE-31).
+
+    Urut jumlah flag terbanyak dulu, tie-break waktu flag terbaru, supaya
+    laporan paling bermasalah muncul di atas. `flag_count` di-set ke objek ORM
+    agar ikut terbaca schema (from_attributes); jalur publik tidak memanggil ini.
+    """
+    jumlah_flag = func.count(LaporanFlag.id).label("flag_count")
+    flag_terakhir = func.max(LaporanFlag.created_at).label("flag_terakhir")
+    stmt = (
+        select(Laporan, jumlah_flag, flag_terakhir)
+        .join(LaporanFlag, LaporanFlag.laporan_id == Laporan.id)
+        .options(
+            joinedload(Laporan.user),
+            joinedload(Laporan.ruang_publik),
+            joinedload(Laporan.fasilitas),
+        )
+        .group_by(Laporan.id)
+        .order_by(jumlah_flag.desc(), flag_terakhir.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    hasil = []
+    for laporan, count, _ in db.execute(stmt).unique().all():
+        laporan.flag_count = int(count or 0)
+        hasil.append(laporan)
+    return hasil
+
 def flag_laporan(db: Session, laporan_id: str, user_id: str) -> LaporanFlagResponse:
     """Flag laporan tayang oleh pengguna lain (BE-25).
 

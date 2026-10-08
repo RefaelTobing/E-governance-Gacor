@@ -134,6 +134,18 @@ def read_admin_reports(
     )
 
 
+# Sebelum route ber-{laporan_id} supaya "flagged" tidak tertangkap sebagai id.
+@admin_router.get("/reports/flagged", response_model=List[LaporanResponse])
+def read_flagged_reports(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Daftar laporan yang di-flag pengguna lain, terpisah dari antrian (BE-31)."""
+    return crud_laporan.get_flagged_reports(db, skip=skip, limit=limit)
+
+
 @admin_router.post(
     "/reports/{laporan_id}/approve", response_model=LaporanDetailResponse
 )

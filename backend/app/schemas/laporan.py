@@ -79,6 +79,8 @@ class LaporanResponse(LaporanBase):
     long_lokasi_pilihan: Optional[float] = None
     jarak_browser_rp: Optional[float] = None
     jarak_exif_rp: Optional[float] = None
+    # Hanya diisi endpoint daftar flagged admin (BE-31); jalur publik tetap None.
+    flag_count: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 
