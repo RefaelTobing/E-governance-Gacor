@@ -36,6 +36,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/reports/mine` | **Login** | Riwayat laporan milik pemanggil, semua status (BE-50) |
 | `GET` | `/api/v1/reports/{report_id}` | Pemilik/Anonim/Admin | Detail + timeline; milik orang lain -> 403 (BE-52) |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, `?status` kanonik (BE-28/BE-52) |
+| `GET` | `/api/v1/admin/reports/flagged` | **Admin** | Daftar laporan ter-flag pengguna + `flag_count`, urut terbanyak (BE-31) |
 | `POST` | `/api/v1/admin/reports/{report_id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
 | `POST` | `/api/v1/admin/reports/{report_id}/reject` | **Admin** | Tolak laporan: status -> `ditolak` + alasan wajib tersimpan (BE-30) |
 | `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
@@ -603,13 +604,27 @@ Antrian tinjauan admin (BE-28 / BE-52) - menggantikan `GET /reports` sebagai daf
 - **Auth:** wajib admin (`get_current_admin`): `401` tanpa token, `403` bukan admin.
 - **Query:** `status` harus salah satu `STATUS_KANONIK` atau `"semua"` (**`422`** untuk nilai asing, mis. `menunggu_tinjauan`), plus `wilayah`, `q`, `skip`, `limit`.
 - **Response:** `List[LaporanResponse]` identik dengan `GET /reports`.
-- `?flagged=` menyusul di `GET /admin/reports/flagged` (BE-31).
+- Daftar flagged punya route sendiri `GET /admin/reports/flagged` (BE-31).
 
 | Kasus | Status | Keterangan |
 |---|---|---|
 | Admin, tanpa filter | `200` | Semua status |
 | Admin, `?status=menunggu_verifikasi` | `200` | Hanya antrian tindakan |
 | Admin, `?status=menunggu_tinjauan` | `422` | Nilai di luar kanonik |
+| Warga / tanpa token | `403` / `401` | Proteksi role admin |
+
+### `GET /api/v1/admin/reports/flagged`
+
+Daftar laporan yang di-flag pengguna lain (BE-31), terpisah dari antrian. Join `laporan` x
+`laporan_flag`, urut `flag_count` desc lalu waktu flag terbaru desc. Response
+`List[LaporanResponse]` dengan field tambahan `flag_count` (jumlah pelapor berbeda). Pagination
+`skip`/`limit` (1..500, default 100); tanpa filter status/wilayah. `flag_count` hanya terisi di
+endpoint ini, jalur publik tetap `null`.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Admin, ada laporan ter-flag | `200` | Terurut flag terbanyak dulu, tiap item ada `flag_count` |
+| Admin, belum ada flag | `200` | `[]` |
 | Warga / tanpa token | `403` / `401` | Proteksi role admin |
 
 ### `POST /api/v1/admin/reports/{report_id}/approve`

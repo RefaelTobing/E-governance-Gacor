@@ -4,8 +4,8 @@
 > Laporan warga (create/status/mine) → `report-service.md`. Akun admin → `admin-auth.md`.
 
 Kode terkait:
-- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`; bagian flag: `POST .../flag`)
-- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`, `flag_laporan`)
+- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`; bagian flag: `POST .../flag`, `GET /admin/reports/flagged`)
+- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`, `get_flagged_reports`, `flag_laporan`)
 - Dependen auth: `Depends(get_current_admin)` dari `app/api/deps.py`
 
 ---
@@ -17,7 +17,7 @@ Kode terkait:
 | Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** - antrian punya endpoint khusus `GET /admin/reports` (**BE-28/BE-52**, 2026-10-08) & detail ada; **validasi status belum ada** (**BE-51**) |
 | Aksi setujui/tolak laporan | **Ada** - setujui lewat endpoint khusus `POST /admin/reports/{id}/approve` (**BE-29**, 2026-10-08), tolak lewat `POST /admin/reports/{id}/reject` + alasan tersimpan (**BE-30**, 2026-10-09); validasi enum `PATCH /status` masih **BE-51(a)** |
 | Mencegah spam/konten tak relevan | **Ada** sejak BE-26 — rate limit `POST /reports` + `/uploads` (10/10 menit per user/IP), `features/report-service.md` §Gap 2 + benteng flag unik (BE-25) |
-| Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`); daftar flagged untuk admin (**BE-31**) & UI (FE-21/FE-26) belum |
+| Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`) + daftar flagged admin `GET /admin/reports/flagged` (**BE-31**, 2026-10-09); UI (FE-21/FE-26) belum |
 
 ---
 
@@ -57,7 +57,17 @@ Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, 
 Antrian tinjauan - **menggantikan** pemakaian `GET /reports` (publik) untuk tabel moderasi.
 Semua status bila tanpa filter; `?status=` wajib `STATUS_KANONIK` atau `"semua"` (lain → `422`),
 plus `wilayah`/`q`/`skip`/`limit`; response `LaporanResponse` identik jadi FE tinggal ganti URL
-(`AntrianModerasiPage`/`DashboardPage` - sesi FE). `?flagged=` menyusul di BE-31.
+(`AntrianModerasiPage`/`DashboardPage` - sesi FE). Daftar flagged pindah ke route terpisah
+`GET /admin/reports/flagged` (BE-31).
+
+### `GET /api/v1/admin/reports/flagged` - Admin (BE-31, 2026-10-09)
+
+Daftar laporan yang di-flag pengguna lain (hasil `POST /reports/{id}/flag`), terpisah dari
+antrian. Join `laporan` x `laporan_flag` (`GROUP BY laporan.id`), **urut `flag_count` desc
+lalu waktu flag terbaru desc** (laporan paling bermasalah di atas). Response `List[LaporanResponse]`
+dengan field tambahan `flag_count`; pagination `skip`/`limit`. Tanpa filter status/wilayah.
+Field `flag_count` hanya terisi di endpoint ini; jalur publik (`GET /reports`) tetap `null`
+(tidak membocorkan angka flag). Konsumen FE: halaman daftar flagged (FE-26).
 
 ### `POST /api/v1/admin/reports/{laporan_id}/approve` - Admin (BE-29, 2026-10-08)
 
@@ -88,7 +98,8 @@ Flag pengguna lain atas laporan **tayang** yang dianggap tidak pantas. Tanpa bod
 response `201 {laporan_id, flag_count}`. Aturan: wajib login, hanya `STATUS_TAYANG`,
 pelapor sendiri ditolak `403`, satu flag per pengguna `409` (unique
 `uq_laporan_flag_pengguna`), id tak dikenal `404`. **Status laporan tidak berubah** —
-sinyal flag terpisah dari enum status, keputusan tetap di admin.
+sinyal flag terpisah dari enum status, keputusan tetap di admin. Daftar hasil flag ada di
+`GET /admin/reports/flagged` (BE-31).
 
 > Kebijakan lama di file ini ("flag di luar MVP, jangan dibuat kecuali diminta")
 > sudah digantikan penugasan **BE-25** di `TASK_GUIDE_BACKEND.md`.
@@ -174,6 +185,7 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 - [x] `GET /admin/reports` tanpa token → 401 · warga → 403 · `?status=ngawur` → 422 · tanpa filter semua-status 200 · filter 200 · `GET /reports` publik hanya tayang · detail milik orang lain → 403, anonim penuh → 200, admin → 200 (`tests/unit/test_admin_reports.py`, 2026-10-08, 98 passed)
 - [x] `POST /admin/reports/{id}/approve` tanpa token → 401 · warga → 403 · id tak dikenal → 404 · `menunggu_verifikasi`/`ditolak` → 200 (status `diverifikasi`, timeline +1, muncul di `GET /reports` publik) · sudah tayang → 409 · tanpa body → deskripsi default (`tests/unit/test_admin_reports.py`, 2026-10-08, 105 passed)
 - [x] `POST /admin/reports/{id}/reject` tanpa token → 401 · warga → 403 · id tak dikenal → 404 · tanpa/kosong/blank `alasan` → 422 · `menunggu_verifikasi` → 200 (status `ditolak`, `alasan_penolakan` tersimpan, timeline "Laporan ditolak", hilang dari `GET /reports`) · laporan tayang → 200 (diturunkan) · sudah `ditolak` → 409 · pemilik melihat alasan di detail & status (`tests/unit/test_admin_reports.py`, 2026-10-09, 113 passed)
+- [x] `GET /admin/reports/flagged` tanpa token → 401 · warga → 403 · tanpa flag → `[]` · urut `flag_count` desc + `flag_count` benar + laporan tak ter-flag tidak muncul · `flag_count` publik tetap `null` · pagination `limit` (`tests/unit/test_admin_reports.py`, 2026-10-09, 119 passed)
 
 ---
 

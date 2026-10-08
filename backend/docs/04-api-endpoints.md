@@ -55,6 +55,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/reports/stats/dashboard` | **Admin** | 4 kartu statistik dashboard |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, filter `status` kanonik/`semua` (BE-28/BE-52) |
+| `GET` | `/api/v1/admin/reports/flagged` | **Admin** | Daftar laporan ter-flag pengguna lain + `flag_count`, urut terbanyak (BE-31) |
 | `POST` | `/api/v1/admin/reports/{id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
 | `POST` | `/api/v1/admin/reports/{id}/reject` | **Admin** | Tolak laporan: status -> `ditolak` + alasan wajib tersimpan (BE-30) |
 | **Statistik Publik** ||||
@@ -257,6 +258,21 @@ Antrian tinjauan admin - menggantikan pemakaian `GET /reports` untuk moderasi.
 | `401` | Tanpa token |
 | `403` | Token bukan admin / akun nonaktif |
 | `422` | `status` di luar kanonik (mis. `menunggu_tinjauan`) |
+
+### `GET /api/v1/admin/reports/flagged` - **Admin** (BE-31)
+Daftar laporan yang di-flag pengguna lain (hasil `POST /reports/{id}/flag`), terpisah dari antrian.
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Query:** `skip`, `limit` (1..500, default 100). Tanpa filter status/wilayah.
+- **Response:** `List[LaporanResponse]` dengan field tambahan `flag_count` (= jumlah pelapor berbeda).
+- **Urutan:** `flag_count` desc, lalu waktu flag terbaru desc (laporan paling bermasalah di atas).
+- **Catatan:** `flag_count` hanya terisi di endpoint ini; jalur publik tetap `null`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Daftar laporan ter-flag (kosong `[]` bila belum ada) |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
 
 ### `POST /api/v1/admin/reports/{id}/approve` - **Admin** (BE-29)
 Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline berjudul "Laporan disetujui".

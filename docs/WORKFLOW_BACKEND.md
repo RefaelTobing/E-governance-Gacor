@@ -127,6 +127,7 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 | GET | `/api/v1/reports` | - | filter `status,wilayah,q` - **hanya laporan tayang sejak BE-52** |
 | GET | `/api/v1/reports/mine` | Login | riwayat milik pemanggil, semua status (BE-50) |
 | GET | `/api/v1/admin/reports` | Admin | antrian moderasi semua status, `?status` tervalidasi kanonik (BE-28/BE-52) |
+| GET | `/api/v1/admin/reports/flagged` | Admin | daftar laporan ter-flag + `flag_count`, urut terbanyak (BE-31) |
 | POST | `/api/v1/admin/reports/{id}/approve` | Admin | setujui: status jadi `diverifikasi` + timeline; status lain -> 409 (BE-29) |
 | POST | `/api/v1/admin/reports/{id}/reject` | Admin | tolak: status jadi `ditolak` + alasan wajib tersimpan `alasan_penolakan`; sudah ditolak -> 409 (BE-30) |
 | GET | `/api/v1/reports/stats/dashboard` | Admin | 4 kartu statistik |

@@ -61,7 +61,7 @@ Status:
 | FE-23 | ⚠️ | Login admin | Halaman login dan guard tersedia, alur redirect perlu diuji. |
 | FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` perlu ganti URL (sesi FE). |
 | FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. Tombol **Setujui** (BE-29) dan **Tolak** (BE-30) belum ada; endpoint `POST /admin/reports/{id}/approve` dan `POST /admin/reports/{id}/reject` sudah siap, lihat sub-bagian FE-25A/FE-25B di bawah. |
-| FE-26 | ❌ | Daftar laporan yang di-flag | Belum tersedia; menunggu backend `GET /admin/reports/flagged` (BE-31). |
+| FE-26 | ❌ | Daftar laporan yang di-flag | Backend siap: `GET /api/v1/admin/reports/flagged` (BE-31) mengembalikan laporan ter-flag + `flag_count`, urut terbanyak. UI belum dibuat. |
 | FE-27 | ⚠️ | Manajemen data master ruang publik | Halaman tersedia, indikator edit manual perlu diverifikasi/dilengkapi. |
 | FE-28 | ❌ | Trigger sinkronisasi ETL dari admin | Endpoint backend tersedia, kontrol UI belum tersedia. |
 
@@ -87,7 +87,7 @@ Status:
 **Catatan backend untuk FE (per 2026-10-08, yang kurang dari sisi backend):**
 
 - `PATCH /reports/{id}/status` **belum memvalidasi enum** (perbaikan = BE-51). FE wajib hanya mengirim nilai kanonik: `menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`. Nilai lain akan tersimpan mentah dan merusak badge/stepper.
-- `GET /admin/reports` **belum mendukung `?flagged=`** (BE-31) - daftar flagged (FE-26) masih menunggu endpoint itu.
+- `GET /admin/reports` **belum mendukung `?flagged=`** (BE-31) - daftar flagged (FE-26) ada di route terpisah `GET /admin/reports/flagged` (sudah siap), bukan query param.
 - Setujui dari status `ditolak` memang diizinkan (laporan bisa ditinjau ulang); hanya status yang sudah tayang yang ditolak `409`.
 
 ### FE-25B. Tombol Tolak di Detail Moderasi (integrasi BE-30)

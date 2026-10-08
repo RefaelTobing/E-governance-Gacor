@@ -35,13 +35,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
-| B4 Moderation Service | 6 | 4 | 0 | 2 |
+| B4 Moderation Service | 6 | 5 | 0 | 1 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **38** | **2** | **16** |
+| **Total** | **56** | **39** | **2** | **15** |
 
 ---
 
@@ -449,8 +449,21 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     tersimpan + timeline "Laporan ditolak" + hilang dari `GET /reports` publik, pemilik lihat alasan
     lewat detail & status, laporan tayang boleh diturunkan, sudah ditolak -> 409); `alembic upgrade
     head` -> `downgrade -1` -> `upgrade head` bersih (kolom bertambah/berkurang).
-- [ ] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
-  - **Belum ada** (bergantung BE-25).
+- [x] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
+  - **Lokasi kode:** `read_flagged_reports` di `admin_router` (`app/api/v1/laporan.py`,
+    dideklarasikan **sebelum** route `{laporan_id}` supaya `flagged` tidak tertangkap sebagai id),
+    service `services/laporan.py::get_flagged_reports` (join `laporan` x `laporan_flag`,
+    `GROUP BY laporan.id`); field `flag_count` baru di `LaporanResponse`
+    (`app/schemas/laporan.py`); test di `tests/unit/test_admin_reports.py` (6 test BE-31).
+  - **Keputusan:** (1) route terpisah `/reports/flagged` (bukan `?flagged=` di `GET /admin/reports`)
+    supaya antrian tetap satu bentuk response; (2) urut `flag_count` desc, tie-break waktu flag
+    terbaru desc - laporan paling bermasalah di atas; (3) `flag_count` di-set ke objek ORM di
+    service agar pydantic (`from_attributes`) membacanya; (4) field `flag_count` default `None`
+    sehingga jalur publik (`GET /reports`, `GET /public-spaces/{id}/reports`) **tidak** membocorkan
+    angka flag; (5) tanpa filter status/wilayah (scope minimal), pagination `skip`/`limit`.
+  - **Verifikasi (2026-10-09):** `pytest tests -q` -> **119 passed** (6 test baru: 401 tanpa token,
+    403 warga, 200 `[]` tanpa flag, urut jumlah flag terbanyak + `flag_count` benar + laporan tak
+    ter-flag tidak muncul, `flag_count` publik tetap `null`, pagination `limit`).
 - [ ] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
       (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400.
   - **Sisa pekerjaan:** hanya (a) validasi enum di `PATCH /status`. Bagian (b) kolom
