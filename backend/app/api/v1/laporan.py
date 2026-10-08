@@ -9,16 +9,28 @@ from app.api.deps import (
     get_db,
     oauth2_scheme_optional,
 )
+from app.core.security import verify_token
 from app.models.user import User
 from app.schemas.laporan import (
     LaporanCreate,
     LaporanDetailResponse,
     LaporanResponse,
+    LaporanStatusResponse,
     LaporanStatusUpdate,
 )
+from app.schemas.user import ROLE_ADMIN
 from app.services import laporan as crud_laporan
 
 router = APIRouter()
+
+
+def _peninjau(db: Session, token: Optional[str]) -> Optional[User]:
+    if not token:
+        return None
+    payload = verify_token(token)
+    if not payload:
+        return None
+    return db.query(User).filter(User.id == payload.get("sub")).first()
 
 
 @router.post("", response_model=LaporanResponse, status_code=status.HTTP_201_CREATED)
@@ -31,7 +43,6 @@ def create_report(
     user_id = None
     if token:
         try:
-            from app.core.security import verify_token
             payload = verify_token(token)
             if payload:
                 user_id = payload.get("sub")
@@ -83,6 +94,39 @@ def read_report(laporan_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Laporan tidak ditemukan"
         )
+    return report
+
+
+@router.get("/{laporan_id}/status", response_model=LaporanStatusResponse)
+def read_report_status(
+    laporan_id: str,
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+):
+    """Status laporan untuk pelapor (BE-24).
+
+    Laporan berpemilik hanya terbaca pemilik atau admin. Laporan anonim penuh
+    (user_id None) dibuka bagi siapa pun yang mengetahui id UUID-nya: id menjadi
+    bukti kepemilikan, dan response hanya berisi status + timeline.
+    """
+    report = crud_laporan.get_report_by_id(db, laporan_id)
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan"
+        )
+
+    if report.user_id:
+        peninjau = _peninjau(db, token)
+        boleh = peninjau is not None and peninjau.is_active and (
+            peninjau.id == report.user_id or peninjau.role == ROLE_ADMIN
+        )
+        if not boleh:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Hanya pelapor atau admin yang boleh melihat status laporan ini"
+            )
+
     return report
 
 

@@ -67,3 +67,15 @@ class LaporanDetailResponse(LaporanResponse):
     timeline: List[LaporanTimelineResponse] = []
     
     model_config = ConfigDict(from_attributes=True)
+
+class LaporanStatusResponse(BaseModel):
+    """Status untuk pelapor (BE-24). Sengaja tidak memuat deskripsi, foto, maupun
+    nama pelapor: jalur laporan anonim dibuka hanya dengan bukti kepemilikan id."""
+
+    id: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    timeline: List[LaporanTimelineResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
