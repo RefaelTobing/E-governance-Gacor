@@ -49,6 +49,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/reports` | — | Daftar laporan (filter status/wilayah/q) |
 | `GET` | `/api/v1/reports/{id}` | — | Detail + timeline |
 | `GET` | `/api/v1/reports/{id}/status` | Token opsional | Status + timeline untuk pelapor (BE-24) |
+| `POST` | `/api/v1/reports/{id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{id}/status` | **Admin** | Update status + tulis timeline |
 | `GET` | `/api/v1/reports/stats/dashboard` | **Admin** | 4 kartu statistik dashboard |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
@@ -245,6 +246,20 @@ curl http://localhost:8000/api/v1/reports/<id>/status -H "Authorization: Bearer 
 ```
 → update status + tambah baris timeline. `404` bila laporan tak ada.
 > ⚠ **Gap:** `status` belum divalidasi terhadap enum → bisa menulis nilai sembarangan. Perbaikan: `features/moderation-service.md`.
+
+### `POST /api/v1/reports/{id}/flag` — **Login** (BE-25, FEAT-011)
+Tanpa body. Response `201` `{ "laporan_id": "...", "flag_count": 2 }` (`flag_count` = jumlah pelapor berbeda).
+
+Aturan akses (`services/laporan.py::flag_laporan`):
+- Wajib `Authorization: Bearer <token>` → tanpa token `401`.
+- Hanya laporan `STATUS_TAYANG` (`diverifikasi`/`dalam_penanganan`/`selesai`) → selain itu `400`.
+- Pelapor sendiri tidak boleh melaporkan laporannya sendiri → `403`.
+- Satu flag per pengguna (unique `uq_laporan_flag_pengguna`) → dobel `409`.
+- Id tidak dikenal `404`. Flag **tidak** mengubah status laporan; daftar hasilnya = BE-31.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/reports/<id>/flag -H "Authorization: Bearer <token>"
+```
 
 ### `GET /api/v1/reports/stats/dashboard` — Admin
 ```json

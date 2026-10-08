@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 7 | 0 | 3 |
+| B3 Report Service | 10 | 8 | 0 | 2 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **31** | **5** | **20** |
+| **Total** | **56** | **32** | **5** | **19** |
 
 ---
 
@@ -332,8 +332,20 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     `deskripsi`/`nama_pelapor`/`foto_url`).
     `GET /reports/{id}` publik tetap seperti semula -> urusan menutupnya tetap di **BE-52**,
     "Laporan Saya" tetap di **BE-50**, tampilan FE tetap di **FE-19**.
-- [ ] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
-  - **Belum ada** endpoint maupun UI di FE.
+- [x] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
+  - **Lokasi kode:** endpoint `flag_report` di `app/api/v1/laporan.py`, service `flag_laporan` di
+    `app/services/laporan.py`, model `LaporanFlag` (`app/models/laporan_flag.py`), skema
+    `LaporanFlagResponse`, migrasi `fe1d83da4fca_tambah_tabel_laporan_flag`.
+  - **Keputusan:** (1) wajib login `get_current_active_user` (anonim tidak bisa didedupe, dan
+    rate-limiting BE-26 belum ada); (2) tabel `laporan_flag` dengan unique `(laporan_id, user_id)`
+    sebagai benteng anti-spam utama; (3) hanya `STATUS_TAYANG` -> `400`, pelapor sendiri -> `403`,
+    flag dobel -> `409`, id tak dikenal -> `404`, tanpa token -> `401`; (4) flag **tidak** mengubah
+    `status` laporan maupun menulis `laporan_timeline` (kamus 5 nilai dipakai FE, galeri BE-47/48;
+    keputusan tetap di admin lewat moderasi); (5) tanpa kolom `alasan` di MVP.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` -> 77 passed (7 test baru: 201 + `flag_count`
+    naik + status laporan tak berubah, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token
+    401, id tak dikenal 404, laporan anonim 201); `alembic upgrade head` -> `fe1d83da4fca (head)`
+    di MySQL `raku_db`. UI flag (FE-21) dan daftar admin (BE-31) masih terbuka.
 - [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
   - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
 - [x] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).

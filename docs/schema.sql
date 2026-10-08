@@ -75,8 +75,12 @@ CREATE TABLE laporan (
    foto_url TEXT,
    lat_user DOUBLE,
    long_user DOUBLE,
+   lat_lokasi_pilihan DOUBLE,
+   long_lokasi_pilihan DOUBLE,
    lat_exif DOUBLE,
    long_exif DOUBLE,
+   jarak_browser_rp DOUBLE,
+   jarak_exif_rp DOUBLE,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    FOREIGN KEY (user_id) REFERENCES users(id),
@@ -93,6 +97,19 @@ CREATE TABLE laporan_timeline (
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    FOREIGN KEY (laporan_id) REFERENCES laporan(id)
 );
+
+CREATE TABLE laporan_flag (
+   id VARCHAR(50) PRIMARY KEY,
+   laporan_id VARCHAR(50) NOT NULL,
+   user_id VARCHAR(36) NOT NULL,
+   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+   FOREIGN KEY (laporan_id) REFERENCES laporan(id),
+   FOREIGN KEY (user_id) REFERENCES users(id),
+   CONSTRAINT uq_laporan_flag_pengguna UNIQUE (laporan_id, user_id)
+);
+
+CREATE INDEX ix_laporan_flag_laporan_id ON laporan_flag (laporan_id);
+CREATE INDEX ix_laporan_flag_user_id ON laporan_flag (user_id);
 
 CREATE TABLE etl_run (
    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

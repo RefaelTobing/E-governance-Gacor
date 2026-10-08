@@ -4,8 +4,8 @@
 > Laporan warga (create/status/mine) → `report-service.md`. Akun admin → `admin-auth.md`.
 
 Kode terkait:
-- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`)
-- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`)
+- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`; bagian flag: `POST .../flag`)
+- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`, `flag_laporan`)
 - Dependen auth: `Depends(get_current_admin)` dari `app/api/deps.py`
 
 ---
@@ -17,7 +17,7 @@ Kode terkait:
 | Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** — antrian & detail ada; **validasi status belum ada** |
 | Aksi setujui/tolak laporan | **Ada** (PATCH status) — tanpa validasi enum |
 | Mencegah spam/konten tak relevan | **Belum** (rate limiting → `report-service.md` FEAT-008) |
-| Mekanisme flag oleh pengguna lain | **Belum & opsional** — di luar MVP awal; jangan dibuat kecuali diminta |
+| Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`); daftar flagged untuk admin (**BE-31**) & UI (FE-21/FE-26) belum |
 
 ---
 
@@ -55,6 +55,17 @@ Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, 
 ### Daftar antrian (bukan endpoint khusus)
 
 `GET /api/v1/reports?status=menunggu_verifikasi&q=&wilayah=` (endpoint publik biasa) dipakai FE mengisi tabel moderasi + filter status/wilayah/pencarian.
+
+### `POST /api/v1/reports/{laporan_id}/flag` — Login (BE-25)
+
+Flag pengguna lain atas laporan **tayang** yang dianggap tidak pantas. Tanpa body,
+response `201 {laporan_id, flag_count}`. Aturan: wajib login, hanya `STATUS_TAYANG`,
+pelapor sendiri ditolak `403`, satu flag per pengguna `409` (unique
+`uq_laporan_flag_pengguna`), id tak dikenal `404`. **Status laporan tidak berubah** —
+sinyal flag terpisah dari enum status, keputusan tetap di admin.
+
+> Kebijakan lama di file ini ("flag di luar MVP, jangan dibuat kecuali diminta")
+> sudah digantikan penugasan **BE-25** di `TASK_GUIDE_BACKEND.md`.
 
 ---
 
@@ -133,6 +144,7 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 - [ ] `PATCH .../reports/stats/*` tanpa admin → 401/403
 - [ ] `stats/dashboard` cocok dengan hitungan manual query sederhana
 - [ ] `GET /public-spaces/{id}/reports` hanya berisi status tayang (setelah Gap 2)
+- [x] `POST .../flag` tanpa token → 401 · pelapor sendiri → 403 · belum tayang → 400 · dobel → 409 · berhasil → 201 `flag_count` dan status laporan tak berubah (sudah di `tests/unit/test_laporan.py`, 2026-10-08)
 
 ---
 

@@ -90,7 +90,7 @@ cd "d:\Ruka Jakarta\backend"
 | Test file | Kasus wajib (gabungan dari test-regresi di file fitur) |
 |---|---|
 | `test_public_space.py` | radius menyaring (kecil vs besar) · `jarak_km` terisi saat lat/long · filter `category` · filter `facilities` AND · detail 200/404 · `/stats` punya 3 key |
-| `test_laporan.py` | create anonim 201 `nama_pelapor None` · `tampilkan_nama` tanpa token 400 · `tampilkan_nama` + token → nama dari user · status awal + timeline · **mine=true isolasi antar-user** · **filter tayang: `menunggu_verifikasi` tidak muncul, `diverifikasi` muncul** · PATCH status sah 200 / ngawur 4xx (setelah validasi enum) · upload: JPEG ok, `.txt` 400, >5MB 400 |
+| `test_laporan.py` | create anonim 201 `nama_pelapor None` · `tampilkan_nama` tanpa token 400 · `tampilkan_nama` + token → nama dari user · status awal + timeline · **mine=true isolasi antar-user** · **filter tayang: `menunggu_verifikasi` tidak muncul, `diverifikasi` muncul** · PATCH status sah 200 / ngawur 4xx (setelah validasi enum) · upload: JPEG ok, `.txt` 400, >5MB 400 · **status endpoint: pemilik 200, pihak lain 403, anonim id-sebagai-bukti 200** · **flag: 201 + `flag_count`, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token 401** |
 | `test_admin_auth.py` | register role `admin` ditolak 400 · warga → `/users` 403 · admin aktif terakhir `DELETE` 409 · akun sendiri 400 · nonaktif → login 403 · activate → login ok · `POST /categories` tanpa token 401 (setelah gap ditutup) |
 
 Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya checklist "test regresi wajib" — tempelkan ke file test yang sesuai).
@@ -102,6 +102,7 @@ Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya
 | 2026-10-04 | BE-18 | `tests/unit/test_admin_sync.py` | 6 passed | Trigger manual sync ETL, status code & lock |
 | 2026-10-05 | BE-19 | `tests/unit/test_etl_run_log.py` | 12 passed | Logging riwayat run ETL ke DB & pembacaan API |
 | 2026-10-05 | BE-20, BE-46, BE-49 | `tests/unit/test_laporan.py` | 23 passed | 11 test laporan baru (upload, MIME, koordinat, anti-spoofing) + 12 test lama |
+| 2026-10-08 | BE-24, BE-25 | `tests/unit/test_laporan.py` | 77 passed | 14 test baru: endpoint status (pemilik/pihak lain/admin/anonim/404/nonaktif) + flag (201/409/403/400/401/404) |
 
 ---
 

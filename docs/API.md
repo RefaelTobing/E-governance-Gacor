@@ -35,6 +35,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/reports` | - | Daftar laporan masyarakat (filter status, wilayah, query) |
 | `GET` | `/api/v1/reports/{report_id}` | - | Detail satu laporan beserta riwayat timeline |
 | `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
+| `POST` | `/api/v1/reports/{report_id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Statistik antrian moderasi untuk dashboard admin |
 | `GET` | `/api/v1/users` | **Admin** | Daftar petugas |
@@ -581,6 +582,32 @@ nama pelapor.
 
 ```bash
 curl http://localhost:8000/api/v1/reports/<id>/status \
+  -H "Authorization: Bearer <token>"
+```
+
+### `POST /api/v1/reports/{report_id}/flag`
+
+Tandai laporan tayang yang dianggap tidak pantas (FEAT-011, BE-25). Tanpa body,
+wajib header `Authorization: Bearer <token>` (login). Response `201`:
+
+```json
+{ "laporan_id": "<id>", "flag_count": 1 }
+```
+
+`flag_count` = jumlah pengguna berbeda yang menandai laporan ini. Flag **tidak**
+mengubah status laporan; admin memutuskan lewat moderasi, daftar hasil flag = BE-31.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Laporan tayang, pengguna lain, belum pernah flag | `201` | Flag tercatat |
+| Pengguna yang sama flag dua kali | `409` | Satu flag per pengguna |
+| Pelapor melaporkan laporannya sendiri | `403` | Harus "pengguna lain" |
+| Status bukan `diverifikasi`/`dalam_penanganan`/`selesai` | `400` | Hanya laporan tayang |
+| Tanpa token / token kedaluwarsa | `401` | |
+| Id tidak dikenal | `404` | |
+
+```bash
+curl -X POST http://localhost:8000/api/v1/reports/<id>/flag \
   -H "Authorization: Bearer <token>"
 ```
 
