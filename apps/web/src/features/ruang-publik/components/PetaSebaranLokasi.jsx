@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MapPin, Loader } from 'lucide-react';
 import L from 'leaflet';
 import { JAKARTA_CENTER } from '../../../config/constants';
+
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -21,6 +25,14 @@ const RecenterMap = ({ center }) => {
   useEffect(() => {
     map.setView(center, map.getZoom());
   }, [center, map]);
+  return null;
+};
+
+// FE-07: Handler klik peta untuk menandai lokasi manual (fallback GPS).
+const PetaKlikHandler = ({ onPilih }) => {
+  useMapEvents({
+    click: (e) => onPilih && onPilih(e.latlng.lat, e.latlng.lng),
+  });
   return null;
 };
 
@@ -43,6 +55,38 @@ const createCustomIcon = (color = '#10b981') =>
     popupAnchor: [0, -36],
   });
 
+// FE-08: Custom styling untuk bubble cluster marker agar konsisten dengan warna brand.
+const createClusterCustomIcon = (cluster) => {
+  const count = cluster.getChildCount();
+  let size = 36;
+  if (count >= 100) size = 48;
+  else if (count >= 10) size = 42;
+
+  return L.divIcon({
+    html: `
+      <div style="
+        width: ${size}px;
+        height: ${size}px;
+        background: #0F766E;
+        color: white;
+        font-weight: 700;
+        font-size: ${size >= 48 ? '14px' : '12px'};
+        border: 3px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4);
+      ">
+        ${count}
+      </div>
+    `,
+    className: 'custom-marker-cluster',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+};
+
 const DEFAULT_ZOOM = 13;
 
 /**
@@ -53,8 +97,14 @@ const DEFAULT_ZOOM = 13;
  * @param {Array} items - Hasil filter halaman induk (pencarian, kategori, wilayah, radius)
  * @param {boolean} loading - Daftar masih dimuat
  * @param {{lat: number|null, lng: number|null}} userLocation - Lokasi hasil geolokasi user
+ * @param {Function} [onSetManualLocation] - Callback saat pengguna menandai lokasi manual di peta (FE-07)
  */
-const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: null, lng: null } }) => {
+const PetaSebaranLokasi = ({
+  items = [],
+  loading = false,
+  userLocation = { lat: null, lng: null },
+  onSetManualLocation,
+}) => {
   const navigate = useNavigate();
   const hasUserLocation = Number.isFinite(userLocation?.lat) && Number.isFinite(userLocation?.lng);
   const pusatLat = hasUserLocation ? userLocation.lat : JAKARTA_CENTER.lat;
@@ -66,13 +116,10 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
     setMapCenter((prev) => (prev[0] === pusatLat && prev[1] === pusatLng ? prev : [pusatLat, pusatLng]));
   }, [pusatLat, pusatLng]);
 
-  // Jaraknya sudah dihitung backend (item.jarak_km) dari titik acuan yang sama
-  // dengan yang dipakai daftar, jadi angka di popup dan badge kartu identik.
-  // Marker dibatasi supaya radius 1000 km tidak memaksa peta me-render ribuan
-  // titik sekaligus dan membuat halaman macet.
-  const BATAS_MARKER = 200;
+  // FE-08: Dengan clustering (react-leaflet-cluster), seluruh titik yang lolos filter
+  // dapat dirender tanpa pembatasan slice buatan.
   const lokasiTampil = useMemo(() => {
-    const valid = items
+    return items
       .map((item) => ({
         ...item,
         computedLat: Number.parseFloat(item.latitude),
@@ -80,7 +127,6 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
       }))
       .filter((item) => Number.isFinite(item.computedLat) && Number.isFinite(item.computedLng))
       .sort((a, b) => (a.jarak_km ?? Infinity) - (b.jarak_km ?? Infinity));
-    return valid.slice(0, BATAS_MARKER);
   }, [items]);
 
   if (loading) {
@@ -107,6 +153,34 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <div style={{ position: 'relative', height: '320px', width: '100%' }}>
+        {onSetManualLocation && (
+          <div
+            style={{
+              position: 'absolute',
+              left: '12px',
+              bottom: '12px',
+              zIndex: 400,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              padding: '6px 10px',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: '0 2px 8px rgba(15,23,42,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              color: '#334155',
+              pointerEvents: 'none',
+            }}
+          >
+            <MapPin size={12} color="var(--color-primary)" />
+            <span>
+              {hasUserLocation
+                ? 'Geser pin biru atau klik peta untuk ubah lokasi Anda.'
+                : 'Klik di peta untuk menandai lokasi Anda secara manual.'}
+            </span>
+          </div>
+        )}
+
         {lokasiTampil.length === 0 && (
           <div
             style={{
@@ -139,6 +213,7 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
           scrollWheelZoom={false}
         >
           <RecenterMap center={mapCenter} />
+          {onSetManualLocation && <PetaKlikHandler onPilih={onSetManualLocation} />}
 
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -148,6 +223,14 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
           {userCoords && (
             <Marker
               position={userCoords}
+              draggable={Boolean(onSetManualLocation)}
+              eventHandlers={{
+                dragend: (e) => {
+                  if (!onSetManualLocation) return;
+                  const pos = e.target.getLatLng();
+                  onSetManualLocation(pos.lat, pos.lng);
+                },
+              }}
               icon={L.divIcon({
                 className: '',
                 html: `<div style="
@@ -156,69 +239,85 @@ const PetaSebaranLokasi = ({ items = [], loading = false, userLocation = { lat: 
                   border: 3px solid white;
                   border-radius: 50%;
                   box-shadow: 0 0 0 4px rgba(59,130,246,0.3);
+                  cursor: ${onSetManualLocation ? 'grab' : 'default'};
                 "></div>`,
                 iconSize: [16, 16],
                 iconAnchor: [8, 8],
               })}
             >
               <Popup>
-                <span style={{ fontWeight: 700, fontSize: '12px' }}>📍 Lokasi Anda</span>
+                <div style={{ fontSize: '12px' }}>
+                  <strong>📍 Lokasi Anda</strong>
+                  {onSetManualLocation && (
+                    <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '11px' }}>
+                      Geser pin atau klik peta untuk memindahkan lokasi acuan.
+                    </p>
+                  )}
+                </div>
               </Popup>
             </Marker>
           )}
 
-          {lokasiTampil.map((item) => (
-            <Marker
-              key={item.id}
-              position={[item.computedLat, item.computedLng]}
-              icon={createCustomIcon('#10b981')}
-            >
-              <Popup minWidth={200}>
-                <div style={{ padding: '4px 0' }}>
-                  <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0F172A' }}>
-                    {item.nama}
-                  </p>
-                  <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                    {item.alamat}
-                  </p>
-                  {item.jarak_km != null && (
-                    <p style={{ fontSize: '10px', color: '#047857', fontWeight: 600, marginBottom: '8px' }}>
-                      {Number(item.jarak_km).toFixed(1)} km {hasUserLocation ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
+          {/* FE-08: MarkerClusterGroup membungkus seluruh marker ruang publik */}
+          <MarkerClusterGroup
+            chunkedLoading
+            showCoverageOnHover={false}
+            disableClusteringAtZoom={17}
+            iconCreateFunction={createClusterCustomIcon}
+          >
+            {lokasiTampil.map((item) => (
+              <Marker
+                key={item.id}
+                position={[item.computedLat, item.computedLng]}
+                icon={createCustomIcon('#10b981')}
+              >
+                <Popup minWidth={200}>
+                  <div style={{ padding: '4px 0' }}>
+                    <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0F172A' }}>
+                      {item.nama}
                     </p>
-                  )}
-                  {item.kategori_id && (
-                    <span style={{
-                      fontSize: '10px', fontWeight: 700,
-                      backgroundColor: '#d1fae5', color: '#047857',
-                      padding: '2px 8px', borderRadius: '999px',
-                      display: 'inline-block', marginBottom: '8px'
-                    }}>
-                      {item.kategori_id}
-                    </span>
-                  )}
-                  <br />
-                  <button
-                    onClick={() => navigate(`/ruang-publik/${item.id}`)}
-className="ruang-publik-detail-button"
-                     style={{
-                       backgroundColor: 'var(--color-accent, #F59E0B)',
-                       color: 'white',
-                       border: 'none',
-                       borderRadius: 'var(--radius-pill)',
-                      padding: '6px 14px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      width: '100%',
-                      marginTop: '8px',
-                    }}
-                  >
-                    Lihat Detail Ruang →
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                    <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
+                      {item.alamat}
+                    </p>
+                    {item.jarak_km != null && (
+                      <p style={{ fontSize: '10px', color: '#047857', fontWeight: 600, marginBottom: '8px' }}>
+                        {Number(item.jarak_km).toFixed(1)} km {hasUserLocation ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
+                      </p>
+                    )}
+                    {item.kategori_id && (
+                      <span style={{
+                        fontSize: '10px', fontWeight: 700,
+                        backgroundColor: '#d1fae5', color: '#047857',
+                        padding: '2px 8px', borderRadius: '999px',
+                        display: 'inline-block', marginBottom: '8px'
+                      }}>
+                        {item.kategori_id}
+                      </span>
+                    )}
+                    <br />
+                    <button
+                      onClick={() => navigate(`/ruang-publik/${item.id}`)}
+                      className="ruang-publik-detail-button"
+                      style={{
+                        backgroundColor: 'var(--color-accent, #F59E0B)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 'var(--radius-pill)',
+                        padding: '6px 14px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        width: '100%',
+                        marginTop: '8px',
+                      }}
+                    >
+                      Lihat Detail Ruang →
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MarkerClusterGroup>
         </MapContainer>
       </div>
     </div>

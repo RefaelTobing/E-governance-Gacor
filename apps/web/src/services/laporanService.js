@@ -1,7 +1,6 @@
 import { api, assetUrl } from '../config/api';
+import { IS_DEV } from '../config/constants';
 import { MOCK_LAPORAN, MOCK_DASHBOARD_STATS, MOCK_MODERASI_STATS } from '../data/mockData';
-
-const IS_DEV = import.meta.env.DEV;
 
 // Helper: normalisasi response backend (snake_case) ke bentuk FE (camelCase).
 const transformLaporanResponse = (raw) => {
@@ -113,10 +112,13 @@ export const uploadFoto = async (file) => {
 
 /**
  * Kirim laporan fasilitas baru ke backend.
+ * Mengembalikan laporan yang sudah dinormalisasi (camelCase) termasuk `status`
+ * hasil validasi lokasi: "diverifikasi" (auto-tayang) atau "menunggu_verifikasi".
  * @param {Object} reportData
  */
 export const createReport = async (reportData) => {
-  return await api.post('/api/v1/reports', reportData);
+  const raw = await api.post('/api/v1/reports', reportData);
+  return transformLaporanResponse(raw);
 };
 
 /**

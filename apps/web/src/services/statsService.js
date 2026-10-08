@@ -1,7 +1,6 @@
 import { api } from '../config/api';
+import { IS_DEV } from '../config/constants';
 import { MOCK_STATISTICS, TESTIMONIALS, HERO_SLIDES } from '../data/mockData';
-
-const IS_DEV = import.meta.env.DEV;
 
 /**
  * Ambil data statistik umum homepage (total ruang publik, laporan selesai, dll).

@@ -12,19 +12,50 @@ Status:
 
 | ID | Status | Task | Catatan |
 | --- | --- | --- | --- |
-| FE-01 | ✅ | Inisialisasi React dan struktur folder | Struktur komponen, halaman, service, hook, dan utilitas tersedia. |
+| FE-01 | ✅ | x` |
 | FE-02 | ✅ | Routing React Router | Route publik, warga, dan admin tersedia. |
 | FE-03 | ✅ | Styling dasar dan design system | Token desain serta komponen button, card, dan badge tersedia. |
-| FE-04 | ❌ | Setup HTTP client Axios dengan interceptor | Aplikasi masih menggunakan wrapper `fetch` di `apps/web/src/config/api.js`. |
-| FE-05 | ⚠️ | Setup environment variable | `VITE_API_BASE_URL` tersedia. Konfigurasi routing/peta perlu dilengkapi bila dibutuhkan. |
+| FE-04 | ✅ | Setup HTTP client Axios dengan interceptor | `config/api.js` memakai axios instance + interceptor (Bearer token & normalisasi error). Semua raw `fetch` (authService, import CSV, LoginPage) sudah dimigrasi. |
+| FE-05 | ✅ | Setup environment variable | `config/constants.js` jadi satu-satunya pembaca `import.meta.env` (4 var + `IS_DEV`). `.env.example` diperbaiki (tanpa suffix `/api/v1`) dan semua var dipakai kode. |
+
+### FE-05. Setup environment variable
+
+**Status:** ✅
+
+**File utama:** `apps/web/src/config/constants.js`
+
+**File terkait:**
+- `apps/web/src/config/api.js`
+- `apps/web/src/services/{laporan,ruangPublik,category,stats,fasilitas}Service.js`
+- `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+- `apps/web/src/features/laporan/pages/FormLaporPage.jsx`
+- `apps/web/.env.example`, `apps/web/.env`
+
+**Pekerjaan:**
+
+1. `config/constants.js` jadi **satu-satunya** pembaca `import.meta.env` (sesuai `docs/CONVENTIONS.md` §7). Ekspor: `API_BASE_URL`, `OSRM_BASE_URL`, `DEFAULT_RADIUS_KM`, `FAKE_GPS_THRESHOLD_M`, `IS_DEV`, dengan fallback aman + `console.warn` bila nilai numerik invalid.
+2. `config/api.js` mengimpor `API_BASE_URL` dari constants (tidak lagi baca env langsung).
+3. Kelima service yang membaca `import.meta.env.DEV` diganti memakai `IS_DEV` dari constants.
+4. `DaftarRuangPublikPage` memakai `DEFAULT_RADIUS_KM` (default 700 km, tidak mengubah UX saat ini).
+5. `FormLaporPage` menampilkan teks bantuan ambang `FAKE_GPS_THRESHOLD_M` di sidebar.
+6. `.env.example` diperbaiki: `VITE_API_BASE_URL` **tanpa** suffix `/api/v1` (sebelumnya menyebabkan double-prefix `/api/v1/api/v1/...`), plus komentar per var.
+
+**Acceptance criteria:**
+
+- `import.meta.env` hanya dibaca di `config/constants.js`.
+- `.env.example` tidak lagi menyebabkan double-prefix.
+- Aplikasi tetap jalan saat env var kosong/invalid (fallback + peringatan di DEV).
+- Salin `.env.example` → `.env` tidak memicu 404.
+
+---
 
 ## A1. Peta dan Direktori Ruang Publik
 
 | ID | Status | Task | Catatan |
 | --- | --- | --- | --- |
 | FE-06 | ✅ | Leaflet dan OpenStreetMap | Sudah dipakai pada peta sebaran, detail ruang publik, dan form laporan. |
-| FE-07 | ⚠️ | Geolocation pengguna dengan fallback manual | Hook geolocation tersedia. Fallback input lokasi manual belum eksplisit. |
-| FE-08 | ⚠️ | Marker ruang publik dengan clustering | Marker sudah tampil, clustering untuk data padat belum ada. |
+| FE-07 | ✅ | Geolocation pengguna dengan fallback manual | Hook geolocation tersedia; fallback lokasi manual lewat klik/tarik pin di peta sebaran. |
+| FE-08 | ✅ | Marker ruang publik dengan clustering | `react-leaflet-cluster` dipakai di peta sebaran publik dan peta dashboard admin; batas marker buatan dihapus. |
 | FE-09 | ✅ | Kontrol radius pencarian | Radius pencarian sudah tersedia di halaman daftar ruang publik. |
 | FE-10 | ✅ | List view sinkron dengan peta dan urutan jarak | Daftar dan sorting jarak sudah tersedia. |
 | FE-11 | ✅ | Filter kategori | Filter kategori ruang publik tersedia. |
@@ -33,6 +64,54 @@ Status:
 | FE-14 | ⚠️ | Galeri foto detail | Foto resmi ada, foto laporan terverifikasi belum digabungkan. |
 | FE-15 | ❌ | Routing OSRM | Tombol Google Maps tersedia, rute OSRM pada peta belum diimplementasikan. |
 
+### FE-07. Geolocation pengguna dengan fallback lokasi manual
+
+**Status:** ✅
+
+**File utama:** `apps/web/src/hooks/useGeolocation.js`
+
+**File terkait:**
+- `apps/web/src/features/ruang-publik/components/PetaSebaranLokasi.jsx`
+- `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. `useGeolocation` menambah `setManualLocation(lat, lng)` dan `clearLocation()`, plus flag `isManual` untuk membedakan sumber koordinat (GPS vs ditandai manual).
+2. `PetaSebaranLokasi` menerima prop `onSetManualLocation`: klik peta menandai lokasi (via `PetaKlikHandler`), marker "Lokasi Anda" dapat digeser, dan petunjuk singkat tampil di sudut peta.
+3. `DaftarRuangPublikPage` menyalurkan `setManualLocation` ke peta; saat `geoError` muncul, pengguna diarahkan menandai lokasi manual; banner sukses menampilkan sumber lokasi + tombol "Hapus Lokasi".
+4. Koordinat manual disimpan di `sessionStorage` yang sama sehingga bertahan saat refresh.
+
+**Acceptance criteria:**
+
+- Saat izin GPS ditolak/gagal, pengguna bisa menandai lokasi lewat klik peta dan jarak langsung dihitung dari titik itu.
+- Marker lokasi bisa digeser untuk presisi.
+- Label membedakan sumber lokasi (GPS vs manual).
+- "Hapus Lokasi" mengembalikan acuan ke pusat Jakarta.
+
+### FE-08. Marker ruang publik dengan clustering
+
+**Status:** ✅
+
+**File utama:**
+- `apps/web/src/features/ruang-publik/components/PetaSebaranLokasi.jsx`
+- `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
+
+**Pekerjaan:**
+
+1. Install `react-leaflet-cluster@3.1.1` (versi kompatibel dengan React 18 & react-leaflet v4).
+2. Membungkus iterasi `<Marker>` ruang publik dengan `<MarkerClusterGroup chunkedLoading disableClusteringAtZoom={17} showCoverageOnHover={false}>`.
+3. Menghapus batasan manipulasi array (`slice(0, 200)` dan `slice(0, 500)`) karena library clustering bisa menangani ribuan titik tanpa membebani performa peramban (NFR-001).
+4. Menyuntikkan `iconCreateFunction` khusus (`createClusterCustomIcon`) berwujud lingkaran *teal* (`#0F766E`) dan angka untuk konsistensi *brand*, menghindari class standar `MarkerCluster.Default.css`.
+
+**Acceptance criteria:**
+
+- Pada zoom rendah, ratusan titik ruang publik menyatu ke dalam cluster dengan angka hitungan.
+- Meng-klik cluster akan mengarahkan zoom langsung ke batas-batas titik di dalamnya.
+- Marker tunggal (termasuk Pin "Lokasi Anda" GPS/Manual berwarna biru) tetap tampil tersendiri tanpa dipaksa menjadi cluster tunggal.
+- Peta tetap responsif merender data skala utuh dari backend tanpa *freeze*.
+
+---
+
 ## A2. Lapor Fasilitas
 
 | ID | Status | Task | Catatan |
@@ -40,9 +119,38 @@ Status:
 | FE-16 | ✅ | Form laporan, kategori masalah, deskripsi, dan unggah foto | Validasi tipe serta ukuran gambar tersedia. |
 | FE-17 | ✅ | Ambil lokasi HP saat submit | Browser Geolocation API mengirim `lat_user` dan `long_user`. |
 | FE-18 | ✅ | Pilihan identitas anonim atau tampilkan nama | Pilihan tersedia dengan default anonim. |
-| FE-19 | ❌ | Status hasil submit | Masih memakai alert umum, belum membedakan laporan tayang dan menunggu tinjauan. |
+| FE-19 | ✅ | Status hasil submit | Mengganti alert umum dengan panel hasil interaktif membedakan laporan tayang dan menunggu tinjauan beserta alasan kualitatif. |
 | FE-20 | ⚠️ | Riwayat laporan per ruang publik | Riwayat warga tersedia, filter atau section per ruang publik belum lengkap. |
 | FE-21 | ❌ | Flag laporan tayang | Belum ada mekanisme laporan tidak pantas oleh pengguna. |
+
+### FE-19. Status hasil submit laporan
+
+**Status:** ✅
+
+**File utama:** `apps/web/src/features/laporan/pages/FormLaporPage.jsx`
+
+**File terkait:**
+- `apps/web/src/features/laporan/components/StatusHasilSubmit.jsx` (baru)
+- `apps/web/src/services/laporanService.js`
+
+**Pekerjaan:**
+
+1. `createReport` di `laporanService.js` menangkap response `POST /api/v1/reports` dan menormalisasinya lewat `transformLaporanResponse` (camelCase + `status`).
+2. Komponen `StatusHasilSubmit.jsx` menampilkan dua mode sesuai `status`:
+   - `diverifikasi`/`dalam_penanganan`/`selesai` → **Laporan Tayang** (auto-tayang lolos validasi lokasi).
+   - `menunggu_verifikasi` → **Menunggu Tinjauan Admin**, lengkap dengan alasan kualitatif dari `jarak_browser_rp`/`jarak_exif_rp` (tanpa angka presisi).
+3. `FormLaporPage` menyimpan response ke state `submitResult`; saat terisi, form diganti panel hasil (bukan `alert` + redirect).
+4. Tombol "Lihat Detail Laporan" hanya tampil saat login (route `/laporan-saya/:id` dilindungi), plus "Kirim Laporan Lain" dan "Kembali ke Beranda".
+5. Aksesibilitas: `role="status"`, `aria-live="polite"`, fokus otomatis ke heading hasil.
+
+**Acceptance criteria:**
+
+- Pengguna melihat panel hasil yang membedakan laporan tayang vs menunggu tinjauan sesuai respons backend.
+- Panel menampilkan ID laporan, fasilitas, dan ruang publik.
+- Pengguna anonim tidak diarahkan ke route protected.
+- Tidak ada angka presisi koordinat/jarak yang bocor ke UI publik.
+
+---
 
 ### Titik Presisi Fasilitas
 
@@ -470,6 +578,9 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ### Sudah Selesai
 
+- **FE-04** — Setup HTTP client Axios dengan interceptor
+- **FE-05** — Setup environment variable
+- **FE-19** — Tampilkan status hasil submit laporan
 - **FE-34** — Kolom alamat di kelola fasilitas
 - **FE-35** — Kartu peta sebaran dashboard jadi kotak
 - **FE-36** — Detail ruang publik wajib login
@@ -483,8 +594,7 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ### Prioritas Berikutnya
 
-1. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
-2. **FE-28** — Trigger manual ETL dari UI (admin operasional)
+1. **FE-28** — Trigger manual ETL dari UI (admin operasional)
 3. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
 4. **FE-25A** - Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
 5. **FE-08** - Clustering marker (performance)

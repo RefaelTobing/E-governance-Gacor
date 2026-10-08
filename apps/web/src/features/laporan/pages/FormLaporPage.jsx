@@ -7,6 +7,9 @@ import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { createReport, uploadFoto } from '../../../services/laporanService';
+import { useAuth } from '../../../context/AuthContext';
+import { StatusHasilSubmit } from '../components/StatusHasilSubmit';
+import { FAKE_GPS_THRESHOLD_M } from '../../../config/constants';
 
 const createPrecisionIcon = () =>
   L.divIcon({
@@ -48,11 +51,16 @@ export const FormLaporPage = () => {
   const [searchParams] = useSearchParams();
   const facilityParam = searchParams.get('fasilitas');
 
+  const { token } = useAuth();
+
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  // Hasil submit sukses (response createReport). Bila terisi, form diganti
+  // panel status hasil (FE-19): "Laporan tayang" atau "Menunggu tinjauan admin".
+  const [submitResult, setSubmitResult] = useState(null);
 
   // Form State
   const [selectedFacilityId, setSelectedFacilityId] = useState('');
@@ -169,6 +177,41 @@ export const FormLaporPage = () => {
     }
   };
 
+  // FE-19: reset form & kembali ke form laporan setelah melihat status hasil.
+  const handleLaporLagi = () => {
+    if (fotoPreview) {
+      URL.revokeObjectURL(fotoPreview);
+    }
+    setFotoFile(null);
+    setFotoPreview(null);
+    setFotoError('');
+    setErrorMsg('');
+    setDeskripsi('');
+    setModeIdentitas('anonim');
+    setSelectedLocation(getFacilityCoords(detail) || detail?.koordinat || null);
+    setSubmitResult(null);
+  };
+
+  // FE-19: panel hasil submit menggantikan form.
+  const renderStatusHasilSubmit = () => (
+    <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+      <nav style={{ marginBottom: 'var(--space-lg)', fontSize: '14px', color: 'var(--color-text-muted)' }}>
+        <Link to="/home" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>Beranda</Link>
+        {' > '}
+        <Link to="/ruang-publik" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>Ruang Publik</Link>
+        {' > '}
+        <strong style={{ color: 'var(--color-text-main)' }}>Status Laporan</strong>
+      </nav>
+      <StatusHasilSubmit
+        result={submitResult}
+        isAuthenticated={!!token}
+        onLaporLagi={handleLaporLagi}
+        onLihatDetail={() => navigate(`/laporan-saya/${submitResult?.id}`)}
+        onBeranda={() => navigate('/home')}
+      />
+    </div>
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -230,9 +273,8 @@ export const FormLaporPage = () => {
           : {}),
       };
 
-      await createReport(reportPayload);
-      alert('Laporan berhasil dikirim! Laporan Anda telah masuk ke antrian peninjauan pengelola.');
-      navigate('/laporan-saya');
+      const result = await createReport(reportPayload);
+      setSubmitResult(result);
     } catch (err) {
       console.error('Gagal mengirim laporan:', err);
       const detailError = err.detail || err.message;
@@ -284,6 +326,10 @@ export const FormLaporPage = () => {
         </div>
       </div>
     );
+  }
+
+  if (submitResult) {
+    return renderStatusHasilSubmit();
   }
 
   const fasilitasTersedia = Array.isArray(detail.fasilitas) ? detail.fasilitas : [];
@@ -661,6 +707,10 @@ export const FormLaporPage = () => {
 
               <div style={{ backgroundColor: 'var(--color-info-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px', fontSize: '12px', color: '#075985', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <Info size={14} style={{ marginTop: '2px', flexShrink: 0 }} /> Laporan diteruskan langsung ke tim patroli teknis Taman Kota tanpa registrasi berbelit. Terima kasih atas kepedulian Anda!
+              </div>
+
+              <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                ℹ️ <strong>Info Validasi Lokasi:</strong> Laporan otomatis tayang bila berada dalam radius ±{FAKE_GPS_THRESHOLD_M} meter dari ruang publik (berdasarkan koordinat GPS & EXIF foto).
               </div>
             </CardBody>
           </Card>

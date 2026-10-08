@@ -1,10 +1,6 @@
 import { api } from '../config/api';
+import { IS_DEV } from '../config/constants';
 import { MOCK_RUANG_PUBLIK, MOCK_RUANG_PUBLIK_METRICS } from '../data/mockData';
-
-/**
- * Helper to check if backend API should fallback in development
- */
-const IS_DEV = import.meta.env.DEV;
 
 /**
  * Backend memakai snake_case (perlu_perhatian); UI memakai camelCase.

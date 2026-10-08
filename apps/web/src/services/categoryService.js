@@ -1,7 +1,6 @@
 import { api } from '../config/api';
+import { IS_DEV } from '../config/constants';
 import { MOCK_CATEGORIES } from '../data/mockData';
-
-const IS_DEV = import.meta.env.DEV;
 
 /**
  * Ambil daftar kategori dari backend (tabel categories).

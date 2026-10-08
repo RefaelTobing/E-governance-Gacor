@@ -4,7 +4,7 @@ import { Globe, RotateCcw, MapPin, Clock, ArrowRight, Navigation } from 'lucide-
 import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
 import { Button, SearchInput, SelectDropdown, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
-import { JAKARTA_CENTER } from '../../../config/constants';
+import { JAKARTA_CENTER, DEFAULT_RADIUS_KM } from '../../../config/constants';
 import { getCategories } from '../../../services/categoryService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
 import useGeolocation from '../../../hooks/useGeolocation';
@@ -12,7 +12,7 @@ import 'leaflet/dist/leaflet.css';
 
 const RADIUS_MIN = 1;
 const RADIUS_MAX = 1000;
-const RADIUS_BAWAAN = 700;
+const RADIUS_BAWAAN = DEFAULT_RADIUS_KM;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const ukuranHalamanAwal = () => {
   try {
@@ -59,7 +59,15 @@ export const DaftarRuangPublikPage = () => {
   const [categories, setCategories] = useState(MOCK_CATEGORIES);
   const [metrics, setMetrics] = useState(null);
 
-  const { location, error: geoError, isLoading: isGeoLoading, requestLocation } = useGeolocation();
+  const {
+    location,
+    isManual,
+    error: geoError,
+    isLoading: isGeoLoading,
+    requestLocation,
+    setManualLocation,
+    clearLocation,
+  } = useGeolocation();
 
   // Metrik ringkas dihitung backend atas seluruh tabel. "Status prima" dan
   // "perhatian" adalah hitungan fasilitas, bukan ruang publik, jadi angkanya
@@ -356,13 +364,35 @@ export const DaftarRuangPublikPage = () => {
         
         {geoError && (
           <div style={{ color: 'var(--color-danger-text)', fontSize: '13px', marginBottom: '12px' }}>
-            {geoError}
+            {geoError}{' '}
+            <strong>Atau klik peta di bawah untuk menandai lokasi Anda secara manual.</strong>
           </div>
         )}
 
-        {!geoError && location.lat !== null && (
-          <div style={{ color: 'var(--color-success-text)', fontSize: '13px', marginBottom: '12px' }}>
-            Jarak pada peta dan daftar dihitung dari lokasi Anda.
+        {location.lat !== null && (
+          <div
+            style={{
+              color: 'var(--color-success-text)',
+              fontSize: '13px',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span>
+              Jarak dihitung dari lokasi Anda {isManual ? '(ditandai manual di peta)' : '(perangkat GPS)'}.
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearLocation}
+              style={{ fontSize: '12px', padding: '2px 8px', color: 'var(--color-text-muted)' }}
+            >
+              Hapus Lokasi (Gunakan Pusat Jakarta)
+            </Button>
           </div>
         )}
 
@@ -417,6 +447,7 @@ export const DaftarRuangPublikPage = () => {
           items={filteredList}
           loading={isLoading}
           userLocation={location}
+          onSetManualLocation={setManualLocation}
         />
       </div>
 

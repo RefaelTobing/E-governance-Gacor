@@ -50,10 +50,30 @@ const simpanLokasi = (lokasi) => {
   }
 };
 
+const hapusLokasiTersimpan = () => {
+  try {
+    sessionStorage.removeItem(KUNCI_LOKASI);
+  } catch {
+    // Penyimpanan diblokir: state in-memory tetap direset oleh pemanggil.
+  }
+};
+
+// Koordinat valid: dua-duanya angka dan berada di rentang bumi.
+const koordinatValid = (lat, lng) =>
+  Number.isFinite(lat) &&
+  Number.isFinite(lng) &&
+  lat >= -90 &&
+  lat <= 90 &&
+  lng >= -180 &&
+  lng <= 180;
+
 export const useGeolocation = () => {
   const [location, setLocation] = useState(() => bacaLokasiTersimpan() ?? { lat: null, lng: null });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // true bila koordinat diisi manual oleh pengguna (fallback), bukan hasil GPS.
+  // Dipakai untuk labeling jujur di UI ("ditandai manual" vs GPS).
+  const [isManual, setIsManual] = useState(false);
 
   // Setiap kali lokasi dibaca, nomor urut ini bertambah. Hasil dari permintaan
   // lama yang sampai belakangan dibuang supaya tidak menimpa hasil yang lebih baru.
@@ -68,6 +88,7 @@ export const useGeolocation = () => {
       const koordinat = { lat, lng };
       setLocation(koordinat);
       simpanLokasi(koordinat);
+      setIsManual(false);
       if (!senyap) {
         setError(null);
         setIsLoading(false);
@@ -126,7 +147,32 @@ export const useGeolocation = () => {
     baca(OPSI_AKURASI_TINGGI, false, false);
   }, [baca]);
 
-  return { location, error, isLoading, requestLocation };
+  // FE-07: fallback lokasi manual saat GPS ditolak/gagal — pengguna menandai
+  // titiknya sendiri di peta. Koordinat mengalir lewat state `location` yang
+  // sama, jadi perhitungan jarak & marker tetap konsisten.
+  const setManualLocation = useCallback((lat, lng) => {
+    if (!koordinatValid(lat, lng)) return;
+    const koordinat = { lat, lng };
+    // Batalkan permintaan GPS yang mungkin masih berjalan agar tidak menimpa.
+    nomorPermintaan.current += 1;
+    setLocation(koordinat);
+    simpanLokasi(koordinat);
+    setIsManual(true);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  // Hapus lokasi (GPS/manual): kembali ke titik acuan pusat kota di konsumer.
+  const clearLocation = useCallback(() => {
+    nomorPermintaan.current += 1;
+    setLocation({ lat: null, lng: null });
+    hapusLokasiTersimpan();
+    setIsManual(false);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  return { location, isManual, error, isLoading, requestLocation, setManualLocation, clearLocation };
 };
 
 export default useGeolocation;
