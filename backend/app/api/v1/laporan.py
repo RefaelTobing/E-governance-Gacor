@@ -13,6 +13,7 @@ from app.core.security import verify_token
 from app.models.laporan import Laporan
 from app.models.user import User
 from app.schemas.laporan import (
+    LaporanApproveRequest,
     LaporanCreate,
     LaporanDetailResponse,
     LaporanFlagResponse,
@@ -129,6 +130,37 @@ def read_admin_reports(
         )
     return crud_laporan.get_reports(
         db, status=status, wilayah=wilayah, q=q, skip=skip, limit=limit
+    )
+
+
+@admin_router.post(
+    "/reports/{laporan_id}/approve", response_model=LaporanDetailResponse
+)
+def approve_report(
+    laporan_id: str,
+    payload: Optional[LaporanApproveRequest] = None,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Setujui laporan: status jadi diverifikasi/tayang (BE-29). Guard ada di
+    endpoint, bukan di service, supaya PATCH /status tetap bebas sampai BE-51."""
+    report = crud_laporan.get_report_by_id(db, laporan_id)
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan",
+        )
+    if report.status not in ("menunggu_verifikasi", "ditolak"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Laporan tidak bisa disetujui dari status {report.status}",
+        )
+    return crud_laporan.update_report_status(
+        db,
+        laporan_id=laporan_id,
+        status="diverifikasi",
+        title="Laporan disetujui",
+        description=payload.description if payload else None,
     )
 
 

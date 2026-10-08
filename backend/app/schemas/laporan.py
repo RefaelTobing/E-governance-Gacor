@@ -44,6 +44,11 @@ class LaporanStatusUpdate(BaseModel):
     title: Optional[str] = "Status diperbarui"
     description: Optional[str] = None
 
+class LaporanApproveRequest(BaseModel):
+    """Body opsional approve (BE-29): catatan petugas untuk timeline persetujuan."""
+
+    description: Optional[str] = None
+
 class LaporanResponse(LaporanBase):
     id: str
     status: str
