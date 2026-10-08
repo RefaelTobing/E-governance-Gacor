@@ -92,6 +92,7 @@ cd "d:\Ruka Jakarta\backend"
 | `test_public_space.py` | radius menyaring (kecil vs besar) · `jarak_km` terisi saat lat/long · filter `category` · filter `facilities` AND · detail 200/404 · `/stats` punya 3 key |
 | `test_laporan.py` | create anonim 201 `nama_pelapor None` · `tampilkan_nama` tanpa token 400 · `tampilkan_nama` + token → nama dari user · status awal + timeline · PATCH status sah 200 / ngawur 4xx (setelah validasi enum) · upload: JPEG ok, `.txt` 400, >5MB 400 · **status endpoint: pemilik 200, pihak lain 403, anonim id-sebagai-bukti 200** · **flag: 201 + `flag_count`, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token 401** · **`/reports/mine`: isolasi antar-user, 401 tanpa token/token rusak, `?status=` terkombinasi, laporan anonim-saat-login tetap milik, admin hanya milik sendiri (BE-50)** |
 | `test_public_space_reports.py` | filter tayang per-ruang publik: `menunggu_verifikasi` tidak muncul, `diverifikasi` muncul (FEAT-010/BE-47) |
+| `test_admin_reports.py` | `GET /admin/reports`: 401 tanpa token · 403 warga · semua-status 200 · filter 200 · `?status=ngawur` 422 · `semua` 200 · detail: pemilik 200 / lain 403 / anonim penuh 200 / admin 200 · publik `GET /reports` hanya tayang (BE-28/BE-52) |
 | `test_admin_auth.py` | register role `admin` ditolak 400 · warga → `/users` 403 · admin aktif terakhir `DELETE` 409 · akun sendiri 400 · nonaktif → login 403 · activate → login ok · `POST /categories` tanpa token 401 (setelah gap ditutup) |
 | `test_rate_limit.py` | 11x `POST /reports` → 429 + `Retry-After` · lewat jendela 10 menit → normal · token berbeda di IP sama tidak saling jerat · `POST /uploads` ikut kena · endpoint/method lain 11x tetap lolos · `RATE_LIMIT_ENABLED=false` lolos semua (BE-26) |
 
@@ -107,6 +108,7 @@ Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya
 | 2026-10-08 | BE-24, BE-25 | `tests/unit/test_laporan.py` | 77 passed | 14 test baru: endpoint status (pemilik/pihak lain/admin/anonim/404/nonaktif) + flag (201/409/403/400/401/404) |
 | 2026-10-08 | BE-26 | `tests/unit/test_rate_limit.py` | 83 passed | 6 test rate limit baru: ambang 429 + `Retry-After`, jendela terlewat, kunci hybrid per token, `/uploads` kena, endpoint lain lolos, toggle `RATE_LIMIT_ENABLED` |
 | 2026-10-08 | BE-50 | `tests/unit/test_laporan.py` | 89 passed | 6 test `/reports/mine`: isolasi antar-user, 401 (tanpa token/token rusak), kombinasi `?status=`, laporan anonim-saat-login, daftar publik tetap tanpa auth, admin milik sendiri |
+| 2026-10-08 | BE-28, BE-52 | `tests/unit/test_admin_reports.py` | 98 passed | 9 test baru (antrian admin 401/403/422/filter + detail pemilik/lain/anonim/admin) + test lama `test_reports_publik_tetap_tanpa_auth` diganti `..._hanya_tayang` (deviasi BE-52) |
 
 ---
 

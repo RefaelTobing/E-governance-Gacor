@@ -14,7 +14,7 @@ Kode terkait:
 
 | Aspek PRD FEAT-011 | Status |
 |---|---|
-| Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** — antrian & detail ada; **validasi status belum ada** |
+| Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** - antrian punya endpoint khusus `GET /admin/reports` (**BE-28/BE-52**, 2026-10-08) & detail ada; **validasi status belum ada** (**BE-51**) |
 | Aksi setujui/tolak laporan | **Ada** (PATCH status) — tanpa validasi enum |
 | Mencegah spam/konten tak relevan | **Ada** sejak BE-26 — rate limit `POST /reports` + `/uploads` (10/10 menit per user/IP), `features/report-service.md` §Gap 2 + benteng flag unik (BE-25) |
 | Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`); daftar flagged untuk admin (**BE-31**) & UI (FE-21/FE-26) belum |
@@ -52,9 +52,17 @@ Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, 
 - `antrian_moderasi` = jumlah `menunggu_verifikasi`
 - `selesai_pekan_ini` = dihitung dari **`laporan_timeline`** (kapan status benar jadi `selesai`, bukan saat laporan dibuat); awal pekan = Senin 00:00.
 
-### Daftar antrian (bukan endpoint khusus)
+### `GET /api/v1/admin/reports` - Admin (BE-28 / BE-52, 2026-10-08)
 
-`GET /api/v1/reports?status=menunggu_verifikasi&q=&wilayah=` (endpoint publik biasa) dipakai FE mengisi tabel moderasi + filter status/wilayah/pencarian.
+Antrian tinjauan - **menggantikan** pemakaian `GET /reports` (publik) untuk tabel moderasi.
+Semua status bila tanpa filter; `?status=` wajib `STATUS_KANONIK` atau `"semua"` (lain → `422`),
+plus `wilayah`/`q`/`skip`/`limit`; response `LaporanResponse` identik jadi FE tinggal ganti URL
+(`AntrianModerasiPage`/`DashboardPage` - sesi FE). `?flagged=` menyusul di BE-31.
+
+### Daftar antrian lama (jangan dipakai lagi)
+
+`GET /api/v1/reports?status=menunggu_verifikasi` kini hanya memuat laporan **tayang**
+(irisan dengan `menunggu_verifikasi` = kosong) - endpoint publik memang dibatasi sejak BE-52.
 
 ### `POST /api/v1/reports/{laporan_id}/flag` — Login (BE-25)
 
@@ -117,7 +125,7 @@ dipakai juga galeri foto BE-48). Regresi dijaga `tests/unit/test_public_space_re
 - [x] `description` PATCH = alasan penolakan → terkirim ke pelapor lewat timeline (FEAT-010).
 - [x] Statistik dashboard dihitung live dari DB (bukan cache) — cukup untuk MVP.
 - [x] Statistik moderasi memakai timeline, bukan `created_at` → angka "selesai pekan ini" akurat.
-- [x] Daftar laporan admin mendukung filter `status`/`wilayah`/`q` + pagination.
+- [x] Daftar laporan admin mendukung filter `status`/`wilayah`/`q` + pagination - kini lewat `GET /admin/reports` (`status` tervalidasi kanonik, BE-28).
 
 ---
 
@@ -145,6 +153,7 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 - [ ] `stats/dashboard` cocok dengan hitungan manual query sederhana
 - [ ] `GET /public-spaces/{id}/reports` hanya berisi status tayang (setelah Gap 2)
 - [x] `POST .../flag` tanpa token → 401 · pelapor sendiri → 403 · belum tayang → 400 · dobel → 409 · berhasil → 201 `flag_count` dan status laporan tak berubah (sudah di `tests/unit/test_laporan.py`, 2026-10-08)
+- [x] `GET /admin/reports` tanpa token → 401 · warga → 403 · `?status=ngawur` → 422 · tanpa filter semua-status 200 · filter 200 · `GET /reports` publik hanya tayang · detail milik orang lain → 403, anonim penuh → 200, admin → 200 (`tests/unit/test_admin_reports.py`, 2026-10-08, 98 passed)
 
 ---
 

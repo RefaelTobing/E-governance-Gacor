@@ -35,13 +35,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
-| B4 Moderation Service | 6 | 0 | 3 | 3 |
+| B4 Moderation Service | 6 | 2 | 2 | 2 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **34** | **5** | **17** |
+| **Total** | **56** | **36** | **4** | **16** |
 
 ---
 
@@ -405,9 +405,18 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 ## B4. Moderation Service - Khusus Admin (FEAT-011)
 
-- [ ] **[BE-28]** `GET /admin/reports?status=menunggu_verifikasi` - antrian tinjauan admin, proteksi role `admin`.
-  - **Parsial:** fungsinya dipenuhi `GET /reports?status=` (`app/api/v1/laporan.py:39`) tetapi
-    **tanpa `get_current_admin`** sehingga publik bisa membaca seluruh laporan -> task **BE-52**.
+- [x] **[BE-28]** `GET /admin/reports?status=menunggu_verifikasi` - antrian tinjauan admin, proteksi role `admin`.
+  - **Lokasi kode:** `read_admin_reports` di `admin_router` (`app/api/v1/laporan.py`, daftar di
+    `api.py` prefix `/admin`); dikerjakan bersama **BE-52** (butir a-c) di sesi yang sama.
+  - **Keputusan:** (1) query `status` **divalidasi** ke `STATUS_KANONIK` (atau `semua`) → nilai
+    asing `422`; (2) `flagged` **tidak** ikut di sini - menyusul sebagai
+    `GET /admin/reports/flagged` (BE-31, menghindari bentrok path); (3) response
+    `List[LaporanResponse]` identik dengan `GET /reports` supaya FE cukup ganti URL;
+    (4) `status=menunggu_tinjauan` di JOBDESK lama tidak ada di kamus kanonik → memakai
+    `menunggu_verifikasi`.
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **98 passed** (9 test baru
+    `tests/unit/test_admin_reports.py`: 401 tanpa token, 403 warga, semua-status, filter,
+    422 status ngawur, `semua`, detail pemilik/admin/lain/anonim).
 - [ ] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
   - **Parsial:** dipenuhi `PATCH /reports/{id}/status` (`app/api/v1/laporan.py:84`, sudah admin), tetapi
     `payload.status` berupa string bebas - tidak divalidasi ke kamus status -> task **BE-51**.
@@ -423,13 +432,23 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (tombol Setujui/Tolak + alasan, FE-25).
   - **Verifikasi:** PATCH dengan status `dibuang_sana` -> 422; reject tanpa alasan -> 400;
     alasan muncul di `GET /reports/{id}` untuk pemilik/admin.
-- [ ] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
+- [x] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
       (a) buat `GET /admin/reports?status=&flagged=` terproteksi `get_current_admin` (menggantikan pemakaian
       `GET /reports` untuk antrian); (b) `GET /reports` publik hanya mengembalikan laporan tayang;
       (c) `GET /reports/{id}` hanya untuk pemilik laporan atau admin.
   - **FEAT:** FEAT-011 + FEAT-010. **Memperbaiki** BE-28 dan sebagian BE-35.
-  - **Verifikasi:** tanpa token `GET /reports` hanya berisi laporan tayang; `GET /reports/{id}` milik orang lain -> 403/404;
-    token admin tetap bisa membuka semua.
+  - **Lokasi kode:** (a) `read_admin_reports` (lihat BE-28); (b) param `hanya_tayang` di
+    `services/laporan.py::get_reports` dipakai `read_reports`; (c) helper `_boleh_lihat` di
+    `app/api/v1/laporan.py` (dipakai juga `GET /reports/{id}/status` BE-24 - logika tak lagi
+    terduplikasi). `?flagged=` diserahkan ke **BE-31**.
+  - **Keputusan:** (1) laporan **anonim penuh** (`user_id` NULL) tetap terbuka di detail - id UUID
+    = bukti kepemilikan, konsisten BE-24; (2) keputusan `report-service.md` FEAT-010 "daftar
+    publik ikut hanya tayang" dijawab **ya**; daftar admin tetap semua status; (3) FE
+    (`AntrianModerasiPage`, `DashboardPage`) pindah ke `GET /admin/reports` - sesi FE.
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **98 passed**; tanpa token `GET /reports`
+    hanya laporan tayang (test lama `test_reports_publik_tetap_tanpa_auth` diganti jadi
+    `test_reports_publik_hanya_tayang` - **deviasi tercatat** di CHANGELOG), detail milik orang
+    lain -> 403, anonim penuh -> 200, admin tetap bisa semua.
 
 ---
 

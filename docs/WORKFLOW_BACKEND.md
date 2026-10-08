@@ -123,11 +123,13 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 | GET | `/api/v1/public-spaces/{id}` | — | + `fasilitas`, `foto[]` |
 | GET | `/api/v1/public-spaces/{id}/reports` | — | **bermasalah, lihat Fase 1b** |
 | GET/POST/PATCH/DELETE | `/api/v1/users*` | Admin | kelola petugas, nonaktifkan (bukan hapus) |
-| POST | `/api/v1/reports` | Token opsional | anonim tanpa token; `tampilkan_nama` wajib token |
-| GET | `/api/v1/reports` | — | filter `status,wilayah,q` — **belum bisa per-pengguna, lihat Fase 1a** |
+| POST | `/api/v1/reports` | Token opsional | anonim tanpa token; `tampilkan_nama` wajib token; rate limit 10/10 mnt (BE-26) |
+| GET | `/api/v1/reports` | - | filter `status,wilayah,q` - **hanya laporan tayang sejak BE-52** |
+| GET | `/api/v1/reports/mine` | Login | riwayat milik pemanggil, semua status (BE-50) |
+| GET | `/api/v1/admin/reports` | Admin | antrian moderasi semua status, `?status` tervalidasi kanonik (BE-28/BE-52) |
 | GET | `/api/v1/reports/stats/dashboard` | Admin | 4 kartu statistik |
 | GET | `/api/v1/reports/stats/moderasi` | Admin | antrian + selesai pekan ini |
-| GET | `/api/v1/reports/{id}` | — | + timeline |
+| GET | `/api/v1/reports/{id}` | Pemilik/Anonim/Admin | + timeline; milik orang lain → 403 (BE-52) |
 | PATCH | `/api/v1/reports/{id}/status` | Admin | tulis timeline otomatis |
 | GET | `/api/v1/statistics/summary` | — | dipakai homepage |
 | GET | `/api/v1/statistics/testimonials` | — | masih hardcode |
@@ -139,10 +141,10 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 
 | Kebutuhan | PRD | Dibutuhkan oleh | Fase |
 |---|---|---|---|
-| Filter laporan per-pengguna | FEAT-010 | `getUserReports` → "Laporan Saya" | 1a |
 | CRUD ruang publik (admin) | FEAT-012 | halaman `/dashboard/data-master` | 3 |
-| Rate limiting endpoint laporan | NFR-002 | PRD | 4 |
 | Refresh/logout token | — | keamanan sesi (token stateless 7 hari) | 4 |
+
+(Selesai & dihapus dari daftar: filter laporan per-pengguna → BE-50, rate limiting laporan → BE-26.)
 
 ---
 

@@ -32,8 +32,10 @@ Swagger UI: <http://localhost:8000/docs>
 | `DELETE` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos/{foto_id}` | **Admin** | Hapus foto resmi |
 | `POST` | `/api/v1/uploads` | - | Upload file foto bukti fisik (JPEG/PNG/WebP, <= 5MB) |
 | `POST` | `/api/v1/reports` | Opsional | Submit laporan masalah fasilitas (foto wajib, koordinat opsional) |
-| `GET` | `/api/v1/reports` | - | Daftar laporan masyarakat (filter status, wilayah, query) |
-| `GET` | `/api/v1/reports/{report_id}` | - | Detail satu laporan beserta riwayat timeline |
+| `GET` | `/api/v1/reports` | - | Daftar laporan **tayang saja** (BE-52; filter status, wilayah, query) |
+| `GET` | `/api/v1/reports/mine` | **Login** | Riwayat laporan milik pemanggil, semua status (BE-50) |
+| `GET` | `/api/v1/reports/{report_id}` | Pemilik/Anonim/Admin | Detail + timeline; milik orang lain -> 403 (BE-52) |
+| `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, `?status` kanonik (BE-28/BE-52) |
 | `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
 | `POST` | `/api/v1/reports/{report_id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
@@ -559,7 +561,7 @@ Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anoni
 
 ### `GET /api/v1/reports`
 
-Daftar laporan masyarakat. Parameter query:
+Daftar laporan masyarakat - **hanya laporan tayang** (`diverifikasi`, `dalam_penanganan`, `selesai`) sejak BE-52, apa pun `?status=` yang dikirim. Antrian moderasi (semua status) ada di `GET /admin/reports`. Parameter query:
 - `status`: filter status (`menunggu_verifikasi`, `dalam_penanganan`, `selesai`, `ditolak`)
 - `wilayah`: filter kota administrasi Jakarta
 - `q`: filter kata kunci pencarian
@@ -584,6 +586,29 @@ di `GET /admin/reports` (BE-52).
 ### `GET /api/v1/reports/{report_id}`
 
 Detail satu laporan masyarakat lengkap dengan timeline tahapan penanganan fasilitas.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Pemilik dengan token / admin | `200` | Laporan berpemilik terbuka |
+| Token lain / tanpa token, laporan berpemilik | `403` | Hanya pelapor atau admin (BE-52) |
+| Laporan anonim penuh (`user_id` null) | `200` | Id UUID = bukti kepemilikan (konsisten BE-24) |
+| Id tidak dikenal | `404` | |
+
+### `GET /api/v1/admin/reports`
+
+Antrian tinjauan admin (BE-28 / BE-52) - menggantikan `GET /reports` sebagai daftar moderasi FE.
+
+- **Auth:** wajib admin (`get_current_admin`): `401` tanpa token, `403` bukan admin.
+- **Query:** `status` harus salah satu `STATUS_KANONIK` atau `"semua"` (**`422`** untuk nilai asing, mis. `menunggu_tinjauan`), plus `wilayah`, `q`, `skip`, `limit`.
+- **Response:** `List[LaporanResponse]` identik dengan `GET /reports`.
+- `?flagged=` menyusul di `GET /admin/reports/flagged` (BE-31).
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Admin, tanpa filter | `200` | Semua status |
+| Admin, `?status=menunggu_verifikasi` | `200` | Hanya antrian tindakan |
+| Admin, `?status=menunggu_tinjauan` | `422` | Nilai di luar kanonik |
+| Warga / tanpa token | `403` / `401` | Proteksi role admin |
 
 ### `GET /api/v1/reports/{report_id}/status`
 

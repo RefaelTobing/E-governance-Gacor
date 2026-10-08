@@ -142,7 +142,7 @@ Dulu `services/laporan.py::get_reports_by_ruang_publik` menyaring `status IN ("d
 
 **Sisa keputusan:**
 
-- [ ] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? Saat ini semua status terlihat publik (query `status=` opsional). Rekomendasi MVP: daftar publik umum ikut memakai daftar tayang; daftar admin tetap semua (moderasi perlu melihat antrian).
+- [x] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? → **YA - dijawab lewat BE-52 (2026-10-08):** `get_reports(..., hanya_tayang=True)` dipakai router publik; semua-status tersedia di `GET /admin/reports` (BE-28). Keputusan ini menutup sisa FEAT-010 di file ini.
 
 **Verifikasi:**
 ```bash
