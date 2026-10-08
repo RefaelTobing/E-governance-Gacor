@@ -23,6 +23,10 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ---
 
+## 2026-10-09
+
+- **[BE-30]** Endpoint tolak laporan - `POST /api/v1/admin/reports/{id}/reject` (`reject_report` di `admin_router`, wajib `get_current_admin`, skema `LaporanRejectRequest` field `alasan` wajib + validator non-kosong): status jadi `ditolak`, alasan **disimpan di kolom baru** `laporan.alasan_penolakan` (migrasi `a1b2c3d4e5f6`, head) dan ikut `LaporanResponse`, bukan hanya timeline, supaya bisa ditampilkan ulang di FE (menutup bagian (b)+(c) BE-51); guard: laporan tayang boleh diturunkan, yang sudah `ditolak` -> `409`, alasan kosong/blank -> `422`; timeline "Laporan ditolak" dengan description = alasan; approve ulang (BE-29) tidak mereset alasan; `PATCH /status` tetap bebas sampai BE-51(a); catatan FE tombol Tolak (FE-25) dicatat di `TASK_GUIDE_FRONTEND.md`; verifikasi: `pytest tests -q` 113 passed (8 test baru), `alembic upgrade/downgrade/upgrade head` bersih. B4 Moderation kini 4/6 (1 parsial tersisa: BE-51(a) sudah dikurangi, tersisa validasi enum).
+
 ## 2026-10-08
 
 - **[BE-29]** Endpoint approve laporan - `POST /api/v1/admin/reports/{id}/approve` (`approve_report` di `admin_router`, wajib `get_current_admin`, skema `LaporanApproveRequest`): status jadi `diverifikasi` (tayang) + timeline "Laporan disetujui"; guard di endpoint - hanya `menunggu_verifikasi`/`ditolak`, selain itu `409` (approve laporan yang sudah tayang ikut ditolak); body opsional `{description}` jadi catatan petugas; `PATCH /reports/{id}/status` tetap bebas sampai validasi enum BE-51; catatan untuk FE (tombol Setujui FE-25, pindah antrian FE-24, keterbatasan backend) dicatat di `TASK_GUIDE_FRONTEND.md`; verifikasi: `pytest tests -q` 105 passed (7 test baru). B4 Moderation kini 3/6 (1 parsial, 2 belum).

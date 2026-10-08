@@ -106,6 +106,7 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `mode_identitas` | VARCHAR(50) default `'tampilkan_nama'` | Nilai: **`anonim`** / **`tampilkan_nama`** (FEAT-009) |
 | `nama_pelapor` | VARCHAR(255) NULL | **Diisi server dari user login** saat mode `tampilkan_nama` — payload klien diabaikan (anti-spoofing) |
 | `status` | VARCHAR(50) default **`'menunggu_verifikasi'`** | Lihat §4 |
+| `alasan_penolakan` | TEXT NULL | **Diisi server** saat admin menolak laporan (BE-30); ikut response agar FE bisa menampilkannya |
 | `foto_url` | TEXT NULL | URL path foto bukti tersimpan (`/uploads/laporan/<hex>.jpg`) (BE-49, FEAT-008) |
 | `lat_user` | DOUBLE NULL | Latitude posisi perangkat saat submit laporan (BE-46, FE-17) |
 | `long_user` | DOUBLE NULL | Longitude posisi perangkat saat submit laporan (BE-46, FE-17) |
@@ -161,6 +162,7 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `74d05cd21291_tambah_kolom_jarak_laporan` | Menambah `laporan.jarak_browser_rp`, `jarak_exif_rp` (DOUBLE, nullable), hasil Haversine ke ruang publik (BE-22) |
 | `3996fdaf0f5f_tambah_kolom_lokasi_pilihan_laporan` | Menambah `laporan.lat_lokasi_pilihan`, `long_lokasi_pilihan` (DOUBLE, nullable), titik presisi fasilitas pilihan warga |
 | `fe1d83da4fca_tambah_tabel_laporan_flag` | Menambah tabel `laporan_flag` + unique `(laporan_id, user_id)` — flag pengguna lain atas laporan tayang (BE-25) |
+| `a1b2c3d4e5f6_tambah_alasan_penolakan_laporan` | Menambah `laporan.alasan_penolakan` (TEXT, nullable) — alasan penolakan tersimpan, bukan hanya di timeline (BE-30) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.

@@ -35,13 +35,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
-| B4 Moderation Service | 6 | 3 | 1 | 2 |
+| B4 Moderation Service | 6 | 4 | 0 | 2 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **37** | **3** | **16** |
+| **Total** | **56** | **38** | **2** | **16** |
 
 ---
 
@@ -432,15 +432,30 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-08):** `pytest tests -q` -> **105 passed** (7 test baru: 401 tanpa token,
     403 warga, 404 id tak dikenal, menunggu -> diverifikasi + timeline + tampil di `GET /reports`
     publik, ditolak -> boleh, sudah tayang (diverifikasi/selesai) -> 409, tanpa body -> deskripsi default).
-- [ ] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
-  - **Parsial:** alasan hanya ditulis sebagai deskripsi timeline (`app/services/laporan.py:126`),
-    **tidak disimpan di kolom laporan** sehingga tidak bisa ditampilkan ulang di daftar/FE -> task **BE-51**.
+- [x] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
+  - **Lokasi kode:** `reject_report` di `admin_router` (`app/api/v1/laporan.py`), skema
+    `LaporanRejectRequest` (`app/schemas/laporan.py`, field `alasan` wajib + validator
+    non-kosong), service `services/laporan.py::reject_report`; kolom `laporan.alasan_penolakan`
+    (migrasi `a1b2c3d4e5f6`, head) ikut `LaporanResponse`; test di `tests/unit/test_admin_reports.py`
+    (8 test BE-30).
+  - **Keputusan:** (1) alasan **disimpan di kolom** `alasan_penolakan`, bukan hanya timeline,
+    supaya bisa ditampilkan ulang di daftar/detail FE (menutup bagian (b)+(c) BE-51);
+    (2) status sumber yang boleh ditolak = semua kecuali yang sudah `ditolak` (laporan tayang
+    boleh diturunkan lewat endpoint ini), `ditolak` -> `409`; (3) alasan wajib: body tanpa
+    `alasan`/kosong/whitespace -> `422`; (4) approve ulang (BE-29) tidak mereset kolom alasan;
+    (5) `PATCH /reports/{id}/status` tetap bebas sampai validasi enum BE-51(a).
+  - **Verifikasi (2026-10-09):** `pytest tests -q` -> **113 passed** (8 test baru: 401 tanpa token,
+    403 warga, 404 id tak dikenal, 422 tanpa alasan/kosong/blank, menunggu -> ditolak + alasan
+    tersimpan + timeline "Laporan ditolak" + hilang dari `GET /reports` publik, pemilik lihat alasan
+    lewat detail & status, laporan tayang boleh diturunkan, sudah ditolak -> 409); `alembic upgrade
+    head` -> `downgrade -1` -> `upgrade head` bersih (kolom bertambah/berkurang).
 - [ ] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
   - **Belum ada** (bergantung BE-25).
 - [ ] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
-      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400;
-      (b) migration kolom `alasan_penolakan` (nullable) di `laporan`, **wajib diisi** bila status `ditolak`;
-      (c) field `alasan_penolakan` ikut di response detail supaya FE bisa menampilkannya.
+      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400.
+  - **Sisa pekerjaan:** hanya (a) validasi enum di `PATCH /status`. Bagian (b) kolom
+    `alasan_penolakan` + wajib diisi saat `ditolak`, dan (c) expose di response, **selesai di
+    BE-30** (2026-10-09).
   - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (tombol Setujui/Tolak + alasan, FE-25).
   - **Verifikasi:** PATCH dengan status `dibuang_sana` -> 422; reject tanpa alasan -> 400;
     alasan muncul di `GET /reports/{id}` untuk pemilik/admin.
@@ -569,7 +584,7 @@ Dipakai saat FE minta endpoint; cek daftar ini dulu sebelum menambah task baru.
 | `FormLaporPage` (foto wajib) | `POST /uploads` | BE-49 |
 | `RiwayatLaporanPage` ("Laporan Saya") | `GET /reports/mine` | BE-50 |
 | `DetailRuangPublikPage` (riwayat laporan + galeri) | `GET /public-spaces/{id}/reports` yang benar, gabungan foto | BE-47, BE-48 |
-| `DetailModerasiPage` (Setujui/Tolak + alasan) | `POST /admin/reports/{id}/approve`, enum status + `alasan_penolakan` | BE-29, BE-51 |
+| `DetailModerasiPage` (Setujui/Tolak + alasan) | `POST /admin/reports/{id}/approve`, `POST /admin/reports/{id}/reject`, enum status | BE-29, BE-30, BE-51 |
 | `AntrianModerasiPage` (antrian + daftar flagged) | `GET /admin/reports`, `/admin/reports/flagged` | BE-52, BE-31 |
 | `DataMasterPage` (Edit Master, Impor Satu Data, Riwayat sinkronisasi) | `PATCH /admin/public-spaces/{id}`, `POST`/`GET /admin/sync-data` | BE-33, BE-18, BE-19 |
 | `KelolaFasilitasPage` | CRUD fasilitas admin | BE-53 |

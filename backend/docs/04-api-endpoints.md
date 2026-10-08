@@ -56,6 +56,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, filter `status` kanonik/`semua` (BE-28/BE-52) |
 | `POST` | `/api/v1/admin/reports/{id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
+| `POST` | `/api/v1/admin/reports/{id}/reject` | **Admin** | Tolak laporan: status -> `ditolak` + alasan wajib tersimpan (BE-30) |
 | **Statistik Publik** ||||
 | `GET` | `/api/v1/statistics/summary` | — | Ringkasan homepage (total, selesai, %) |
 | `GET` | `/api/v1/statistics/testimonials` | — | Testimoni (masih hardcode) |
@@ -272,6 +273,23 @@ Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline berjudul "
 | `403` | Token bukan admin / akun nonaktif |
 | `404` | Id tidak dikenal |
 | `409` | Status sekarang di luar `menunggu_verifikasi`/`ditolak` |
+
+### `POST /api/v1/admin/reports/{id}/reject` - **Admin** (BE-30)
+Tolak laporan: status jadi `ditolak` (hilang dari daftar publik) + baris timeline "Laporan ditolak".
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Body (wajib):** `{ "alasan": "foto tidak sesuai lokasi" }`; kosong/whitespace → `422`.
+- **Response:** `LaporanDetailResponse`; field `alasan_penolakan` terisi dan ikut terlihat di daftar/detail.
+- **Guard:** semua status boleh ditolak (laporan tayang boleh diturunkan); yang sudah `ditolak` → `409`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Berhasil; laporan `ditolak`, `alasan_penolakan` tersimpan, timeline +1 |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+| `404` | Id tidak dikenal |
+| `409` | Laporan sudah `ditolak` |
+| `422` | `alasan` tidak dikirim / kosong |
 
 ### `GET /api/v1/reports/{id}/status` (BE-24, FEAT-010)
 `LaporanStatusResponse` = `id`, `status`, `created_at`, `updated_at`, `timeline[...]`. Tanpa deskripsi, foto, dan nama pelapor.

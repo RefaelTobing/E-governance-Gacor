@@ -37,6 +37,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/reports/{report_id}` | Pemilik/Anonim/Admin | Detail + timeline; milik orang lain -> 403 (BE-52) |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, `?status` kanonik (BE-28/BE-52) |
 | `POST` | `/api/v1/admin/reports/{report_id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
+| `POST` | `/api/v1/admin/reports/{report_id}/reject` | **Admin** | Tolak laporan: status -> `ditolak` + alasan wajib tersimpan (BE-30) |
 | `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
 | `POST` | `/api/v1/reports/{report_id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
@@ -627,6 +628,27 @@ status lain, termasuk yang sudah tayang, `409`. Setelah `200` laporan muncul di
 | Admin + laporan `menunggu_verifikasi` | `200` | Jadi `diverifikasi` + timeline |
 | Admin + laporan `ditolak` | `200` | Boleh disetujui ulang |
 | Admin + laporan sudah tayang (`diverifikasi`/`selesai`) | `409` | Tidak bisa di-approve |
+| Admin, id tidak dikenal | `404` | |
+| Warga / tanpa token | `403` / `401` | Proteksi role admin |
+
+### `POST /api/v1/admin/reports/{report_id}/reject`
+
+Tolak laporan (BE-30): status jadi `ditolak` (hilang dari daftar publik), baris timeline
+berjudul "Laporan ditolak". Body **wajib** `{ "alasan": "alasan penolakan" }`; alasan
+disimpan di kolom `laporan.alasan_penolakan` **dan** menjadi deskripsi timeline, jadi bisa
+ditampilkan ulang di daftar/detail (field `alasan_penolakan` ikut `LaporanResponse`).
+Response `LaporanDetailResponse`.
+
+Guard: semua status boleh ditolak, termasuk laporan tayang yang ingin diturunkan;
+hanya laporan yang sudah `ditolak` yang `409`. `alasan` kosong/whitespace atau tidak
+dikirim → `422`.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Admin + `alasan` valid | `200` | Jadi `ditolak` + `alasan_penolakan` tersimpan + timeline |
+| Admin + laporan tayang | `200` | Diturunkan dari tayang |
+| Admin + laporan sudah `ditolak` | `409` | Tidak bisa ditolak ulang |
+| Admin + `alasan` kosong / tanpa body | `422` | Alasan wajib |
 | Admin, id tidak dikenal | `404` | |
 | Warga / tanpa token | `403` / `401` | Proteksi role admin |
 

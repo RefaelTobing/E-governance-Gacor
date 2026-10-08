@@ -72,6 +72,7 @@ CREATE TABLE laporan (
    mode_identitas VARCHAR(50) DEFAULT 'tampilkan_nama',
    nama_pelapor VARCHAR(255),
    status VARCHAR(50) DEFAULT 'menunggu_verifikasi',
+   alasan_penolakan TEXT,
    foto_url TEXT,
    lat_user DOUBLE,
    long_user DOUBLE,
