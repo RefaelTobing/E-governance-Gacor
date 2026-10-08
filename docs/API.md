@@ -459,6 +459,7 @@ Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint
 - **Format diizinkan:** `image/jpeg`, `image/png`, `image/webp`
 - **Batas ukuran:** 5 MB (`settings.MAX_UPLOAD_SIZE`)
 - **Validasi:** MIME whitelist, ukuran berkas, dan magic bytes header.
+- **Rate limit (BE-26):** berbagi hitungan dengan `POST /reports` — 10 percobaan per kunci (user login / IP anonim) per 10 menit; kelebihan → `429` + header `Retry-After`.
 
 **Response Berhasil (201 Created):**
 ```json
@@ -475,6 +476,7 @@ Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint
 | U4 | Upload ukuran > 5 MB | `400` | Melebihi batas maksimal 5MB |
 | U5 | Ekstensi `.jpg` isi teks biasa | `400` | Ditolak oleh verifikasi magic bytes |
 | U6 | Request tanpa field `file` | `422` | Validasi parameter wajib FastAPI |
+| U7 | > 10 percobaan `POST /uploads` + `/reports` per kunci per 10 menit | `429` | Rate limit (BE-26), ada header `Retry-After` |
 
 ### Static File Serving
 
@@ -493,6 +495,7 @@ Mount `StaticFiles` melayani berkas dari direktori `storage/` (atau `UPLOAD_DIR`
 Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anonim maupun tampilkan nama akun login.
 
 - **Auth:** Opsional (bisa diakses tanpa token via `oauth2_scheme_optional`).
+- **Rate limit (NFR-002, BE-26):** maksimal **10 percobaan per 10 menit** per kunci — `user:<id>` bila token valid, selain itu `ip:<klien>` — berbagi hitungan dengan `POST /uploads`. Semua percobaan dihitung (termasuk `400`/`422`); kelebihan → `429` `{"detail": ...}` + header `Retry-After` (sisa detik). Setelan: `RATE_LIMIT_ENABLED`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_S`.
 - **Foto:** **Wajib** (`foto_url` harus diawali `/uploads/laporan/` dan diverifikasi ada di disk).
 - **Koordinat:** Opsional. Jika salah satu diisi (`lat_user` atau `long_user`), keduanya **wajib lengkap**. Rentang latitude `-90..90`, longitude `-180..180`.
 - **Validasi lokasi anti fake-GPS (ambang 100 meter):** backend membandingkan jarak Haversine (a) koordinat browser dan (b) koordinat EXIF foto ke koordinat ruang publik tujuan, lalu menentukan `status` di response:
@@ -552,6 +555,7 @@ Kirim laporan kerusakan/masalah fasilitas publik. Mendukung mode identitas anoni
 | R10 | EXIF <= 100 m tapi browser > 100 m (atau sebaliknya) | `201` | `status = menunggu_verifikasi` |
 | R11 | Foto tanpa EXIF GPS (koordinat browser dekat) | `201` | `status = menunggu_verifikasi` |
 | R12 | EXIF dekat tapi koordinat browser tidak dikirim | `201` | `status = menunggu_verifikasi` |
+| R13 | Percobaan ke-11 dalam 10 menit (gabungan `/reports` + `/uploads`, per user/IP) | `429` | Rate limit BE-26, ada header `Retry-After` |
 
 ### `GET /api/v1/reports`
 

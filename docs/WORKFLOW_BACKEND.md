@@ -212,7 +212,7 @@ Halaman FE `/dashboard/data-master` kini hanya membaca via `GET /public-spaces`.
 - **Verifikasi:** edit nama ruang publik via API → berubah di DB → tidak kembali lagi setelah `seed_db` dijalankan ulang.
 
 ### FASE 4 — Keamanan (NFR-002)
-- Rate limiting pada `POST /api/v1/reports` (mis. middleware sederhana per-IP; tanpa dependency berat bila bisa) untuk cegah spam.
+- Rate limiting pada `POST /api/v1/reports` (mis. middleware sederhana per-IP; tanpa dependency berat bila bisa) untuk cegah spam. **Selesai BE-26:** `RateLimitMiddleware` ASGI di `app/middleware/rate_limit.py`, juga menutup `POST /uploads`, kunci hybrid user/IP, 10 percobaan / 10 menit, balas `429` + `Retry-After`.
 - Audit singkat: semua endpoint admin wajib `get_current_admin` (khususnya yang baru); CORS hanya origin FE yang terdaftar; `SECRET_KEY` tidak boleh default di produksi; sandi selalu hash (sudah, passlib+bcrypt — **jangan** sentuh pin `bcrypt==4.2.1`).
 - **Verifikasi:** kirim >N laporan cepat dari IP sama → di-throttle; endpoint admin tanpa token → 403.
 
@@ -266,7 +266,7 @@ Sebelum menyatakan backend selesai:
 - [ ] Fase 1 selesai: laporan per-pengguna, filter tayang per-ruang publik benar, `POST /categories` terproteksi, enum status tervalidasi
 - [x] Upload foto berfungsi (MIME + 5MB tervalidasi, URL bisa diakses)
 - [ ] CRUD data-master admin tersedia dan terproteksi
-- [ ] Rate limiting laporan aktif
+- [x] Rate limiting laporan aktif (BE-26: 10 percobaan / 10 menit per user/IP, `POST /reports` + `POST /uploads`)
 - [ ] `pytest tests\unit` hijau di `.venv`
 - [ ] `docs/API.md` 100% sinkron dengan Swagger
 - [ ] Semua endpoint admin manggil `get_current_admin` (audit grep)

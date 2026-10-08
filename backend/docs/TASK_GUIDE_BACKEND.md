@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 8 | 0 | 2 |
+| B3 Report Service | 10 | 9 | 0 | 1 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **32** | **5** | **19** |
+| **Total** | **56** | **33** | **5** | **18** |
 
 ---
 
@@ -346,8 +346,25 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     naik + status laporan tak berubah, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token
     401, id tak dikenal 404, laporan anonim 201); `alembic upgrade head` -> `fe1d83da4fca (head)`
     di MySQL `raku_db`. UI flag (FE-21) dan daftar admin (BE-31) masih terbuka.
-- [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
-  - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
+- [x] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
+  - **Lokasi kode:** `app/middleware/rate_limit.py` (`RateLimitMiddleware`, store in-process),
+    dipasang di `app/main.py` **sebelum** blok CORS, ambang di `app/core/config.py` +
+    `backend/.env.example`, reset antar test di `tests/conftest.py`, test di
+    `tests/unit/test_rate_limit.py`.
+  - **Keputusan:** (1) cakupan `POST /reports` **dan** `POST /uploads` (satu hitungan per kunci,
+    submit laporan = 2 percobaan); (2) kunci hybrid — `user:<sub>` bila header `Authorization`
+    berisi token valid, selain itu `ip:<host>`; (3) ambang **10 percobaan / 10 menit** per kunci
+    (`RATE_LIMIT_MAX=10`, `RATE_LIMIT_WINDOW_S=600`) dengan sliding window; **semua** percobaan
+    dihitung, termasuk yang berakhir 400/422 (anti-brute-force); (4) tolak -> `429` + header
+    `Retry-After`, timestamp **tidak** ditambah saat ditolak agar spam tak mengunci terus;
+    (5) ASGI murni tanpa dependency beras (`docs/01-tech-stack.md` §7), mati-matian lewat
+    `RATE_LIMIT_ENABLED`; (6) middleware dipasang sebelum CORS (CORS harus terluar) supaya header
+    CORS tetap menempel pada respons 429; (7) store in-process — oke untuk 1 prod instance +
+    buang kunci kadaluarsa saat penuh (fail-open bila 10 ribu kunci).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **83 passed** (6 test baru: lewat ambang ->
+    429 + `Retry-After`, jendela terlewat -> normal, kunci token terpisah, `/uploads` kena juga,
+    endpoint lain 11x tetap lolos, `RATE_LIMIT_ENABLED=False` mematikan); urutan pemasangan
+    diverifikasi lewat test yang lulus.
 - [x] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
   - **Lokasi kode:** `tests/unit/test_laporan.py` - 5 test BE-23
     (`test_create_lokasi_valid_auto_tayang`, `test_create_lokasi_jauh_menunggu`,

@@ -16,7 +16,7 @@ Kode terkait:
 |---|---|
 | Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** — antrian & detail ada; **validasi status belum ada** |
 | Aksi setujui/tolak laporan | **Ada** (PATCH status) — tanpa validasi enum |
-| Mencegah spam/konten tak relevan | **Belum** (rate limiting → `report-service.md` FEAT-008) |
+| Mencegah spam/konten tak relevan | **Ada** sejak BE-26 — rate limit `POST /reports` + `/uploads` (10/10 menit per user/IP), `features/report-service.md` §Gap 2 + benteng flag unik (BE-25) |
 | Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`); daftar flagged untuk admin (**BE-31**) & UI (FE-21/FE-26) belum |
 
 ---

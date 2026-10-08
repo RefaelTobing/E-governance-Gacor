@@ -60,15 +60,29 @@ curl -X POST ... -F "file=@catatan.txt"    # → 400 (MIME)
 # unggah file > 5MB                        # → 400 (ukuran)
 ```
 
-### Gap 2 — Rate Limiting (NFR-002)
+### Gap 2 — Rate Limiting (NFR-002) — SELESAI (BE-26)
 
-PRD NFR-002 mewajibkan rate-limiting endpoint laporan **untuk mencegah spam**. Saat ini tidak ada.
+PRD NFR-002 mewajibkan rate-limiting endpoint laporan **untuk mencegah spam**.
 
-- [ ] Implementasi ringan tanpa dependency berat: middleware in-process sederhana per-IP (mis. deque timestamp, threshold seperti 10 laporan / 10 menit / IP) di `app/middleware/` (folder sudah ada, kosong), pasang khusus ke `POST /reports`.
-- [ ] Balas `429` dengan pesan jelas; jangan mengandalkan dependency berat (Redis dsb. — di luar MVP).
-- [ ] Dokumentasikan threshold di file ini + `04-api-endpoints.md`.
+- [x] Implementasi ringan tanpa dependency berat: `RateLimitMiddleware` ASGI murni di
+  `app/middleware/rate_limit.py` (deque timestamp per kunci, store in-process), dipasang umum di
+  `app/main.py` sebelum blok CORS — menutup `POST /reports` **dan** `POST /uploads`.
+- [x] Balas `429` (`{"detail": ...}`) + header `Retry-After`; tanpa Redis — sesuai aturan
+  `docs/01-tech-stack.md` §7.
+- [x] Threshold didokumentasikan di file ini + `04-api-endpoints.md` (+ `docs/API.md`).
 
-**Verifikasi:** kirim >threshold laporan cepat dari IP sama → laporan berikutnya `429`; lewat jendela waktu → kembali normal.
+**Threshold (setelan `config.py` / `.env.example`):** `RATE_LIMIT_MAX=10` percobaan per
+`RATE_LIMIT_WINDOW_S=600` detik (10 menit), sliding window. Kunci **hybrid**: `user:<sub>` bila
+`Authorization: Bearer` berisi token valid, selain itu `ip:<host>` — jadi spammer satu IP yang
+login tak mengunci IP-nya sendiri, dan pengguna beda IP dengan token sama dibatasi per token.
+`POST /reports` + `POST /uploads` **berbagi satu hitungan** (submit = upload foto + kirim laporan
+= 2 percobaan). Semua percobaan dihitung termasuk yang balas `400`/`422` (anti-brute-force).
+Matikan sementara dengan `RATE_LIMIT_ENABLED=false` (mis. saat uji beban manual).
+
+**Verifikasi (2026-10-08):** `pytest tests/unit/test_rate_limit.py -q` → 6 test lulus: 11x kirim →
+`429` + `Retry-After`, lewat jendela → normal, dua token berbeda di IP sama tidak saling jerat,
+`/uploads` ikut kena, `GET /reports` & `login` 11x tetap lolos, `RATE_LIMIT_ENABLED=false` lolos
+semua; suite penuh **83 passed**.
 
 ---
 
@@ -174,7 +188,7 @@ curl "http://localhost:8000/api/v1/reports?mine=true"          # → 401
 1. **FEAT-010** (filter tayang) — perbaikan kecil, dampak besar ke produk.
 2. **FEAT-013** (mine) — router saja, service sudah siap.
 3. **FEAT-008** gap upload foto — endpoint baru.
-4. **FEAT-008** gap rate limiting — middleware.
+4. **FEAT-008** gap rate limiting — middleware. **(selesai BE-26)**
 5. (FEAT-007 galeri di `public-space-service.md` memakai rumus tayang dari langkah 1.)
 
 ---
@@ -188,7 +202,7 @@ curl "http://localhost:8000/api/v1/reports?mine=true"          # → 401
 - [ ] `mine=true` dengan token A tidak mengembalikan laporan B
 - [ ] Filter tayang: `menunggu_verifikasi` tidak tayang; `diverifikasi` tayang; `ditolak` tidak tayang
 - [ ] Upload: JPEG kecil 2xx + URL terbuka; `.txt` 400; >5MB 400
-- [ ] Rate limit: spam > threshold → 429
+- [x] Rate limit: spam > threshold → 429 (`test_rate_limit.py`, BE-26)
 
 ---
 

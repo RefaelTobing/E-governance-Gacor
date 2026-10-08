@@ -192,6 +192,7 @@ Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint
 | `201` | Berkas valid tersimpan di disk, mengembalikan URL unik |
 | `400` | Ekstensi/MIME non-gambar, berkas > 5MB, atau magic bytes rusak/samaran |
 | `422` | Request tanpa field `file` |
+| `429` | Melewati rate limit (BE-26): 10 percobaan `POST /reports` + `POST /uploads` per kunci per 10 menit; header `Retry-After` berisi sisa detik |
 
 ### `POST /api/v1/reports` (BE-20 / BE-46)
 Body JSON `LaporanCreate`:
@@ -214,9 +215,11 @@ Body JSON `LaporanCreate`:
 | `201` | Berhasil — status awal `menunggu_verifikasi`, timeline `Laporan dikirim` dibuat |
 | `400` | Foto wajib belum diunggah, `foto_url` tidak berprefix `/uploads/laporan/`, file foto tidak ditemukan di disk, mode `tampilkan_nama` tanpa token, atau koordinat parsial |
 | `422` | Koordinat `lat_user` / `long_user` di luar rentang valid (-90..90 dan -180..180) |
+| `429` | Melewati rate limit (BE-26) — hitungan gabungan dengan `POST /uploads`; kunci = user id (token valid) atau IP; header `Retry-After` |
 
 Aturan:
 - Dependency auth memakai `oauth2_scheme_optional` agar pengguna anonim tanpa token **tidak tertolak 401**.
+- Rate limit in-process (BE-26, NFR-002): `POST /reports` dan `POST /uploads` berbagi satu hitungan per kunci — 10 percobaan / 10 menit, semua percobaan dihitung (termasuk 400/422). Mati-matian lewat `RATE_LIMIT_ENABLED`.
 - Foto bukti fisik **wajib diunggah** (`foto_url` tidak boleh kosong).
 - Koordinat browser pengguna bersifat opsional (dapat dikirim null jika browser menolak izin lokasi), namun bila salah satu diisi maka keduanya wajib lengkap.
 - `nama_pelapor` **tidak pernah** diambil dari payload klien; jika login, diambil aman dari database akun user aktif (anti-spoofing).
@@ -382,7 +385,6 @@ browser membaca zona waktu yang benar.
 | CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
-| Rate limit `POST /reports` | NFR-002 | — | `features/report-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |
 
 ---
