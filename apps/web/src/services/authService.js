@@ -1,46 +1,26 @@
-import { api } from '../config/api';
+import { http } from '../config/api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
+/**
+ * Login pengelola (admin/dinas).
+ * FastAPI OAuth2 password flow memakai application/x-www-form-urlencoded.
+ * Response body sudah dibuka oleh response interceptor.
+ */
 export const loginPemerintah = async (email, password) => {
-  const url = `${BASE_URL}/api/v1/auth/login`;
-  
   const formData = new URLSearchParams();
   formData.append('username', email);
   formData.append('password', password);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString()
+  return await http.post('/api/v1/auth/login', formData, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   });
-
-  if (!response.ok) {
-    let errorDetail = 'Login failed';
-    try {
-      const data = await response.json();
-      errorDetail = data.detail || errorDetail;
-    } catch (e) {}
-    throw new Error(errorDetail);
-  }
-
-  return response.json();
 };
 
+/**
+ * Ambil data user yang sedang login.
+ * Token diisi eksplisit; request interceptor menghormati header yang sudah ada.
+ */
 export const getMe = async (token) => {
-  const url = `${BASE_URL}/api/v1/auth/me`;
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
+  return await http.get('/api/v1/auth/me', {
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch user data');
-  }
-
-  return response.json();
 };

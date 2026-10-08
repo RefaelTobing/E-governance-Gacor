@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, Card, CardBody, Logo } from '../../../components';
-import { requestWithError } from '../../../utils/apiError';
+import { api } from '../../../config/api';
+import { loginPemerintah, getMe } from '../../../services/authService';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -31,15 +32,12 @@ export const LoginPage = () => {
 
     try {
       if (isRegister) {
-        await requestWithError(
-          'http://localhost:8000/api/v1/auth/register',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: nama, email, password, role: 'warga' })
-          },
-          'Gagal mendaftar'
-        );
+        await api.post('/api/v1/auth/register', {
+          name: nama,
+          email,
+          password,
+          role: 'warga',
+        });
         setSuccessMsg('Registrasi berhasil! Silakan masuk dengan akun Anda.');
         setEmail('');
         setPassword('');
@@ -51,41 +49,12 @@ export const LoginPage = () => {
       }
 
       // Login Call
-      const formData = new URLSearchParams();
-      formData.append('username', email);
-      formData.append('password', password);
-
-      const loginRes = await requestWithError(
-        'http://localhost:8000/api/v1/auth/login',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData
-        },
-        'Email atau sandi salah'
-      );
-
-      const tokenData = await loginRes.json();
+      const tokenData = await loginPemerintah(email, password);
       const token = tokenData.access_token;
-      
+
       // Fetch current user details
-      let meRes;
-      try {
-        meRes = await fetch('http://localhost:8000/api/v1/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      } catch {
-        throw new Error('Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.');
-      }
-      
-      if (!meRes.ok) {
-         throw new Error('Gagal mengambil data pengguna');
-      }
-      
-      const userData = await meRes.json();
-      
+      const userData = await getMe(token);
+
       login(userData, token);
       navigate('/home');
     } catch (err) {

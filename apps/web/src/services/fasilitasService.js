@@ -1,6 +1,5 @@
-import { api } from '../config/api';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { api, http } from '../config/api';
+import { IS_DEV } from '../config/constants';
 
 export const STATUS_FASILITAS = [
   { value: 'baik', label: 'Baik' },
@@ -117,32 +116,17 @@ export const getFacilityOptions = async () => {
 };
 
 /**
- * Impor massal dari CSV. Endpoint ini menerima multipart, bukan JSON,
- * jadi tidak lewat wrapper `api` (wrapper itu selalu memasang Content-Type
- * application/json yang akan merusak batas multipart).
+ * Impor massal dari CSV. Endpoint ini menerima multipart (FormData).
+ * Axios otomatis menggunakan multipart + boundary tanpa Content-Type manual,
+ * dan request interceptor memasang token Bearer dari localStorage.
  */
 export const importFacilitiesCsv = async (file) => {
   const form = new FormData();
   form.append('file', file);
 
-  const token = localStorage.getItem('access_token');
-  const response = await fetch(`${BASE_URL}/api/v1/admin/facilities/import`, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: form,
-  });
-
-  if (!response.ok) {
-    let detail;
-    try {
-      detail = (await response.json())?.detail;
-    } catch (e) {
-      // body bukan JSON, biarkan pesan default
-    }
-    throw new Error(detail || `Gagal mengimpor berkas (status ${response.status})`);
-  }
-
-  return response.json();
+  // Response interceptor mengembalikan body langsung & menormalisasi error
+  // (termasuk pesan 422) menjadi Error dengan .detail / .message.
+  return await http.post('/api/v1/admin/facilities/import', form);
 };
 
 export const cariRuangPublik = async (q, limit = 10) => {
@@ -150,7 +134,7 @@ export const cariRuangPublik = async (q, limit = 10) => {
     const data = await api.get('/api/v1/public-spaces', { q, limit });
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    if (import.meta.env.DEV) return [];
+    if (IS_DEV) return [];
     throw error;
   }
 };
