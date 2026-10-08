@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Globe, RotateCcw, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
-import { Button, SearchInput, SelectDropdown, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
+import { Button, SearchInput, SelectDropdown, MultiSelectDropdown, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
+import { getFacilityOptions } from '../../../services/fasilitasService';
 import { JAKARTA_CENTER, DEFAULT_RADIUS_KM } from '../../../config/constants';
 import { getCategories } from '../../../services/categoryService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
@@ -36,6 +37,11 @@ const radiusDariUrl = (nilai) => {
   return Math.min(RADIUS_MAX, Math.max(RADIUS_MIN, Math.round(km)));
 };
 
+// FE-12: baca filter fasilitas dari query string (?fasilitas=toilet,jalur-lari)
+const fasilitasDariUrl = (nilai) =>
+  (nilai ? nilai.split(',').map((potong) => potong.trim()).filter(Boolean) : []);
+const namaOpsiFasilitas = (opsi) => (typeof opsi === 'string' ? opsi : opsi?.nama);
+
 export const DaftarRuangPublikPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,6 +58,11 @@ export const DaftarRuangPublikPage = () => {
     const radiusParam = searchParams.get('radius');
     return radiusDariUrl(radiusParam) ?? RADIUS_BAWAAN;
   });
+  // FE-12: filter fasilitas multi-select; nilai awal dari query string.
+  const [selectedFasilitas, setSelectedFasilitas] = useState(() =>
+    fasilitasDariUrl(searchParams.get('fasilitas'))
+  );
+  const [facilityOptions, setFacilityOptions] = useState([]);
 
   // Dynamic States
   const [spaces, setSpaces] = useState([]);
@@ -125,10 +136,17 @@ export const DaftarRuangPublikPage = () => {
     getCategories()
       .then((data) => {
         if (isMounted) {
-          setCategories([{ id: 'semua', label: 'Semua Kategori', iconName: 'LayoutGrid' }, ...data]);
+          setCategories([{ id: 'semua', label: 'Semua Kategori' }, ...data]);
         }
       })
       .catch((err) => console.error('Error fetching categories:', err));
+
+    // FE-12: Unduh daftar opsi filter fasilitas unik dari backend
+    getFacilityOptions()
+      .then((data) => {
+        if (isMounted) setFacilityOptions(data);
+      })
+      .catch((err) => console.error('Error fetching facility options:', err));
 
     return () => {
       isMounted = false;
@@ -156,7 +174,15 @@ export const DaftarRuangPublikPage = () => {
         || item.kategori_id === selectedKategori
         || item.kategori?.id === selectedKategori)
       .filter((item) => selectedWilayah === 'Semua Wilayah' || item.wilayah === selectedWilayah)
-      .filter((item) => item.jarak_km != null && item.jarak_km <= selectedRadius);
+      .filter((item) => item.jarak_km != null && item.jarak_km <= selectedRadius)
+      .filter((item) => {
+        if (selectedFasilitas.length === 0) return true;
+        // Backend memakai param fasilitas dengan logika AND (semua harus ada),
+        // maka sisi klien disamakan dengan every & some.
+        return selectedFasilitas.every((syaratFasilitas) =>
+          (item.fasilitas || []).some((f) => f.nama === syaratFasilitas)
+        );
+      });
 
     return hasil.sort((a, b) => {
       if (sortBy === 'kondisi') {
@@ -171,7 +197,7 @@ export const DaftarRuangPublikPage = () => {
       }
       return 0;
     });
-  }, [spaces, searchTerm, selectedKategori, selectedWilayah, selectedRadius, sortBy]);
+  }, [spaces, searchTerm, selectedKategori, selectedWilayah, selectedRadius, sortBy, selectedFasilitas]);
 
   const totalHalaman = Math.max(1, Math.ceil(filteredList.length / ukuranHalaman));
   const halamanDariUrl = Number(searchParams.get('halaman')) || 1;
@@ -191,20 +217,47 @@ export const DaftarRuangPublikPage = () => {
     setSearchParams(tulisHalaman(searchParams, tujuan));
   };
 
-  const filterSekarang = useRef([searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius]);
+  const filterSekarang = useRef([searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius, selectedFasilitas.join(',')]);
 
   // Ganti filter berarti kembali ke awal hasil, jadi halaman ikut direset ke 1.
   // Ref dipakai supaya tautan ?halaman= yang dibuka langsung tidak ikut
   // terhapus begitu komponen selesai dimuat.
   useEffect(() => {
-    const nilai = [searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius];
+    const nilai = [searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius, selectedFasilitas.join(',')];
     const berubah = nilai.some((v, i) => v !== filterSekarang.current[i]);
     filterSekarang.current = nilai;
 
     if (!berubah || !searchParams.has('halaman')) return;
 
     setSearchParams((prev) => tulisHalaman(prev, 1), { replace: true });
-  }, [searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius, searchParams, setSearchParams]);
+  }, [searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius, selectedFasilitas, searchParams, setSearchParams]);
+
+  // FE-12: pilihan filter fasilitas ditulis ke query string supaya bisa
+  // di-bookmark/di-share (CONVENTIONS §1.2: filter lewat URL). Dicek dulu
+  // kesamaannya agar tidak men-trigger navigasi yang tidak perlu.
+  useEffect(() => {
+    const kini = selectedFasilitas.join(',');
+    if ((searchParams.get('fasilitas') || '') === kini) return;
+
+    setSearchParams((prev) => {
+      const berikut = new URLSearchParams(prev);
+      if (kini) berikut.set('fasilitas', kini);
+      else berikut.delete('fasilitas');
+      return berikut;
+    }, { replace: true });
+  }, [selectedFasilitas, searchParams, setSearchParams]);
+
+  // FE-12: ?fasilitas= lama berisi nama yang tidak ada di data master harus
+  // dibuang agar daftar tidak kosong tanpa sebab. Dijeda sampai opsi terbaca,
+  // dan hanya berjalan bila opsi API benar-benar tersedia.
+  useEffect(() => {
+    if (facilityOptions.length === 0) return;
+    const sah = new Set(facilityOptions.map(namaOpsiFasilitas));
+    setSelectedFasilitas((sebelumnya) => {
+      const bersih = sebelumnya.filter((nama) => sah.has(nama));
+      return bersih.length === sebelumnya.length ? sebelumnya : bersih;
+    });
+  }, [facilityOptions]);
 
   // Halaman yang tidak ada lagi (tautan lama, atau hasil tersaring berkurang)
   // ditarik ke halaman terakhir yang masih valid. Dijeda selama data dimuat
@@ -240,6 +293,7 @@ export const DaftarRuangPublikPage = () => {
     setSelectedWilayah('Semua Wilayah');
     setSelectedKategori('semua');
     setSelectedRadius(RADIUS_BAWAAN);
+    setSelectedFasilitas([]);
     setSearchParams({});
   };
 
@@ -345,6 +399,14 @@ export const DaftarRuangPublikPage = () => {
             onChange={setSelectedWilayah}
             className="ruang-publik-filter-wrapper"
             ariaLabel="Pilih wilayah"
+          />
+          <MultiSelectDropdown
+            options={facilityOptions}
+            value={selectedFasilitas}
+            onChange={setSelectedFasilitas}
+            className="ruang-publik-filter-wrapper"
+            placeholder="Fasilitas"
+            ariaLabel="Filter fasilitas"
           />
           <Button 
             variant="outline" 

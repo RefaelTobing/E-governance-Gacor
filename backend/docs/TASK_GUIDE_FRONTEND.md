@@ -59,10 +59,40 @@ Status:
 | FE-09 | ✅ | Kontrol radius pencarian | Radius pencarian sudah tersedia di halaman daftar ruang publik. |
 | FE-10 | ✅ | List view sinkron dengan peta dan urutan jarak | Daftar dan sorting jarak sudah tersedia. |
 | FE-11 | ✅ | Filter kategori | Filter kategori ruang publik tersedia. |
-| FE-12 | ❌ | Filter fasilitas multi-select | Belum ada filter fasilitas dari API pada halaman daftar. |
+| FE-12 | ✅ | Filter fasilitas multi-select | Menggunakan dropdown multi-select khusus, filter dari API, dengan logika client-side AND. Tersinkronisasi ke URL parameter. |
 | FE-13 | ✅ | Detail ruang publik | Menampilkan nama, kategori, alamat, jam, deskripsi, dan fasilitas. |
 | FE-14 | ⚠️ | Galeri foto detail | Foto resmi ada, foto laporan terverifikasi belum digabungkan. |
 | FE-15 | ❌ | Routing OSRM | Tombol Google Maps tersedia, rute OSRM pada peta belum diimplementasikan. |
+
+### FE-12. Filter fasilitas multi-select
+
+**Status:** ✅
+
+**File utama:**
+- `apps/web/src/components/MultiSelectDropdown.jsx` (baru)
+- `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+
+**File terkait:**
+- `apps/web/src/components/index.js`
+- `apps/web/src/services/fasilitasService.js` (`getFacilityOptions`, sudah ada)
+
+**Pekerjaan:**
+
+1. Komponen `MultiSelectDropdown` (re-use CSS `.select-dropdown*`): trigger `Fasilitas (n)`, panel checklist dengan centang, tombol "Hapus pilihan", label "opsi kosong" via prop, navigasi keyboard, `role="listbox"` + `aria-selected`.
+2. Halaman daftar memuat opsi filter dari `GET /api/v1/facilities` lewat `getFacilityOptions()`.
+3. Filter jalan di sisi klien pada `filteredList` (useMemo) dengan semantik **AND** — sama seperti param `facilities` backend: hanya ruang publik yang memiliki **semua** fasilitas terpilih.
+4. Pilihan tersinkron ke query string `?fasilitas=a,b` (CONVENTIONS §1.2); perubahan filter juga me-reset halaman ke 1.
+5. `?fasilitas=` lama yang berisi nama tak dikenal dibuang saat opsi API terbaca, supaya daftar tidak kosong tanpa sebab.
+
+**Acceptance criteria:**
+
+- Opsi filter datang dari API, bukan hardcode.
+- Multi-select: bisa memilih >1 dan membatalkan satu per satu; jumlah pilihan tampil di trigger.
+- Hasil list dan peta terfilter (AND) dan berfungsi bersama search/kategori/wilayah/radius.
+- "Reset Filter" mengosongkan pilihan fasilitas; ganti filter mengembalikan halaman ke 1.
+- Aman saat opsi API kosong/gagal; tanpa console error.
+
+---
 
 ### FE-07. Geolocation pengguna dengan fallback lokasi manual
 
@@ -580,6 +610,9 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 - **FE-04** — Setup HTTP client Axios dengan interceptor
 - **FE-05** — Setup environment variable
+- **FE-07** — Fallback lokasi manual (klik/drag pin di peta)
+- **FE-08** — Clustering marker peta publik & dashboard admin
+- **FE-12** — Filter fasilitas multi-select
 - **FE-19** — Tampilkan status hasil submit laporan
 - **FE-34** — Kolom alamat di kelola fasilitas
 - **FE-35** — Kartu peta sebaran dashboard jadi kotak
@@ -595,12 +628,10 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 ### Prioritas Berikutnya
 
 1. **FE-28** — Trigger manual ETL dari UI (admin operasional)
-3. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
-4. **FE-25A** - Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
-5. **FE-08** - Clustering marker (performance)
-6. **FE-15** - Integrasi OSRM routing (advanced feature)
-7. **FE-12** - Filter fasilitas multi-select
-8. **FE-21** dan **FE-26** - Fitur flag laporan
+2. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
+3. **FE-25A** — Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
+4. **FE-15** — Integrasi OSRM routing (advanced feature)
+5. **FE-21** dan **FE-26** — Fitur flag laporan
 
 ---
 
