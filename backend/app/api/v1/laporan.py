@@ -22,6 +22,7 @@ from app.schemas.laporan import (
     LaporanStatusResponse,
     LaporanStatusUpdate,
     STATUS_KANONIK,
+    TRANSISI_IZIN,
 )
 from app.schemas.user import ROLE_ADMIN
 from app.services import laporan as crud_laporan
@@ -156,7 +157,8 @@ def approve_report(
     _: User = Depends(get_current_admin),
 ):
     """Setujui laporan: status jadi diverifikasi/tayang (BE-29). Guard ada di
-    endpoint, bukan di service, supaya PATCH /status tetap bebas sampai BE-51."""
+    endpoint, bukan di service, supaya aturan approve tetap spesifik di sini
+    (PATCH /status punya validasi enum + transisi sendiri, BE-51)."""
     report = crud_laporan.get_report_by_id(db, laporan_id)
     if not report:
         raise HTTPException(
@@ -296,17 +298,33 @@ def update_report_status(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin)
 ):
-    """Update status laporan oleh admin."""
-    updated = crud_laporan.update_report_status(
+    """Update status laporan oleh admin (BE-51).
+
+    Nilai `status` divalidasi enum di `LaporanStatusUpdate` (422 bila di luar
+    kamus kanonik); transisi juga dijaga di sini: lompatan mundur yang merusak
+    stepper/badge FE ditolak 422, sedangkan alur nyata (termasuk `ditolak` dari
+    status mana pun, dan `ditolak` -> `diverifikasi` untuk tinjau ulang) tetap
+    diizinkan. Status sama (idempotent) selalu boleh dan tetap menulis timeline.
+    """
+    report = crud_laporan.get_report_by_id(db, laporan_id)
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan"
+        )
+    izin = TRANSISI_IZIN.get(report.status, set())
+    if payload.status not in izin:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Transisi status tidak diizinkan: {report.status} -> "
+                f"{payload.status}."
+            ),
+        )
+    return crud_laporan.update_report_status(
         db,
         laporan_id=laporan_id,
         status=payload.status,
         title=payload.title,
         description=payload.description
     )
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Laporan tidak ditemukan"
-        )
-    return updated

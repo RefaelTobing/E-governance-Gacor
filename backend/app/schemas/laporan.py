@@ -13,6 +13,19 @@ STATUS_KANONIK = (
 )
 STATUS_TAYANG = ("diverifikasi", "dalam_penanganan", "selesai")
 
+# Transisi status yang diizinkan pada PATCH /reports/{id}/status (BE-51).
+# Tujuan: cegah lompatan mundur yang merusak stepper/badge FE, sambil tetap
+# membuka alur nyata yang dipakai FE (termasuk tolak via PATCH selama FE-25B
+# belum pindah ke endpoint reject). Status sama (idempotent) selalu boleh.
+TRANSISI_IZIN = {
+    "menunggu_verifikasi": {"menunggu_verifikasi", "diverifikasi", "dalam_penanganan", "selesai", "ditolak"},
+    "diverifikasi": {"diverifikasi", "dalam_penanganan", "selesai", "ditolak"},
+    "dalam_penanganan": {"dalam_penanganan", "selesai", "ditolak"},
+    "selesai": {"selesai", "ditolak"},
+    # Laporan ditolak boleh ditinjau ulang (approve BE-29), jadi diverifikasi diizinkan.
+    "ditolak": {"ditolak", "diverifikasi"},
+}
+
 
 class LaporanBase(BaseModel):
     user_id: Optional[str] = None
@@ -43,6 +56,17 @@ class LaporanStatusUpdate(BaseModel):
     status: str
     title: Optional[str] = "Status diperbarui"
     description: Optional[str] = None
+
+    @field_validator("status")
+    @classmethod
+    def _status_kanonik(cls, v: str) -> str:
+        """BE-51: tolak status di luar kamus kanonik -> 422, dengan pesan berisi
+        daftar nilai sah supaya pemanggil API tahu nilai yang benar."""
+        if v not in STATUS_KANONIK:
+            raise ValueError(
+                f"Status tidak dikenal: '{v}'. Nilai yang sah: {', '.join(STATUS_KANONIK)}."
+            )
+        return v
 
 class LaporanApproveRequest(BaseModel):
     """Body opsional approve (BE-29): catatan petugas untuk timeline persetujuan."""
