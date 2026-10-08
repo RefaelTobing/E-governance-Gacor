@@ -35,13 +35,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
-| B4 Moderation Service | 6 | 5 | 0 | 1 |
+| B4 Moderation Service | 6 | 6 | 0 | 0 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **39** | **2** | **15** |
+| **Total** | **56** | **40** | **2** | **14** |
 
 ---
 
@@ -464,14 +464,24 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-09):** `pytest tests -q` -> **119 passed** (6 test baru: 401 tanpa token,
     403 warga, 200 `[]` tanpa flag, urut jumlah flag terbanyak + `flag_count` benar + laporan tak
     ter-flag tidak muncul, `flag_count` publik tetap `null`, pagination `limit`).
-- [ ] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
-      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400.
-  - **Sisa pekerjaan:** hanya (a) validasi enum di `PATCH /status`. Bagian (b) kolom
-    `alasan_penolakan` + wajib diisi saat `ditolak`, dan (c) expose di response, **selesai di
-    BE-30** (2026-10-09).
-  - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (tombol Setujui/Tolak + alasan, FE-25).
-  - **Verifikasi:** PATCH dengan status `dibuang_sana` -> 422; reject tanpa alasan -> 400;
-    alasan muncul di `GET /reports/{id}` untuk pemilik/admin.
+- [x] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
+      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422; plus validasi transisi.
+  - **Lokasi kode:** validator `LaporanStatusUpdate._status_kanonik` + konstanta `TRANSISI_IZIN`
+    di `app/schemas/laporan.py`; guard transisi di `update_report_status` (`app/api/v1/laporan.py`).
+  - **Keputusan (2026-10-08):**
+    1. (a) Nilai di luar `STATUS_KANONIK` ditolak `422` lewat validator skema (pesan memuat daftar nilai sah).
+    2. Validasi **transisi** ditambahkan (bukan hanya nilai): peta `TRANSISI_IZIN` melarang lompatan mundur
+       yang merusak stepper/badge FE (`selesai`/`dalam_penanganan` -> `menunggu_verifikasi`/`diverifikasi`),
+       tetapi tetap membuka alur nyata: `ditolak` dari status mana pun (FE `DetailModerasiPage` masih
+       PATCH-kan `ditolak` sampai FE-25B), `ditolak` -> `diverifikasi` (tinjau ulang approve BE-29),
+       dan status sama idempotent. Transisi terlarang -> `422`.
+    3. (b) kolom `alasan_penolakan` + wajib diisi saat `ditolak`, dan (c) expose di response,
+       **selesai di BE-30** (2026-10-09).
+  - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (FE-25).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **131 passed** (12 test baru `test_admin_reports.py`:
+    401/403/404, enum ngawur & `menunggu_tinjauan` -> 422, transisi sah `200`+timeline, mundur -> 422,
+    `ditolak` dari `menunggu` -> 200, `ditolak`->`diverifikasi` -> 200, idempotent -> 200, alasan penolakan
+    tampil untuk pemilik/admin). B4 Moderation kini 6/6 (tuntas).
 - [x] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
       (a) buat `GET /admin/reports?status=&flagged=` terproteksi `get_current_admin` (menggantikan pemakaian
       `GET /reports` untuk antrian); (b) `GET /reports` publik hanya mengembalikan laporan tayang;

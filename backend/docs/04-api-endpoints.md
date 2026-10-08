@@ -319,12 +319,16 @@ Aturan akses (`app/api/v1/laporan.py::read_report_status`):
 curl http://localhost:8000/api/v1/reports/<id>/status -H "Authorization: Bearer <token>"
 ```
 
-### `PATCH /api/v1/reports/{id}/status` — **Admin** (FEAT-011)
+### `PATCH /api/v1/reports/{id}/status` — **Admin** (FEAT-011, BE-51)
 ```json
 { "status": "dalam_penanganan", "title": "Status diperbarui", "description": "Opsional" }
 ```
-→ update status + tambah baris timeline. `404` bila laporan tak ada.
-> ⚠ **Gap:** `status` belum divalidasi terhadap enum → bisa menulis nilai sembarangan. Perbaikan: `features/moderation-service.md`.
+→ update status + tambah baris timeline.
+
+Aturan (BE-51, 2026-10-08):
+- `status` **wajib** salah satu `STATUS_KANONIK` (`menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`) → nilai lain `422`.
+- **Transisi** dijaga (`TRANSISI_IZIN`): lompatan mundur (`selesai`/`dalam_penanganan` → `menunggu_verifikasi`/`diverifikasi`) → `422`; `ditolak` dari status mana pun, `ditolak` → `diverifikasi`, dan status sama (idempotent) diizinkan.
+- `401` tanpa token · `403` bukan admin · `404` id tidak dikenal.
 
 ### `POST /api/v1/reports/{id}/flag` — **Login** (BE-25, FEAT-011)
 Tanpa body. Response `201` `{ "laporan_id": "...", "flag_count": 2 }` (`flag_count` = jumlah pelapor berbeda).

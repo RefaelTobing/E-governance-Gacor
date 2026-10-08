@@ -14,8 +14,8 @@ Kode terkait:
 
 | Aspek PRD FEAT-011 | Status |
 |---|---|
-| Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** - antrian punya endpoint khusus `GET /admin/reports` (**BE-28/BE-52**, 2026-10-08) & detail ada; **validasi status belum ada** (**BE-51**) |
-| Aksi setujui/tolak laporan | **Ada** - setujui lewat endpoint khusus `POST /admin/reports/{id}/approve` (**BE-29**, 2026-10-08), tolak lewat `POST /admin/reports/{id}/reject` + alasan tersimpan (**BE-30**, 2026-10-09); validasi enum `PATCH /status` masih **BE-51(a)** |
+| Panel admin meninjau laporan sebelum/sesudah tayang | **Ada** - antrian punya endpoint khusus `GET /admin/reports` (**BE-28/BE-52**, 2026-10-08) & detail ada; **validasi status + transisi** selesai (**BE-51**, 2026-10-08) |
+| Aksi setujui/tolak laporan | **Ada** - setujui lewat endpoint khusus `POST /admin/reports/{id}/approve` (**BE-29**, 2026-10-08), tolak lewat `POST /admin/reports/{id}/reject` + alasan tersimpan (**BE-30**, 2026-10-09); validasi enum & transisi `PATCH /status` selesai (**BE-51**, 2026-10-08) |
 | Mencegah spam/konten tak relevan | **Ada** sejak BE-26 — rate limit `POST /reports` + `/uploads` (10/10 menit per user/IP), `features/report-service.md` §Gap 2 + benteng flag unik (BE-25) |
 | Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`) + daftar flagged admin `GET /admin/reports/flagged` (**BE-31**, 2026-10-09); UI (FE-21/FE-26) belum |
 
@@ -29,11 +29,14 @@ Kode terkait:
 { "status": "dalam_penanganan", "title": "Status diperbarui", "description": "Opsional" }
 ```
 
-Perilaku saat ini (`update_report_status`):
+Perilaku saat ini (`update_report_status`, setelah BE-51, 2026-10-08):
 1. Cari laporan (404 bila tak ada)
-2. **Tulis `payload.status` apa adanya ke kolom `laporan.status`** ← tanpa validasi
-3. Tambah baris `laporan_timeline` (`status`, `title`, `description` default "Status diubah menjadi ...")
-4. Return `LaporanDetailResponse`
+2. **Validator schema menolak `status` di luar `STATUS_KANONIK` -> `422`** (pesan berisi daftar nilai sah)
+3. **Guard transisi** (`TRANSISI_IZIN`) menolak lompatan mundur -> `422`; `ditolak` dari status mana pun,
+   `ditolak` -> `diverifikasi`, dan status sama (idempotent) diizinkan
+4. Tulis `payload.status` ke kolom `laporan.status`
+5. Tambah baris `laporan_timeline` (`status`, `title`, `description` default "Status diubah menjadi ...")
+6. Return `LaporanDetailResponse`
 
 Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, `ditolak` — ditambah alasan penolakan via `description` (ini yang tampil di stepper pelapor, sesuai FEAT-010).
 
@@ -74,8 +77,9 @@ Field `flag_count` hanya terisi di endpoint ini; jalur publik (`GET /reports`) t
 Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline "Laporan disetujui".
 Body opsional `{description}` = catatan petugas; tanpa body memakai deskripsi default.
 Guard di endpoint (bukan di service): hanya `menunggu_verifikasi`/`ditolak` yang boleh
-di-approve, status lain termasuk yang sudah tayang → `409`; `PATCH /status` tetap bebas
-sampai validasi enum BE-51. Konsumen FE: tombol Setujui di `DetailModerasiPage` (FE-25).
+di-approve, status lain termasuk yang sudah tayang → `409`. (`PATCH /status` punya validasi
+enum + transisi sendiri sejak BE-51, 2026-10-08.) Konsumen FE: tombol Setujui di
+`DetailModerasiPage` (FE-25).
 
 ### `POST /api/v1/admin/reports/{laporan_id}/reject` - Admin (BE-30, 2026-10-09)
 
@@ -108,17 +112,22 @@ sinyal flag terpisah dari enum status, keputusan tetap di admin. Daftar hasil fl
 
 ## 2. Gap Terverifikasi & Langkah Perbaikan
 
-### Gap 1 — Validasi enum status (wajib)
+### Gap 1 — Validasi enum status (wajib) — **SELESAI (BE-51, 2026-10-08)**
 
-`payload.status` diterima **string bebas** → admin (atau pemanggil API dengan token admin) bisa menulis status tak dikenal seperti `langsung_selesai`, yang merusak badge/stepper FE dan statistik.
+`payload.status` dulu diterima **string bebas** → admin (atau pemanggil API dengan token admin) bisa menulis status tak dikenal seperti `langsung_selesai`, yang merusak badge/stepper FE dan statistik.
 
 **Langkah:**
 - [x] Daftar status kanonik didefinisikan di satu tempat — `STATUS_KANONIK` (5 status) dan `STATUS_TAYANG`
       di `app/schemas/laporan.py` (dibuat saat BE-47; lihat `03-database-schema.md` §4).
       `STATUS_LAPORAN` di `app/core/status.py` tidak jadi dibuat — cukup di `schemas/laporan.py`.
-- [ ] Validasi di schema `LaporanStatusUpdate` (`field_validator`) **atau** di router → balas `422`/`400` dengan pesan berisi daftar nilai yang sah. (Konstanta sudah siap dipakai.)
-- [ ] (Opsional, disarankan) Validasi transisi: `selesai`/`ditolak` tidak bisa kembali ke `menunggu_verifikasi` — **hanya bila kebutuhan produk jelas**; kalau ragu, cukup validasi nilai dulu (MVP).
-- [ ] Tambahkan test: kirim status ngawur → 4xx; kirim `selesai` → 200 + timeline entry baru.
+- [x] Validasi di schema `LaporanStatusUpdate` (`field_validator` `_status_kanonik`) → balas `422` dengan
+      pesan berisi daftar nilai yang sah.
+- [x] Validasi transisi: konstanta `TRANSISI_IZIN` (`app/schemas/laporan.py`) + guard di
+      `update_report_status` (`app/api/v1/laporan.py`) — lompatan mundur (`selesai`/`dalam_penanganan` →
+      `menunggu_verifikasi`/`diverifikasi`) → `422`; `ditolak` dari status mana pun, `ditolak` →
+      `diverifikasi` (tinjau ulang), dan status sama (idempotent) diizinkan.
+- [x] Test: status ngawur → `422`; `selesai` → `200` + timeline entry baru;
+      transisi mundur → `422`; `ditolak` → `200` (`tests/unit/test_admin_reports.py`, 131 passed).
 
 **Verifikasi:**
 ```bash
@@ -166,7 +175,7 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 
 ## 5. Urutan Pengerjaan
 
-1. Gap 1 — validasi enum status (kecil, fondasi untuk lainnya)
+1. ~~Gap 1 — validasi enum status~~ **(selesai BE-51, 2026-10-08)**
 2. Pastikan Gap 2 selesai (dikerjakan di `report-service.md`, lalu verifikasi ulang dari sini)
 3. Gap 3 — encoding testimonials (bila menyentuh statistik)
 
@@ -174,10 +183,10 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 
 ## Test Regresi Wajib
 
-- [ ] `PATCH status` dengan token `warga` → `403`
-- [ ] `PATCH status` tanpa token → `401`
-- [ ] `PATCH status` nilai sah → 200, `laporan.status` berubah, timeline +1
-- [ ] `PATCH status` nilai tak dikenal → 4xx
+- [x] `PATCH status` dengan token `warga` → `403`
+- [x] `PATCH status` tanpa token → `401`
+- [x] `PATCH status` nilai sah → 200, `laporan.status` berubah, timeline +1
+- [x] `PATCH status` nilai tak dikenal → 4xx · transisi mundur → 422 · idempotent/`ditolak` → 200 (`tests/unit/test_admin_reports.py`, 2026-10-08, 131 passed, BE-51)
 - [ ] `PATCH .../reports/stats/*` tanpa admin → 401/403
 - [ ] `stats/dashboard` cocok dengan hitungan manual query sederhana
 - [ ] `GET /public-spaces/{id}/reports` hanya berisi status tayang (setelah Gap 2)

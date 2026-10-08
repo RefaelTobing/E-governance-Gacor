@@ -224,7 +224,7 @@ Status:
 
 **Catatan backend untuk FE (per 2026-10-08, yang kurang dari sisi backend):**
 
-- `PATCH /reports/{id}/status` **belum memvalidasi enum** (perbaikan = BE-51). FE wajib hanya mengirim nilai kanonik: `menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`. Nilai lain akan tersimpan mentah dan merusak badge/stepper.
+- `PATCH /reports/{id}/status` **kini memvalidasi enum + transisi** (BE-51, 2026-10-08). FE wajib hanya mengirim nilai kanonik: `menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`. Nilai lain → `422`; transisi mundur (mis. `selesai` → `menunggu_verifikasi`) → `422`. Alur yang tetap diizinkan: `dalam_penanganan`/`selesai` dari tahap sebelumnya, `ditolak` dari status mana pun, `ditolak` → `diverifikasi`, dan mengirim status yang sama (idempotent).
 - `GET /admin/reports` **belum mendukung `?flagged=`** (BE-31) - daftar flagged (FE-26) ada di route terpisah `GET /admin/reports/flagged` (sudah siap), bukan query param.
 - Setujui dari status `ditolak` memang diizinkan (laporan bisa ditinjau ulang); hanya status yang sudah tayang yang ditolak `409`.
 
@@ -250,7 +250,7 @@ Status:
 **Catatan backend untuk FE (per 2026-10-09):**
 
 - Field `alasan_penolakan` kini **ada di response** (`LaporanResponse`/`LaporanDetailResponse`); tampilkan dari field ini, bukan hanya dari timeline.
-- Aksi tolak kini endpoint khusus dengan alasan tersimpan; `PATCH /reports/{id}/status` tetap ada untuk transisi `dalam_penanganan`/`selesai` (enum belum divalidasi = BE-51).
+- Aksi tolak kini endpoint khusus dengan alasan tersimpan; `PATCH /reports/{id}/status` tetap ada untuk transisi `dalam_penanganan`/`selesai` (enum + transisi sudah divalidasi = BE-51, 2026-10-08: nilai di luar kanonik atau lompatan mundur → `422`; `ditolak` via PATCH masih diizinkan sementara sampai tombol ini pindah).
 - Laporan tayang boleh diturunkan lewat reject (tidak `409`); hanya yang sudah `ditolak` yang `409`.
 
 ---

@@ -23,6 +23,10 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ---
 
+## 2026-10-08
+
+- **[BE-51]** Validasi enum + transisi status `PATCH /api/v1/reports/{id}/status` (menutup bagian (a); (b)+(c) sudah di BE-30) - validator `LaporanStatusUpdate._status_kanonik` (`app/schemas/laporan.py`) menolak nilai di luar `STATUS_KANONIK` dengan `422` + pesan daftar nilai sah; konstanta baru `TRANSISI_IZIN` (peta status -> tujuan yang diizinkan) + guard di `update_report_status` (`app/api/v1/laporan.py`) menolak lompatan mundur yang merusak stepper/badge FE (`selesai`/`dalam_penanganan` -> `menunggu_verifikasi`/`diverifikasi`) dengan `422`, tetapi tetap membuka alur nyata: `ditolak` dari status mana pun (FE `DetailModerasiPage` masih PATCH-kan `ditolak` sampai FE-25B), `ditolak` -> `diverifikasi` (tinjau ulang approve BE-29), dan status sama (idempotent); komentar kadaluarsa "PATCH bebas sampai BE-51" di `approve_report`/`reject_report` dirapikan; catatan FE diperbarui di `TASK_GUIDE_FRONTEND.md` (baris enum sekarang divalidasi). Verifikasi: `pytest tests -q` 119 -> **131 passed** (12 test baru `test_admin_reports.py`: 401/403/404, enum ngawur & `menunggu_tinjauan` -> 422, transisi sah 200 + timeline, mundur -> 422, `ditolak` dari `menunggu` -> 200, `ditolak`->`diverifikasi` -> 200, idempotent -> 200, alasan penolakan tampil untuk pemilik/admin). B4 Moderation kini **6/6 (tuntas)**.
+
 ## 2026-10-09
 
 - **[BE-31]** Daftar laporan ter-flag untuk admin - `GET /api/v1/admin/reports/flagged` (`read_flagged_reports` di `admin_router`, wajib `get_current_admin`, dideklarasikan sebelum route `{laporan_id}`): join `laporan` x `laporan_flag` (`GROUP BY laporan.id`) via service `get_flagged_reports`, urut `flag_count` desc lalu waktu flag terbaru desc; field baru `flag_count` di `LaporanResponse` (default `None`, di-set hanya di endpoint ini, jadi jalur publik tidak bocor); pagination `skip`/`limit`, tanpa filter status/wilayah; verifikasi: `pytest tests -q` 113 -> **119 passed** (6 test baru `test_admin_reports.py`). B4 Moderation kini 5/6 (sisa BE-51(a) validasi enum `PATCH /status`).
