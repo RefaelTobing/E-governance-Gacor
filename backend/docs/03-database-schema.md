@@ -4,28 +4,29 @@ Sumber: `docs/schema.sql` + model SQLAlchemy di `backend/app/models/` (kode = ke
 
 ---
 
-## 1. Delapan Tabel & Relasi
+## 1. Sembilan Tabel & Relasi
 
 ```
 categories ──┐
              ├──< ruang_publik ──┬──< fasilitas ──┐
  users ───────┴──────┬───────────┤                │
                      │           └──< ruang_publik_foto
-                     └──< laporan >────────────────┘
-                             └──< laporan_timeline
-
+                     ├──< laporan >────────────────┘
+                     │       └──< laporan_timeline
+                     │       └──< laporan_flag
  etl_run (berdiri sendiri, log run ETL)
 ```
 
 | Tabel | Model | Relasi |
 |---|---|---|
 | `categories` | `models/category.py` | Di-referensikan `ruang_publik.kategori_id` |
-| `users` | `models/user.py` | Di-referensikan `laporan.user_id` (opsional) |
+| `users` | `models/user.py` | Di-referensikan `laporan.user_id` (opsional) & `laporan_flag.user_id` (wajib) |
 | `ruang_publik` | `models/ruang_publik.py` | FK `kategori_id → categories.id`; induk `fasilitas`, `laporan` & `ruang_publik_foto` (cascade delete) |
 | `ruang_publik_foto` | `models/ruang_publik_foto.py` | FK `ruang_publik_id → ruang_publik.id` (wajib); foto resmi galeri (BE-48) |
 | `fasilitas` | `models/fasilitas.py` | FK `ruang_publik_id → ruang_publik.id` (wajib); induk `laporan` |
 | `laporan` | `models/laporan.py` | FK `user_id` (opsional), `ruang_publik_id` (wajib), `fasilitas_id` (opsional) |
 | `laporan_timeline` | `models/laporan_timeline.py` | FK `laporan_id → laporan.id`, cascade delete |
+| `laporan_flag` | `models/laporan_flag.py` | FK `laporan_id → laporan.id` + `user_id → users.id`, unique `(laporan_id, user_id)`, cascade delete (BE-25) |
 | `etl_run` | `models/etl_run.py` | Tanpa FK; satu baris per run ETL (BE-19), dibaca `GET /admin/sync-data` |
 
 ---
@@ -105,6 +106,7 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `mode_identitas` | VARCHAR(50) default `'tampilkan_nama'` | Nilai: **`anonim`** / **`tampilkan_nama`** (FEAT-009) |
 | `nama_pelapor` | VARCHAR(255) NULL | **Diisi server dari user login** saat mode `tampilkan_nama` — payload klien diabaikan (anti-spoofing) |
 | `status` | VARCHAR(50) default **`'menunggu_verifikasi'`** | Lihat §4 |
+| `alasan_penolakan` | TEXT NULL | **Diisi server** saat admin menolak laporan (BE-30); ikut response agar FE bisa menampilkannya |
 | `foto_url` | TEXT NULL | URL path foto bukti tersimpan (`/uploads/laporan/<hex>.jpg`) (BE-49, FEAT-008) |
 | `lat_user` | DOUBLE NULL | Latitude posisi perangkat saat submit laporan (BE-46, FE-17) |
 | `long_user` | DOUBLE NULL | Longitude posisi perangkat saat submit laporan (BE-46, FE-17) |
@@ -121,6 +123,15 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `title` | VARCHAR(255) | Mis. `Laporan dikirim` |
 | `description` | TEXT NULL | Untuk alasan penolakan (FEAT-010) |
 | `created_at` | DATETIME | Menjadi "waktu pembaruan" di UI timeline |
+
+### `laporan_flag`
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| `id` | VARCHAR(50) PK | UUID |
+| `laporan_id` | VARCHAR(50) FK | Ke `laporan.id`, index; cascade delete |
+| `user_id` | VARCHAR(36) FK | Ke `users.id`, index; **wajib** (flag butuh akun, BE-25) |
+| `created_at` | DATETIME | Waktu flag |
+| *unique* | `(laporan_id, user_id)` | `uq_laporan_flag_pengguna` — satu pengguna satu flag per laporan |
 
 ### `etl_run`
 | Kolom | Tipe | Catatan |
@@ -146,6 +157,12 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `d7b19b0b82cc_tambah_kecamatan_kelurahan_ke_ruang_` | Menambah `ruang_publik.kecamatan` & `kelurahan` (VARCHAR(100), nullable) — kunci natural untuk merge ETL (BE-16) |
 | `tambah_tabel_etl_run` | Menambah tabel `etl_run` - log hasil run ETL per tahap (BE-19) |
 | `37c407708e27_tambah_kolom_lokasi_laporan` | Menambah `laporan.lat_user`, `long_user`, `lat_exif`, `long_exif` (DOUBLE, nullable), koordinat pengguna & EXIF (BE-46) |
+| `hapus_lokasi_spesifik_fasilitas` | Menghapus `fasilitas.lokasi_spesifik` (penyelarasan model) |
+| `tambah_tabel_ruang_publik_foto` | Menambah tabel `ruang_publik_foto` + backfill `image_url` jadi baris foto pertama (BE-48) |
+| `74d05cd21291_tambah_kolom_jarak_laporan` | Menambah `laporan.jarak_browser_rp`, `jarak_exif_rp` (DOUBLE, nullable), hasil Haversine ke ruang publik (BE-22) |
+| `3996fdaf0f5f_tambah_kolom_lokasi_pilihan_laporan` | Menambah `laporan.lat_lokasi_pilihan`, `long_lokasi_pilihan` (DOUBLE, nullable), titik presisi fasilitas pilihan warga |
+| `fe1d83da4fca_tambah_tabel_laporan_flag` | Menambah tabel `laporan_flag` + unique `(laporan_id, user_id)` — flag pengguna lain atas laporan tayang (BE-25) |
+| `a1b2c3d4e5f6_tambah_alasan_penolakan_laporan` | Menambah `laporan.alasan_penolakan` (TEXT, nullable) — alasan penolakan tersimpan, bukan hanya di timeline (BE-30) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.
@@ -221,7 +238,7 @@ docker compose up -d
 # tunggu container healthy (~30 detik saat volume baru)
 
 cd backend
-..\.venv\Scripts\python.exe -m alembic current   # harus: head (tambah_tabel_etl_run)
+..\.venv\Scripts\python.exe -m alembic current   # harus: head (fe1d83da4fca — tambah_tabel_laporan_flag)
 ..\.venv\Scripts\python.exe -m alembic upgrade head   # bila belum
 ```
 

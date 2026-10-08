@@ -61,10 +61,10 @@ Kode di backend/app/ (kebenaran akhir bila konflik dengan dokumen lama)
 | 007 | Galeri Foto | `features/public-space-service.md` | Ada (foto resmi + foto laporan tayang tergabung — BE-48) |
 | 008 | Form Lapor Fasilitas | `features/report-service.md` | Sebagian (endpoint create ada; upload foto belum) |
 | 009 | Mode Identitas Laporan | `features/report-service.md` | Ada |
-| 010 | Visibilitas & Status Laporan | `features/report-service.md` | Sebagian (filter tayang per-ruang publik diperbaiki BE-47; sisa: keputusan filter `GET /reports` publik) |
-| 011 | Moderasi Laporan (Admin) | `features/moderation-service.md` | Sebagian (update status ada; validasi enum belum) |
+| 010 | Visibilitas & Status Laporan | `features/report-service.md` | Sebagian (filter tayang per-ruang publik diperbaiki BE-47; keputusan filter `GET /reports` publik dijawab BE-52) |
+| 011 | Moderasi Laporan (Admin) | `features/moderation-service.md` | Sebagian (antrian `GET /admin/reports` + approve BE-29 + tolak + `alasan_penolakan` BE-30 + daftar flagged `GET /admin/reports/flagged` BE-31; validasi enum `PATCH /status` = BE-51) |
 | 012 | Manajemen Data Master | `features/data-master-service.md` | Sebagian (merge ETL jalan, BE-16; endpoint edit admin `PATCH` = BE-33 belum) |
-| 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Belum (filter per-pengguna belum ada) |
+| 013 | Riwayat "Laporan Saya" | `features/report-service.md` | Selesai (BE-50: `GET /reports/mine`) |
 | 014 | Autentikasi & Otorisasi Admin | `features/admin-auth.md` | Ada (gap: `POST /categories` belum terproteksi) |
 | — | Sinkronisasi Satu Data Jakarta | `features/etl-worker.md` | Sebagian (Extract + Transform + Load + penjadwalan BE-14/15/16/17 + trigger admin BE-18 + log hasil run ke DB BE-19 ada; 687 kandidat menunggu review) |
 

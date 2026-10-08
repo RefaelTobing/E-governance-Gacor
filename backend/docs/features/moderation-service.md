@@ -4,8 +4,8 @@
 > Laporan warga (create/status/mine) → `report-service.md`. Akun admin → `admin-auth.md`.
 
 Kode terkait:
-- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`)
-- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`)
+- Router: `app/api/v1/laporan.py` (bagian admin: `stats/dashboard`, `stats/moderasi`, `PATCH .../status`; bagian flag: `POST .../flag`, `GET /admin/reports/flagged`)
+- Service: `app/services/laporan.py` (`get_dashboard_stats`, `get_moderasi_stats`, `update_report_status`, `get_flagged_reports`, `flag_laporan`)
 - Dependen auth: `Depends(get_current_admin)` dari `app/api/deps.py`
 
 ---
@@ -14,10 +14,10 @@ Kode terkait:
 
 | Aspek PRD FEAT-011 | Status |
 |---|---|
-| Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** — antrian & detail ada; **validasi status belum ada** |
-| Aksi setujui/tolak laporan | **Ada** (PATCH status) — tanpa validasi enum |
-| Mencegah spam/konten tak relevan | **Belum** (rate limiting → `report-service.md` FEAT-008) |
-| Mekanisme flag oleh pengguna lain | **Belum & opsional** — di luar MVP awal; jangan dibuat kecuali diminta |
+| Panel admin meninjau laporan sebelum/sesudah tayang | **Sebagian** - antrian punya endpoint khusus `GET /admin/reports` (**BE-28/BE-52**, 2026-10-08) & detail ada; **validasi status belum ada** (**BE-51**) |
+| Aksi setujui/tolak laporan | **Ada** - setujui lewat endpoint khusus `POST /admin/reports/{id}/approve` (**BE-29**, 2026-10-08), tolak lewat `POST /admin/reports/{id}/reject` + alasan tersimpan (**BE-30**, 2026-10-09); validasi enum `PATCH /status` masih **BE-51(a)** |
+| Mencegah spam/konten tak relevan | **Ada** sejak BE-26 — rate limit `POST /reports` + `/uploads` (10/10 menit per user/IP), `features/report-service.md` §Gap 2 + benteng flag unik (BE-25) |
+| Mekanisme flag oleh pengguna lain | **Sebagian** — endpoint flag ada (**BE-25**, 2026-10-08, tabel `laporan_flag`) + daftar flagged admin `GET /admin/reports/flagged` (**BE-31**, 2026-10-09); UI (FE-21/FE-26) belum |
 
 ---
 
@@ -52,9 +52,57 @@ Aksi yang dikirim FE (`DetailModerasiPage.jsx`): `dalam_penanganan`, `selesai`, 
 - `antrian_moderasi` = jumlah `menunggu_verifikasi`
 - `selesai_pekan_ini` = dihitung dari **`laporan_timeline`** (kapan status benar jadi `selesai`, bukan saat laporan dibuat); awal pekan = Senin 00:00.
 
-### Daftar antrian (bukan endpoint khusus)
+### `GET /api/v1/admin/reports` - Admin (BE-28 / BE-52, 2026-10-08)
 
-`GET /api/v1/reports?status=menunggu_verifikasi&q=&wilayah=` (endpoint publik biasa) dipakai FE mengisi tabel moderasi + filter status/wilayah/pencarian.
+Antrian tinjauan - **menggantikan** pemakaian `GET /reports` (publik) untuk tabel moderasi.
+Semua status bila tanpa filter; `?status=` wajib `STATUS_KANONIK` atau `"semua"` (lain → `422`),
+plus `wilayah`/`q`/`skip`/`limit`; response `LaporanResponse` identik jadi FE tinggal ganti URL
+(`AntrianModerasiPage`/`DashboardPage` - sesi FE). Daftar flagged pindah ke route terpisah
+`GET /admin/reports/flagged` (BE-31).
+
+### `GET /api/v1/admin/reports/flagged` - Admin (BE-31, 2026-10-09)
+
+Daftar laporan yang di-flag pengguna lain (hasil `POST /reports/{id}/flag`), terpisah dari
+antrian. Join `laporan` x `laporan_flag` (`GROUP BY laporan.id`), **urut `flag_count` desc
+lalu waktu flag terbaru desc** (laporan paling bermasalah di atas). Response `List[LaporanResponse]`
+dengan field tambahan `flag_count`; pagination `skip`/`limit`. Tanpa filter status/wilayah.
+Field `flag_count` hanya terisi di endpoint ini; jalur publik (`GET /reports`) tetap `null`
+(tidak membocorkan angka flag). Konsumen FE: halaman daftar flagged (FE-26).
+
+### `POST /api/v1/admin/reports/{laporan_id}/approve` - Admin (BE-29, 2026-10-08)
+
+Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline "Laporan disetujui".
+Body opsional `{description}` = catatan petugas; tanpa body memakai deskripsi default.
+Guard di endpoint (bukan di service): hanya `menunggu_verifikasi`/`ditolak` yang boleh
+di-approve, status lain termasuk yang sudah tayang → `409`; `PATCH /status` tetap bebas
+sampai validasi enum BE-51. Konsumen FE: tombol Setujui di `DetailModerasiPage` (FE-25).
+
+### `POST /api/v1/admin/reports/{laporan_id}/reject` - Admin (BE-30, 2026-10-09)
+
+Tolak laporan: status jadi `ditolak` + baris timeline "Laporan ditolak". Body **wajib**
+`{ "alasan": "..." }`; alasan disimpan di kolom `laporan.alasan_penolakan` (migrasi
+`a1b2c3d4e5f6`) **dan** menjadi `description` timeline, sehingga bisa ditampilkan ulang di
+daftar/detail FE (bukan hanya sekali baca). `alasan` kosong/whitespace atau body tanpa
+`alasan` → `422`. Guard: semua status boleh ditolak (termasuk laporan tayang yang mau
+diturunkan) kecuali yang sudah `ditolak` → `409`. Response `LaporanDetailResponse`
+(memuat `alasan_penolakan`). Konsumen FE: tombol Tolak di `DetailModerasiPage` (FE-25).
+
+### Daftar antrian lama (jangan dipakai lagi)
+
+`GET /api/v1/reports?status=menunggu_verifikasi` kini hanya memuat laporan **tayang**
+(irisan dengan `menunggu_verifikasi` = kosong) - endpoint publik memang dibatasi sejak BE-52.
+
+### `POST /api/v1/reports/{laporan_id}/flag` — Login (BE-25)
+
+Flag pengguna lain atas laporan **tayang** yang dianggap tidak pantas. Tanpa body,
+response `201 {laporan_id, flag_count}`. Aturan: wajib login, hanya `STATUS_TAYANG`,
+pelapor sendiri ditolak `403`, satu flag per pengguna `409` (unique
+`uq_laporan_flag_pengguna`), id tak dikenal `404`. **Status laporan tidak berubah** —
+sinyal flag terpisah dari enum status, keputusan tetap di admin. Daftar hasil flag ada di
+`GET /admin/reports/flagged` (BE-31).
+
+> Kebijakan lama di file ini ("flag di luar MVP, jangan dibuat kecuali diminta")
+> sudah digantikan penugasan **BE-25** di `TASK_GUIDE_BACKEND.md`.
 
 ---
 
@@ -103,10 +151,10 @@ dipakai juga galeri foto BE-48). Regresi dijaga `tests/unit/test_public_space_re
 
 - [x] Semua endpoint admin di `laporan.py` memakai `Depends(get_current_admin)` → warga `403`, akun nonaktif `403`.
 - [x] Timeline otomatis setiap ganti status → audit trail untuk pelapor & admin.
-- [x] `description` PATCH = alasan penolakan → terkirim ke pelapor lewat timeline (FEAT-010).
+- [x] `description` PATCH = alasan penolakan → terkirim ke pelapor lewat timeline (FEAT-010); sejak BE-30 alasan juga tersimpan di kolom `alasan_penolakan`.
 - [x] Statistik dashboard dihitung live dari DB (bukan cache) — cukup untuk MVP.
 - [x] Statistik moderasi memakai timeline, bukan `created_at` → angka "selesai pekan ini" akurat.
-- [x] Daftar laporan admin mendukung filter `status`/`wilayah`/`q` + pagination.
+- [x] Daftar laporan admin mendukung filter `status`/`wilayah`/`q` + pagination - kini lewat `GET /admin/reports` (`status` tervalidasi kanonik, BE-28).
 
 ---
 
@@ -133,6 +181,11 @@ Jangan menambahkan ke UI/endpoint moderasi tanpa permintaan eksplisit: penugasan
 - [ ] `PATCH .../reports/stats/*` tanpa admin → 401/403
 - [ ] `stats/dashboard` cocok dengan hitungan manual query sederhana
 - [ ] `GET /public-spaces/{id}/reports` hanya berisi status tayang (setelah Gap 2)
+- [x] `POST .../flag` tanpa token → 401 · pelapor sendiri → 403 · belum tayang → 400 · dobel → 409 · berhasil → 201 `flag_count` dan status laporan tak berubah (sudah di `tests/unit/test_laporan.py`, 2026-10-08)
+- [x] `GET /admin/reports` tanpa token → 401 · warga → 403 · `?status=ngawur` → 422 · tanpa filter semua-status 200 · filter 200 · `GET /reports` publik hanya tayang · detail milik orang lain → 403, anonim penuh → 200, admin → 200 (`tests/unit/test_admin_reports.py`, 2026-10-08, 98 passed)
+- [x] `POST /admin/reports/{id}/approve` tanpa token → 401 · warga → 403 · id tak dikenal → 404 · `menunggu_verifikasi`/`ditolak` → 200 (status `diverifikasi`, timeline +1, muncul di `GET /reports` publik) · sudah tayang → 409 · tanpa body → deskripsi default (`tests/unit/test_admin_reports.py`, 2026-10-08, 105 passed)
+- [x] `POST /admin/reports/{id}/reject` tanpa token → 401 · warga → 403 · id tak dikenal → 404 · tanpa/kosong/blank `alasan` → 422 · `menunggu_verifikasi` → 200 (status `ditolak`, `alasan_penolakan` tersimpan, timeline "Laporan ditolak", hilang dari `GET /reports`) · laporan tayang → 200 (diturunkan) · sudah `ditolak` → 409 · pemilik melihat alasan di detail & status (`tests/unit/test_admin_reports.py`, 2026-10-09, 113 passed)
+- [x] `GET /admin/reports/flagged` tanpa token → 401 · warga → 403 · tanpa flag → `[]` · urut `flag_count` desc + `flag_count` benar + laporan tak ter-flag tidak muncul · `flag_count` publik tetap `null` · pagination `limit` (`tests/unit/test_admin_reports.py`, 2026-10-09, 119 passed)
 
 ---
 

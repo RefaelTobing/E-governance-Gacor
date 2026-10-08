@@ -59,11 +59,63 @@ Status:
 | --- | --- | --- | --- |
 | FE-22 | ✅ | Struktur panel admin dan routing | Admin layout serta route dashboard tersedia dalam aplikasi saat ini. |
 | FE-23 | ⚠️ | Login admin | Halaman login dan guard tersedia, alur redirect perlu diuji. |
-| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. |
-| FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. |
-| FE-26 | ❌ | Daftar laporan yang di-flag | Belum tersedia. |
+| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` perlu ganti URL (sesi FE). |
+| FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. Tombol **Setujui** (BE-29) dan **Tolak** (BE-30) belum ada; endpoint `POST /admin/reports/{id}/approve` dan `POST /admin/reports/{id}/reject` sudah siap, lihat sub-bagian FE-25A/FE-25B di bawah. |
+| FE-26 | ❌ | Daftar laporan yang di-flag | Backend siap: `GET /api/v1/admin/reports/flagged` (BE-31) mengembalikan laporan ter-flag + `flag_count`, urut terbanyak. UI belum dibuat. |
 | FE-27 | ⚠️ | Manajemen data master ruang publik | Halaman tersedia, indikator edit manual perlu diverifikasi/dilengkapi. |
 | FE-28 | ❌ | Trigger sinkronisasi ETL dari admin | Endpoint backend tersedia, kontrol UI belum tersedia. |
+
+### FE-25A. Tombol Setujui di Detail Moderasi (integrasi BE-29)
+
+**Status:** ❌ (backend siap sejak 2026-10-08, UI belum ada)
+
+**File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
+
+**Pekerjaan:**
+
+1. Tambah tombol "Setujui" di panel Tindakan Petugas (urutan pertama, sebelum "Tandai Dalam Penanganan").
+2. Panggil `POST /api/v1/admin/reports/{id}/approve` dengan body opsional `{ "description": catatanPetugas }`; tanpa catatan, kirim tanpa body.
+3. Tangani `409` (status sekarang di luar `menunggu_verifikasi`/`ditolak`, misal laporan sudah tayang): tampilkan pesan jelas dan muat ulang detail, jangan tampilkan sukses palsu.
+4. Setelah `200`, perbarui state halaman dari response (`LaporanDetailResponse`: status + timeline) lalu arahkan kembali ke antrian.
+
+**Acceptance criteria:**
+
+- Laporan `menunggu_verifikasi` bisa disetujui dari UI: status jadi `diverifikasi`, timeline bertambah "Laporan disetujui", laporan muncul di halaman publik.
+- Approve ganda atau laporan yang sudah tayang memunculkan pesan `409`, bukan sukses.
+- Tanpa sesi admin, permintaan tidak terkirim (atau error `401`/`403` tampil jelas).
+
+**Catatan backend untuk FE (per 2026-10-08, yang kurang dari sisi backend):**
+
+- `PATCH /reports/{id}/status` **belum memvalidasi enum** (perbaikan = BE-51). FE wajib hanya mengirim nilai kanonik: `menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`. Nilai lain akan tersimpan mentah dan merusak badge/stepper.
+- `GET /admin/reports` **belum mendukung `?flagged=`** (BE-31) - daftar flagged (FE-26) ada di route terpisah `GET /admin/reports/flagged` (sudah siap), bukan query param.
+- Setujui dari status `ditolak` memang diizinkan (laporan bisa ditinjau ulang); hanya status yang sudah tayang yang ditolak `409`.
+
+### FE-25B. Tombol Tolak di Detail Moderasi (integrasi BE-30)
+
+**Status:** ❌ (backend siap sejak 2026-10-09, UI belum ada)
+
+**File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
+
+**Pekerjaan:**
+
+1. Ganti aksi tombol "Tolak" (kini `PATCH /reports/{id}/status` dengan `status: 'ditolak'`) menjadi `POST /api/v1/admin/reports/{id}/reject`.
+2. Wajib kirim body `{ "alasan": "..." }`; munculkan dialog/input alasan dulu. Alasan kosong dijaga klien **dan** backend (`422`).
+3. Tangani `409` (laporan sudah `ditolak`): tampilkan pesan jelas dan muat ulang detail.
+4. Setelah `200`, perbarui state dari response (`LaporanDetailResponse`): `status: 'ditolak'`, field `alasan_penolakan` terisi, timeline bertambah "Laporan ditolak".
+
+**Acceptance criteria:**
+
+- Laporan `menunggu_verifikasi` bisa ditolak dari UI: status jadi `ditolak`, `alasan_penolakan` tampil, timeline bertambah, laporan hilang dari halaman publik.
+- Tolak tanpa alasan tidak terkirim (validasi UI) atau menampilkan error `422`.
+- Laporan yang sudah `ditolak` memunculkan pesan `409`, bukan sukses.
+
+**Catatan backend untuk FE (per 2026-10-09):**
+
+- Field `alasan_penolakan` kini **ada di response** (`LaporanResponse`/`LaporanDetailResponse`); tampilkan dari field ini, bukan hanya dari timeline.
+- Aksi tolak kini endpoint khusus dengan alasan tersimpan; `PATCH /reports/{id}/status` tetap ada untuk transisi `dalam_penanganan`/`selesai` (enum belum divalidasi = BE-51).
+- Laporan tayang boleh diturunkan lewat reject (tidak `409`); hanya yang sudah `ditolak` yang `409`.
+
+---
 
 ## A4. Testing Frontend
 
@@ -434,10 +486,11 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 1. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
 2. **FE-28** — Trigger manual ETL dari UI (admin operasional)
 3. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
-4. **FE-08** — Clustering marker (performance)
-5. **FE-15** — Integrasi OSRM routing (advanced feature)
-6. **FE-12** — Filter fasilitas multi-select
-7. **FE-21** dan **FE-26** — Fitur flag laporan
+4. **FE-25A** - Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
+5. **FE-08** - Clustering marker (performance)
+6. **FE-15** - Integrasi OSRM routing (advanced feature)
+7. **FE-12** - Filter fasilitas multi-select
+8. **FE-21** dan **FE-26** - Fitur flag laporan
 
 ---
 

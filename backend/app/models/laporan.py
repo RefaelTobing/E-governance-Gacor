@@ -15,6 +15,8 @@ class Laporan(Base):
     mode_identitas = Column(String(50), default="tampilkan_nama")
     nama_pelapor = Column(String(255))
     status = Column(String(50), default="menunggu_verifikasi")
+    # Alasan penolakan (BE-30): disimpan agar bisa ditampilkan ulang di FE, bukan hanya di timeline.
+    alasan_penolakan = Column(Text)
     foto_url = Column(Text)
     # Lokasi: dari klien (user) dan dari EXIF foto (diisi BE-21).
     lat_user = Column(Float)
@@ -33,6 +35,7 @@ class Laporan(Base):
     ruang_publik = relationship("RuangPublik", back_populates="laporan")
     fasilitas = relationship("Fasilitas", back_populates="laporan")
     timeline = relationship("LaporanTimeline", back_populates="laporan", cascade="all, delete-orphan")
+    flags = relationship("LaporanFlag", back_populates="laporan", cascade="all, delete-orphan")
 
     # Properti turunan dari relasi, dipakai untuk memperkaya response laporan.
     # Relasi perlu di-eager load agar tidak memicu query berulang (N+1).

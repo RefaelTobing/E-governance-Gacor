@@ -106,6 +106,9 @@ Salin `.env.example` → `.env` di folder `backend/`. Semua dibaca `app/core/con
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | — | Default 7 hari (10080); ada di kode `config.py` |
 | `UPLOAD_DIR` | — | Default `storage` (di-mount sebagai `/uploads`) |
 | `MAX_UPLOAD_SIZE` | — | Default 5 MB (validasi upload foto) |
+| `RATE_LIMIT_ENABLED` | — | Default `true` (BE-26) — matikan rate limit untuk uji beban |
+| `RATE_LIMIT_MAX` | — | Default `10` percobaan per jendela (`POST /reports` + `/uploads`) |
+| `RATE_LIMIT_WINDOW_S` | — | Default `600` detik (10 menit) |
 
 Env var frontend (`VITE_API_BASE_URL`, dll.) ada di `apps/web/.env` — urusan workflow frontend, jangan diubah dari sini.
 

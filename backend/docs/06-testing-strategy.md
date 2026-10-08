@@ -90,8 +90,11 @@ cd "d:\Ruka Jakarta\backend"
 | Test file | Kasus wajib (gabungan dari test-regresi di file fitur) |
 |---|---|
 | `test_public_space.py` | radius menyaring (kecil vs besar) · `jarak_km` terisi saat lat/long · filter `category` · filter `facilities` AND · detail 200/404 · `/stats` punya 3 key |
-| `test_laporan.py` | create anonim 201 `nama_pelapor None` · `tampilkan_nama` tanpa token 400 · `tampilkan_nama` + token → nama dari user · status awal + timeline · **mine=true isolasi antar-user** · **filter tayang: `menunggu_verifikasi` tidak muncul, `diverifikasi` muncul** · PATCH status sah 200 / ngawur 4xx (setelah validasi enum) · upload: JPEG ok, `.txt` 400, >5MB 400 |
+| `test_laporan.py` | create anonim 201 `nama_pelapor None` · `tampilkan_nama` tanpa token 400 · `tampilkan_nama` + token → nama dari user · status awal + timeline · PATCH status sah 200 / ngawur 4xx (setelah validasi enum) · upload: JPEG ok, `.txt` 400, >5MB 400 · **status endpoint: pemilik 200, pihak lain 403, anonim id-sebagai-bukti 200** · **flag: 201 + `flag_count`, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token 401** · **`/reports/mine`: isolasi antar-user, 401 tanpa token/token rusak, `?status=` terkombinasi, laporan anonim-saat-login tetap milik, admin hanya milik sendiri (BE-50)** |
+| `test_public_space_reports.py` | filter tayang per-ruang publik: `menunggu_verifikasi` tidak muncul, `diverifikasi` muncul (FEAT-010/BE-47) |
+| `test_admin_reports.py` | `GET /admin/reports`: 401 tanpa token · 403 warga · semua-status 200 · filter 200 · `?status=ngawur` 422 · `semua` 200 · detail: pemilik 200 / lain 403 / anonim penuh 200 / admin 200 · publik `GET /reports` hanya tayang (BE-28/BE-52) · `POST /admin/reports/{id}/approve`: 401 · 403 · 404 · menunggu/ditolak → 200 `diverifikasi` + timeline + tayang di publik · sudah tayang → 409 · tanpa body → deskripsi default (BE-29) · `POST /admin/reports/{id}/reject`: 401 · 403 · 404 · alasan kosong/blank 422 · menunggu → 200 `ditolak` + `alasan_penolakan` + timeline + hilang dari publik · tayang → 200 diturunkan · sudah ditolak → 409 · pemilik lihat alasan (BE-30) · `GET /admin/reports/flagged`: 401 · 403 · kosong `[]` · urut `flag_count` desc + `flag_count` benar · tak ter-flag tidak muncul · `flag_count` publik `null` · pagination (BE-31) |
 | `test_admin_auth.py` | register role `admin` ditolak 400 · warga → `/users` 403 · admin aktif terakhir `DELETE` 409 · akun sendiri 400 · nonaktif → login 403 · activate → login ok · `POST /categories` tanpa token 401 (setelah gap ditutup) |
+| `test_rate_limit.py` | 11x `POST /reports` → 429 + `Retry-After` · lewat jendela 10 menit → normal · token berbeda di IP sama tidak saling jerat · `POST /uploads` ikut kena · endpoint/method lain 11x tetap lolos · `RATE_LIMIT_ENABLED=false` lolos semua (BE-26) |
 
 Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya checklist "test regresi wajib" — tempelkan ke file test yang sesuai).
 
@@ -102,6 +105,13 @@ Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya
 | 2026-10-04 | BE-18 | `tests/unit/test_admin_sync.py` | 6 passed | Trigger manual sync ETL, status code & lock |
 | 2026-10-05 | BE-19 | `tests/unit/test_etl_run_log.py` | 12 passed | Logging riwayat run ETL ke DB & pembacaan API |
 | 2026-10-05 | BE-20, BE-46, BE-49 | `tests/unit/test_laporan.py` | 23 passed | 11 test laporan baru (upload, MIME, koordinat, anti-spoofing) + 12 test lama |
+| 2026-10-08 | BE-24, BE-25 | `tests/unit/test_laporan.py` | 77 passed | 14 test baru: endpoint status (pemilik/pihak lain/admin/anonim/404/nonaktif) + flag (201/409/403/400/401/404) |
+| 2026-10-08 | BE-26 | `tests/unit/test_rate_limit.py` | 83 passed | 6 test rate limit baru: ambang 429 + `Retry-After`, jendela terlewat, kunci hybrid per token, `/uploads` kena, endpoint lain lolos, toggle `RATE_LIMIT_ENABLED` |
+| 2026-10-08 | BE-50 | `tests/unit/test_laporan.py` | 89 passed | 6 test `/reports/mine`: isolasi antar-user, 401 (tanpa token/token rusak), kombinasi `?status=`, laporan anonim-saat-login, daftar publik tetap tanpa auth, admin milik sendiri |
+| 2026-10-08 | BE-28, BE-52 | `tests/unit/test_admin_reports.py` | 98 passed | 9 test baru (antrian admin 401/403/422/filter + detail pemilik/lain/anonim/admin) + test lama `test_reports_publik_tetap_tanpa_auth` diganti `..._hanya_tayang` (deviasi BE-52) |
+| 2026-10-08 | BE-29 | `tests/unit/test_admin_reports.py` | 105 passed | 7 test approve: 401 · 403 · 404 · menunggu → 200 `diverifikasi` + timeline + tayang di `GET /reports` publik · ditolak → 200 · sudah tayang (diverifikasi/selesai) → 409 · tanpa body → deskripsi default |
+| 2026-10-09 | BE-30 | `tests/unit/test_admin_reports.py` | 113 passed | 8 test reject: 401 · 403 · 404 · alasan kosong/blank 422 · menunggu → 200 `ditolak` + `alasan_penolakan` + timeline + hilang dari publik · pemilik lihat alasan · tayang → 200 diturunkan · sudah ditolak → 409 |
+| 2026-10-09 | BE-31 | `tests/unit/test_admin_reports.py` | 119 passed | 6 test flagged: 401 · 403 · kosong `[]` · urut `flag_count` desc + count benar + tak ter-flag tidak muncul · `flag_count` publik `null` · pagination `limit` |
 
 ---
 
@@ -120,7 +130,7 @@ Rute minimum yang selalu dijalankan sebelum menyatakan selesai:
 | 3 | `GET /public-spaces` + radius 0.01 vs 50 | jumlah hasil berbeda (radius bekerja) |
 | 4 | `GET /public-spaces/{id}` valid / palsu | 200 / 404 |
 | 5 | `POST /reports` anonim / `tampilkan_nama` tanpa token | 201 / 400 |
-| 6 | `GET /reports?mine=true` tanpa token / dengan token | 401 / hanya milik pemanggil |
+| 6 | `GET /reports/mine` tanpa token / dengan token | 401 / hanya milik pemanggil |
 | 7 | `PATCH /reports/{id}/status` warga / admin valid / status ngawur | 403 / 200 / 4xx |
 | 8 | Semua `/users*` dengan token warga | 403 |
 | 9 | `POST /categories` tanpa token (setelah gap) | 401 |

@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 6 | 1 | 3 |
-| B4 Moderation Service | 6 | 0 | 3 | 3 |
+| B3 Report Service | 10 | 10 | 0 | 0 |
+| B4 Moderation Service | 6 | 5 | 0 | 1 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **30** | **6** | **20** |
+| **Total** | **56** | **39** | **2** | **15** |
 
 ---
 
@@ -319,13 +319,52 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-06):** `pytest tests/unit -q` -> 62 passed (5 skenario baru: valid ->
     `diverifikasi` + timeline 2; jauh, tanpa EXIF, EXIF vs browser bertentangan, EXIF dekat tanpa
     koordinat browser -> `menunggu_verifikasi`).
-- [ ] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
-  - **Parsial:** status sudah ikut di `GET /reports/{id}` dan response submit, tetapi endpoint itu publik
-    dan tidak dibatasi pemilik -> lihat **BE-50** dan **BE-52**.
-- [ ] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
-  - **Belum ada** endpoint maupun UI di FE.
-- [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
-  - **Belum ada:** tidak ada `slowapi`/middleware limit di `requirements.txt` maupun `main.py`.
+- [x] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
+  - **Lokasi kode:** `read_report_status` di `app/api/v1/laporan.py`, skema `LaporanStatusResponse`
+    di `app/schemas/laporan.py`.
+  - **Keputusan akses:** laporan berpemilik hanya terbaca pemilik (token wajib) atau admin, selain itu
+    `403`; laporan anonim penuh (`user_id` null) dibuka bagi siapa pun yang mengetahui id UUID-nya,
+    id menjadi bukti kepemilikan. Response hanya `id`, `status`, `created_at`, `updated_at`,
+    `timeline` (tanpa deskripsi, foto, nama pelapor) supaya jalur anonim tidak membocorkan isi laporan.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` -> 70 passed (7 test baru di
+    `tests/unit/test_laporan.py`: pemilik 200, pihak lain 403, tanpa token 403, admin 200,
+    anonim tanpa token 200, id tidak dikenal 404, akun nonaktif 403; response bebas field
+    `deskripsi`/`nama_pelapor`/`foto_url`).
+    `GET /reports/{id}` publik tetap seperti semula -> urusan menutupnya tetap di **BE-52**,
+    "Laporan Saya" tetap di **BE-50**, tampilan FE tetap di **FE-19**.
+- [x] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
+  - **Lokasi kode:** endpoint `flag_report` di `app/api/v1/laporan.py`, service `flag_laporan` di
+    `app/services/laporan.py`, model `LaporanFlag` (`app/models/laporan_flag.py`), skema
+    `LaporanFlagResponse`, migrasi `fe1d83da4fca_tambah_tabel_laporan_flag`.
+  - **Keputusan:** (1) wajib login `get_current_active_user` (anonim tidak bisa didedupe, dan
+    rate-limiting BE-26 belum ada); (2) tabel `laporan_flag` dengan unique `(laporan_id, user_id)`
+    sebagai benteng anti-spam utama; (3) hanya `STATUS_TAYANG` -> `400`, pelapor sendiri -> `403`,
+    flag dobel -> `409`, id tak dikenal -> `404`, tanpa token -> `401`; (4) flag **tidak** mengubah
+    `status` laporan maupun menulis `laporan_timeline` (kamus 5 nilai dipakai FE, galeri BE-47/48;
+    keputusan tetap di admin lewat moderasi); (5) tanpa kolom `alasan` di MVP.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` -> 77 passed (7 test baru: 201 + `flag_count`
+    naik + status laporan tak berubah, dobel 409, pelapor sendiri 403, belum tayang 400, tanpa token
+    401, id tak dikenal 404, laporan anonim 201); `alembic upgrade head` -> `fe1d83da4fca (head)`
+    di MySQL `raku_db`. UI flag (FE-21) dan daftar admin (BE-31) masih terbuka.
+- [x] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*
+  - **Lokasi kode:** `app/middleware/rate_limit.py` (`RateLimitMiddleware`, store in-process),
+    dipasang di `app/main.py` **sebelum** blok CORS, ambang di `app/core/config.py` +
+    `backend/.env.example`, reset antar test di `tests/conftest.py`, test di
+    `tests/unit/test_rate_limit.py`.
+  - **Keputusan:** (1) cakupan `POST /reports` **dan** `POST /uploads` (satu hitungan per kunci,
+    submit laporan = 2 percobaan); (2) kunci hybrid — `user:<sub>` bila header `Authorization`
+    berisi token valid, selain itu `ip:<host>`; (3) ambang **10 percobaan / 10 menit** per kunci
+    (`RATE_LIMIT_MAX=10`, `RATE_LIMIT_WINDOW_S=600`) dengan sliding window; **semua** percobaan
+    dihitung, termasuk yang berakhir 400/422 (anti-brute-force); (4) tolak -> `429` + header
+    `Retry-After`, timestamp **tidak** ditambah saat ditolak agar spam tak mengunci terus;
+    (5) ASGI murni tanpa dependency beras (`docs/01-tech-stack.md` §7), mati-matian lewat
+    `RATE_LIMIT_ENABLED`; (6) middleware dipasang sebelum CORS (CORS harus terluar) supaya header
+    CORS tetap menempel pada respons 429; (7) store in-process — oke untuk 1 prod instance +
+    buang kunci kadaluarsa saat penuh (fail-open bila 10 ribu kunci).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **83 passed** (6 test baru: lewat ambang ->
+    429 + `Retry-After`, jendela terlewat -> normal, kunci token terpisah, `/uploads` kena juga,
+    endpoint lain 11x tetap lolos, `RATE_LIMIT_ENABLED=False` mematikan); urutan pemasangan
+    diverifikasi lewat test yang lulus.
 - [x] **[BE-27]** Unit test: skenario lokasi valid, jauh, tanpa EXIF, EXIF bertentangan (PRD bagian 8).
   - **Lokasi kode:** `tests/unit/test_laporan.py` - 5 test BE-23
     (`test_create_lokasi_valid_auto_tayang`, `test_create_lokasi_jauh_menunggu`,
@@ -340,45 +379,116 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Lokasi kode:** `app/api/v1/uploads.py`, terdaftar di `app/api/v1/api.py`.
   - **Keputusan:** Endpoint upload dapat diakses publik tanpa login agar pelapor anonim dapat mengunggah bukti fisik. Berkas disimpan di `settings.UPLOAD_DIR / "laporan" / <uuid.hex><ext>`. Validasi MIME whitelist (`image/jpeg`, `image/png`, `image/webp`), batas ukuran 5MB, dan validasi magic bytes.
   - **Verifikasi (2026-10-05):** Upload JPEG valid mengembalikan HTTP 201 dengan URL `/uploads/laporan/<hex>.jpg` dan dapat diakses publik via mount `/uploads`; upload file non-gambar `.txt` ditolak 400; upload file > 5MB ditolak 400; upload ekstensi jpg berpalsu teks ditolak 400. Integrasi FE-16 di `FormLaporPage` berhasil mengirim berkas dan foto tampil di halaman moderasi admin.
-- [ ] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
+- [x] **[BE-50]** **(baru - hasil audit)** `GET /api/v1/reports/mine` (token wajib) - laporan milik pemanggil
       untuk halaman "Laporan Saya".
   - **FEAT:** FEAT-013 PRD (Riwayat "Laporan Saya"). **Dibutuhkan:** `getUserReports` di
     `apps/web/src/services/laporanService.js` kini memanggil `GET /reports` tanpa filter pemilik,
     jadi "Laporan Saya" berpotensi menampilkan laporan orang lain.
-  - **Langkah:** service `get_reports()` di `app/services/laporan.py:76` **sudah menerima `user_id`** -
-    tambahkan param di router (atau buat path terpisah `/reports/mine`), wajib `Depends(get_current_active_user)`.
-  - **Verifikasi:** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan milik pemanggil;
-    tanpa token -> 401.
+  - **Lokasi kode:** route `read_my_reports` di `app/api/v1/laporan.py` (dideklarasikan **sebelum**
+    `GET /{laporan_id}` supaya "mine" tidak tertangkap sebagai id), meneruskan `user_id=user.id`
+    ke service `get_reports()` (`app/services/laporan.py:185`, tidak diubah); test di
+    `tests/unit/test_laporan.py` (6 test BE-50).
+  - **Keputusan:** (1) **Opsi B** path terpisah `/reports/mine` dengan
+    `Depends(get_current_active_user)` — 401 otomatis tanpa token; (2) isi = **semua status**
+    milik sendiri (termasuk `menunggu_verifikasi`/`ditolak`) dan laporan anonim yang dibuat saat
+    login (`user_id` tetap terisi); (3) filter `status`/`q`/`wilayah` tetap bisa dikombinasi;
+    (4) admin dengan token sendiri tetap hanya melihat laporan dia sendiri (semua-laporan = BE-52);
+    (5) response memakai `LaporanResponse` penuh (milik sendiri, FE `transformLaporanResponse`
+    tak perlu diubah).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **89 passed** (6 test baru: isolasi antar-user,
+    401 tanpa token/token rusak sekaligus bukti route menang sebelum `/{laporan_id}`, kombinasi
+    `?status=`, laporan anonim-saat-login tetap miliknya, daftar publik tetap tanpa auth, admin
+    hanya milik sendiri). Konsumen FE (`RiwayatLaporanPage` + `ProfilDashboardPage`) tinggal ganti
+    URL ke `GET /reports/mine` (dikerjakan sesi FE).
 
 ---
 
 ## B4. Moderation Service - Khusus Admin (FEAT-011)
 
-- [ ] **[BE-28]** `GET /admin/reports?status=menunggu_verifikasi` - antrian tinjauan admin, proteksi role `admin`.
-  - **Parsial:** fungsinya dipenuhi `GET /reports?status=` (`app/api/v1/laporan.py:39`) tetapi
-    **tanpa `get_current_admin`** sehingga publik bisa membaca seluruh laporan -> task **BE-52**.
-- [ ] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
-  - **Parsial:** dipenuhi `PATCH /reports/{id}/status` (`app/api/v1/laporan.py:84`, sudah admin), tetapi
-    `payload.status` berupa string bebas - tidak divalidasi ke kamus status -> task **BE-51**.
-- [ ] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
-  - **Parsial:** alasan hanya ditulis sebagai deskripsi timeline (`app/services/laporan.py:126`),
-    **tidak disimpan di kolom laporan** sehingga tidak bisa ditampilkan ulang di daftar/FE -> task **BE-51**.
-- [ ] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
-  - **Belum ada** (bergantung BE-25).
+- [x] **[BE-28]** `GET /admin/reports?status=menunggu_verifikasi` - antrian tinjauan admin, proteksi role `admin`.
+  - **Lokasi kode:** `read_admin_reports` di `admin_router` (`app/api/v1/laporan.py`, daftar di
+    `api.py` prefix `/admin`); dikerjakan bersama **BE-52** (butir a-c) di sesi yang sama.
+  - **Keputusan:** (1) query `status` **divalidasi** ke `STATUS_KANONIK` (atau `semua`) → nilai
+    asing `422`; (2) `flagged` **tidak** ikut di sini - menyusul sebagai
+    `GET /admin/reports/flagged` (BE-31, menghindari bentrok path); (3) response
+    `List[LaporanResponse]` identik dengan `GET /reports` supaya FE cukup ganti URL;
+    (4) `status=menunggu_tinjauan` di JOBDESK lama tidak ada di kamus kanonik → memakai
+    `menunggu_verifikasi`.
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **98 passed** (9 test baru
+    `tests/unit/test_admin_reports.py`: 401 tanpa token, 403 warga, semua-status, filter,
+    422 status ngawur, `semua`, detail pemilik/admin/lain/anonim).
+- [x] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
+  - **Lokasi kode:** `approve_report` di `admin_router` (`app/api/v1/laporan.py`), skema
+    `LaporanApproveRequest` (`app/schemas/laporan.py`), memakai ulang
+    `services/laporan.py::update_report_status` (set status + tulis timeline);
+    test di `tests/unit/test_admin_reports.py` (7 test BE-29).
+  - **Keputusan:** (1) status tujuan = `diverifikasi` (status tayang pertama);
+    (2) guard di **endpoint**, bukan di service: hanya `menunggu_verifikasi`/`ditolak`
+    yang boleh di-approve, status lain (termasuk sudah tayang) -> `409` - dengan begitu
+    `PATCH /reports/{id}/status` tetap bebas sampai validasi enum di **BE-51**;
+    (3) body opsional `{description}` (kosong boleh) menjadi catatan petugas di timeline,
+    judul timeline "Laporan disetujui"; (4) response `LaporanDetailResponse` sama dengan PATCH;
+    (5) tombol Setujui di FE = tugas FE-25 (catatan ditambahkan ke `TASK_GUIDE_FRONTEND.md`).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **105 passed** (7 test baru: 401 tanpa token,
+    403 warga, 404 id tak dikenal, menunggu -> diverifikasi + timeline + tampil di `GET /reports`
+    publik, ditolak -> boleh, sudah tayang (diverifikasi/selesai) -> 409, tanpa body -> deskripsi default).
+- [x] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
+  - **Lokasi kode:** `reject_report` di `admin_router` (`app/api/v1/laporan.py`), skema
+    `LaporanRejectRequest` (`app/schemas/laporan.py`, field `alasan` wajib + validator
+    non-kosong), service `services/laporan.py::reject_report`; kolom `laporan.alasan_penolakan`
+    (migrasi `a1b2c3d4e5f6`, head) ikut `LaporanResponse`; test di `tests/unit/test_admin_reports.py`
+    (8 test BE-30).
+  - **Keputusan:** (1) alasan **disimpan di kolom** `alasan_penolakan`, bukan hanya timeline,
+    supaya bisa ditampilkan ulang di daftar/detail FE (menutup bagian (b)+(c) BE-51);
+    (2) status sumber yang boleh ditolak = semua kecuali yang sudah `ditolak` (laporan tayang
+    boleh diturunkan lewat endpoint ini), `ditolak` -> `409`; (3) alasan wajib: body tanpa
+    `alasan`/kosong/whitespace -> `422`; (4) approve ulang (BE-29) tidak mereset kolom alasan;
+    (5) `PATCH /reports/{id}/status` tetap bebas sampai validasi enum BE-51(a).
+  - **Verifikasi (2026-10-09):** `pytest tests -q` -> **113 passed** (8 test baru: 401 tanpa token,
+    403 warga, 404 id tak dikenal, 422 tanpa alasan/kosong/blank, menunggu -> ditolak + alasan
+    tersimpan + timeline "Laporan ditolak" + hilang dari `GET /reports` publik, pemilik lihat alasan
+    lewat detail & status, laporan tayang boleh diturunkan, sudah ditolak -> 409); `alembic upgrade
+    head` -> `downgrade -1` -> `upgrade head` bersih (kolom bertambah/berkurang).
+- [x] **[BE-31]** `GET /admin/reports/flagged` - daftar laporan yang di-flag pengguna, terpisah dari antrian.
+  - **Lokasi kode:** `read_flagged_reports` di `admin_router` (`app/api/v1/laporan.py`,
+    dideklarasikan **sebelum** route `{laporan_id}` supaya `flagged` tidak tertangkap sebagai id),
+    service `services/laporan.py::get_flagged_reports` (join `laporan` x `laporan_flag`,
+    `GROUP BY laporan.id`); field `flag_count` baru di `LaporanResponse`
+    (`app/schemas/laporan.py`); test di `tests/unit/test_admin_reports.py` (6 test BE-31).
+  - **Keputusan:** (1) route terpisah `/reports/flagged` (bukan `?flagged=` di `GET /admin/reports`)
+    supaya antrian tetap satu bentuk response; (2) urut `flag_count` desc, tie-break waktu flag
+    terbaru desc - laporan paling bermasalah di atas; (3) `flag_count` di-set ke objek ORM di
+    service agar pydantic (`from_attributes`) membacanya; (4) field `flag_count` default `None`
+    sehingga jalur publik (`GET /reports`, `GET /public-spaces/{id}/reports`) **tidak** membocorkan
+    angka flag; (5) tanpa filter status/wilayah (scope minimal), pagination `skip`/`limit`.
+  - **Verifikasi (2026-10-09):** `pytest tests -q` -> **119 passed** (6 test baru: 401 tanpa token,
+    403 warga, 200 `[]` tanpa flag, urut jumlah flag terbanyak + `flag_count` benar + laporan tak
+    ter-flag tidak muncul, `flag_count` publik tetap `null`, pagination `limit`).
 - [ ] **[BE-51]** **(baru - hasil audit)** Validasi enum status + alasan penolakan tersimpan:
-      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400;
-      (b) migration kolom `alasan_penolakan` (nullable) di `laporan`, **wajib diisi** bila status `ditolak`;
-      (c) field `alasan_penolakan` ikut di response detail supaya FE bisa menampilkannya.
+      (a) `PATCH /reports/{id}/status` hanya menerima kamus kanonik, selain itu -> 422/400.
+  - **Sisa pekerjaan:** hanya (a) validasi enum di `PATCH /status`. Bagian (b) kolom
+    `alasan_penolakan` + wajib diisi saat `ditolak`, dan (c) expose di response, **selesai di
+    BE-30** (2026-10-09).
   - **FEAT:** FEAT-011. **Dibutuhkan:** `apps/web/.../DetailModerasiPage.jsx` (tombol Setujui/Tolak + alasan, FE-25).
   - **Verifikasi:** PATCH dengan status `dibuang_sana` -> 422; reject tanpa alasan -> 400;
     alasan muncul di `GET /reports/{id}` untuk pemilik/admin.
-- [ ] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
+- [x] **[BE-52]** **(baru - hasil audit)** Rapikan jalur moderasi & tutup kebocoran baca laporan:
       (a) buat `GET /admin/reports?status=&flagged=` terproteksi `get_current_admin` (menggantikan pemakaian
       `GET /reports` untuk antrian); (b) `GET /reports` publik hanya mengembalikan laporan tayang;
       (c) `GET /reports/{id}` hanya untuk pemilik laporan atau admin.
   - **FEAT:** FEAT-011 + FEAT-010. **Memperbaiki** BE-28 dan sebagian BE-35.
-  - **Verifikasi:** tanpa token `GET /reports` hanya berisi laporan tayang; `GET /reports/{id}` milik orang lain -> 403/404;
-    token admin tetap bisa membuka semua.
+  - **Lokasi kode:** (a) `read_admin_reports` (lihat BE-28); (b) param `hanya_tayang` di
+    `services/laporan.py::get_reports` dipakai `read_reports`; (c) helper `_boleh_lihat` di
+    `app/api/v1/laporan.py` (dipakai juga `GET /reports/{id}/status` BE-24 - logika tak lagi
+    terduplikasi). `?flagged=` diserahkan ke **BE-31**.
+  - **Keputusan:** (1) laporan **anonim penuh** (`user_id` NULL) tetap terbuka di detail - id UUID
+    = bukti kepemilikan, konsisten BE-24; (2) keputusan `report-service.md` FEAT-010 "daftar
+    publik ikut hanya tayang" dijawab **ya**; daftar admin tetap semua status; (3) FE
+    (`AntrianModerasiPage`, `DashboardPage`) pindah ke `GET /admin/reports` - sesi FE.
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **98 passed**; tanpa token `GET /reports`
+    hanya laporan tayang (test lama `test_reports_publik_tetap_tanpa_auth` diganti jadi
+    `test_reports_publik_hanya_tayang` - **deviasi tercatat** di CHANGELOG), detail milik orang
+    lain -> 403, anonim penuh -> 200, admin tetap bisa semua.
 
 ---
 
@@ -487,7 +597,7 @@ Dipakai saat FE minta endpoint; cek daftar ini dulu sebelum menambah task baru.
 | `FormLaporPage` (foto wajib) | `POST /uploads` | BE-49 |
 | `RiwayatLaporanPage` ("Laporan Saya") | `GET /reports/mine` | BE-50 |
 | `DetailRuangPublikPage` (riwayat laporan + galeri) | `GET /public-spaces/{id}/reports` yang benar, gabungan foto | BE-47, BE-48 |
-| `DetailModerasiPage` (Setujui/Tolak + alasan) | enum status + `alasan_penolakan` | BE-51 |
+| `DetailModerasiPage` (Setujui/Tolak + alasan) | `POST /admin/reports/{id}/approve`, `POST /admin/reports/{id}/reject`, enum status | BE-29, BE-30, BE-51 |
 | `AntrianModerasiPage` (antrian + daftar flagged) | `GET /admin/reports`, `/admin/reports/flagged` | BE-52, BE-31 |
 | `DataMasterPage` (Edit Master, Impor Satu Data, Riwayat sinkronisasi) | `PATCH /admin/public-spaces/{id}`, `POST`/`GET /admin/sync-data` | BE-33, BE-18, BE-19 |
 | `KelolaFasilitasPage` | CRUD fasilitas admin | BE-53 |

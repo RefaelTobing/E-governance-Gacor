@@ -46,11 +46,18 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `DELETE` | `/api/v1/admin/public-spaces/{id}/photos/{foto_id}` | **Admin** | Hapus satu foto resmi; `404` bila tak ada |
 | **Laporan** ||||
 | `POST` | `/api/v1/reports` | Token opsional | Kirim laporan (anonim tanpa token) |
-| `GET` | `/api/v1/reports` | — | Daftar laporan (filter status/wilayah/q) |
-| `GET` | `/api/v1/reports/{id}` | — | Detail + timeline |
+| `GET` | `/api/v1/reports` | - | Daftar laporan **tayang saja** (filter status/wilayah/q) |
+| `GET` | `/api/v1/reports/mine` | **Login** | Riwayat laporan milik pemanggil, semua status (BE-50) |
+| `GET` | `/api/v1/reports/{id}` | Pemilik/Anonim/Admin | Detail + timeline; berpemilik lain -> 403 (BE-52) |
+| `GET` | `/api/v1/reports/{id}/status` | Token opsional | Status + timeline untuk pelapor (BE-24) |
+| `POST` | `/api/v1/reports/{id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{id}/status` | **Admin** | Update status + tulis timeline |
 | `GET` | `/api/v1/reports/stats/dashboard` | **Admin** | 4 kartu statistik dashboard |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
+| `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, filter `status` kanonik/`semua` (BE-28/BE-52) |
+| `GET` | `/api/v1/admin/reports/flagged` | **Admin** | Daftar laporan ter-flag pengguna lain + `flag_count`, urut terbanyak (BE-31) |
+| `POST` | `/api/v1/admin/reports/{id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
+| `POST` | `/api/v1/admin/reports/{id}/reject` | **Admin** | Tolak laporan: status -> `ditolak` + alasan wajib tersimpan (BE-30) |
 | **Statistik Publik** ||||
 | `GET` | `/api/v1/statistics/summary` | — | Ringkasan homepage (total, selesai, %) |
 | `GET` | `/api/v1/statistics/testimonials` | — | Testimoni (masih hardcode) |
@@ -190,6 +197,7 @@ Upload berkas foto bukti fisik masalah fasilitas (multipart/form-data). Endpoint
 | `201` | Berkas valid tersimpan di disk, mengembalikan URL unik |
 | `400` | Ekstensi/MIME non-gambar, berkas > 5MB, atau magic bytes rusak/samaran |
 | `422` | Request tanpa field `file` |
+| `429` | Melewati rate limit (BE-26): 10 percobaan `POST /reports` + `POST /uploads` per kunci per 10 menit; header `Retry-After` berisi sisa detik |
 
 ### `POST /api/v1/reports` (BE-20 / BE-46)
 Body JSON `LaporanCreate`:
@@ -212,19 +220,104 @@ Body JSON `LaporanCreate`:
 | `201` | Berhasil — status awal `menunggu_verifikasi`, timeline `Laporan dikirim` dibuat |
 | `400` | Foto wajib belum diunggah, `foto_url` tidak berprefix `/uploads/laporan/`, file foto tidak ditemukan di disk, mode `tampilkan_nama` tanpa token, atau koordinat parsial |
 | `422` | Koordinat `lat_user` / `long_user` di luar rentang valid (-90..90 dan -180..180) |
+| `429` | Melewati rate limit (BE-26) — hitungan gabungan dengan `POST /uploads`; kunci = user id (token valid) atau IP; header `Retry-After` |
 
 Aturan:
 - Dependency auth memakai `oauth2_scheme_optional` agar pengguna anonim tanpa token **tidak tertolak 401**.
+- Rate limit in-process (BE-26, NFR-002): `POST /reports` dan `POST /uploads` berbagi satu hitungan per kunci — 10 percobaan / 10 menit, semua percobaan dihitung (termasuk 400/422). Mati-matian lewat `RATE_LIMIT_ENABLED`.
 - Foto bukti fisik **wajib diunggah** (`foto_url` tidak boleh kosong).
 - Koordinat browser pengguna bersifat opsional (dapat dikirim null jika browser menolak izin lokasi), namun bila salah satu diisi maka keduanya wajib lengkap.
 - `nama_pelapor` **tidak pernah** diambil dari payload klien; jika login, diambil aman dari database akun user aktif (anti-spoofing).
 
 ### `GET /api/v1/reports`
 Query: `status` (persis, `"semua"` = tanpa filter), `wilayah`, `q` (LIKE jenis_masalah/deskripsi), `skip`, `limit`.
-> ⚠ **Gap FEAT-013:** belum ada param pemilik → "Laporan Saya" akan melihat semua laporan. Service `get_reports()` **sudah menerima `user_id`** — tinggal router. Rincian: `features/report-service.md`.
+> **Sejak BE-52:** hanya mengembalikan laporan **tayang** (`STATUS_TAYANG`: `diverifikasi`, `dalam_penanganan`, `selesai`) tanpa peduli token. Antrian moderasi (semua status) pindah ke `GET /admin/reports`.
+
+### `GET /api/v1/reports/mine` (BE-50, FEAT-013)
+Riwayat "Laporan Saya": daftar laporan milik pemanggil, **semua status** (termasuk `menunggu_verifikasi`/`ditolak`). Auth wajib (`Bearer` token) → `401` tanpa token atau token rusak. Query sama dengan `GET /reports` (`status`, `wilayah`, `q`, `skip`, `limit`) dan tetap terkombinasi dengan pemilik. Laporan anonim yang dibuat sambil login tetap muncul di sini (`user_id` terisi, identitas tetap tertutup untuk publik). Admin melihat laporan dia sendiri; semua-laporan-admin = `GET /admin/reports` (BE-52).
 
 ### `GET /api/v1/reports/{id}`
-`LaporanDetailResponse` = field laporan + `user{...}` (bisa null) + `timeline[{status,title,description,created_at,...}]`. `404` bila tak ada.
+`LaporanDetailResponse` = field laporan + `user{...}` (bisa null) + `timeline[{status,title,description,created_at,...}]`.
+
+Aturan akses (BE-52, helper `_boleh_lihat` - sama dengan `GET /{id}/status`):
+- Laporan berpemilik: hanya pemilik atau admin (token wajib); selain itu `403`; tanpa token `403`.
+- Laporan anonim penuh (`user_id` null): terbuka dengan bukti id UUID (`200` tanpa token).
+- Id tidak dikenal: `404`.
+
+### `GET /api/v1/admin/reports` - **Admin** (BE-28 / BE-52)
+Antrian tinjauan admin - menggantikan pemakaian `GET /reports` untuk moderasi.
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Query:** `status` (harus `STATUS_KANONIK` atau `"semua"`; nilai lain → `422`), `wilayah`, `q`, `skip`, `limit` - sama dengan `GET /reports`.
+- **Response:** `List[LaporanResponse]` identik (FE cukup ganti URL).
+- **Catatan:** parameter `flagged` menyusul di `GET /admin/reports/flagged` (BE-31).
+
+| Status | Kapan |
+|---|---|
+| `200` | Daftar laporan sesuai filter (semua status bila tanpa filter) |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+| `422` | `status` di luar kanonik (mis. `menunggu_tinjauan`) |
+
+### `GET /api/v1/admin/reports/flagged` - **Admin** (BE-31)
+Daftar laporan yang di-flag pengguna lain (hasil `POST /reports/{id}/flag`), terpisah dari antrian.
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Query:** `skip`, `limit` (1..500, default 100). Tanpa filter status/wilayah.
+- **Response:** `List[LaporanResponse]` dengan field tambahan `flag_count` (= jumlah pelapor berbeda).
+- **Urutan:** `flag_count` desc, lalu waktu flag terbaru desc (laporan paling bermasalah di atas).
+- **Catatan:** `flag_count` hanya terisi di endpoint ini; jalur publik tetap `null`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Daftar laporan ter-flag (kosong `[]` bila belum ada) |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+
+### `POST /api/v1/admin/reports/{id}/approve` - **Admin** (BE-29)
+Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline berjudul "Laporan disetujui".
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Body (opsional):** `{ "description": "catatan petugas" }`; tanpa body memakai deskripsi default `Status diubah menjadi diverifikasi`.
+- **Response:** `LaporanDetailResponse` (sama dengan `PATCH /{id}/status`).
+- **Guard:** hanya laporan `menunggu_verifikasi` atau `ditolak`; status lain (termasuk sudah tayang) → `409`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Berhasil; laporan kini tayang dan muncul di `GET /reports` publik |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+| `404` | Id tidak dikenal |
+| `409` | Status sekarang di luar `menunggu_verifikasi`/`ditolak` |
+
+### `POST /api/v1/admin/reports/{id}/reject` - **Admin** (BE-30)
+Tolak laporan: status jadi `ditolak` (hilang dari daftar publik) + baris timeline "Laporan ditolak".
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Body (wajib):** `{ "alasan": "foto tidak sesuai lokasi" }`; kosong/whitespace → `422`.
+- **Response:** `LaporanDetailResponse`; field `alasan_penolakan` terisi dan ikut terlihat di daftar/detail.
+- **Guard:** semua status boleh ditolak (laporan tayang boleh diturunkan); yang sudah `ditolak` → `409`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Berhasil; laporan `ditolak`, `alasan_penolakan` tersimpan, timeline +1 |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+| `404` | Id tidak dikenal |
+| `409` | Laporan sudah `ditolak` |
+| `422` | `alasan` tidak dikirim / kosong |
+
+### `GET /api/v1/reports/{id}/status` (BE-24, FEAT-010)
+`LaporanStatusResponse` = `id`, `status`, `created_at`, `updated_at`, `timeline[...]`. Tanpa deskripsi, foto, dan nama pelapor.
+
+Aturan akses (`app/api/v1/laporan.py::read_report_status`):
+- Laporan berpemilik: token wajib, hanya pemilik atau admin yang akunnya aktif; selain itu `403`.
+- Laporan anonim penuh (`user_id` null): cukup id UUID-nya, tanpa token (`200`).
+- Id tidak dikenal: `404`.
+
+```bash
+curl http://localhost:8000/api/v1/reports/<id>/status -H "Authorization: Bearer <token>"
+```
 
 ### `PATCH /api/v1/reports/{id}/status` — **Admin** (FEAT-011)
 ```json
@@ -232,6 +325,20 @@ Query: `status` (persis, `"semua"` = tanpa filter), `wilayah`, `q` (LIKE jenis_m
 ```
 → update status + tambah baris timeline. `404` bila laporan tak ada.
 > ⚠ **Gap:** `status` belum divalidasi terhadap enum → bisa menulis nilai sembarangan. Perbaikan: `features/moderation-service.md`.
+
+### `POST /api/v1/reports/{id}/flag` — **Login** (BE-25, FEAT-011)
+Tanpa body. Response `201` `{ "laporan_id": "...", "flag_count": 2 }` (`flag_count` = jumlah pelapor berbeda).
+
+Aturan akses (`services/laporan.py::flag_laporan`):
+- Wajib `Authorization: Bearer <token>` → tanpa token `401`.
+- Hanya laporan `STATUS_TAYANG` (`diverifikasi`/`dalam_penanganan`/`selesai`) → selain itu `400`.
+- Pelapor sendiri tidak boleh melaporkan laporannya sendiri → `403`.
+- Satu flag per pengguna (unique `uq_laporan_flag_pengguna`) → dobel `409`.
+- Id tidak dikenal `404`. Flag **tidak** mengubah status laporan; daftar hasilnya = BE-31.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/reports/<id>/flag -H "Authorization: Bearer <token>"
+```
 
 ### `GET /api/v1/reports/stats/dashboard` — Admin
 ```json
@@ -350,11 +457,9 @@ browser membaca zona waktu yang benar.
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
-| Filter laporan per-pengguna (`mine=true` / `/reports/mine`) | 013 | `getUserReports` → Laporan Saya | `features/report-service.md` |
 | CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
-| Rate limit `POST /reports` | NFR-002 | — | `features/report-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |
 
 ---

@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     # Nilai sama dengan VITE_FAKE_GPS_THRESHOLD_M di FE (hanya untuk teks bantuan UI).
     FAKE_GPS_THRESHOLD_M: int = 100
 
+    # Rate limiting in-process POST /reports & POST /uploads (BE-26, NFR-002):
+    # maksimal RATE_LIMIT_MAX percobaan per RATE_LIMIT_WINDOW_S detik, per user
+    # (bila ada token valid) atau per IP. Semua percobaan dihitung, termasuk yang
+    # berakhir 400/422.
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_MAX: int = 10
+    RATE_LIMIT_WINDOW_S: int = 600
+
     # Jadwal pipeline ETL (cron 5 field, zona WIB), hanya dibaca
     # `python -m app.etl.scheduler`. Default "0 2 * * *" = tiap hari 02:00 WIB.
     ETL_JADWAL: str = "0 2 * * *"

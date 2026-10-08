@@ -1,7 +1,7 @@
 {
   "dataset": "geoportal_rptra_koordinat",
   "sumber": "geoportal",
-  "downloaded_at": "2026-10-05T17:36:28+07:00",
+  "downloaded_at": "2026-10-07T20:05:29+07:00",
   "total_rows": 324,
   "columns": [
     "OBJECTID",

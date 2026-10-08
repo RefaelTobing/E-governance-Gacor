@@ -123,11 +123,16 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 | GET | `/api/v1/public-spaces/{id}` | — | + `fasilitas`, `foto[]` |
 | GET | `/api/v1/public-spaces/{id}/reports` | — | **bermasalah, lihat Fase 1b** |
 | GET/POST/PATCH/DELETE | `/api/v1/users*` | Admin | kelola petugas, nonaktifkan (bukan hapus) |
-| POST | `/api/v1/reports` | Token opsional | anonim tanpa token; `tampilkan_nama` wajib token |
-| GET | `/api/v1/reports` | — | filter `status,wilayah,q` — **belum bisa per-pengguna, lihat Fase 1a** |
+| POST | `/api/v1/reports` | Token opsional | anonim tanpa token; `tampilkan_nama` wajib token; rate limit 10/10 mnt (BE-26) |
+| GET | `/api/v1/reports` | - | filter `status,wilayah,q` - **hanya laporan tayang sejak BE-52** |
+| GET | `/api/v1/reports/mine` | Login | riwayat milik pemanggil, semua status (BE-50) |
+| GET | `/api/v1/admin/reports` | Admin | antrian moderasi semua status, `?status` tervalidasi kanonik (BE-28/BE-52) |
+| GET | `/api/v1/admin/reports/flagged` | Admin | daftar laporan ter-flag + `flag_count`, urut terbanyak (BE-31) |
+| POST | `/api/v1/admin/reports/{id}/approve` | Admin | setujui: status jadi `diverifikasi` + timeline; status lain -> 409 (BE-29) |
+| POST | `/api/v1/admin/reports/{id}/reject` | Admin | tolak: status jadi `ditolak` + alasan wajib tersimpan `alasan_penolakan`; sudah ditolak -> 409 (BE-30) |
 | GET | `/api/v1/reports/stats/dashboard` | Admin | 4 kartu statistik |
 | GET | `/api/v1/reports/stats/moderasi` | Admin | antrian + selesai pekan ini |
-| GET | `/api/v1/reports/{id}` | — | + timeline |
+| GET | `/api/v1/reports/{id}` | Pemilik/Anonim/Admin | + timeline; milik orang lain → 403 (BE-52) |
 | PATCH | `/api/v1/reports/{id}/status` | Admin | tulis timeline otomatis |
 | GET | `/api/v1/statistics/summary` | — | dipakai homepage |
 | GET | `/api/v1/statistics/testimonials` | — | masih hardcode |
@@ -139,10 +144,10 @@ Ikuti pola yang sudah ada — jangan membuat pola baru:
 
 | Kebutuhan | PRD | Dibutuhkan oleh | Fase |
 |---|---|---|---|
-| Filter laporan per-pengguna | FEAT-010 | `getUserReports` → "Laporan Saya" | 1a |
 | CRUD ruang publik (admin) | FEAT-012 | halaman `/dashboard/data-master` | 3 |
-| Rate limiting endpoint laporan | NFR-002 | PRD | 4 |
 | Refresh/logout token | — | keamanan sesi (token stateless 7 hari) | 4 |
+
+(Selesai & dihapus dari daftar: filter laporan per-pengguna → BE-50, rate limiting laporan → BE-26.)
 
 ---
 
@@ -178,9 +183,8 @@ Aturan: **perubahan manual admin terhadap data ETL tidak boleh hilang** saat see
 
 ### FASE 1 — Perbaiki Kontrak yang Salah / Bocor
 **1a. Laporan per-pengguna (FEAT-010).**
-`GET /api/v1/reports` tidak punya parameter pemilik → "Laporan Saya" di FE menampilkan semua laporan. Service `get_reports()` di `app/services/laporan.py` **sudah menerima `user_id`** — yang belum ada param-nya di router.
-- Tambahkan query param opsional `mine=true` (baca token, filter `user_id`) atau buat `GET /api/v1/reports/mine` (token wajib). Pilih salah satu, catat di `API.md`.
-- **Verifikasi:** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan laporan milik pemanggil.
+`GET /api/v1/reports` tidak punya parameter pemilik → "Laporan Saya" di FE menampilkan semua laporan. Service `get_reports()` di `app/services/laporan.py` **sudah menerima `user_id`** — yang belum ada param-nya di router. **Selesai BE-50 (2026-10-08):** dipilih `GET /api/v1/reports/mine` (token wajib, `get_current_active_user`), semua status milik sendiri, filter `status/q/wilayah` terkombinasi, tercatat di `docs/API.md` + `04-api-endpoints.md`.
+- **Verifikasi (lulus):** login 2 user, kirim laporan masing-masing, endpoint hanya mengembalikan laporan milik pemanggil; tanpa token → 401.
 
 **1b. Fix filter laporan per-ruang publik.**
 `get_reports_by_ruang_publik()` menyaring `status IN ("disetujui", "tayang_otomatis")` — nilai itu **tidak pernah ada** di database (kamus status di §6). Akibatnya `GET /public-spaces/{id}/reports` selalu `[]`.
@@ -212,7 +216,7 @@ Halaman FE `/dashboard/data-master` kini hanya membaca via `GET /public-spaces`.
 - **Verifikasi:** edit nama ruang publik via API → berubah di DB → tidak kembali lagi setelah `seed_db` dijalankan ulang.
 
 ### FASE 4 — Keamanan (NFR-002)
-- Rate limiting pada `POST /api/v1/reports` (mis. middleware sederhana per-IP; tanpa dependency berat bila bisa) untuk cegah spam.
+- Rate limiting pada `POST /api/v1/reports` (mis. middleware sederhana per-IP; tanpa dependency berat bila bisa) untuk cegah spam. **Selesai BE-26:** `RateLimitMiddleware` ASGI di `app/middleware/rate_limit.py`, juga menutup `POST /uploads`, kunci hybrid user/IP, 10 percobaan / 10 menit, balas `429` + `Retry-After`.
 - Audit singkat: semua endpoint admin wajib `get_current_admin` (khususnya yang baru); CORS hanya origin FE yang terdaftar; `SECRET_KEY` tidak boleh default di produksi; sandi selalu hash (sudah, passlib+bcrypt — **jangan** sentuh pin `bcrypt==4.2.1`).
 - **Verifikasi:** kirim >N laporan cepat dari IP sama → di-throttle; endpoint admin tanpa token → 403.
 
@@ -266,7 +270,7 @@ Sebelum menyatakan backend selesai:
 - [ ] Fase 1 selesai: laporan per-pengguna, filter tayang per-ruang publik benar, `POST /categories` terproteksi, enum status tervalidasi
 - [x] Upload foto berfungsi (MIME + 5MB tervalidasi, URL bisa diakses)
 - [ ] CRUD data-master admin tersedia dan terproteksi
-- [ ] Rate limiting laporan aktif
+- [x] Rate limiting laporan aktif (BE-26: 10 percobaan / 10 menit per user/IP, `POST /reports` + `POST /uploads`)
 - [ ] `pytest tests\unit` hijau di `.venv`
 - [ ] `docs/API.md` 100% sinkron dengan Swagger
 - [ ] Semua endpoint admin manggil `get_current_admin` (audit grep)

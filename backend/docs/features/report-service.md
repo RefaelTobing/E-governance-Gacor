@@ -17,8 +17,8 @@ Kode terkait:
 |---|---|---|
 | 008 | Form Lapor Fasilitas | **Selesai** (BE-20, BE-46, BE-49 selesai; upload foto wajib & geolokasi) |
 | 009 | Mode Identitas Laporan | **Selesai** (anti-spoofing nama dari server) |
-| 010 | Visibilitas & Status Laporan | **Sebagian** — status+timeline jalan; **filter tayang per-ruang publik rusak** |
-| 013 | Riwayat "Laporan Saya" | **Belum ada** — endpoint belum filter per-pengguna |
+| 010 | Visibilitas & Status Laporan | **Sebagian** — status+timeline jalan; endpoint status pelapor (BE-24) selesai; filter tayang per-ruang publik selesai (BE-47) |
+| 013 | Riwayat "Laporan Saya" | **Selesai** (BE-50: `GET /reports/mine`, token wajib, semua status milik sendiri) |
 
 ---
 
@@ -60,15 +60,29 @@ curl -X POST ... -F "file=@catatan.txt"    # → 400 (MIME)
 # unggah file > 5MB                        # → 400 (ukuran)
 ```
 
-### Gap 2 — Rate Limiting (NFR-002)
+### Gap 2 — Rate Limiting (NFR-002) — SELESAI (BE-26)
 
-PRD NFR-002 mewajibkan rate-limiting endpoint laporan **untuk mencegah spam**. Saat ini tidak ada.
+PRD NFR-002 mewajibkan rate-limiting endpoint laporan **untuk mencegah spam**.
 
-- [ ] Implementasi ringan tanpa dependency berat: middleware in-process sederhana per-IP (mis. deque timestamp, threshold seperti 10 laporan / 10 menit / IP) di `app/middleware/` (folder sudah ada, kosong), pasang khusus ke `POST /reports`.
-- [ ] Balas `429` dengan pesan jelas; jangan mengandalkan dependency berat (Redis dsb. — di luar MVP).
-- [ ] Dokumentasikan threshold di file ini + `04-api-endpoints.md`.
+- [x] Implementasi ringan tanpa dependency berat: `RateLimitMiddleware` ASGI murni di
+  `app/middleware/rate_limit.py` (deque timestamp per kunci, store in-process), dipasang umum di
+  `app/main.py` sebelum blok CORS — menutup `POST /reports` **dan** `POST /uploads`.
+- [x] Balas `429` (`{"detail": ...}`) + header `Retry-After`; tanpa Redis — sesuai aturan
+  `docs/01-tech-stack.md` §7.
+- [x] Threshold didokumentasikan di file ini + `04-api-endpoints.md` (+ `docs/API.md`).
 
-**Verifikasi:** kirim >threshold laporan cepat dari IP sama → laporan berikutnya `429`; lewat jendela waktu → kembali normal.
+**Threshold (setelan `config.py` / `.env.example`):** `RATE_LIMIT_MAX=10` percobaan per
+`RATE_LIMIT_WINDOW_S=600` detik (10 menit), sliding window. Kunci **hybrid**: `user:<sub>` bila
+`Authorization: Bearer` berisi token valid, selain itu `ip:<host>` — jadi spammer satu IP yang
+login tak mengunci IP-nya sendiri, dan pengguna beda IP dengan token sama dibatasi per token.
+`POST /reports` + `POST /uploads` **berbagi satu hitungan** (submit = upload foto + kirim laporan
+= 2 percobaan). Semua percobaan dihitung termasuk yang balas `400`/`422` (anti-brute-force).
+Matikan sementara dengan `RATE_LIMIT_ENABLED=false` (mis. saat uji beban manual).
+
+**Verifikasi (2026-10-08):** `pytest tests/unit/test_rate_limit.py -q` → 6 test lulus: 11x kirim →
+`429` + `Retry-After`, lewat jendela → normal, dua token berbeda di IP sama tidak saling jerat,
+`/uploads` ikut kena, `GET /reports` & `login` 11x tetap lolos, `RATE_LIMIT_ENABLED=false` lolos
+semua; suite penuh **83 passed**.
 
 ---
 
@@ -108,7 +122,8 @@ curl -X POST http://localhost:8000/api/v1/reports -H "Content-Type: application/
 
 **Sudah jalan:**
 - Status + timeline: setiap perubahan status mencatat `laporan_timeline` (title, description, waktu) — inilah yang ditampilkan stepper/badge FE.
-- `GET /api/v1/reports/{id}` → detail + timeline (terbuka; pelapor bisa memantau — walau belum terfilter kepemilikan, lihat FEAT-013).
+- `GET /api/v1/reports/{id}` → detail + timeline (terbuka; pelapor bisa memantau; riwayat milik sendiri ada di `GET /reports/mine`, lihat FEAT-013).
+- `GET /api/v1/reports/{id}/status` (**BE-24, selesai 2026-10-08**) → status ringkas khusus pelapor: laporan berpemilik hanya terbaca pemilik/admin, laporan anonim penuh dibuka dengan bukti id UUID, response tanpa deskripsi/foto/nama pelapor. Rincian: `04-api-endpoints.md`.
 - Daftar status kanonik (lihat `03-database-schema.md` §4): `menunggu_verifikasi → diverifikasi → dalam_penanganan → selesai` / `ditolak`.
 
 **GAP SELESAI (BE-47, 2026-10-06) — filter tayang per-ruang publik pernah selalu kosong:**
@@ -127,7 +142,7 @@ Dulu `services/laporan.py::get_reports_by_ruang_publik` menyaring `status IN ("d
 
 **Sisa keputusan:**
 
-- [ ] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? Saat ini semua status terlihat publik (query `status=` opsional). Rekomendasi MVP: daftar publik umum ikut memakai daftar tayang; daftar admin tetap semua (moderasi perlu melihat antrian).
+- [x] (Putuskan & catat) Apakah `GET /reports` (daftar publik umum) juga harus otomatis hanya menampilkan yang tayang? → **YA - dijawab lewat BE-52 (2026-10-08):** `get_reports(..., hanya_tayang=True)` dipakai router publik; semua-status tersedia di `GET /admin/reports` (BE-28). Keputusan ini menutup sisa FEAT-010 di file ini.
 
 **Verifikasi:**
 ```bash
@@ -143,37 +158,47 @@ curl "http://localhost:8000/api/v1/public-spaces/<id>/reports"
 
 **PRD (baru ditambahkan):** warga yang login melihat **daftar laporan miliknya sendiri** + status + progres; hanya laporan milik akun login (filter per-pengguna); tiap entri mengarah ke detail status.
 
-**Implementasi saat ini: BELUM.**
+**Implementasi saat ini: SELESAI (BE-50, 2026-10-08).**
 
-- `GET /api/v1/reports` menerima `status`, `wilayah`, `q`, `skip`, `limit` — **tanpa parameter pemilik** → konsumen FE (`getUserReports`) saat ini melihat **semua** laporan pengguna lain.
-- **Service sudah siap:** `services/laporan.py::get_reports(..., user_id=...)` sudah mendukung filter `user_id` — yang belum ada di router.
+- Endpoint baru **`GET /api/v1/reports/mine`** (route `read_my_reports` di
+  `app/api/v1/laporan.py`, dideklarasikan sebelum `GET /{laporan_id}`): auth wajib
+  `Depends(get_current_active_user)` → `401` tanpa token/token rusak.
+- **Service tidak diubah:** `services/laporan.py::get_reports(..., user_id=...)` sudah
+  mendukung filter `user_id` sebagai kondisi AND.
+- `GET /reports` (publik, tanpa pemilik) **tetap** seperti semula — jangan dicampur dengan
+  pembatasan BE-52.
 
-**Langkah (urut):**
+**Keputusan (dipilih 2026-10-08):**
 
-- [ ] Pilih mekanisme (catat pilihan di sini):
-  - **Opsi A (disarankan):** `GET /api/v1/reports?mine=true` → router membaca token via `oauth2_scheme` (opsional di endpoint lain, tapi **wajib** saat `mine=true`; tanpa token → `401`), lalu meneruskan `user_id` hasil `verify_token` ke service.
-  - **Opsi B:** endpoint terpisah `GET /api/v1/reports/mine` (token wajib) — lebih eksplisit, tapi menambah path baru.
-- [ ] Implementasi di router (jangan ubah service — sudah mendukung).
-- [ ] Filter `status`/`q`/`wilayah` tetap bisa dikombinasi dengan `mine`.
-- [ ] Update `04-api-endpoints.md` + `docs/API.md`; beri tahu FE untuk menambah param `mine=true` di `getUserReports`.
-- [ ] Laporan anonim milik sesi ini: `user_id` tersimpan meski `mode_identitas=anonim` (lihat kode create — `user_id` tetap diisi bila token ada) → laporan anonim yang dibuat sambil login **tetap muncul di Laporan Saya pemiliknya**, tanpa membuka identitas ke publik. Pastikan perilaku ini dipertahankan dan diuji.
+- [x] Pilih mekanisme: **Opsi B** `GET /api/v1/reports/mine` (path terpisah, token wajib,
+  401 otomatis via dependency) — bukan Opsi A `?mine=true` (butuh 401 manual; dependency
+  FastAPI statis per route, tak bisa memaksa login di endpoint publik).
+- [x] Implementasi di router (service tidak disentuh).
+- [x] Filter `status`/`q`/`wilayah` tetap bisa dikombinasi dengan mine.
+- [x] Update `04-api-endpoints.md` + `docs/API.md`; **beri tahu FE:** `getUserReports`
+  (konsumen `RiwayatLaporanPage` + `ProfilDashboardPage`) tinggal ganti URL ke
+  `GET /reports/mine` (header Bearer sudah otomatis dari `config/api.js`) — dikerjakan sesi FE.
+- [x] Laporan anonim milik sesi ini: `user_id` tersimpan meski `mode_identitas=anonim`
+  (lihat kode create — `user_id` tetap diisi bila token ada) → laporan anonim yang dibuat sambil
+  login **tetap muncul di Laporan Saya pemiliknya**, tanpa membuka identitas ke publik.
 
-**Verifikasi:**
+**Verifikasi (2026-10-08):**
 ```bash
-# login user A → kirim 1 laporan; login user B → kirim 1 laporan
-curl -H "Authorization: Bearer $TOKEN_A" "http://localhost:8000/api/v1/reports?mine=true"
+# login user A → kirim laporan; login user B → kirim laporan
+curl -H "Authorization: Bearer $TOKEN_A" "http://localhost:8000/api/v1/reports/mine"
 # → hanya laporan A
-curl "http://localhost:8000/api/v1/reports?mine=true"          # → 401
+curl "http://localhost:8000/api/v1/reports/mine"              # → 401
 ```
+`pytest tests -q` → **89 passed** (6 test BE-50 di `tests/unit/test_laporan.py`).
 
 ---
 
 ## Urutan Pengerjaan (rekomendasi)
 
 1. **FEAT-010** (filter tayang) — perbaikan kecil, dampak besar ke produk.
-2. **FEAT-013** (mine) — router saja, service sudah siap.
+2. **FEAT-013** (mine) — router saja, service sudah siap. **(selesai BE-50)**
 3. **FEAT-008** gap upload foto — endpoint baru.
-4. **FEAT-008** gap rate limiting — middleware.
+4. **FEAT-008** gap rate limiting — middleware. **(selesai BE-26)**
 5. (FEAT-007 galeri di `public-space-service.md` memakai rumus tayang dari langkah 1.)
 
 ---
@@ -184,10 +209,10 @@ curl "http://localhost:8000/api/v1/reports?mine=true"          # → 401
 - [ ] Create `tampilkan_nama` tanpa token → 400
 - [ ] Create `tampilkan_nama` + token → `nama_pelapor` = nama user token (payload diretas tidak mempan)
 - [ ] Create → status `menunggu_verifikasi` + timeline entry pertama ada
-- [ ] `mine=true` dengan token A tidak mengembalikan laporan B
+- [x] `mine=true` dengan token A tidak mengembalikan laporan B (`GET /reports/mine`, BE-50)
 - [ ] Filter tayang: `menunggu_verifikasi` tidak tayang; `diverifikasi` tayang; `ditolak` tidak tayang
 - [ ] Upload: JPEG kecil 2xx + URL terbuka; `.txt` 400; >5MB 400
-- [ ] Rate limit: spam > threshold → 429
+- [x] Rate limit: spam > threshold → 429 (`test_rate_limit.py`, BE-26)
 
 ---
 

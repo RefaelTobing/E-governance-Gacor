@@ -26,6 +26,7 @@ api_router.include_router(
 )
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(laporan.router, prefix="/reports", tags=["reports"])
+api_router.include_router(laporan.admin_router, prefix="/admin", tags=["admin-reports"])
 api_router.include_router(uploads.router, prefix="/uploads", tags=["uploads"])
 api_router.include_router(statistics.router, prefix="/statistics", tags=["statistics"])
 api_router.include_router(sync_data.router, prefix="/admin/sync-data", tags=["admin-sync"])

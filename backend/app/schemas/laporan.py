@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from app.schemas.laporan_timeline import LaporanTimelineResponse
@@ -44,9 +44,29 @@ class LaporanStatusUpdate(BaseModel):
     title: Optional[str] = "Status diperbarui"
     description: Optional[str] = None
 
+class LaporanApproveRequest(BaseModel):
+    """Body opsional approve (BE-29): catatan petugas untuk timeline persetujuan."""
+
+    description: Optional[str] = None
+
+
+class LaporanRejectRequest(BaseModel):
+    """Body reject (BE-30): alasan wajib, disimpan di kolom `alasan_penolakan`."""
+
+    alasan: str
+
+    @field_validator("alasan")
+    @classmethod
+    def _alasan_tidak_kosong(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Alasan penolakan wajib diisi.")
+        return v
+
 class LaporanResponse(LaporanBase):
     id: str
     status: str
+    alasan_penolakan: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     ruang_publik_nama: Optional[str] = None
@@ -59,6 +79,8 @@ class LaporanResponse(LaporanBase):
     long_lokasi_pilihan: Optional[float] = None
     jarak_browser_rp: Optional[float] = None
     jarak_exif_rp: Optional[float] = None
+    # Hanya diisi endpoint daftar flagged admin (BE-31); jalur publik tetap None.
+    flag_count: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -67,3 +89,22 @@ class LaporanDetailResponse(LaporanResponse):
     timeline: List[LaporanTimelineResponse] = []
     
     model_config = ConfigDict(from_attributes=True)
+
+class LaporanStatusResponse(BaseModel):
+    """Status untuk pelapor (BE-24). Sengaja tidak memuat deskripsi, foto, maupun
+    nama pelapor: jalur laporan anonim dibuka hanya dengan bukti kepemilikan id."""
+
+    id: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    timeline: List[LaporanTimelineResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LaporanFlagResponse(BaseModel):
+    """Hasil flag laporan tayang (BE-25). flag_count = jumlah pelapor berbeda."""
+
+    laporan_id: str
+    flag_count: int

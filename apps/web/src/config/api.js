@@ -91,7 +91,8 @@ instance.interceptors.response.use(
 export const assetUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+  const base = BASE_URL || '';
+  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
 };
 
 // Buang param kosong (undefined/null/'') agar backend FastAPI tidak salah
