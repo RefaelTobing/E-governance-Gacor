@@ -59,11 +59,39 @@ Status:
 | --- | --- | --- | --- |
 | FE-22 | ✅ | Struktur panel admin dan routing | Admin layout serta route dashboard tersedia dalam aplikasi saat ini. |
 | FE-23 | ⚠️ | Login admin | Halaman login dan guard tersedia, alur redirect perlu diuji. |
-| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. |
-| FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. |
-| FE-26 | ❌ | Daftar laporan yang di-flag | Belum tersedia. |
+| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` perlu ganti URL (sesi FE). |
+| FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. Tombol **Setujui** belum ada: endpoint `POST /admin/reports/{id}/approve` (BE-29) sudah siap, lihat sub-bagian FE-25A di bawah. |
+| FE-26 | ❌ | Daftar laporan yang di-flag | Belum tersedia; menunggu backend `GET /admin/reports/flagged` (BE-31). |
 | FE-27 | ⚠️ | Manajemen data master ruang publik | Halaman tersedia, indikator edit manual perlu diverifikasi/dilengkapi. |
 | FE-28 | ❌ | Trigger sinkronisasi ETL dari admin | Endpoint backend tersedia, kontrol UI belum tersedia. |
+
+### FE-25A. Tombol Setujui di Detail Moderasi (integrasi BE-29)
+
+**Status:** ❌ (backend siap sejak 2026-10-08, UI belum ada)
+
+**File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
+
+**Pekerjaan:**
+
+1. Tambah tombol "Setujui" di panel Tindakan Petugas (urutan pertama, sebelum "Tandai Dalam Penanganan").
+2. Panggil `POST /api/v1/admin/reports/{id}/approve` dengan body opsional `{ "description": catatanPetugas }`; tanpa catatan, kirim tanpa body.
+3. Tangani `409` (status sekarang di luar `menunggu_verifikasi`/`ditolak`, misal laporan sudah tayang): tampilkan pesan jelas dan muat ulang detail, jangan tampilkan sukses palsu.
+4. Setelah `200`, perbarui state halaman dari response (`LaporanDetailResponse`: status + timeline) lalu arahkan kembali ke antrian.
+
+**Acceptance criteria:**
+
+- Laporan `menunggu_verifikasi` bisa disetujui dari UI: status jadi `diverifikasi`, timeline bertambah "Laporan disetujui", laporan muncul di halaman publik.
+- Approve ganda atau laporan yang sudah tayang memunculkan pesan `409`, bukan sukses.
+- Tanpa sesi admin, permintaan tidak terkirim (atau error `401`/`403` tampil jelas).
+
+**Catatan backend untuk FE (per 2026-10-08, yang kurang dari sisi backend):**
+
+- `PATCH /reports/{id}/status` **belum memvalidasi enum** (perbaikan = BE-51). FE wajib hanya mengirim nilai kanonik: `menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`, `selesai`, `ditolak`. Nilai lain akan tersimpan mentah dan merusak badge/stepper.
+- Alasan penolakan **belum punya kolom sendiri** (BE-51). Saat ini alasan hanya masuk `description` timeline; tampilkan dari timeline detail, jangan berharap field `alasan_penolakan` pada response.
+- `GET /admin/reports` **belum mendukung `?flagged=`** (BE-31) - daftar flagged (FE-26) masih menunggu endpoint itu.
+- Setujui dari status `ditolak` memang diizinkan (laporan bisa ditinjau ulang); hanya status yang sudah tayang yang ditolak `409`.
+
+---
 
 ## A4. Testing Frontend
 
@@ -434,10 +462,11 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 1. **FE-19** — Tampilkan status hasil submit laporan (UX laporan)
 2. **FE-28** — Trigger manual ETL dari UI (admin operasional)
 3. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
-4. **FE-08** — Clustering marker (performance)
-5. **FE-15** — Integrasi OSRM routing (advanced feature)
-6. **FE-12** — Filter fasilitas multi-select
-7. **FE-21** dan **FE-26** — Fitur flag laporan
+4. **FE-25A** - Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
+5. **FE-08** - Clustering marker (performance)
+6. **FE-15** - Integrasi OSRM routing (advanced feature)
+7. **FE-12** - Filter fasilitas multi-select
+8. **FE-21** dan **FE-26** - Fitur flag laporan
 
 ---
 

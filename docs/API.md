@@ -36,6 +36,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/reports/mine` | **Login** | Riwayat laporan milik pemanggil, semua status (BE-50) |
 | `GET` | `/api/v1/reports/{report_id}` | Pemilik/Anonim/Admin | Detail + timeline; milik orang lain -> 403 (BE-52) |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, `?status` kanonik (BE-28/BE-52) |
+| `POST` | `/api/v1/admin/reports/{report_id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
 | `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
 | `POST` | `/api/v1/reports/{report_id}/flag` | **Login** | Tandai laporan tayang tidak pantas (BE-25) |
 | `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
@@ -608,6 +609,25 @@ Antrian tinjauan admin (BE-28 / BE-52) - menggantikan `GET /reports` sebagai daf
 | Admin, tanpa filter | `200` | Semua status |
 | Admin, `?status=menunggu_verifikasi` | `200` | Hanya antrian tindakan |
 | Admin, `?status=menunggu_tinjauan` | `422` | Nilai di luar kanonik |
+| Warga / tanpa token | `403` / `401` | Proteksi role admin |
+
+### `POST /api/v1/admin/reports/{report_id}/approve`
+
+Setujui laporan (BE-29): status jadi `diverifikasi` (tayang), baris timeline
+berjudul "Laporan disetujui". Body opsional `{ "description": "catatan petugas" }`;
+tanpa body memakai deskripsi default `Status diubah menjadi diverifikasi`.
+Response `LaporanDetailResponse` (sama dengan `PATCH /{id}/status`).
+
+Guard: hanya laporan `menunggu_verifikasi` atau `ditolak` yang boleh di-approve;
+status lain, termasuk yang sudah tayang, `409`. Setelah `200` laporan muncul di
+`GET /reports` publik.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Admin + laporan `menunggu_verifikasi` | `200` | Jadi `diverifikasi` + timeline |
+| Admin + laporan `ditolak` | `200` | Boleh disetujui ulang |
+| Admin + laporan sudah tayang (`diverifikasi`/`selesai`) | `409` | Tidak bisa di-approve |
+| Admin, id tidak dikenal | `404` | |
 | Warga / tanpa token | `403` / `401` | Proteksi role admin |
 
 ### `GET /api/v1/reports/{report_id}/status`

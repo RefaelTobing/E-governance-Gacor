@@ -35,13 +35,13 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
-| B4 Moderation Service | 6 | 2 | 2 | 2 |
+| B4 Moderation Service | 6 | 3 | 1 | 2 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **36** | **4** | **16** |
+| **Total** | **56** | **37** | **3** | **16** |
 
 ---
 
@@ -417,9 +417,21 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-08):** `pytest tests -q` -> **98 passed** (9 test baru
     `tests/unit/test_admin_reports.py`: 401 tanpa token, 403 warga, semua-status, filter,
     422 status ngawur, `semua`, detail pemilik/admin/lain/anonim).
-- [ ] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
-  - **Parsial:** dipenuhi `PATCH /reports/{id}/status` (`app/api/v1/laporan.py:84`, sudah admin), tetapi
-    `payload.status` berupa string bebas - tidak divalidasi ke kamus status -> task **BE-51**.
+- [x] **[BE-29]** `POST /admin/reports/{id}/approve` - ubah status jadi tayang.
+  - **Lokasi kode:** `approve_report` di `admin_router` (`app/api/v1/laporan.py`), skema
+    `LaporanApproveRequest` (`app/schemas/laporan.py`), memakai ulang
+    `services/laporan.py::update_report_status` (set status + tulis timeline);
+    test di `tests/unit/test_admin_reports.py` (7 test BE-29).
+  - **Keputusan:** (1) status tujuan = `diverifikasi` (status tayang pertama);
+    (2) guard di **endpoint**, bukan di service: hanya `menunggu_verifikasi`/`ditolak`
+    yang boleh di-approve, status lain (termasuk sudah tayang) -> `409` - dengan begitu
+    `PATCH /reports/{id}/status` tetap bebas sampai validasi enum di **BE-51**;
+    (3) body opsional `{description}` (kosong boleh) menjadi catatan petugas di timeline,
+    judul timeline "Laporan disetujui"; (4) response `LaporanDetailResponse` sama dengan PATCH;
+    (5) tombol Setujui di FE = tugas FE-25 (catatan ditambahkan ke `TASK_GUIDE_FRONTEND.md`).
+  - **Verifikasi (2026-10-08):** `pytest tests -q` -> **105 passed** (7 test baru: 401 tanpa token,
+    403 warga, 404 id tak dikenal, menunggu -> diverifikasi + timeline + tampil di `GET /reports`
+    publik, ditolak -> boleh, sudah tayang (diverifikasi/selesai) -> 409, tanpa body -> deskripsi default).
 - [ ] **[BE-30]** `POST /admin/reports/{id}/reject` - status `ditolak`, wajib sertakan alasan.
   - **Parsial:** alasan hanya ditulis sebagai deskripsi timeline (`app/services/laporan.py:126`),
     **tidak disimpan di kolom laporan** sehingga tidak bisa ditampilkan ulang di daftar/FE -> task **BE-51**.
@@ -557,7 +569,7 @@ Dipakai saat FE minta endpoint; cek daftar ini dulu sebelum menambah task baru.
 | `FormLaporPage` (foto wajib) | `POST /uploads` | BE-49 |
 | `RiwayatLaporanPage` ("Laporan Saya") | `GET /reports/mine` | BE-50 |
 | `DetailRuangPublikPage` (riwayat laporan + galeri) | `GET /public-spaces/{id}/reports` yang benar, gabungan foto | BE-47, BE-48 |
-| `DetailModerasiPage` (Setujui/Tolak + alasan) | enum status + `alasan_penolakan` | BE-51 |
+| `DetailModerasiPage` (Setujui/Tolak + alasan) | `POST /admin/reports/{id}/approve`, enum status + `alasan_penolakan` | BE-29, BE-51 |
 | `AntrianModerasiPage` (antrian + daftar flagged) | `GET /admin/reports`, `/admin/reports/flagged` | BE-52, BE-31 |
 | `DataMasterPage` (Edit Master, Impor Satu Data, Riwayat sinkronisasi) | `PATCH /admin/public-spaces/{id}`, `POST`/`GET /admin/sync-data` | BE-33, BE-18, BE-19 |
 | `KelolaFasilitasPage` | CRUD fasilitas admin | BE-53 |

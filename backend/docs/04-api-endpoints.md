@@ -55,6 +55,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/reports/stats/dashboard` | **Admin** | 4 kartu statistik dashboard |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
 | `GET` | `/api/v1/admin/reports` | **Admin** | Antrian tinjauan: semua status, filter `status` kanonik/`semua` (BE-28/BE-52) |
+| `POST` | `/api/v1/admin/reports/{id}/approve` | **Admin** | Setujui laporan: status -> `diverifikasi` + timeline (BE-29) |
 | **Statistik Publik** ||||
 | `GET` | `/api/v1/statistics/summary` | — | Ringkasan homepage (total, selesai, %) |
 | `GET` | `/api/v1/statistics/testimonials` | — | Testimoni (masih hardcode) |
@@ -255,6 +256,22 @@ Antrian tinjauan admin - menggantikan pemakaian `GET /reports` untuk moderasi.
 | `401` | Tanpa token |
 | `403` | Token bukan admin / akun nonaktif |
 | `422` | `status` di luar kanonik (mis. `menunggu_tinjauan`) |
+
+### `POST /api/v1/admin/reports/{id}/approve` - **Admin** (BE-29)
+Setujui laporan: status jadi `diverifikasi` (tayang) + baris timeline berjudul "Laporan disetujui".
+
+- **Auth:** `Depends(get_current_admin)` → `401` tanpa token, `403` untuk role selain admin.
+- **Body (opsional):** `{ "description": "catatan petugas" }`; tanpa body memakai deskripsi default `Status diubah menjadi diverifikasi`.
+- **Response:** `LaporanDetailResponse` (sama dengan `PATCH /{id}/status`).
+- **Guard:** hanya laporan `menunggu_verifikasi` atau `ditolak`; status lain (termasuk sudah tayang) → `409`.
+
+| Status | Kapan |
+|---|---|
+| `200` | Berhasil; laporan kini tayang dan muncul di `GET /reports` publik |
+| `401` | Tanpa token |
+| `403` | Token bukan admin / akun nonaktif |
+| `404` | Id tidak dikenal |
+| `409` | Status sekarang di luar `menunggu_verifikasi`/`ditolak` |
 
 ### `GET /api/v1/reports/{id}/status` (BE-24, FEAT-010)
 `LaporanStatusResponse` = `id`, `status`, `created_at`, `updated_at`, `timeline[...]`. Tanpa deskripsi, foto, dan nama pelapor.
