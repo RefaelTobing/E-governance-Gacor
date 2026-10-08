@@ -79,3 +79,10 @@ class LaporanStatusResponse(BaseModel):
     timeline: List[LaporanTimelineResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LaporanFlagResponse(BaseModel):
+    """Hasil flag laporan tayang (BE-25). flag_count = jumlah pelapor berbeda."""
+
+    laporan_id: str
+    flag_count: int

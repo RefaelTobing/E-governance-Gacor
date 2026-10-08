@@ -6,6 +6,7 @@ from app.models.ruang_publik_foto import RuangPublikFoto
 from app.models.fasilitas import Fasilitas
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
+from app.models.laporan_flag import LaporanFlag
 from app.models.etl_run import EtlRun
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "Fasilitas",
     "Laporan",
     "LaporanTimeline",
+    "LaporanFlag",
     "EtlRun",
 ]

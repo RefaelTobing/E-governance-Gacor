@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 
@@ -10,8 +10,14 @@ from app.core.exif_utils import extract_gps_from_file
 from app.core.utils import haversine_km
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
+from app.models.laporan_flag import LaporanFlag
 from app.models.ruang_publik import RuangPublik
-from app.schemas.laporan import LaporanCreate, LaporanUpdate, STATUS_TAYANG
+from app.schemas.laporan import (
+    LaporanCreate,
+    LaporanFlagResponse,
+    LaporanUpdate,
+    STATUS_TAYANG,
+)
 from app.services import ruang_publik as crud_ruang_publik
 from app.services import user as crud_user
 
@@ -293,3 +299,49 @@ def get_moderasi_stats(db: Session) -> dict:
         "antrian_moderasi": menunggu,
         "selesai_pekan_ini": selesai_pekan_ini,
     }
+
+def flag_laporan(db: Session, laporan_id: str, user_id: str) -> LaporanFlagResponse:
+    """Flag laporan tayang oleh pengguna lain (BE-25).
+
+    Flag sengaja tidak mengubah `status` maupun menulis `laporan_timeline`:
+    kamus 5 nilai dipakai FE dan galeri, keputusan tetap di admin.
+    """
+    laporan = get_report_by_id(db, laporan_id)
+    if not laporan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan",
+        )
+
+    if laporan.status not in STATUS_TAYANG:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Hanya laporan yang sedang tayang yang bisa dilaporkan",
+        )
+
+    if laporan.user_id and laporan.user_id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Pelapor tidak bisa melaporkan laporannya sendiri",
+        )
+
+    sudah = (
+        db.query(LaporanFlag)
+        .filter(LaporanFlag.laporan_id == laporan_id, LaporanFlag.user_id == user_id)
+        .first()
+    )
+    if sudah:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Anda sudah melaporkan laporan ini",
+        )
+
+    db.add(LaporanFlag(laporan_id=laporan_id, user_id=user_id))
+    db.commit()
+
+    jumlah = (
+        db.query(func.count(LaporanFlag.id))
+        .filter(LaporanFlag.laporan_id == laporan_id)
+        .scalar()
+    )
+    return LaporanFlagResponse(laporan_id=laporan_id, flag_count=int(jumlah or 0))

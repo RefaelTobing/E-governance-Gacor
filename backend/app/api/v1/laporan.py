@@ -14,6 +14,7 @@ from app.models.user import User
 from app.schemas.laporan import (
     LaporanCreate,
     LaporanDetailResponse,
+    LaporanFlagResponse,
     LaporanResponse,
     LaporanStatusResponse,
     LaporanStatusUpdate,
@@ -128,6 +129,20 @@ def read_report_status(
             )
 
     return report
+
+
+@router.post(
+    "/{laporan_id}/flag",
+    response_model=LaporanFlagResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def flag_report(
+    laporan_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Flag laporan tayang yang dianggap tidak pantas (BE-25); aturan di `flag_laporan`."""
+    return crud_laporan.flag_laporan(db, laporan_id, user_id=current_user.id)
 
 
 @router.patch("/{laporan_id}/status", response_model=LaporanDetailResponse)
