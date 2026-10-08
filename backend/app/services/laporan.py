@@ -246,6 +246,30 @@ def update_report_status(
     
     return db_laporan
 
+
+def reject_report(db: Session, laporan_id: str, alasan: str) -> Optional[Laporan]:
+    """Tolak laporan (BE-30): status `ditolak` + alasan tersimpan di kolom,
+    bukan hanya timeline, supaya bisa ditampilkan ulang di daftar/detail FE."""
+    db_laporan = get_report_by_id(db, laporan_id)
+    if not db_laporan:
+        return None
+
+    db_laporan.status = "ditolak"
+    db_laporan.alasan_penolakan = alasan
+    db.commit()
+    db.refresh(db_laporan)
+
+    db.add(LaporanTimeline(
+        laporan_id=laporan_id,
+        status="ditolak",
+        title="Laporan ditolak",
+        description=alasan,
+    ))
+    db.commit()
+    db.refresh(db_laporan)
+
+    return db_laporan
+
 def get_reports_by_ruang_publik(
     db: Session, ruang_publik_id: str, skip: int = 0, limit: int = 100
 ) -> list[Laporan]:

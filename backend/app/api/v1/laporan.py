@@ -17,6 +17,7 @@ from app.schemas.laporan import (
     LaporanCreate,
     LaporanDetailResponse,
     LaporanFlagResponse,
+    LaporanRejectRequest,
     LaporanResponse,
     LaporanStatusResponse,
     LaporanStatusUpdate,
@@ -161,6 +162,36 @@ def approve_report(
         status="diverifikasi",
         title="Laporan disetujui",
         description=payload.description if payload else None,
+    )
+
+
+@admin_router.post(
+    "/reports/{laporan_id}/reject", response_model=LaporanDetailResponse
+)
+def reject_report(
+    laporan_id: str,
+    payload: LaporanRejectRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Tolak laporan: status jadi ditolak + alasan tersimpan (BE-30).
+
+    Alasan wajib (divalidasi skema). Laporan yang sudah ditolak tidak bisa
+    ditolak ulang (409); status tayang boleh diturunkan lewat endpoint ini.
+    """
+    report = crud_laporan.get_report_by_id(db, laporan_id)
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan",
+        )
+    if report.status == "ditolak":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Laporan sudah berstatus ditolak",
+        )
+    return crud_laporan.reject_report(
+        db, laporan_id=laporan_id, alasan=payload.alasan
     )
 
 

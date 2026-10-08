@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from app.schemas.laporan_timeline import LaporanTimelineResponse
@@ -49,9 +49,24 @@ class LaporanApproveRequest(BaseModel):
 
     description: Optional[str] = None
 
+
+class LaporanRejectRequest(BaseModel):
+    """Body reject (BE-30): alasan wajib, disimpan di kolom `alasan_penolakan`."""
+
+    alasan: str
+
+    @field_validator("alasan")
+    @classmethod
+    def _alasan_tidak_kosong(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Alasan penolakan wajib diisi.")
+        return v
+
 class LaporanResponse(LaporanBase):
     id: str
     status: str
+    alasan_penolakan: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     ruang_publik_nama: Optional[str] = None
