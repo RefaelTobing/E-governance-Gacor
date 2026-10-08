@@ -68,6 +68,29 @@ def read_reports(
     )
 
 
+# Sebelum GET /{laporan_id} supaya "mine" tidak tertangkap sebagai id (404).
+@router.get("/mine", response_model=List[LaporanResponse])
+def read_my_reports(
+    status: Optional[str] = Query(None, description="Filter status laporan"),
+    wilayah: Optional[str] = Query(None, description="Filter wilayah"),
+    q: Optional[str] = Query(None, description="Search jenis masalah/deskripsi"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_active_user),
+):
+    """Riwayat "Laporan Saya": laporan milik pemanggil, semua status (BE-50)."""
+    return crud_laporan.get_reports(
+        db,
+        status=status,
+        wilayah=wilayah,
+        q=q,
+        skip=skip,
+        limit=limit,
+        user_id=user.id,
+    )
+
+
 @router.get("/stats/dashboard")
 def get_dashboard_stats(
     db: Session = Depends(get_db),
