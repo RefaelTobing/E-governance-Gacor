@@ -23,6 +23,10 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 
 ---
 
+## 2026-10-08
+
+- **[BE-24]** Endpoint status laporan untuk pelapor - `GET /api/v1/reports/{id}/status` (`read_report_status` di `app/api/v1/laporan.py`, skema `LaporanStatusResponse`): laporan berpemilik hanya terbaca pemilik (token wajib) atau admin, laporan anonim penuh dibuka dengan bukti id UUID; response hanya `id`/`status`/`created_at`/`updated_at`/`timeline` tanpa deskripsi, foto, dan nama pelapor; dokumentasi `docs/API.md`, `04-api-endpoints.md`, dan `features/report-service.md` sinkron; verifikasi: `pytest tests/unit -q` 70 passed (7 test akses baru). B3 Report Service kini 7/10.
+
 ## 2026-10-06
 
 - **[BE-23]** Ambang batas 100 meter anti fake-GPS - blok `lolos_validasi` di akhir `services/laporan.py::create_report`: auto-tayang (`status = diverifikasi` + timeline kedua "Lolos validasi lokasi" berisi jarak meter) hanya bila jarak browser **dan** EXIF ke ruang publik sama-sama ada dan <= 100 m; selainnya tetap `menunggu_verifikasi` (kondisi ketat: tanpa EXIF, tanpa koordinat browser, RP tanpa koordinat, atau salah satu/kedua jarak lewat). Ambang `FAKE_GPS_THRESHOLD_M=100` di `app/core/config.py` + `backend/.env.example`; FE `VITE_FAKE_GPS_THRESHOLD_M` diseragamkan 50 -> 100; aturan dicatat di `docs/API.md` (tabel R1-R12). Verifikasi: 5 skenario baru lulus, suite 62 passed.

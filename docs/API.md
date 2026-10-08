@@ -34,6 +34,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `POST` | `/api/v1/reports` | Opsional | Submit laporan masalah fasilitas (foto wajib, koordinat opsional) |
 | `GET` | `/api/v1/reports` | - | Daftar laporan masyarakat (filter status, wilayah, query) |
 | `GET` | `/api/v1/reports/{report_id}` | - | Detail satu laporan beserta riwayat timeline |
+| `GET` | `/api/v1/reports/{report_id}/status` | Opsional | Status + timeline untuk pelapor (BE-24) |
 | `PATCH` | `/api/v1/reports/{report_id}/status` | **Admin** | Perbarui status proses laporan fasilitas |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Statistik antrian moderasi untuk dashboard admin |
 | `GET` | `/api/v1/users` | **Admin** | Daftar petugas |
@@ -562,6 +563,26 @@ Daftar laporan masyarakat. Parameter query:
 ### `GET /api/v1/reports/{report_id}`
 
 Detail satu laporan masyarakat lengkap dengan timeline tahapan penanganan fasilitas.
+
+### `GET /api/v1/reports/{report_id}/status`
+
+Status ringkas untuk pelapor (FEAT-010, BE-24). Field: `id`, `status`,
+`created_at`, `updated_at`, `timeline`. Tidak memuat deskripsi, foto, maupun
+nama pelapor.
+
+| Kasus | Status | Keterangan |
+|---|---|---|
+| Laporan berpemilik + token pemilik | `200` | Pelapor memantau statusnya |
+| Laporan berpemilik + token orang lain / tanpa token | `403` | Hanya pelapor atau admin |
+| Laporan berpemilik + token pemilik/admin nonaktif | `403` | Akun `is_active = false` |
+| Laporan berpemilik + token admin | `200` | Admin boleh melihat semua |
+| Laporan anonim penuh (`user_id` null), tanpa token | `200` | Id UUID jadi bukti kepemilikan |
+| Id tidak dikenal | `404` | |
+
+```bash
+curl http://localhost:8000/api/v1/reports/<id>/status \
+  -H "Authorization: Bearer <token>"
+```
 
 ### `PATCH /api/v1/reports/{report_id}/status`
 

@@ -17,7 +17,7 @@ Kode terkait:
 |---|---|---|
 | 008 | Form Lapor Fasilitas | **Selesai** (BE-20, BE-46, BE-49 selesai; upload foto wajib & geolokasi) |
 | 009 | Mode Identitas Laporan | **Selesai** (anti-spoofing nama dari server) |
-| 010 | Visibilitas & Status Laporan | **Sebagian** — status+timeline jalan; **filter tayang per-ruang publik rusak** |
+| 010 | Visibilitas & Status Laporan | **Sebagian** — status+timeline jalan; endpoint status pelapor (BE-24) selesai; filter tayang per-ruang publik selesai (BE-47) |
 | 013 | Riwayat "Laporan Saya" | **Belum ada** — endpoint belum filter per-pengguna |
 
 ---
@@ -109,6 +109,7 @@ curl -X POST http://localhost:8000/api/v1/reports -H "Content-Type: application/
 **Sudah jalan:**
 - Status + timeline: setiap perubahan status mencatat `laporan_timeline` (title, description, waktu) — inilah yang ditampilkan stepper/badge FE.
 - `GET /api/v1/reports/{id}` → detail + timeline (terbuka; pelapor bisa memantau — walau belum terfilter kepemilikan, lihat FEAT-013).
+- `GET /api/v1/reports/{id}/status` (**BE-24, selesai 2026-10-08**) → status ringkas khusus pelapor: laporan berpemilik hanya terbaca pemilik/admin, laporan anonim penuh dibuka dengan bukti id UUID, response tanpa deskripsi/foto/nama pelapor. Rincian: `04-api-endpoints.md`.
 - Daftar status kanonik (lihat `03-database-schema.md` §4): `menunggu_verifikasi → diverifikasi → dalam_penanganan → selesai` / `ditolak`.
 
 **GAP SELESAI (BE-47, 2026-10-06) — filter tayang per-ruang publik pernah selalu kosong:**

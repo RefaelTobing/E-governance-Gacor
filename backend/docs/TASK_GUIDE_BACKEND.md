@@ -34,14 +34,14 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B0 Setup & Fondasi | 9 | 9 | 0 | 0 |
 | B1 Public Space Service | 7 | 7 | 0 | 0 |
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
-| B3 Report Service | 10 | 6 | 1 | 3 |
+| B3 Report Service | 10 | 7 | 0 | 3 |
 | B4 Moderation Service | 6 | 0 | 3 | 3 |
 | B5 Data Master Service | 3 | 1 | 0 | 2 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
 | B7 Testing | 5 | 0 | 0 | 5 |
 | B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **30** | **6** | **20** |
+| **Total** | **56** | **31** | **5** | **20** |
 
 ---
 
@@ -319,9 +319,19 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-06):** `pytest tests/unit -q` -> 62 passed (5 skenario baru: valid ->
     `diverifikasi` + timeline 2; jauh, tanpa EXIF, EXIF vs browser bertentangan, EXIF dekat tanpa
     koordinat browser -> `menunggu_verifikasi`).
-- [ ] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
-  - **Parsial:** status sudah ikut di `GET /reports/{id}` dan response submit, tetapi endpoint itu publik
-    dan tidak dibatasi pemilik -> lihat **BE-50** dan **BE-52**.
+- [x] **[BE-24]** `GET /reports/{id}/status` (atau sertakan langsung di response submit). *(FEAT-010)*
+  - **Lokasi kode:** `read_report_status` di `app/api/v1/laporan.py`, skema `LaporanStatusResponse`
+    di `app/schemas/laporan.py`.
+  - **Keputusan akses:** laporan berpemilik hanya terbaca pemilik (token wajib) atau admin, selain itu
+    `403`; laporan anonim penuh (`user_id` null) dibuka bagi siapa pun yang mengetahui id UUID-nya,
+    id menjadi bukti kepemilikan. Response hanya `id`, `status`, `created_at`, `updated_at`,
+    `timeline` (tanpa deskripsi, foto, nama pelapor) supaya jalur anonim tidak membocorkan isi laporan.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` -> 70 passed (7 test baru di
+    `tests/unit/test_laporan.py`: pemilik 200, pihak lain 403, tanpa token 403, admin 200,
+    anonim tanpa token 200, id tidak dikenal 404, akun nonaktif 403; response bebas field
+    `deskripsi`/`nama_pelapor`/`foto_url`).
+    `GET /reports/{id}` publik tetap seperti semula -> urusan menutupnya tetap di **BE-52**,
+    "Laporan Saya" tetap di **BE-50**, tampilan FE tetap di **FE-19**.
 - [ ] **[BE-25]** `POST /reports/{id}/flag` - pengguna lain menandai laporan tayang yang tidak pantas. *(FEAT-011, FE-21)*
   - **Belum ada** endpoint maupun UI di FE.
 - [ ] **[BE-26]** Rate-limiting `POST /reports` per user/IP. *(NFR-002)*

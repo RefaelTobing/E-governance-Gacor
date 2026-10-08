@@ -48,6 +48,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `POST` | `/api/v1/reports` | Token opsional | Kirim laporan (anonim tanpa token) |
 | `GET` | `/api/v1/reports` | — | Daftar laporan (filter status/wilayah/q) |
 | `GET` | `/api/v1/reports/{id}` | — | Detail + timeline |
+| `GET` | `/api/v1/reports/{id}/status` | Token opsional | Status + timeline untuk pelapor (BE-24) |
 | `PATCH` | `/api/v1/reports/{id}/status` | **Admin** | Update status + tulis timeline |
 | `GET` | `/api/v1/reports/stats/dashboard` | **Admin** | 4 kartu statistik dashboard |
 | `GET` | `/api/v1/reports/stats/moderasi` | **Admin** | Antrian moderasi + selesai pekan ini |
@@ -225,6 +226,18 @@ Query: `status` (persis, `"semua"` = tanpa filter), `wilayah`, `q` (LIKE jenis_m
 
 ### `GET /api/v1/reports/{id}`
 `LaporanDetailResponse` = field laporan + `user{...}` (bisa null) + `timeline[{status,title,description,created_at,...}]`. `404` bila tak ada.
+
+### `GET /api/v1/reports/{id}/status` (BE-24, FEAT-010)
+`LaporanStatusResponse` = `id`, `status`, `created_at`, `updated_at`, `timeline[...]`. Tanpa deskripsi, foto, dan nama pelapor.
+
+Aturan akses (`app/api/v1/laporan.py::read_report_status`):
+- Laporan berpemilik: token wajib, hanya pemilik atau admin yang akunnya aktif; selain itu `403`.
+- Laporan anonim penuh (`user_id` null): cukup id UUID-nya, tanpa token (`200`).
+- Id tidak dikenal: `404`.
+
+```bash
+curl http://localhost:8000/api/v1/reports/<id>/status -H "Authorization: Bearer <token>"
+```
 
 ### `PATCH /api/v1/reports/{id}/status` — **Admin** (FEAT-011)
 ```json
