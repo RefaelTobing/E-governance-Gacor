@@ -189,7 +189,8 @@ def get_reports(
     q: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
-    user_id: Optional[str] = None
+    user_id: Optional[str] = None,
+    hanya_tayang: bool = False,
 ) -> list[Laporan]:
     stmt = select(Laporan).options(
         joinedload(Laporan.user),
@@ -198,6 +199,8 @@ def get_reports(
     )
     
     conditions = []
+    if hanya_tayang:
+        conditions.append(Laporan.status.in_(STATUS_TAYANG))
     if user_id:
         conditions.append(Laporan.user_id == user_id)
     if status and status != "semua":

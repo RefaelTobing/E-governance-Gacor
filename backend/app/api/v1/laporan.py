@@ -10,6 +10,7 @@ from app.api.deps import (
     oauth2_scheme_optional,
 )
 from app.core.security import verify_token
+from app.models.laporan import Laporan
 from app.models.user import User
 from app.schemas.laporan import (
     LaporanCreate,
@@ -18,11 +19,13 @@ from app.schemas.laporan import (
     LaporanResponse,
     LaporanStatusResponse,
     LaporanStatusUpdate,
+    STATUS_KANONIK,
 )
 from app.schemas.user import ROLE_ADMIN
 from app.services import laporan as crud_laporan
 
 router = APIRouter()
+admin_router = APIRouter()
 
 
 def _peninjau(db: Session, token: Optional[str]) -> Optional[User]:
@@ -32,6 +35,17 @@ def _peninjau(db: Session, token: Optional[str]) -> Optional[User]:
     if not payload:
         return None
     return db.query(User).filter(User.id == payload.get("sub")).first()
+
+
+def _boleh_lihat(db: Session, report: Laporan, token: Optional[str]) -> bool:
+    """Laporan anonim penuh terbuka dengan bukti id UUID (BE-24);
+    laporan berpemilik hanya pemilik atau admin aktif."""
+    if not report.user_id:
+        return True
+    peninjau = _peninjau(db, token)
+    return peninjau is not None and peninjau.is_active and (
+        peninjau.id == report.user_id or peninjau.role == ROLE_ADMIN
+    )
 
 
 @router.post("", response_model=LaporanResponse, status_code=status.HTTP_201_CREATED)
@@ -62,9 +76,11 @@ def read_reports(
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
-    """Daftar laporan masyarakat."""
+    """Daftar laporan masyarakat - hanya yang tayang (BE-52); antrian moderasi pindah
+    ke GET /admin/reports."""
     return crud_laporan.get_reports(
-        db, status=status, wilayah=wilayah, q=q, skip=skip, limit=limit
+        db, status=status, wilayah=wilayah, q=q, skip=skip, limit=limit,
+        hanya_tayang=True,
     )
 
 
@@ -91,6 +107,31 @@ def read_my_reports(
     )
 
 
+@admin_router.get("/reports", response_model=List[LaporanResponse])
+def read_admin_reports(
+    status: Optional[str] = Query(None, description="Filter status (kanonik, atau 'semua')"),
+    wilayah: Optional[str] = Query(None, description="Filter wilayah"),
+    q: Optional[str] = Query(None, description="Search jenis masalah/deskripsi"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Antrian tinjauan admin: semua status, proteksi role admin (BE-28).
+
+    Nilai `status` divalidasi ke STATUS_KANONIK (atau 'semua') agar tidak ada
+    filter ngawur yang diam-diam mengosongkan antrian.
+    """
+    if status and status != "semua" and status not in STATUS_KANONIK:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Status tidak dikenal: {status}",
+        )
+    return crud_laporan.get_reports(
+        db, status=status, wilayah=wilayah, q=q, skip=skip, limit=limit
+    )
+
+
 @router.get("/stats/dashboard")
 def get_dashboard_stats(
     db: Session = Depends(get_db),
@@ -110,13 +151,23 @@ def get_moderasi_stats(
 
 
 @router.get("/{laporan_id}", response_model=LaporanDetailResponse)
-def read_report(laporan_id: str, db: Session = Depends(get_db)):
-    """Detail satu laporan beserta riwayat timeline."""
+def read_report(
+    laporan_id: str,
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+):
+    """Detail satu laporan beserta timeline (BE-52): berpemilik hanya
+    pemilik/admin, anonim penuh terbuka dengan bukti id UUID."""
     report = crud_laporan.get_report_by_id(db, laporan_id)
     if not report:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Laporan tidak ditemukan"
+        )
+    if not _boleh_lihat(db, report, token):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Hanya pelapor atau admin yang boleh melihat laporan ini"
         )
     return report
 
@@ -140,16 +191,11 @@ def read_report_status(
             detail="Laporan tidak ditemukan"
         )
 
-    if report.user_id:
-        peninjau = _peninjau(db, token)
-        boleh = peninjau is not None and peninjau.is_active and (
-            peninjau.id == report.user_id or peninjau.role == ROLE_ADMIN
+    if not _boleh_lihat(db, report, token):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Hanya pelapor atau admin yang boleh melihat status laporan ini"
         )
-        if not boleh:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Hanya pelapor atau admin yang boleh melihat status laporan ini"
-            )
 
     return report
 
