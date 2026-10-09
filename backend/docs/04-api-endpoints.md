@@ -19,7 +19,8 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 |---|---|---|---|
 | `GET` | `/health` | — | Liveness (server hidup ≠ DB siap) |
 | **Auth** ||||
-| `POST` | `/api/v1/auth/login` | — | Tukar email+sandi → token (OAuth2 form) |
+| `POST` | `/api/v1/auth/login` | — | Tukar email+sandi → token (OAuth2 form); semua role |
+| `POST` | `/api/v1/admin/login` | — | Login khusus petugas; non-admin `403`, kredensial salah `400` (BE-34) |
 | `POST` | `/api/v1/auth/register` | — | Daftar warga baru (role dipaksa `warga`) |
 | `GET` | `/api/v1/auth/me` | Token | Profil user yang sedang login |
 | **Kategori & Fasilitas** ||||
@@ -40,7 +41,9 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
 | `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` (resmi + laporan tayang, BE-48) + `stats{}` |
 | `GET` | `/api/v1/public-spaces/{id}/reports` | — | Laporan tayang per ruang publik (filter `STATUS_TAYANG`, BE-47) |
-| **Kelola Foto Ruang Publik (Admin)** ||||
+| **Ruang Publik (Admin)** ||||
+| `GET` | `/api/v1/admin/public-spaces` | **Admin** | Data master lengkap + `field_source` + `jumlah_fasilitas` + `stats` (BE-32) |
+| `PATCH` | `/api/v1/admin/public-spaces/{id}` | **Admin** | Edit manual; kolom terubah ditandai `field_source` (BE-33) |
 | `GET` | `/api/v1/admin/public-spaces/{id}/photos` | **Admin** | Daftar foto resmi, urut terlama |
 | `POST` | `/api/v1/admin/public-spaces/{id}/photos` | **Admin** | Unggah foto resmi (multipart `file`) → `201` |
 | `DELETE` | `/api/v1/admin/public-spaces/{id}/photos/{foto_id}` | **Admin** | Hapus satu foto resmi; `404` bila tak ada |
@@ -93,6 +96,21 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 | `403` | Akun `is_active=false` |
 
 Token berlaku **7 hari** (`ACCESS_TOKEN_EXPIRE_MINUTES`), subject = `user.id`, HS256 + `SECRET_KEY`.
+
+### `POST /api/v1/admin/login` (BE-34)
+Login terpisah untuk petugas. Format body sama dengan `/auth/login` (`application/x-www-form-urlencoded`, `username`=email), tetapi **role diperiksa sebelum token diterbitkan**: akun non-admin ditolak `403` walaupun sandinya benar.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/admin/login \
+  -d "username=petugas@jakarta.go.id&password=RukaJakarta2026"
+```
+| Status | Kapan |
+|---|---|
+| `200` | Admin aktif, kredensial benar |
+| `400` | Email/sandi salah (tidak membocorkan apakah email terdaftar) |
+| `403` | Akun nonaktif, atau bukan role `admin` ("Endpoint ini khusus petugas") |
+
+> `/auth/login` tetap menerima semua role untuk FE publik & warga; endpoint ini jalur khusus petugas. Pengetatan proteksi endpoint admin lain dibahas di BE-35/BE-52/BE-54.
 
 ### `POST /api/v1/auth/register`
 Body JSON. Role selalu dipaksa `warga` — nilai lain ditolak `400` (keamanan: admin tidak bisa dibuat dari sini).

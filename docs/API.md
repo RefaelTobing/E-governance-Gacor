@@ -18,7 +18,8 @@ Swagger UI: <http://localhost:8000/docs>
 | Method | Path | Auth | Keterangan |
 |---|---|---|---|
 | `GET` | `/health` | — | Liveness check |
-| `POST` | `/api/v1/auth/login` | — | Tukar email+sandi jadi token |
+| `POST` | `/api/v1/auth/login` | — | Tukar email+sandi jadi token (semua role) |
+| `POST` | `/api/v1/admin/login` | — | Login khusus petugas (non-admin 403) (BE-34) |
 | `POST` | `/api/v1/auth/register` | — | Daftar warga baru |
 | `GET` | `/api/v1/auth/me` | Token | Profil user yang sedang login |
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
@@ -88,6 +89,25 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 | `403` | Akun ada tapi `is_active = false` |
 
 Token berlaku 7 hari (`ACCESS_TOKEN_EXPIRE_MINUTES`).
+
+### `POST /api/v1/admin/login` (BE-34)
+
+Login khusus petugas. Format body sama dengan `/auth/login` (OAuth2 form,
+`username`=email). Beda intinya: **role diperiksa sebelum token diterbitkan**,
+jadi akun `warga` dengan kredensial benar tetap ditolak `403`.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/admin/login \
+  -d "username=petugas@jakarta.go.id&password=RukaJakarta2026"
+```
+
+| Status | Kapan |
+|---|---|
+| `200` | Admin aktif, kredensial benar |
+| `400` | Email atau sandi salah |
+| `403` | Akun nonaktif, atau bukan role `admin` ("Endpoint ini khusus petugas") |
+
+`/auth/login` tetap terbuka semua role untuk FE publik & warga.
 
 ### `POST /api/v1/auth/register`
 

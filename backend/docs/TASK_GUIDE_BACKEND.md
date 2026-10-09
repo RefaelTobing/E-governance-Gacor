@@ -547,11 +547,17 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 ## B6. Admin Auth & Pemisahan Akses (FEAT-014)
 
-- [ ] **[BE-34]** `POST /admin/login` - terpisah dari login publik, validasi role `admin` sebelum issue token.
-  - **Parsial:** `POST /auth/login` (`app/api/v1/auth.py:14`) dipakai semua role dan **tidak memvalidasi role
-    saat issue token** - proteksi baru terjadi di `get_current_admin`. Untuk FE ini cukup, tetapi ketentuan
-    "login terpisah" di PRD belum terpenuhi: perlu pengecekan role di login admin (atau catatkan deviasi di PRD).
-  - **Verifikasi:** login dengan akun `warga` lewat endpoint admin -> 403; akun admin -> 200.
+- [x] **[BE-34]** `POST /admin/login` - terpisah dari login publik, validasi role `admin` sebelum issue token.
+  - **Lokasi kode:** `admin_router` di `app/api/v1/auth.py` (prefix `/admin` di `api.py`), helper bersama
+    `_autentikasi()` + `_token()` dipakai `/auth/login` dan `/admin/login`.
+  - **Keputusan:** (1) warga dengan kredensial benar di `/admin/login` -> `403 "Endpoint ini khusus petugas"`;
+    (2) kredensial salah/tak ada -> `400`, akun nonaktif -> `403` (sama dengan login publik);
+    (3) `/auth/login` lama tetap menerima semua role (FE publik/warga) - pengetatan sisa admin = BE-35/BE-52/BE-54;
+    (4) `EmailStr` menolak domain `.local`, teste pakai `uji.example`.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` 149 -> **156 passed** (7 test baru
+    `test_admin_login.py`: admin 200 + token lolos `/auth/me` + role `admin`, warga 403, akun nonaktif 403,
+    sandi salah & email tak ada 400, regresi `/auth/login` tetap 200 untuk admin & warga). Tiga kegagalan
+    tersisa (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
 - [ ] **[BE-35]** Middleware/dependency proteksi khusus role `admin` di seluruh endpoint `/admin/*`,
       endpoint publik tidak bisa diakses ambigu dengan token admin.
   - **Parsial:** `get_current_admin` dipakai di `/users*`, `/reports/stats/*`, `PATCH /reports/{id}/status`.

@@ -17,14 +17,14 @@ Kode terkait:
 
 | Aspek FEAT-014 (PRD, baru ditambahkan) | Status |
 |---|---|
-| Login terpisah untuk petugas (role admin) | **Selesai** |
+| Login terpisah untuk petugas (role admin) | **Selesai** — `POST /admin/login` menolak non-admin `403` sebelum issue token (BE-34) |
 | Register publik hanya `warga` | **Selesai** (role dipaksa di dua lapis) |
 | Endpoint admin ditolak untuk non-admin & akun nonaktif | **Selesai** (`get_current_admin`) |
 | Sesi JWT masa berlaku terbatas | **Selesai** (7 hari) |
 | Tambah/ubah/nonaktifkan/aktifkan petugas | **Selesai** (endpoint `/users`) |
 | Admin aktif terakhir tidak bisa dinonaktifkan | **Selesai** (guard `409`) |
-| Proteksi seluruh endpoint admin termasuk `POST /categories` | **BELUM** — gap |
-| Refresh / revoke token | **Belum** — gap opsional |
+| Proteksi seluruh endpoint admin termasuk `POST /categories` | **BELUM** — gap (BE-54) |
+| Refresh / revoke token | **Belum** — gap opsional (BE-55) |
 
 ---
 
@@ -67,6 +67,15 @@ oauth2_scheme          → ambil token dari header (401 bila hilang)
 2. Service dipanggil dengan `role=ROLE_WARGA` **hardcode** — nilai body tidak pernah diteruskan
 
 Hasil: **mustahil** membuat akun admin lewat endpoint publik. Admin hanya lahir dari `POST /users` (sesi admin) atau `seed_admin`.
+
+### 1.5 Login petugas terpisah (`POST /admin/login`, BE-34)
+
+- Endpoint: `admin_router` di `app/api/v1/auth.py`, didaftarkan `api.py` → `POST /api/v1/admin/login`.
+- Kredensial diverifikasi helper bersama `_autentikasi()` (dipakai juga `/auth/login`): user + sandi → `400`, akun nonaktif → `403`.
+- **Beda kunci:** `role != admin` → `403 "Endpoint ini khusus petugas"`, jadi warga dengan sandi benar tetap ditolak di jalur petugas.
+- Body = OAuth2 form-urlencoded (`username`=email), response `Token` sama seperti publik.
+- **Keputusan:** `/auth/login` lama **tetap** menerima semua role untuk FE publik & warga; endpoint ini **menambah** jalur petugas, bukan mengganti. Pengetatan proteksi endpoint admin yang masih bocor tetap tugas BE-35/BE-52/BE-54.
+- **FE:** `LoginPemerintahPage` saat ini masih memanggil `/auth/login`; mengarahkannya ke `/admin/login` adalah sesi FE (opsional, tidak menahan BE-34).
 
 ---
 
