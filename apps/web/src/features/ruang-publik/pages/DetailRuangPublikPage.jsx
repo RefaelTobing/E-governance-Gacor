@@ -134,7 +134,7 @@ export const DetailRuangPublikPage = () => {
   const handleFlag = async (laporanId) => {
     setFlagError('');
     if (!user || !token) {
-      navigate('/login', { state: { from: location } });
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     try {
@@ -182,7 +182,7 @@ export const DetailRuangPublikPage = () => {
 
   const handleSaveSpace = () => {
     if (!user || !token) {
-      navigate('/login', { state: { from: location } });
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     toggleSaveSpace(detail.id);

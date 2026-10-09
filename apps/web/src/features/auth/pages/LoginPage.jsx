@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, Card, CardBody, Logo } from '../../../components';
-import { api } from '../../../config/api';
-import { loginPemerintah, getMe } from '../../../services/authService';
+import { loginPemerintah, getMe, registerWarga } from '../../../services/authService';
+import { redirectAman } from '../../../utils/redirectAman';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isRegisterParam = searchParams.get('mode') === 'register';
+  const redirectTujuan = redirectAman(searchParams.get('redirect'));
 
   const [isRegister, setIsRegister] = useState(isRegisterParam);
   const { login } = useAuth();
@@ -17,7 +18,6 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nama, setNama] = useState('');
-  const [noHp, setNoHp] = useState('');
   
   // UI States
   const [isLoading, setIsLoading] = useState(false);
@@ -32,17 +32,11 @@ export const LoginPage = () => {
 
     try {
       if (isRegister) {
-        await api.post('/api/v1/auth/register', {
-          name: nama,
-          email,
-          password,
-          role: 'warga',
-        });
+        await registerWarga({ name: nama, email, password });
         setSuccessMsg('Registrasi berhasil! Silakan masuk dengan akun Anda.');
         setEmail('');
         setPassword('');
         setNama('');
-        setNoHp('');
         setIsRegister(false);
         setIsLoading(false);
         return;
@@ -56,7 +50,7 @@ export const LoginPage = () => {
       const userData = await getMe(token);
 
       login(userData, token);
-      navigate('/home');
+      navigate(redirectTujuan || '/home');
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -144,13 +138,6 @@ export const LoginPage = () => {
                   placeholder="Masukkan nama lengkap Anda"
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
-                  required
-                />
-                <Input
-                  label="Nomor WhatsApp / HP"
-                  placeholder="0812xxxxxxxx"
-                  value={noHp}
-                  onChange={(e) => setNoHp(e.target.value)}
                   required
                 />
               </>

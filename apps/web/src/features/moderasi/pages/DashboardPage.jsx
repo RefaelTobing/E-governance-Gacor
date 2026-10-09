@@ -152,9 +152,6 @@ export const DashboardPage = () => {
               {isLoading ? '...' : (stats?.selesai ?? laporanList.filter(l => l.status === 'selesai').length)}
             </div>
             <span className="text-caption">Fasilitas Normal Kembali</span>
-            <div style={{ marginTop: '12px' }}>
-              <span className="badge badge-success">Kondisi RTH Terverifikasi</span>
-            </div>
           </CardBody>
         </Card>
       </div>

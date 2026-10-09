@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, Card, CardBody, Logo } from '../../../components';
 import { loginPemerintah, getMe } from '../../../services/authService';
+import { redirectAman } from '../../../utils/redirectAman';
 
 export const LoginPemerintahPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTujuan = redirectAman(searchParams.get('redirect'));
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +29,7 @@ export const LoginPemerintahPage = () => {
       }
       
       login(userData, tokenData.access_token);
-      navigate('/dashboard');
+      navigate(redirectTujuan || '/dashboard');
     } catch (err) {
       setError(err.message || 'Gagal login, periksa kembali kredensial Anda.');
     } finally {

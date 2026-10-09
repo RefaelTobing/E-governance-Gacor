@@ -1,10 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { CheckCircle2, Clock, Home, Send, Eye, MapPin, Tag } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge } from '../../../components';
+import { STATUS_LAPORAN } from '../../../config/constants';
 
 // Status yang dianggap sudah tayang menurut kontrak backend
 // (backend/app/schemas/laporan.py: STATUS_TAYANG).
-const STATUS_TAYANG = ['diverifikasi', 'dalam_penanganan', 'selesai'];
+const STATUS_TAYANG = [
+  STATUS_LAPORAN.DIVERIFIKASI.key,
+  STATUS_LAPORAN.DALAM_PENANGANAN.key,
+  STATUS_LAPORAN.SELESAI.key,
+];
 
 /**
  * Susun alasan kualitatif kenapa laporan masuk antrean tinjauan admin.
@@ -58,7 +63,7 @@ export const StatusHasilSubmit = ({
         tint: 'var(--color-success-light)',
         accent: 'var(--color-success)',
         Icon: CheckCircle2,
-        badgeStatus: 'diverifikasi',
+        badgeStatus: STATUS_LAPORAN.DIVERIFIKASI.key,
         badgeLabel: 'Laporan Tayang',
         heading: 'Laporan Anda Sudah Tayang',
         body: 'Laporan Anda lolos validasi lokasi dan langsung ditayangkan sehingga dapat dilihat pengguna lain.',
@@ -67,10 +72,10 @@ export const StatusHasilSubmit = ({
         tint: 'var(--color-info-light)',
         accent: 'var(--color-info)',
         Icon: Clock,
-        badgeStatus: 'menunggu_verifikasi',
+        badgeStatus: STATUS_LAPORAN.MENUNGGU_VERIFIKASI.key,
         badgeLabel: 'Menunggu Tinjauan Admin',
         heading: 'Laporan Menunggu Tinjauan Admin',
-        body: 'Laporan Anda memerlukan verifikasi lokasi oleh pengelola sebelum ditayangkan. Proses ini biasanya selesai dalam 1×24 jam kerja.',
+        body: 'Laporan Anda memerlukan verifikasi lokasi oleh pengelola sebelum ditayangkan.',
       };
 
   const { Icon } = theme;

@@ -72,11 +72,12 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **D** | Data Master & ETL | ✅ Selesai & push | `bb6c752` |
 | **E** | Laporan & Ruang Publik | ⏳ Belum dikerjakan | — |
 | **F** | OSRM Routing (FE-15) | ⏳ Belum dikerjakan | — |
-| **G** | Visual, Responsif, A11y, Audit | ⏳ Belum dikerjakan | — |
+| **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | *(lihat §8)* |
+| **G (visual)** | Verifikasi 12 layar + responsif + a11y | ⏳ Belum dikerjakan | — |
 | **H** | Testing (FE-29/30/31) | ⏳ Belum dikerjakan | — |
 | **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
 
-**4 dari 9 fase selesai.** 5 fase sisa (E, F, G, H, I) — untuk urutan & alasannya, lihat **§11**.
+**4 dari 9 fase selesai + G-audit (pre-pass).** 5 fase sisa (E, F, G-visual, H, I) — untuk urutan & alasannya, lihat **§11**.
 
 ---
 
@@ -319,7 +320,10 @@ Alur klik utuh: beranda → daftar → detail → form lapor → status → **la
 
 ---
 
-## 8. FASE G — Verifikasi Visual, Responsif, A11y, Audit  ⏳ BELUM
+## 8. FASE G — Verifikasi Visual, Responsif, A11y, Audit
+
+> **Ahli status:** bagian **AUDIT (G4/G5/G6) SUDAH DIKERJAKAN** sebagai pre-pass (§11).
+> Bagian **VISUAL (G1/G2/G3) masih BELUM** — wajib setelah E & F. Lihat di bawah.
 
 ### G1. Verifikasi visual 12 layar (Fase 4 workflow)
 Sumber gambar: `apps/web/Public/RukaFinalFigma/Screen*.png` + `DESIGN.md`.
@@ -342,36 +346,71 @@ Navbar mengecil, peta+list menumpuk, kartu 1 kolom, tabel scroll horizontal, for
 Kontras teks, ukuran font, fokus keyboard, label form, alt text, target klik;
 **status tidak boleh hanya lewat warna** (wajib ikon + teks).
 
-### G4. Audit fitur terlarang (FEAT — dari `WORKFLOWFE.md` §31 & §45)
-Yang **MASIH KETAHUAN** di kode (grep 2026-10-09):
-| Temuan | Lokasi | Catatan |
-|---|---|---|
-| `Akurasi GPS ±4m (Presisi)` | `features/laporan/pages/DetailStatusLaporanPage.jsx:234` | **GPS accuracy = dilarang** |
-| `Tim teknis dan regu...` + `Kontak regu: ...` | `features/moderasi/pages/PetugasLapanganPage.jsx:45,90` | kata **"teknisi"/"regu" = dilarang** |
+### G4. Audit fitur terlarang ✅ SELESAI (`chore(frontend): audit G4-G6`)
+Temuan awal dokumen (grep 2026-10-09) **semua sudah dibereskan**, plus temuan baru
+dari grep menyeluruh yang belum tercatat di draft awal:
 
-Sudah dibersihkan di Fase B: `ID SPESIFIKASI`, `Prioritas Penataan`, hardcoded timeline.
+| Temuan | Lokasi awal | Aksi |
+|---|---|---|
+| `Akurasi GPS ±4m (Presisi)` | `DetailStatusLaporanPage.jsx:234` | **Dihapus** (blok GPS accuracy) |
+| `Tim teknis dan regu...` / `Kontak regu` / `Tambah Regu Petugas` / `Hubungi Regu` | `PetugasLapanganPage.jsx:45,48,90,101` | Diganti netral (`petugas`, `Daftar petugas…`) |
+| SLA `1x24 jam` | `HomePage.jsx:548`, `TentangPage.jsx:85`, `BantuanPage.jsx:15`, `StatusHasilSubmit.jsx:73` | Klaim waktu dihapus → "ditinjau pengelola sebelum ditayangkan" |
+| `tim patroli teknis` / `petugas teknis ... suku cadang` | `FormLaporPage.jsx:709,726` | Ditulis ulang netral |
+| `presisi` di copy user-facing | `HomePage`, `Tentang`, `Bantuan`, `FormLapor` (error + komentar) | → "titik lokasi" |
+| `audit log` | `BantuanPage.jsx:19` | → "integritas laporan" |
+| `favorit` | `RuangTersimpanPage.jsx:77` | → "untuk mengaksesnya dengan cepat" |
+| `rating` (pipeline mati) | `TESTIMONIALS` + `statsService.getTestimonials` + CSS marquee orphan | **Dihapus seluruhnya** (tak ada konsumen) |
+| Kata terlarang di mock dev | `mockData.js` (tim teknis, petugas teknis, `Regu 0X`, "Estimasi 1-2 Hari") | Dibersihkan |
+| Badge "Terverifikasi" palsu/hardcode | `DaftarRuangPublikPage:582,506`, `DashboardPage:156`, `ProfilDashboardPage:66` | Dihapus / → "Warga Terdaftar" (field `verified` asli/data-driven **tetap**) |
+| Komentar "Akurasi" | `useGeolocation.js:102` | → "GPS high-accuracy" |
+
+Catatan: endpoint backend `/statistics/testimonials` **masih** mengembalikan `rating`
+— di luar scope FE, tidak disentuh.
+
 Daftar penuh yang dilarang: SLA/countdown, penugasan teknisi/regu, kode aset, lencana
 terverifikasi, presisi koordinat/GPS accuracy, bukti perbaikan, dispatch/queue, rating,
 review, favorit, notifikasi, chat, gamifikasi, statistik pengunjung, AI assistant.
 
-### G5. Audit brand — **hanya "RuangTerbuka" yang tampil**
-| Temuan | Lokasi | Sifat |
+### G5. Audit brand ✅ SELESAI — **hanya "RuangTerbuka" yang tampil**
+| Temuan | Lokasi | Aksi |
 |---|---|---|
-| `"name": "raku-jakarta-web"` | `apps/web/package.json` | Internal, tapi harus diganti |
-| `ruka_saved_spaces_`, `ruka_theme`, `ruka_local_profile`, `ruka_page_size` | `ProfilContext.jsx`, `DaftarRuangPublikPage.jsx` | localStorage key (internal — putuskan apakah rename) |
+| `"name": "raku-jakarta-web"` | `apps/web/package.json` (+ `package-lock.json`) | → `"ruangterbuka-web"`, lockfile di-regenerate |
+| `ruka_saved_spaces_`, `ruka_theme`, `ruka_local_profile`, `ruka_page_size` | `ProfilContext.jsx`, `DaftarRuangPublikPage.jsx` | **Rename `rt_*`**, tanpa migrasi (keputusan user — data lokal tahap MVP boleh hilang) |
 
-Dilarang tampil: Raku, Raku Jakarta, RuangWarga, RUKA, nama placeholder.
+Grep brand (`Raku|Raku Jakarta|RuangWarga|RUKA|raku|ruka`) di `src/` + `package.json` = **0 hit**.
 
-### G6. Backlog teknis lintas-fase (belum tersentuh)
-- [ ] `config/constants.js` masih `export const CONSTANTS = {};` → **enum status kanonik**
-      belum dipusatkan (rekomendasi DESIGN.md §3.2.4) — seharusnya jadi satu sumber untuk
-      `StatusBadge`, filter, timeline.
-- [ ] `config/categories.js` masih mock (`MOCK_CATEGORIES`) dan **tak dipakai siapa pun** —
-      `services/categoryService.js` sudah benar. Hapus atau sinkronkan.
-- [ ] `LoginPage.jsx` register masih `api.post('/api/v1/auth/register', ...)` **inline**
-      di halaman — harus lewat `authService` (CONVENTIONS §7: tak boleh ada fetch/API di halaman).
-- [ ] `RequireAuth` pakai `state.from`, `CONVENTIONS` §1.3 minta `?redirect=` (lihat Fase A §2).
-- [ ] Route `*` tidak lagi redirect — sudah ✅ (Fase A).
+### G6. Backlog teknis lintas-fase ✅ SELESAI
+- [x] `config/constants.js` `CONSTANTS = {}` → **enum kanonik** `STATUS_LAPORAN` +
+      `URUTAN_STATUS_LAPORAN`; dikonsumsi `StatusBadge`, `DetailModerasiPage` (stepper),
+      `StatusHasilSubmit`. Filter literal di page lain sengaja dibiarkan (key sudah konsisten).
+- [x] `config/categories.js` + shim `config/mockData.js` (mock mati, tak ada importer) —
+      **dihapus**; `services/categoryService.js` tetap jalur resmi.
+- [x] `LoginPage.jsx` register → `authService.registerWarga()` (CONVENTIONS §7); field
+      "No HP" yang tak diproses backend **dihapus**.
+- [x] `RequireAuth` `state.from` → **`?redirect=`** (CONVENTIONS §1.3); konsumen di
+      `LoginPage`/`LoginPemerintahPage`/`DetailRuangPublikPage` + util validasi
+      `utils/redirectAman.js` (anti open-redirect).
+- [x] Route `*` tidak lagi redirect — sudah ✅ (Fase A).
+
+### G-audit — Keputusan yang dikunci (Konflik → Keputusan → Alasan)
+1. **localStorage `ruka_*`** → **rename `rt_*` tanpa migrasi**. Alasan: tahap MVP/dev,
+   data lokal (tema, ruang tersimpan, profil lokal) boleh hilang; key internal.
+2. **Field "No HP" di form register** → **dihapus**. Alasan: backend (`UserCreate`) tak
+   punya kolom phone — field wajib yang datanya dibuang = "sukses palsu" bentuk lain.
+3. **Halaman Ruang Tersimpan (bookmark)** → **dipertahankan**, hanya kata "favorit"
+   dibersihkan. Alasan: fitur sudah jalan & ter-route; keputusan hapus/tidak ditunda ke
+   akhir project (setelah G-visual/H) agar konteksnya jelas. **Catat: §45 WORKFLOWFE
+   melarang "favorites/bookmarks" — ini utang keputusan yang belum ditutup.**
+4. **Badge "Terverifikasi"** → hardcode/palsu **dihapus** (`DaftarRuangPublikPage`,
+   `DashboardPage`, `ProfilDashboardPage` → "Warga Terdaftar"); tampilan yang
+   **data-driven dari kolom BE `verified`** (`DetailRuangPublikPage`, `PetaDashboardAdmin`,
+   `EditRuangPublikModal`) **tetap**. Alasan: field `verified` nyata (FE-27/BE-33).
+5. **`?redirect=`** → disamakan dengan CONVENTIONS §1.3 + validasi `utils/redirectAman.js`
+   (anti open-redirect). Alasan: `state.from` lama ditulis tapi **tak pernah dibaca**
+   (`LoginPage` hardcode `/home`), jadi redirect pasca-login memang belum jalan.
+6. **Enum status** → definisi kanonik di `constants.js`; konsumen awal `StatusBadge`,
+   `DetailModerasiPage`, `StatusHasilSubmit`. Filter literal page lain dibiarkan
+   (key konsisten) — refactor penuh diserahkan ke G-visual/H bila perlu.
 
 ---
 
@@ -485,10 +524,10 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
       (categories.js masih mock & menyendiri)
 - [x] Alur laporan terhubung backend (upload foto, koordinat, FormLaporPage)
 - [ ] Semua 12 layar + `/tentang` terbuka, `npm run build` sukses ✅ build
-- [ ] Semua layar dibandingkan dengan screenshot Figma & diperbaiki — **BELUM**
-- [ ] Responsif + aksesibilitas dasar lolos — **BELUM**
-- [ ] Audit fitur terlarang lolos — **BELUM** (lihat G4)
-- [ ] Nama produk hanya `RuangTerbuka` — **BELUM** (lihat G5)
+- [ ] Semua layar dibandingkan dengan screenshot Figma & diperbaiki — **BELUM** (G-visual)
+- [ ] Responsif + aksesibilitas dasar lolos — **BELUM** (G-visual)
+- [x] Audit fitur terlarang lolos ✅ **(G4)** — grep audit bersih
+- [x] Nama produk hanya `RuangTerbuka` ✅ **(G5)** — grep brand 0 hit
 - [ ] Tidak ada file `backend/` yang berubah oleh pekerjaan frontend ✅
       (kecuali dokumen docs)
 
@@ -497,10 +536,12 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 ## 13. Riwayat Commit (bagian ini sudah ter-push ✅)
 
 ```
-bb6c752  feat(data-master): edit manual ruang publik dan penanda field_source (FE-27)
-2695b8d  refactor(routing): App.jsx render dari route-config + halaman 404 (Fase A)
-21cf225  feat(moderasi): daftar laporan ter-flag dan aksi flag warga (FE-26/21)
-09928ee  feat(moderasi): aksi setujui/tolak dan antrian admin (FE-24/25A/25B)
+<HEAD>    chore(frontend): audit fitur terlarang, brand lama, dan backlog teknis (G4-G6)
+3f4ebea   feat(docs): add workflow frontend phases documentation
+bb6c752   feat(data-master): edit manual ruang publik dan penanda field_source (FE-27)
+2695b8d   refactor(routing): App.jsx render dari route-config + halaman 404 (Fase A)
+21cf225   feat(moderasi): daftar laporan ter-flag dan aksi flag warga (FE-26/21)
+09928ee   feat(moderasi): aksi setujui/tolak dan antrian admin (FE-24/25A/25B)
 ```
 
 Sebelum `09928ee` ada `bfdb902` ke atas = kerja **backend** (BE-28…BE-55) — di luar

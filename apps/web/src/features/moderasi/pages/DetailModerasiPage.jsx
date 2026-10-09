@@ -12,6 +12,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
+import { URUTAN_STATUS_LAPORAN } from '../../../config/constants';
 import {
   getReportDetail,
   updateReportStatus,
@@ -19,13 +20,11 @@ import {
   rejectReport
 } from '../../../services/laporanService';
 
-// Urutan tahap siklus laporan untuk stepper progres.
-const STATUS_STEPS = [
-  { key: 'menunggu_verifikasi', label: '1. Menunggu Verifikasi' },
-  { key: 'diverifikasi', label: '2. Diverifikasi' },
-  { key: 'dalam_penanganan', label: '3. Dalam Penanganan' },
-  { key: 'selesai', label: '4. Selesai' }
-];
+// Urutan tahap siklus laporan untuk stepper progres (dari enum kanonik).
+const STATUS_STEPS = URUTAN_STATUS_LAPORAN.map((s, i) => ({
+  key: s.key,
+  label: `${i + 1}. ${s.label}`,
+}));
 
 // Format waktu ISO -> "8 Sep 2026 • 08:30 WIB" (fallback '' bila kosong/invalid).
 const formatWaktu = (iso) => {

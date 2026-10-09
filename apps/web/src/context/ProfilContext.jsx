@@ -15,7 +15,7 @@ const bacaUserId = () => {
   }
 };
 
-const kunciSavedSpaces = (userId) => `ruka_saved_spaces_${userId}`;
+const kunciSavedSpaces = (userId) => `rt_saved_spaces_${userId}`;
 
 export const ProfilProvider = ({ children }) => {
   const [storageOwner, setStorageOwner] = useState(bacaUserId);
@@ -34,7 +34,7 @@ export const ProfilProvider = ({ children }) => {
 
   // Tema aplikasi (light | dark | system)
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('ruka_theme') || 'light';
+    return localStorage.getItem('rt_theme') || 'light';
   });
 
   // Tema yang benar-benar dipasang: mode "system" di-resolve ke light/dark
@@ -52,7 +52,7 @@ export const ProfilProvider = ({ children }) => {
   // Data profil lokal warga (untuk edit profil)
   const [localProfile, setLocalProfile] = useState(() => {
     try {
-      const stored = localStorage.getItem('ruka_local_profile');
+      const stored = localStorage.getItem('rt_local_profile');
       return stored ? JSON.parse(stored) : { wilayah: 'Jakarta Pusat', phone: '' };
     } catch {
       return { wilayah: 'Jakarta Pusat', phone: '' };
@@ -83,7 +83,7 @@ export const ProfilProvider = ({ children }) => {
   }, [savedSpaces, storageOwner]);
 
   useEffect(() => {
-    localStorage.setItem('ruka_theme', theme);
+    localStorage.setItem('rt_theme', theme);
 
     const next = theme === 'system' ? resolveSystemTheme() : theme;
     setResolvedTheme(next);
@@ -104,7 +104,7 @@ export const ProfilProvider = ({ children }) => {
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('ruka_local_profile', JSON.stringify(localProfile));
+    localStorage.setItem('rt_local_profile', JSON.stringify(localProfile));
   }, [localProfile]);
 
   const toggleSaveSpace = (spaceId) => {

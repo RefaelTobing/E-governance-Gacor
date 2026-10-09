@@ -8,7 +8,9 @@ const RequireAuth = ({ children }) => {
 
     if (!user || !token) {
         const isDashboard = location.pathname.startsWith('/dashboard');
-        return <Navigate to={isDashboard ? '/login-pemerintah' : '/login'} state={{ from: location }} replace />;
+        const tujuan = isDashboard ? '/login-pemerintah' : '/login';
+        const redirect = encodeURIComponent(location.pathname + location.search);
+        return <Navigate to={`${tujuan}?redirect=${redirect}`} replace />;
     }
 
     return <>{children}</>;

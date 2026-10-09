@@ -503,29 +503,6 @@ export const HomePage = () => {
             </Card>
           </div>
         </div>
-
-        <style>{`
-          @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          
-          .testimonial-marquee-container {
-            cursor: grab;
-          }
-          
-          .testimonial-marquee-container:hover {
-            cursor: grabbing;
-          }
-
-          .testimonial-marquee-container:hover .testimonial-marquee-track {
-            animation-play-state: paused;
-          }
-
-          .testimonial-card-marquee {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-        `}</style>
       </section>
 
       {/* SECTION 4: BANNER CTA MARI JAGA RUANG BERSAMA */}
@@ -541,11 +518,11 @@ export const HomePage = () => {
               <div className="home-cta-points">
                 <div className="home-cta-point">
                   <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
-                  <span>Laporan dengan foto bukti presisi lokasi</span>
+                  <span>Laporan dengan foto bukti dan titik lokasi yang jelas</span>
                 </div>
                 <div className="home-cta-point">
                   <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
-                  <span>Respon verifikasi petugas dalam 1x24 jam</span>
+                  <span>Laporan ditinjau oleh pengelola sebelum ditayangkan</span>
                 </div>
               </div>
             </div>

@@ -52,4 +52,20 @@ export const IS_DEV = import.meta.env.DEV;
 // angka jarak) yang sama.
 export const JAKARTA_CENTER = { lat: -6.2088, lng: 106.8456 };
 
-export const CONSTANTS = {};
+// Enum status laporan — satu sumber kanonik (DESIGN.md §4.4).
+// `key` harus persis sama dengan nilai status dari backend (snake_case).
+export const STATUS_LAPORAN = {
+  MENUNGGU_VERIFIKASI: { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', badgeType: 'info' },
+  DIVERIFIKASI: { key: 'diverifikasi', label: 'Diverifikasi', badgeType: 'info' },
+  DALAM_PENANGANAN: { key: 'dalam_penanganan', label: 'Dalam Penanganan', badgeType: 'warning' },
+  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'success' },
+  DITOLAK: { key: 'ditolak', label: 'Ditolak', badgeType: 'danger' },
+};
+
+// Urutan tahap laporan untuk stepper/timeline progres.
+export const URUTAN_STATUS_LAPORAN = [
+  STATUS_LAPORAN.MENUNGGU_VERIFIKASI,
+  STATUS_LAPORAN.DIVERIFIKASI,
+  STATUS_LAPORAN.DALAM_PENANGANAN,
+  STATUS_LAPORAN.SELESAI,
+];

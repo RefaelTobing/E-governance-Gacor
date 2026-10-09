@@ -63,7 +63,7 @@ export const ProfilDashboardPage = () => {
           <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>{user?.email || '-'}</span>
           <div className="profil-hero-meta">
             <span className="badge badge-success">
-              <span className="badge-dot"></span> Warga Terverifikasi
+              <span className="badge-dot"></span> Warga Terdaftar
             </span>
           </div>
         </div>

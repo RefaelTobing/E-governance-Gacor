@@ -124,7 +124,7 @@ export const FormLaporPage = () => {
   }, [fotoPreview]);
 
   // Ganti fasilitas → pin kembali ke koordinat fasilitas tersebut
-  // (fallback koordinat ruang publik) supaya titik presisi tidak tertukar.
+  // (fallback koordinat ruang publik) supaya titik lokasi tidak tertukar.
   useEffect(() => {
     if (!detail) return;
     const fasilitas = Array.isArray(detail.fasilitas) ? detail.fasilitas : [];
@@ -223,9 +223,9 @@ export const FormLaporPage = () => {
       return;
     }
 
-    // Jika ruang publik memiliki koordinat, titik presisi wajib tersedia.
+    // Jika ruang publik memiliki koordinat, titik lokasi wajib tersedia.
     if (detail?.koordinat && !selectedLocation) {
-      setErrorMsg('Titik presisi fasilitas belum ditentukan pada peta.');
+      setErrorMsg('Titik lokasi fasilitas belum ditentukan pada peta.');
       return;
     }
 
@@ -706,7 +706,7 @@ export const FormLaporPage = () => {
               </div>
 
               <div style={{ backgroundColor: 'var(--color-info-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px', fontSize: '12px', color: '#075985', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <Info size={14} style={{ marginTop: '2px', flexShrink: 0 }} /> Laporan diteruskan langsung ke tim patroli teknis Taman Kota tanpa registrasi berbelit. Terima kasih atas kepedulian Anda!
+                <Info size={14} style={{ marginTop: '2px', flexShrink: 0 }} /> Laporan Anda diteruskan kepada pengelola ruang publik terkait. Terima kasih atas kepedulian Anda!
               </div>
 
               <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -723,7 +723,7 @@ export const FormLaporPage = () => {
               </h4>
               <ol style={{ paddingLeft: '20px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--color-text-muted)' }}>
                 <li>Pastikan posisi tiang atau fasilitas sesuai dengan titik pin mini peta.</li>
-                <li>Sertakan foto bukti fisik kerusakan agar petugas teknis dapat menyiapkan suku cadang yang tepat.</li>
+                <li>Sertakan foto yang jelas agar pengelola dapat memahami kondisi kerusakan.</li>
                 <li>Tidak perlu meninggalkan KTP/NIK. Keterbukaan dan partisipasi Anda adalah prioritas.</li>
               </ol>
             </CardBody>

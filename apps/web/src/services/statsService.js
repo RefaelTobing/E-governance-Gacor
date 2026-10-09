@@ -1,6 +1,6 @@
 import { api } from '../config/api';
 import { IS_DEV } from '../config/constants';
-import { MOCK_STATISTICS, TESTIMONIALS, HERO_SLIDES } from '../data/mockData';
+import { MOCK_STATISTICS, HERO_SLIDES } from '../data/mockData';
 
 /**
  * Ambil data statistik umum homepage (total ruang publik, laporan selesai, dll).
@@ -17,20 +17,6 @@ export const getHomeStatistics = async () => {
   } catch (error) {
     if (IS_DEV) {
       return MOCK_STATISTICS;
-    }
-    throw error;
-  }
-};
-
-/**
- * Ambil data testimoni warga.
- */
-export const getTestimonials = async () => {
-  try {
-    return await api.get('/api/v1/statistics/testimonials');
-  } catch (error) {
-    if (IS_DEV) {
-      return TESTIMONIALS;
     }
     throw error;
   }

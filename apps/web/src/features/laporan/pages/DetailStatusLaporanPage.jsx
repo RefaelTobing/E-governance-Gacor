@@ -228,10 +228,7 @@ export const DetailStatusLaporanPage = () => {
               </div>
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', fontSize: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={12} color="var(--color-text-muted)" /> <strong>Posisi Titik Perbaikan:</strong> Sisi Jalur Pedestrian
-                </div>
-                <div style={{ color: 'var(--color-success)', marginTop: '4px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={12} /> Akurasi GPS ±4m (Presisi)
+                  <MapPin size={12} color="var(--color-text-muted)" /> <strong>Lokasi:</strong> {laporan.fasilitasNama || laporan.wilayah || 'Jakarta'}
                 </div>
               </div>
             </CardBody>

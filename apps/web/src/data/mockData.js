@@ -57,89 +57,6 @@ export const MOCK_MODERASI_STATS = {
   selesaiPekanIni: 14
 };
 
-export const TESTIMONIALS = [
-  {
-    id: 1,
-    quote: "Aplikasi ini sangat membantu! Saya bisa laporkan kerusakan lampu taman dengan mudah dan transparan. Dalam 3 hari sudah diperbaiki!",
-    name: "Budi Santoso",
-    role: "Warga Jakarta Pusat",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 2,
-    quote: "Fitur peta presisi sangat akurat untuk lokasi fasilitas rusak. Petugas langsung tahu lokasi persis tanpa perlu mencari-cari.",
-    name: "Siti Nurhaliza",
-    role: "Pengguna Aktif",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 3,
-    quote: "Saya suka bisa lapor secara anonim. Tidak perlu ribet daftar akun, langsung bisa kirim laporan fasilitas rusak di taman dekat rumah.",
-    name: "Ahmad Wijaya",
-    role: "Relawan Lingkungan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 4,
-    quote: "Transparansi pengelolaan ruang publik meningkat drastis. Kita bisa pantau kondisi fasilitas real-time sebelum pergi ke taman.",
-    name: "Dewi Lestari",
-    role: "Ibu Rumah Tangga",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 5,
-    quote: "Platform ini memudahkan warga untuk berpartisipasi menjaga fasilitas umum. Pelaporan cepat dan prosesnya jelas!",
-    name: "Eko Prasetyo",
-    role: "Pegawai Swasta",
-    rating: 4,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 6,
-    quote: "Sebagai petugas lapangan, aplikasi ini sangat membantu koordinasi perbaikan. Laporan warga langsung masuk ke sistem kami.",
-    name: "Joko Susilo",
-    role: "Petugas Dinas Pertamanan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 7,
-    quote: "Fitur foto bukti sangat berguna. Teknisi bisa persiapkan alat yang tepat sebelum ke lokasi berdasarkan foto kerusakan.",
-    name: "Rina Kusuma",
-    role: "Warga Jakarta Selatan",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 8,
-    quote: "Saya apresiasi bisa tracking status laporan. Tidak seperti dulu yang lapor tapi tidak tahu ditindaklanjuti atau tidak.",
-    name: "Agus Setiawan",
-    role: "Komunitas Taman",
-    rating: 4,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 9,
-    quote: "Interface-nya simpel dan mudah dipahami. Bahkan orang tua saya yang gaptek bisa pakai untuk lapor bangku rusak di RPTRA.",
-    name: "Maya Sari",
-    role: "Mahasiswa",
-    rating: 5,
-    emoji: "🇮🇩"
-  },
-  {
-    id: 10,
-    quote: "Response time dari petugas sangat cepat. Laporan saya diverifikasi dalam 1x24 jam dan perbaikan selesai dalam seminggu!",
-    name: "Fahmi Rahman",
-    role: "Warga Jakarta Timur",
-    rating: 5,
-    emoji: "🇮🇩"
-  }
-];
-
 export const MOCK_CATEGORIES = [
   { id: 'semua', label: 'Semua Kategori', iconName: 'LayoutGrid' },
   { id: 'taman-lingkungan', label: 'Taman Lingkungan', iconName: 'Trees' },
@@ -174,14 +91,14 @@ export const MOCK_LAPORAN = [
     tanggal: '8 Sep 2026',
     status: 'dalam_penanganan',
     statusLabel: 'Dalam Penanganan',
-    pembaruanTerakhir: 'Pengecekan unit lampu dan perbaikan perkabelan bawah tanah oleh tim teknis.',
+    pembaruanTerakhir: 'Pengecekan unit lampu dan perbaikan perkabelan bawah tanah oleh petugas pemeliharaan.',
     tanggalPembaruan: '9 Sep 2026, 09:00 WIB',
     foto: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=600&q=80',
     timeline: [
       { status: 'DILAPORKAN', title: 'Laporan Diterima', date: '8 Sep 2026 • 08:30 WIB', desc: 'Laporan dikirimkan oleh warga mengenai lampu tiang mati di area publik.' },
       { status: 'DIVERIFIKASI', title: 'Diverifikasi Pengelola', date: '8 Sep 2026 • 11:15 WIB', desc: 'Laporan telah diperiksa dan dikonfirmasi oleh pengelola ruang publik.' },
-      { status: 'DALAM_PENANGANAN', title: 'Dalam Penanganan Lapangan', date: '9 Sep 2026 • 09:00 WIB', desc: 'Petugas teknis pemeliharaan taman sedang melakukan pergantian bohlam & kabel.' },
-      { status: 'SELESAI', title: 'Selesai (Tahap Akhir)', date: 'Estimasi 1-2 Hari', desc: 'Fasilitas akan diperbaiki & berfungsi kembali normal.' }
+      { status: 'DALAM_PENANGANAN', title: 'Dalam Penanganan Lapangan', date: '9 Sep 2026 • 09:00 WIB', desc: 'Petugas pemeliharaan taman sedang melakukan pergantian bohlam & kabel.' },
+      { status: 'SELESAI', title: 'Selesai (Tahap Akhir)', date: '11 Sep 2026', desc: 'Fasilitas akan diperbaiki & berfungsi kembali normal.' }
     ]
   },
   {
@@ -231,9 +148,9 @@ export const MOCK_LAPORAN = [
 ];
 
 export const MOCK_PETUGAS = [
-  { id: 1, nama: 'Regu 01 - Taman Suropati', anggota: 4, wilayah: 'Jakarta Pusat', status: 'Aktif di Lapangan', tugas: 'Perbaikan Lampu Jalur Selatan' },
-  { id: 2, nama: 'Regu 02 - Tebet Eco Park', anggota: 3, wilayah: 'Jakarta Selatan', status: 'Standby Pos', tugas: 'Pemeliharaan Wastafel' },
-  { id: 3, nama: 'Regu 03 - Kalijodo', anggota: 5, wilayah: 'Jakarta Barat', status: 'Inspeksi Rutin', tugas: 'Pembersihan Vandalisme' }
+  { id: 1, nama: 'Petugas 01 - Taman Suropati', anggota: 4, wilayah: 'Jakarta Pusat', status: 'Aktif di Lapangan', tugas: 'Perbaikan Lampu Jalur Selatan' },
+  { id: 2, nama: 'Petugas 02 - Tebet Eco Park', anggota: 3, wilayah: 'Jakarta Selatan', status: 'Standby Pos', tugas: 'Pemeliharaan Wastafel' },
+  { id: 3, nama: 'Petugas 03 - Kalijodo', anggota: 5, wilayah: 'Jakarta Barat', status: 'Inspeksi Rutin', tugas: 'Pembersihan Vandalisme' }
 ];
 
 export default {
@@ -242,7 +159,6 @@ export default {
   MOCK_RUANG_PUBLIK_METRICS,
   MOCK_DASHBOARD_STATS,
   MOCK_MODERASI_STATS,
-  TESTIMONIALS,
   MOCK_CATEGORIES,
   MOCK_WILAYAH,
   MOCK_RUANG_PUBLIK,
