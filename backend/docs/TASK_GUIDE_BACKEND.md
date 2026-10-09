@@ -36,12 +36,10 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B2 ETL Worker | 6 | 6 | 0 | 0 |
 | B3 Report Service | 10 | 10 | 0 | 0 |
 | B4 Moderation Service | 6 | 6 | 0 | 0 |
-| B5 Data Master Service | 3 | 1 | 0 | 2 |
-| B6 Admin Auth & Pemisahan Akses | 5 | 1 | 2 | 2 |
+| B5 Data Master Service | 3 | 3 | 0 | 0 |
+| B6 Admin Auth & Pemisahan Akses | 5 | 5 | 0 | 0 |
 | B7 Testing | 5 | 0 | 0 | 5 |
-| B8 Deployment | 4 | 0 | 0 | 4 |
-| B9 Konten Situs | 1 | 0 | 0 | 1 |
-| **Total** | **56** | **40** | **2** | **14** |
+| **Total** | **51** | **46** | **0** | **5** |
 
 ---
 
