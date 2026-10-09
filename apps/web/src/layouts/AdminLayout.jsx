@@ -8,7 +8,8 @@ import {
   User,
   LogOut,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Flag
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
@@ -59,6 +60,12 @@ export const AdminLayout = () => {
                 className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               >
                 <ClipboardList size={18} /> Daftar Laporan
+              </NavLink>
+              <NavLink
+                to="/dashboard/laporan-terflag"
+                className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+              >
+                <Flag size={18} /> Laporan Ditandai
               </NavLink>
               <NavLink
                 to="/dashboard/fasilitas"

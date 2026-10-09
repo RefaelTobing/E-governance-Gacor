@@ -14,7 +14,7 @@ import { LoginPage, LoginPemerintahPage } from './features/auth';
 import { TentangPage } from './features/tentang';
 
 // Feature Pages Imports - Admin
-import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
+import { DashboardPage, AntrianModerasiPage, DetailModerasiPage, LaporanTerflagPage, PetugasLapanganPage, KelolaAdminPage } from './features/moderasi';
 import { DataMasterPage, KelolaFasilitasPage } from './features/data-master';
 import DetailFasilitasRuangPublikPage from './features/data-master/pages/DetailFasilitasRuangPublikPage';
 
@@ -104,6 +104,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/moderasi" element={<AntrianModerasiPage />} />
             <Route path="/dashboard/moderasi/:laporanId" element={<DetailModerasiPage />} />
+            <Route path="/dashboard/laporan-terflag" element={<LaporanTerflagPage />} />
             <Route path="/dashboard/data-master" element={<DataMasterPage />} />
             <Route path="/dashboard/fasilitas" element={<KelolaFasilitasPage />} />
             <Route path="/dashboard/fasilitas/:ruangPublikId" element={<DetailFasilitasRuangPublikPage />} />

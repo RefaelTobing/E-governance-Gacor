@@ -27,6 +27,7 @@ export const routes = [
   { path: "/dashboard", component: "features/moderasi/pages/DashboardPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/moderasi", component: "features/moderasi/pages/AntrianModerasiPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/moderasi/:laporanId", component: "features/moderasi/pages/DetailModerasiPage", layout: "admin", protected: true, role: "admin" },
+  { path: "/dashboard/laporan-terflag", component: "features/moderasi/pages/LaporanTerflagPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/data-master", component: "features/data-master/pages/DataMasterPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/data-master/:ruangPublikId", component: "features/data-master/pages/EditRuangPublikPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/fasilitas", component: "features/data-master/pages/KelolaFasilitasPage", layout: "admin", protected: true, role: "admin" },

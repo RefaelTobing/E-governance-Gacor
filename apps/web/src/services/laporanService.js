@@ -9,6 +9,8 @@ const transformLaporanResponse = (raw) => {
     id: raw.id,
     status: raw.status,
     user: raw.user,
+    // Pemilik laporan (dipakai untuk menyembunyikan aksi flag pada laporan sendiri).
+    userId: raw.user_id,
     createdAt,
     updatedAt: raw.updated_at,
     // Tanggal ringkas siap tampil (fallback aman bila created_at kosong/invalid).
@@ -29,6 +31,8 @@ const transformLaporanResponse = (raw) => {
     fotoUrl: raw.foto_url,
     // Alasan penolakan (BE-30) — tampil di daftar/detail moderasi.
     alasanPenolakan: raw.alasan_penolakan,
+    // Jumlah pelapor berbeda yang menandai (hanya terisi di endpoint flagged, BE-31).
+    flagCount: raw.flag_count ?? 0,
     // Field turunan dari relasi (disediakan backend pada response laporan)
     ruangPublikNama: raw.ruang_publik_nama,
     fasilitasNama: raw.fasilitas_nama,
@@ -119,6 +123,47 @@ export const getAdminReports = async (params = {}) => {
 
   const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
   return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Ambil laporan tayang untuk satu ruang publik (BE: GET /public-spaces/{id}/reports).
+ * Dipakai section "Pembaruan Partisipasi Warga" di halaman detail ruang publik.
+ *
+ * @param {string} ruangPublikId
+ * @param {Object} [params] - { skip, limit }
+ */
+export const getSpaceReports = async (ruangPublikId, params = {}) => {
+  const { skip, limit } = params;
+  const rawData = await api.get(`/api/v1/public-spaces/${ruangPublikId}/reports`, { skip, limit });
+  const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
+  return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Ambil daftar laporan yang ditandai (flagged) pengguna (BE-31).
+ * Terpisah dari antrian; urut `flag_count` desc dari backend. Tiap item
+ * membawa `flagCount` (jumlah pelapor berbeda). Pagination `skip`/`limit`.
+ *
+ * @param {Object} params
+ * @param {number} [params.skip]
+ * @param {number} [params.limit]
+ */
+export const getFlaggedReports = async (params = {}) => {
+  const { skip, limit } = params;
+  const rawData = await api.get('/api/v1/admin/reports/flagged', { skip, limit });
+  const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
+  return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Tandai laporan tayang sebagai tidak pantas (FEAT-011/BE-25).
+ * Wajib login; satu flag per pengguna (409 bila sudah menandai).
+ *
+ * @param {string} id
+ * @returns {Promise<{laporan_id: string, flag_count: number}>}
+ */
+export const flagReport = async (id) => {
+  return await api.post(`/api/v1/reports/${id}/flag`);
 };
 
 /**

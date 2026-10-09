@@ -15,13 +15,16 @@ import {
   AlertCircle,
   AlertTriangle,
   ExternalLink,
-  X
+  X,
+  Flag,
+  Clock3
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfil } from '../../../context/ProfilContext';
 
@@ -69,6 +72,12 @@ export const DetailRuangPublikPage = () => {
   const [facilityFilter, setFacilityFilter] = useState('semua');
   const [showMap, setShowMap] = useState(false);
 
+  // Section "Pembaruan Partisipasi Warga" (laporan tayang) + aksi flag (FE-21).
+  const [laporanWarga, setLaporanWarga] = useState([]);
+  const [isLoadingLaporan, setIsLoadingLaporan] = useState(false);
+  const [flaggedIds, setFlaggedIds] = useState([]);
+  const [flagError, setFlagError] = useState('');
+
   useEffect(() => {
     let isMounted = true;
 
@@ -96,6 +105,55 @@ export const DetailRuangPublikPage = () => {
       isMounted = false;
     };
   }, [id]);
+
+  // Muat laporan tayang ruang publik ini setelah detail tersedia (section partisipasi warga).
+  useEffect(() => {
+    let isMounted = true;
+    if (!detail?.id) return undefined;
+
+    const muatLaporan = async () => {
+      setIsLoadingLaporan(true);
+      try {
+        const data = await getSpaceReports(detail.id, { limit: 6 });
+        if (isMounted) setLaporanWarga(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error fetching laporan ruang publik:', err);
+        if (isMounted) setLaporanWarga([]);
+      } finally {
+        if (isMounted) setIsLoadingLaporan(false);
+      }
+    };
+
+    muatLaporan();
+    return () => {
+      isMounted = false;
+    };
+  }, [detail?.id]);
+
+  // Tandai laporan warga sebagai tidak pantas (FE-21 / BE-25).
+  const handleFlag = async (laporanId) => {
+    setFlagError('');
+    if (!user || !token) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    try {
+      const hasil = await flagReport(laporanId);
+      setFlaggedIds((prev) => (prev.includes(laporanId) ? prev : [...prev, laporanId]));
+      if (hasil?.flag_count != null) {
+        setLaporanWarga((prev) =>
+          prev.map((l) => (l.id === laporanId ? { ...l, flagCount: hasil.flag_count } : l))
+        );
+      }
+    } catch (err) {
+      // 409 = sudah pernah ditandai; perlakukan sebagai "sudah ditandai".
+      if (err.status === 409) {
+        setFlaggedIds((prev) => (prev.includes(laporanId) ? prev : [...prev, laporanId]));
+        return;
+      }
+      setFlagError(err.message || 'Gagal menandai laporan.');
+    }
+  };
 
   const handleToggleMap = () => {
     setShowMap((prev) => {
@@ -444,6 +502,80 @@ export const DetailRuangPublikPage = () => {
             )}
           </CardBody>
         </Card>
+      </section>
+
+      {/* SECTION: PEMBARUAN PARTISIPASI WARGA (laporan tayang) */}
+      <section style={{ marginBottom: 'var(--space-3xl)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+          <div>
+            <span className="text-caption" style={{ fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-primary)' }}>
+              PARTISIPASI WARGA
+            </span>
+            <h2 className="h2">Pembaruan Partisipasi Warga</h2>
+            <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+              Laporan kondisi fasilitas yang sudah tayang dan dipantau bersama.
+            </p>
+          </div>
+          <span className="badge badge-neutral">{laporanWarga.length} Laporan Tayang</span>
+        </div>
+
+        {flagError && (
+          <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <AlertTriangle size={14} /> {flagError}
+          </div>
+        )}
+
+        {isLoadingLaporan ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-lg)' }}>
+            {[1, 2].map((n) => (
+              <Card key={`sk-lap-${n}`}><CardBody><Skeleton height="80px" /></CardBody></Card>
+            ))}
+          </div>
+        ) : laporanWarga.length === 0 ? (
+          <Card>
+            <CardBody>
+              <p className="text-small" style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: 0 }}>
+                Belum ada laporan warga yang tayang untuk ruang publik ini.
+              </p>
+            </CardBody>
+          </Card>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-lg)' }}>
+            {laporanWarga.map((lap) => {
+              const sudahDitandai = flaggedIds.includes(lap.id);
+              const laporanSendiri = user?.id && lap.userId && user.id === lap.userId;
+              return (
+                <Card key={lap.id}>
+                  <CardBody>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                      <h4 className="h3" style={{ fontSize: '16px' }}>{lap.fasilitasNama || 'Fasilitas'}</h4>
+                      <StatusBadge status={lap.status} />
+                    </div>
+                    <div className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock3 size={12} /> {lap.tanggal || '—'} • {lap.jenisMasalah}
+                    </div>
+                    {lap.deskripsi && (
+                      <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+                        {lap.deskripsi}
+                      </p>
+                    )}
+                    {!laporanSendiri && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={sudahDitandai}
+                        onClick={() => handleFlag(lap.id)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: sudahDitandai ? 'var(--color-text-muted)' : 'var(--color-danger)' }}
+                      >
+                        <Flag size={14} /> {sudahDitandai ? 'Sudah Ditandai' : 'Tandai Tidak Pantas'}
+                      </Button>
+                    )}
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* BANNER CTA LAPORKAN MASALAH */}
