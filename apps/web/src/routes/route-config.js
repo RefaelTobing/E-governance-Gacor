@@ -1,12 +1,23 @@
 // src/routes/route-config.js
-// Daftar rute lengkap sesuai spesifikasi CONVENTIONS.md dan DESIGN.md
+// SATU-SATUNYA sumber kebenaran daftar rute (CONVENTIONS.md §1.1).
+// App.jsx hanya me-render array ini — jangan menulis <Route> manual di luar file ini.
+//
+// Field:
+// - path        : path URL (lowercase, kebab-case)
+// - component   : path modul halaman relatif terhadap src/, TANPA ekstensi .jsx
+// - layout      : "public" | "akun" | "admin"
+// - protected   : true -> dibungkus RequireAuth (wajib login)
+// - role        : "admin" -> dibungkus RequireAdmin (khusus admin/dinas)
+// - redirectTo  : route tanpa komponen, hanya mengalihkan ke path lain
 
 export const routes = [
-  // ---- PUBLIK ----
+  // ---- REDIRECT ----
   { path: "/", redirectTo: "/home" },
+
+  // ---- PUBLIK ----
   { path: "/home", component: "features/ruang-publik/pages/HomePage", layout: "public" },
   { path: "/ruang-publik", component: "features/ruang-publik/pages/DaftarRuangPublikPage", layout: "public" },
-  { path: "/ruang-publik/:id", component: "features/ruang-publik/pages/DetailRuangPublikPage", layout: "public" },
+  { path: "/ruang-publik/:id", component: "features/ruang-publik/pages/DetailRuangPublikPage", layout: "public", protected: true },
   { path: "/ruang-publik/:id/lapor", component: "features/laporan/pages/FormLaporPage", layout: "public" },
   { path: "/laporan-saya", component: "features/laporan/pages/RiwayatLaporanPage", layout: "public", protected: true },
   { path: "/laporan-saya/:id", component: "features/laporan/pages/DetailStatusLaporanPage", layout: "public", protected: true },
@@ -29,12 +40,11 @@ export const routes = [
   { path: "/dashboard/moderasi/:laporanId", component: "features/moderasi/pages/DetailModerasiPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/laporan-terflag", component: "features/moderasi/pages/LaporanTerflagPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/data-master", component: "features/data-master/pages/DataMasterPage", layout: "admin", protected: true, role: "admin" },
-  { path: "/dashboard/data-master/:ruangPublikId", component: "features/data-master/pages/EditRuangPublikPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/fasilitas", component: "features/data-master/pages/KelolaFasilitasPage", layout: "admin", protected: true, role: "admin" },
+  { path: "/dashboard/fasilitas/:ruangPublikId", component: "features/data-master/pages/DetailFasilitasRuangPublikPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/petugas", component: "features/moderasi/pages/PetugasLapanganPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/kelola-admin", component: "features/moderasi/pages/KelolaAdminPage", layout: "admin", protected: true, role: "admin" },
 
-
-  // ---- FALLBACK ----
+  // ---- FALLBACK 404 ----
   { path: "*", component: "features/shared/pages/NotFoundPage", layout: "public" }
 ];
