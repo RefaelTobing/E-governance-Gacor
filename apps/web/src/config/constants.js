@@ -52,7 +52,7 @@ export const IS_DEV = import.meta.env.DEV;
 // angka jarak) yang sama.
 export const JAKARTA_CENTER = { lat: -6.2088, lng: 106.8456 };
 
-// Enum status laporan — satu sumber kanonik (DESIGN.md §4.4).
+// Enum status laporan, satu sumber kanonik (DESIGN.md §4.4).
 // `key` harus persis sama dengan nilai status dari backend (snake_case).
 export const STATUS_LAPORAN = {
   MENUNGGU_VERIFIKASI: { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', badgeType: 'info' },
