@@ -207,3 +207,72 @@ export const getPublicSpaceReports = async (id, params = {}) => {
     throw error;
   }
 };
+
+// ===========================================================================
+// ADMIN — Data Master ruang publik (BE-32/BE-33). Halaman /dashboard/data-master.
+// Endpoint admin sengaja TIDAK memakai fallback mock: kegagalan harus terlihat
+// (bukan diam-diam menampilkan data kosong yang menyesatkan admin).
+// ===========================================================================
+
+/**
+ * Normalisasi baris `AdminRuangPublikResponse` (snake_case) ke bentuk tabel FE.
+ * `fieldSource` = { nama_kolom_snake_case: waktu_edit_iso } penanda edit manual.
+ */
+const keBarisMaster = (row) => ({
+  id: row.id,
+  nama: row.nama,
+  kategoriId: row.kategori_id,
+  kategori: row.kategori?.label || row.kategori_id || 'Umum',
+  wilayah: row.wilayah || '',
+  kecamatan: row.kecamatan || '',
+  kelurahan: row.kelurahan || '',
+  alamat: row.alamat || '',
+  latitude: row.latitude,
+  longitude: row.longitude,
+  deskripsi: row.deskripsi || '',
+  jamOperasional: row.jam_operasional || '',
+  tiketMasuk: row.tiket_masuk || '',
+  aksesDisabilitas: row.akses_disabilitas || '',
+  ramahHewan: row.ramah_hewan || '',
+  verified: !!row.verified,
+  statusGeneral: row.status_general || '',
+  imageUrl: row.image_url || '',
+  jumlahFasilitas: row.jumlah_fasilitas ?? 0,
+  stats: keStats(row.stats),
+  fieldSource: row.field_source || {},
+});
+
+/**
+ * Data master ruang publik untuk admin (BE-32).
+ * Mengembalikan `field_source` (penanda edit manual) + `jumlah_fasilitas`,
+ * yang tidak tersedia di endpoint publik.
+ *
+ * @param {Object} [params] - { q, category, wilayah, diedit_manual, skip, limit }
+ */
+export const getAdminPublicSpaces = async (params = {}) => {
+  const { q, category, wilayah, diedit_manual, skip, limit } = params;
+  const data = await api.get('/api/v1/admin/public-spaces', {
+    q: q || undefined,
+    category: category || undefined,
+    wilayah: wilayah || undefined,
+    diedit_manual,
+    skip,
+    limit,
+  });
+  const items = Array.isArray(data) ? data : data?.items ?? [];
+  return items.map(keBarisMaster);
+};
+
+/**
+ * Edit manual satu ruang publik (BE-33). Kirim HANYA kolom yang berubah;
+ * backend menandai tiap kolom yang terkirim di `field_source` (FEAT-012) agar
+ * ETL berikutnya tidak menimpanya.
+ *
+ * @param {string} id
+ * @param {Object} payload - kolom snake_case (mis. { deskripsi, verified })
+ * @returns {Promise<Object>} baris master ternormalisasi (hasil edit)
+ */
+export const updatePublicSpaceManual = async (id, payload) => {
+  const raw = await api.patch(`/api/v1/admin/public-spaces/${id}`, payload);
+  return keBarisMaster(raw);
+};

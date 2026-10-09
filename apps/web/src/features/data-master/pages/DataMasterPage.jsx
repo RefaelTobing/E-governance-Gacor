@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, CardBody, EmptyState, Skeleton, Spinner } from '../../../components';
-import { getPublicSpaces } from '../../../services/ruangPublikService';
-import { getAllFacilities } from '../../../services/fasilitasService';
+import { getAdminPublicSpaces, updatePublicSpaceManual } from '../../../services/ruangPublikService';
 import { triggerSync, riwayatSync } from '../../../services/syncService';
+import EditRuangPublikModal from '../components/EditRuangPublikModal';
 
 const gayaLog = {
   margin: 'var(--space-xs) 0 0',
@@ -69,7 +69,7 @@ const ringkasanHitung = (hitung) => {
 export const DataMasterPage = () => {
   const [masterList, setMasterList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [jumlahFasilitas, setJumlahFasilitas] = useState(null);
+  const [loadError, setLoadError] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
   const [syncError, setSyncError] = useState(null);
@@ -77,6 +77,10 @@ export const DataMasterPage = () => {
   const [statusRiwayat, setStatusRiwayat] = useState('memuat');
   const [riwayatError, setRiwayatError] = useState(null);
   const [logTerbuka, setLogTerbuka] = useState(null);
+
+  // Modal edit manual (FE-27 / BE-33).
+  const [editTarget, setEditTarget] = useState(null);
+  const [suksesMsg, setSuksesMsg] = useState('');
 
   const muatRiwayat = async () => {
     setStatusRiwayat('memuat');
@@ -90,41 +94,28 @@ export const DataMasterPage = () => {
     }
   };
 
+  const muatMaster = async () => {
+    setLoadError('');
+    try {
+      const data = await getAdminPublicSpaces({ limit: 500 });
+      setMasterList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      // Endpoint admin tanpa fallback mock: tampilkan error jujur, bukan daftar kosong.
+      setLoadError(typeof err.detail === 'string' ? err.detail : (err.message || 'Gagal memuat data master.'));
+      setMasterList([]);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchMasterData = async () => {
+    const jalankan = async () => {
       setIsLoading(true);
-      try {
-        const data = await getPublicSpaces();
-        if (isMounted) {
-          setMasterList(data);
-        }
-      } catch (err) {
-        console.error('Error fetching master data:', err);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
+      await muatMaster();
+      if (isMounted) setIsLoading(false);
     };
 
-    const fetchJumlahFasilitas = async () => {
-      try {
-        const daftar = await getAllFacilities();
-        const hitung = {};
-        daftar.forEach((f) => {
-          hitung[f.ruangPublikId] = (hitung[f.ruangPublikId] || 0) + 1;
-        });
-        if (isMounted) setJumlahFasilitas(hitung);
-      } catch (err) {
-        // Gagal memuat hitungan: kolom memakai "-", bukan angka nol yang menyesatkan.
-        if (isMounted) setJumlahFasilitas(null);
-      }
-    };
-
-    fetchMasterData();
-    fetchJumlahFasilitas();
+    jalankan();
     muatRiwayat();
 
     return () => {
@@ -133,12 +124,7 @@ export const DataMasterPage = () => {
   }, []);
 
   const muatUlangMaster = async () => {
-    try {
-      const data = await getPublicSpaces();
-      setMasterList(data);
-    } catch (err) {
-      console.error('Error fetching master data:', err);
-    }
+    await muatMaster();
   };
 
   const jalankanSinkronisasi = async () => {
@@ -158,6 +144,18 @@ export const DataMasterPage = () => {
       muatRiwayat();
     }
   };
+
+  // Simpan edit manual: kirim hanya kolom berubah, lalu perbarui baris di tabel
+  // memakai response backend (agar penanda field_source ikut segar).
+  const simpanEdit = async (payload) => {
+    const hasil = await updatePublicSpaceManual(editTarget.id, payload);
+    setMasterList((prev) => prev.map((rp) => (rp.id === hasil.id ? hasil : rp)));
+    setEditTarget(null);
+    setSuksesMsg(`Perubahan "${hasil.nama}" berhasil disimpan dan ditandai sebagai edit manual.`);
+  };
+
+  // Daftar kolom yang pernah diedit manual untuk sebuah baris.
+  const kolomDiedit = (rp) => Object.keys(rp.fieldSource || {});
 
   return (
     <div>
@@ -390,6 +388,17 @@ export const DataMasterPage = () => {
 
       <Card>
         <CardBody>
+          {suksesMsg && (
+            <div role="status" aria-live="polite" style={{ backgroundColor: 'var(--color-success-light)', color: '#065F46', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px' }}>
+              {suksesMsg}
+            </div>
+          )}
+          {loadError && (
+            <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <span>Gagal memuat data master: {loadError}</span>
+              <Button variant="outline" size="sm" onClick={muatUlangMaster}>Coba lagi</Button>
+            </div>
+          )}
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
               <thead>
@@ -399,6 +408,7 @@ export const DataMasterPage = () => {
                   <th style={{ padding: '12px' }}>WILAYAH</th>
                   <th style={{ padding: '12px' }}>JAM OPERASIONAL</th>
                   <th style={{ padding: '12px' }}>FASILITAS</th>
+                  <th style={{ padding: '12px' }}>SUMBER DATA</th>
                   <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
                 </tr>
               </thead>
@@ -411,27 +421,40 @@ export const DataMasterPage = () => {
                       <td style={{ padding: '12px' }}><Skeleton height="18px" width="100px" /></td>
                       <td style={{ padding: '12px' }}><Skeleton height="18px" width="100px" /></td>
                       <td style={{ padding: '12px' }}><Skeleton height="18px" width="80px" /></td>
+                      <td style={{ padding: '12px' }}><Skeleton height="20px" width="90px" borderRadius="var(--radius-pill)" /></td>
                       <td style={{ padding: '12px', textAlign: 'right' }}><Skeleton height="28px" width="80px" borderRadius="var(--radius-md)" /></td>
                     </tr>
                   ))
                 ) : masterList.length > 0 ? (
-                  masterList.map((rp) => (
-                    <tr key={rp.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                      <td style={{ padding: '12px', fontWeight: 600 }}>📍 {rp.nama}</td>
-                      <td style={{ padding: '12px' }}><span className="badge badge-info">{rp.kategori}</span></td>
-                      <td style={{ padding: '12px' }}>{rp.wilayah}</td>
-                      <td style={{ padding: '12px' }}>{rp.jamOperasional}</td>
-                      <td style={{ padding: '12px' }}>{jumlahFasilitas ? `${jumlahFasilitas[rp.id] || 0} Terdata` : '-'}</td>
-                      <td style={{ padding: '12px', textAlign: 'right' }}>
-                        <Button variant="outline" size="sm" onClick={() => alert(`Edit Ruang Publik: ${rp.nama}`)}>
-                          Edit Master
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
+                  masterList.map((rp) => {
+                    const diedit = kolomDiedit(rp);
+                    return (
+                      <tr key={rp.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: '12px', fontWeight: 600 }}>📍 {rp.nama}</td>
+                        <td style={{ padding: '12px' }}><span className="badge badge-info">{rp.kategori}</span></td>
+                        <td style={{ padding: '12px' }}>{rp.wilayah || '—'}</td>
+                        <td style={{ padding: '12px' }}>{rp.jamOperasional || '—'}</td>
+                        <td style={{ padding: '12px' }}>{rp.jumlahFasilitas} Terdata</td>
+                        <td style={{ padding: '12px' }}>
+                          {diedit.length > 0 ? (
+                            <span className="badge badge-warning" title={`Kolom: ${diedit.join(', ')}`}>
+                              {diedit.length} kolom diedit manual
+                            </span>
+                          ) : (
+                            <span className="badge badge-neutral">Sumber Satu Data</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                          <Button variant="outline" size="sm" onClick={() => { setSuksesMsg(''); setEditTarget(rp); }}>
+                            Edit Master
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan="6" style={{ padding: '32px 12px', textAlign: 'center' }}>
+                    <td colSpan="7" style={{ padding: '32px 12px', textAlign: 'center' }}>
                       <EmptyState
                         title="Belum Ada Data Master"
                         description="Data master ruang publik belum tersedia di sistem."
@@ -444,6 +467,14 @@ export const DataMasterPage = () => {
           </div>
         </CardBody>
       </Card>
+
+      {/* MODAL EDIT MANUAL (FE-27 / BE-33) */}
+      <EditRuangPublikModal
+        open={!!editTarget}
+        ruang={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSaved={simpanEdit}
+      />
     </div>
   );
 };
