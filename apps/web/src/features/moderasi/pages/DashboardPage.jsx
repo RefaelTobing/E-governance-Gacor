@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { MOCK_DASHBOARD_STATS } from '../../../data/mockData';
 import { Button, Card, CardBody, StatusBadge, SearchInput, EmptyState, Skeleton } from '../../../components';
-import { getReports, getDashboardStats } from '../../../services/laporanService';
+import { getAdminReports, getDashboardStats } from '../../../services/laporanService';
 import PetaDashboardAdmin from '../components/PetaDashboardAdmin';
 
 export const DashboardPage = () => {
@@ -32,7 +32,7 @@ export const DashboardPage = () => {
       setIsLoading(true);
       try {
         const [reportsData, statsData] = await Promise.all([
-          getReports(),
+          getAdminReports(),
           getDashboardStats()
         ]);
         if (isMounted) {

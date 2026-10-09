@@ -8,10 +8,43 @@ import {
   Wrench,
   CheckCircle2,
   XCircle,
-  History
+  History,
+  AlertTriangle
 } from 'lucide-react';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
-import { getReportDetail, updateReportStatus } from '../../../services/laporanService';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
+import {
+  getReportDetail,
+  updateReportStatus,
+  approveReport,
+  rejectReport
+} from '../../../services/laporanService';
+
+// Urutan tahap siklus laporan untuk stepper progres.
+const STATUS_STEPS = [
+  { key: 'menunggu_verifikasi', label: '1. Menunggu Verifikasi' },
+  { key: 'diverifikasi', label: '2. Diverifikasi' },
+  { key: 'dalam_penanganan', label: '3. Dalam Penanganan' },
+  { key: 'selesai', label: '4. Selesai' }
+];
+
+// Format waktu ISO -> "8 Sep 2026 • 08:30 WIB" (fallback '' bila kosong/invalid).
+const formatWaktu = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const tanggal = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  const jam = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  return `${tanggal} • ${jam} WIB`;
+};
+
+// Warna garis timeline mengikuti status tiap entri.
+const warnaTimeline = (status) => {
+  const s = (status || '').toUpperCase();
+  if (s === 'SELESAI' || s === 'DIVERIFIKASI') return 'var(--color-success)';
+  if (s === 'DALAM_PENANGANAN') return 'var(--color-warning)';
+  if (s === 'DITOLAK') return 'var(--color-danger)';
+  return 'var(--color-primary)';
+};
 
 export const DetailModerasiPage = () => {
   const { laporanId } = useParams();
@@ -21,6 +54,16 @@ export const DetailModerasiPage = () => {
   const [currentStatus, setCurrentStatus] = useState('menunggu_verifikasi');
   const [catatanPetugas, setCatatanPetugas] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Status aksi (approve / PATCH status).
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  // Dialog tolak (FE-25B).
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [alasanTolak, setAlasanTolak] = useState('');
+  const [rejectError, setRejectError] = useState('');
+  const [isRejecting, setIsRejecting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -51,16 +94,87 @@ export const DetailModerasiPage = () => {
     };
   }, [laporanId]);
 
+  // Perbarui state halaman dari response backend (LaporanDetailResponse).
+  const terapkanHasil = (hasil) => {
+    if (!hasil) return;
+    setLaporan((prev) => ({ ...prev, ...hasil }));
+    if (hasil.status) setCurrentStatus(hasil.status);
+  };
+
+  // Transisi status biasa (dalam_penanganan / selesai) via PATCH /reports/{id}/status.
   const handleUpdateStatus = async (newStatus) => {
-    setCurrentStatus(newStatus);
+    setActionError('');
+    setIsSubmitting(true);
     try {
-      if (laporan?.id) {
-        await updateReportStatus(laporan.id, { status: newStatus, description: catatanPetugas });
-      }
+      const hasil = await updateReportStatus(laporan.id, {
+        status: newStatus,
+        description: catatanPetugas || undefined
+      });
+      terapkanHasil(hasil);
     } catch (err) {
-      console.warn('Backend update failed, local state updated:', err);
+      setActionError(err.message || 'Gagal memperbarui status laporan.');
+    } finally {
+      setIsSubmitting(false);
     }
-    alert(`Status laporan #${laporan?.id || laporanId} berhasil diperbarui menjadi: ${newStatus.toUpperCase()}`);
+  };
+
+  // Setujui laporan (FE-25A) via POST /admin/reports/{id}/approve.
+  const handleApprove = async () => {
+    setActionError('');
+    setIsSubmitting(true);
+    try {
+      const hasil = await approveReport(laporan.id, catatanPetugas);
+      terapkanHasil(hasil);
+      navigate('/dashboard/moderasi');
+    } catch (err) {
+      // 409 = status sudah di luar menunggu_verifikasi/ditolak; muat ulang detail.
+      setActionError(err.message || 'Gagal menyetujui laporan.');
+      try {
+        const fresh = await getReportDetail(laporan.id);
+        terapkanHasil(fresh);
+      } catch {
+        /* biarkan pesan error utama tampil */
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const bukaDialogTolak = () => {
+    setAlasanTolak('');
+    setRejectError('');
+    setIsRejectOpen(true);
+  };
+
+  const tutupDialogTolak = () => {
+    if (isRejecting) return;
+    setIsRejectOpen(false);
+  };
+
+  // Tolak laporan (FE-25B) via POST /admin/reports/{id}/reject (alasan wajib).
+  const handleReject = async () => {
+    if (!alasanTolak.trim()) {
+      setRejectError('Alasan penolakan wajib diisi.');
+      return;
+    }
+    setRejectError('');
+    setIsRejecting(true);
+    try {
+      const hasil = await rejectReport(laporan.id, alasanTolak);
+      terapkanHasil(hasil);
+      setIsRejectOpen(false);
+    } catch (err) {
+      // 409 = laporan sudah ditolak; muat ulang detail.
+      setRejectError(err.message || 'Gagal menolak laporan.');
+      try {
+        const fresh = await getReportDetail(laporan.id);
+        terapkanHasil(fresh);
+      } catch {
+        /* biarkan pesan error utama tampil */
+      }
+    } finally {
+      setIsRejecting(false);
+    }
   };
 
   if (isLoading) {
@@ -96,6 +210,12 @@ export const DetailModerasiPage = () => {
     );
   }
 
+  const isDitolak = currentStatus === 'ditolak';
+  const currentIndex = STATUS_STEPS.findIndex((s) => s.key === currentStatus);
+  const tahapLabel = isDitolak
+    ? 'DITOLAK'
+    : `TAHAP ${Math.max(currentIndex + 1, 1)} DARI ${STATUS_STEPS.length}`;
+
   return (
     <div>
       {/* TOP NAVIGATION BACK LINK */}
@@ -111,7 +231,7 @@ export const DetailModerasiPage = () => {
         <div>
           <h1 className="text-display">Verifikasi & Pembaruan Laporan Fasilitas</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Masuk: {laporan.tanggal} • Penanganan Wilayah Dinas Pertamanan
+            Masuk: {laporan.tanggal || '—'} • {laporan.wilayah || 'Wilayah belum tersedia'}
           </p>
         </div>
         <StatusBadge status={currentStatus} />
@@ -122,26 +242,27 @@ export const DetailModerasiPage = () => {
         <CardBody style={{ padding: 'var(--space-xl)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>ALUR STATUS PENANGANAN</span>
-            <span className="badge badge-info">TAHAP 3 DARI 4</span>
+            <span className={`badge ${isDitolak ? 'badge-danger' : 'badge-info'}`}>{tahapLabel}</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', position: 'relative' }}>
-            <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: '#065F46' }}>1. Menunggu Verifikasi</div>
-              <span className="text-caption">Selesai</span>
-            </div>
-            <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: '#065F46' }}>2. Diverifikasi</div>
-              <span className="text-caption">Tervalidasi</span>
-            </div>
-            <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '2px solid var(--color-warning)' }}>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: '#92400E' }}>3. Dalam Penanganan</div>
-              <span className="text-caption" style={{ color: '#92400E', fontWeight: 700 }}>Aktif Sekarang</span>
-            </div>
-            <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center', opacity: 0.6 }}>
-              <div style={{ fontWeight: 700, fontSize: '13px' }}>4. Selesai</div>
-              <span className="text-caption">Menunggu Konfirmasi</span>
-            </div>
+            {STATUS_STEPS.map((step, i) => {
+              const selesai = !isDitolak && currentIndex > i;
+              const aktif = !isDitolak && currentIndex === i;
+              const gaya = selesai
+                ? { backgroundColor: 'var(--color-success-light)' }
+                : aktif
+                  ? { backgroundColor: 'var(--color-warning-light)', border: '2px solid var(--color-warning)' }
+                  : { backgroundColor: 'var(--color-bg-main)', opacity: 0.6 };
+              const warnaTeks = selesai ? '#065F46' : aktif ? '#92400E' : 'var(--color-text-main)';
+              const keterangan = selesai ? 'Selesai' : aktif ? 'Aktif Sekarang' : 'Menunggu';
+              return (
+                <div key={step.key} style={{ padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center', ...gaya }}>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: warnaTeks }}>{step.label}</div>
+                  <span className="text-caption" style={{ color: aktif ? '#92400E' : undefined, fontWeight: aktif ? 700 : undefined }}>{keterangan}</span>
+                </div>
+              );
+            })}
           </div>
         </CardBody>
       </Card>
@@ -156,7 +277,7 @@ export const DetailModerasiPage = () => {
                 <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <Tag size={12} /> {laporan.jenisMasalah}
                 </span>
-                <span className="text-caption">ID SPESIFIKASI: F-PK-0882</span>
+                <StatusBadge status={currentStatus} />
               </div>
 
               <h2 className="h2" style={{ marginBottom: '4px' }}>{laporan.fasilitasNama}</h2>
@@ -172,17 +293,37 @@ export const DetailModerasiPage = () => {
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">TITIK PRESISI</span>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>Sisi Selatan Teuku Umar</div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>
+                    {laporan.lokasiPilihan &&
+                    Number.isFinite(Number(laporan.lokasiPilihan.lat)) &&
+                    Number.isFinite(Number(laporan.lokasiPilihan.lng))
+                      ? `${Number(laporan.lokasiPilihan.lat).toFixed(5)}, ${Number(laporan.lokasiPilihan.lng).toFixed(5)}`
+                      : 'Belum ditentukan'}
+                  </div>
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">PELAPOR</span>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>{laporan.namaPelapor || 'Nama tidak tersedia'}</div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px' }}>
+                    {laporan.modeIdentitas === 'anonim'
+                      ? 'Anonim'
+                      : (laporan.namaPelapor || 'Nama tidak tersedia')}
+                  </div>
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-                  <span className="text-caption">STATUS DISTRIK</span>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px', color: 'var(--color-primary)' }}>Prioritas Penataan Fasum</div>
+                  <span className="text-caption">WILAYAH</span>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px', color: 'var(--color-primary)' }}>{laporan.wilayah || '—'}</div>
                 </div>
               </div>
+
+              {/* ALASAN PENOLAKAN (BE-30) */}
+              {laporan.alasanPenolakan && (
+                <div style={{ backgroundColor: 'var(--color-danger-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-xl)', color: '#991B1B' }}>
+                  <span className="text-caption" style={{ fontWeight: 700, color: '#991B1B', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertTriangle size={12} /> ALASAN PENOLAKAN
+                  </span>
+                  <p className="text-body" style={{ marginTop: '6px' }}>{laporan.alasanPenolakan}</p>
+                </div>
+              )}
 
               {/* CITIZEN DESCRIPTION */}
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-xl)' }}>
@@ -199,9 +340,9 @@ export const DetailModerasiPage = () => {
                   <div style={{ height: '160px', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                     <img src={laporan.foto} alt="Bukti Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                  <div style={{ backgroundColor: '#e2e8f0', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-                    <span className="text-caption" style={{ fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} color="#0F766E" /> Menteng, Jakarta Pusat
+                  <div style={{ backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                    <span className="text-caption" style={{ fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px', textAlign: 'center' }}>
+                      <MapPin size={12} color="#0F766E" /> {laporan.wilayah || 'Wilayah belum tersedia'}
                     </span>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(laporan.ruangPublikNama)}`}
@@ -230,18 +371,48 @@ export const DetailModerasiPage = () => {
               </h3>
               <p className="text-caption" style={{ marginBottom: '16px' }}>Perbarui status siklus laporan berdasarkan kondisi riil di lapangan.</p>
 
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" htmlFor="catatan-petugas">Catatan Petugas (opsional)</label>
+                <textarea
+                  id="catatan-petugas"
+                  className="form-textarea"
+                  rows={2}
+                  value={catatanPetugas}
+                  onChange={(e) => setCatatanPetugas(e.target.value)}
+                  placeholder="Tambahkan catatan untuk perubahan status..."
+                />
+              </div>
+
+              {actionError && (
+                <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 12px', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <span>{actionError}</span>
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Button
+                  variant="primary"
+                  fullWidth
+                  disabled={isSubmitting || isRejecting}
+                  onClick={handleApprove}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  <CheckCircle2 size={16} /> Setujui Laporan
+                </Button>
                 <Button
                   variant="secondary"
                   fullWidth
+                  disabled={isSubmitting || isRejecting}
                   onClick={() => handleUpdateStatus('dalam_penanganan')}
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
                   <Wrench size={16} /> Tandai Dalam Penanganan
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="outline"
                   fullWidth
+                  disabled={isSubmitting || isRejecting}
                   onClick={() => handleUpdateStatus('selesai')}
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
@@ -250,7 +421,8 @@ export const DetailModerasiPage = () => {
                 <Button
                   variant="danger"
                   fullWidth
-                  onClick={() => handleUpdateStatus('ditolak')}
+                  disabled={isSubmitting || isRejecting}
+                  onClick={bukaDialogTolak}
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
                   <XCircle size={16} /> Tolak Laporan (Spam / Tidak Sesuai)
@@ -265,27 +437,66 @@ export const DetailModerasiPage = () => {
               <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <History size={16} color="#0F766E" /> Catatan Pembaruan Timeline
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
-                <div style={{ borderLeft: '3px solid var(--color-primary)', paddingLeft: '10px' }}>
-                  <strong>Laporan Diterima</strong>
-                  <div className="text-caption">8 Sep 2026 • 08:30 WIB</div>
-                  <p className="text-caption" style={{ marginTop: '2px' }}>Laporan diterima dari warga via aplikasi dengan bukti foto.</p>
+              {laporan.timeline && laporan.timeline.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
+                  {laporan.timeline.map((entry, idx) => (
+                    <div key={idx} style={{ borderLeft: `3px solid ${warnaTimeline(entry.status)}`, paddingLeft: '10px' }}>
+                      <strong>{entry.title}</strong>
+                      {formatWaktu(entry.date) && (
+                        <div className="text-caption">{formatWaktu(entry.date)}</div>
+                      )}
+                      {entry.desc && (
+                        <p className="text-caption" style={{ marginTop: '2px' }}>{entry.desc}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <div style={{ borderLeft: '3px solid var(--color-primary)', paddingLeft: '10px' }}>
-                  <strong>Diverifikasi Pengawas</strong>
-                  <div className="text-caption">8 Sep 2026 • 11:15 WIB</div>
-                  <p className="text-caption" style={{ marginTop: '2px' }}>Status dinaikkan ke proses eksekusi lapangan.</p>
-                </div>
-                <div style={{ borderLeft: '3px solid var(--color-warning)', paddingLeft: '10px' }}>
-                  <strong>Tindakan Lapangan</strong>
-                  <div className="text-caption">9 Sep 2026 • 09:00 WIB</div>
-                  <p className="text-caption" style={{ marginTop: '2px' }}>Petugas teknis melakukan penggantian bohlam LED 50W.</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-caption">Belum ada catatan pembaruan untuk laporan ini.</p>
+              )}
             </CardBody>
           </Card>
         </div>
       </div>
+
+      {/* DIALOG TOLAK (FE-25B) */}
+      <Modal
+        open={isRejectOpen}
+        onClose={tutupDialogTolak}
+        title="Tolak Laporan"
+        labelledBy="dialog-tolak-title"
+      >
+        <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+          Berikan alasan penolakan. Alasan ini tersimpan dan tampil di riwayat laporan.
+        </p>
+        <div className="form-group">
+          <label className="form-label" htmlFor="alasan-tolak">Alasan Penolakan <span style={{ color: 'var(--color-danger)' }}>*</span></label>
+          <textarea
+            id="alasan-tolak"
+            className="form-textarea"
+            rows={3}
+            value={alasanTolak}
+            onChange={(e) => {
+              setAlasanTolak(e.target.value);
+              if (rejectError) setRejectError('');
+            }}
+            placeholder="Contoh: Foto tidak jelas dan lokasi tidak sesuai."
+            required
+          />
+        </div>
+        {rejectError && (
+          <div role="alert" style={{ color: 'var(--color-danger)', fontSize: '13px', marginTop: '8px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+            <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+            <span>{rejectError}</span>
+          </div>
+        )}
+        <div style={{ marginTop: 'var(--space-lg)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="outline" onClick={tutupDialogTolak} disabled={isRejecting}>Batal</Button>
+          <Button variant="danger" onClick={handleReject} disabled={isRejecting || !alasanTolak.trim()}>
+            {isRejecting ? 'Menolak…' : 'Tolak Laporan'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };
