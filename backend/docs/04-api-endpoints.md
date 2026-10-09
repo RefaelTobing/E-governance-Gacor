@@ -23,6 +23,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `POST` | `/api/v1/admin/login` | — | Login khusus petugas; non-admin `403`, kredensial salah `400` (BE-34) |
 | `POST` | `/api/v1/auth/register` | — | Daftar warga baru (role dipaksa `warga`) |
 | `GET` | `/api/v1/auth/me` | Token | Profil user yang sedang login |
+| `POST` | `/api/v1/auth/logout` | Token | Cabut token pemanggil (blacklist `jti`) (BE-55) |
 | **Kategori & Fasilitas** ||||
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
 | `POST` | `/api/v1/categories` | **— ⚠️ BELUM DILINDUNGI** | Buat kategori (seharusnya admin — gap FEAT-014) |
@@ -126,6 +127,9 @@ Body JSON. Role selalu dipaksa `warga` — nilai lain ditolak `400` (keamanan: a
 
 ### `GET /api/v1/auth/me`
 Header `Authorization: Bearer <token>` → response `UserResponse` (id, name, email, role, is_active, created_at, updated_at). `401` tanpa/ kedaluwarsa token; `403` akun dinonaktifkan.
+
+### `POST /api/v1/auth/logout` (BE-55)
+Header `Authorization: Bearer <token>` (wajib) → `200 {"detail": "Berhasil keluar"}`. `jti` token dicatat di tabel `token_blacklist`, sehingga request berikutnya dengan token itu ditolak `401` di semua endpoint terproteksi. `401` tanpa token. Idempoten: panggil ulang dengan token yang sama tetap aman. Hanya mencabut token itu sendiri (sesi lain user sama tetap hidup).
 
 ---
 

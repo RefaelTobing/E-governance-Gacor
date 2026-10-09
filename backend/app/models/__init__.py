@@ -8,6 +8,7 @@ from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.laporan_flag import LaporanFlag
 from app.models.etl_run import EtlRun
+from app.models.token_blacklist import TokenBlacklist
 
 __all__ = [
     "Base",
@@ -20,4 +21,5 @@ __all__ = [
     "LaporanTimeline",
     "LaporanFlag",
     "EtlRun",
+    "TokenBlacklist",
 ]

@@ -24,7 +24,7 @@ Kode terkait:
 | Tambah/ubah/nonaktifkan/aktifkan petugas | **Selesai** (endpoint `/users`) |
 | Admin aktif terakhir tidak bisa dinonaktifkan | **Selesai** (guard `409`) |
 | Proteksi seluruh endpoint admin termasuk `POST /categories` | **Sebagian** — semua `/admin/*` terverifikasi `get_current_admin` (BE-35); `POST /categories` masih bocor → BE-54 |
-| Refresh / revoke token | **Belum** — gap opsional (BE-55) |
+| Refresh / revoke token | **Selesai** — `POST /auth/logout` + blacklist `jti` (BE-55, Opsi A) |
 
 ---
 
@@ -140,9 +140,9 @@ Token stateless 7 hari, **tidak bisa dicabut** selain mengganti `SECRET_KEY` (se
 
 **Keputusan yang harus ditulis di sini:**
 - [ ] **Opsi A (cukup untuk MVP — disarankan):** tanpa refresh endpoint; andalkan cek `is_active` + masa 7 hari. Cukup dokumentasikan.
-- [ ] **Opsi B:** `POST /auth/refresh` (token lama → token baru) + `POST /auth/logout` yang menyimpan blacklist (butuh tabel/penyimpanan → lebih dari MVP).
+- [x] **Opsi B (dipilih — versi minimal, BE-55):** `POST /auth/logout` menyimpan blacklist; tanpa endpoint refresh terpisah.
 
-Bila memilih A, cukup tandai "ditinjau, tidak diperlukan untuk MVP" dan lanjut.
+**Keputusan (2026-10-08, BE-55):** Opsi B versi minimal. `POST /auth/logout` menyimpan `jti` token ke tabel `token_blacklist` (`jti` PK + `expires_at`); token yang sudah logout ditolak `401` di semua endpoint terproteksi lewat helper `services/token.py::user_dari_token()`, dipakai `deps.get_current_user` **dan** titik otorisasi laporan (`laporan.py`) supaya pencabutan benar-benar berlaku. **Tidak** ada endpoint refresh terpisah (masa berlaku tetap 7 hari): baris blacklist kedaluwarsa dibuang oportunistik saat logout, dan cek `is_active` tetap jadi lapisan kedua. Sesi lain milik user yang sama tidak ikut tercabut (`jti` per-token).
 
 ### Gap 3 — Audit proteksi admin (checklist, bukan pengembangan baru)
 

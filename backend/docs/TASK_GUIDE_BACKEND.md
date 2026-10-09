@@ -578,13 +578,20 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **FEAT:** FEAT-014. **Memperbaiki** BE-35.
   - **Verifikasi:** `POST /categories` tanpa token -> 403, dengan token admin -> 201; tidak ada endpoint tulis
     yang bisa dipanggil publik.
-- [ ] **[BE-55]** **(baru - hasil audit)** Refresh / logout token (rotasi atau blacklist sederhana),
+- [x] **[BE-55]** **(baru - hasil audit)** Refresh / logout token (rotasi atau blacklist sederhana),
       supaya sesi tidak hidup 7 hari tanpa kendali saat perangkat hilang/keluar.
-  - **NFR:** NFR-002. **Dibutuhkan:** alur keluar di FE admin dan warga.
-  - **Langkah:** minimal satu dari: tabel `token_blacklist` (jti + expiry) + endpoint `POST /auth/logout`;
-    atau refresh token pendek untuk akses panjang. Catat keputusannya di `docs/API.md`.
-  - **Verifikasi:** logout -> token lama ditolak di endpoint terproteksi; token yang belum kedaluwarsa tetap
-    berfungsi sebelum logout.
+  - **Keputusan:** Opsi B minimal - `POST /auth/logout` + tabel `token_blacklist` (`jti` PK + `expires_at`),
+    **tanpa** endpoint refresh terpisah (masa berlaku tetap 7 hari). Dicatat di `features/admin-auth.md` Gap 2
+    dan `docs/API.md`.
+  - **Lokasi kode:** `create_access_token` (+`jti`) & `decode_token` di `core/security.py`; model
+    `models/token_blacklist.py`; helper `services/token.py::user_dari_token()`/`blacklist_token()`; endpoint di
+    `api/v1/auth.py`; blacklist dipakai `deps.get_current_user` + `laporan.py` (agar cabut berlaku menyeluruh).
+    Migrasi `tambah_tabel_token_blacklist`.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` 162 -> **169 passed** (7 test baru `test_logout.py`:
+    401 tanpa token, 200 dengan token, token sebelum logout tetap berfungsi, setelah logout 401, token logout
+    tak bisa lihat detail laporan sendiri -> 403, sesi lain user sama tak ikut tercabut, idempoten). Tiga
+    kegagalan tersisa (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan -
+    butuh MySQL hidup.
 
 ---
 

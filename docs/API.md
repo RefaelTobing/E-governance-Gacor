@@ -22,6 +22,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `POST` | `/api/v1/admin/login` | — | Login khusus petugas (non-admin 403) (BE-34) |
 | `POST` | `/api/v1/auth/register` | — | Daftar warga baru |
 | `GET` | `/api/v1/auth/me` | Token | Profil user yang sedang login |
+| `POST` | `/api/v1/auth/logout` | Token | Cabut token (blacklist `jti`) (BE-55) |
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
 | `POST` | `/api/v1/categories` | — | Buat kategori baru |
 | `GET` | `/api/v1/facilities` | — | Opsi filter fasilitas |
@@ -108,6 +109,23 @@ curl -X POST http://localhost:8000/api/v1/admin/login \
 | `403` | Akun nonaktif, atau bukan role `admin` ("Endpoint ini khusus petugas") |
 
 `/auth/login` tetap terbuka semua role untuk FE publik & warga.
+
+### `POST /api/v1/auth/logout` (BE-55)
+
+Cabut token pemanggil supaya tidak bisa dipakai lagi sebelum masa berlakunya.
+Butuh header `Authorization: Bearer <token>`; `jti` token dicatat di tabel
+`token_blacklist` sehingga request berikutnya dengan token itu ditolak `401`.
+Idempoten (panggil ulang tetap `200` sebelum token tercabut; setelah tercabut
+panggilan berikutnya `401` karena token sudah tidak valid).
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/logout \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Hanya mencabut **satu** token: sesi/login lain milik user yang sama tetap hidup
+sampai masa berlakunya. Blacklist dibersihkan dari baris yang sudah kedaluwarsa
+saat ada logout baru.
 
 ### `POST /api/v1/auth/register`
 
@@ -788,6 +806,5 @@ Statistik antrian laporan yang menunggu tinjauan dan moderasi petugas. Khusus ro
 Endpoint berikut memang dipakai di UI tapi **belum ada** di backend — jangan
 dijanjikan ke frontend dulu:
 
-- **Kelola ruang publik** (CRUD admin), belum ada endpoint tulis data ruang publik. Fasilitas sudah
-  punya (`/api/v1/admin/facilities`, lihat §Fasilitas di atas).
-- **Refresh / logout token** — token stateless 7 hari, tidak ada revocation.
+- **Kelola ruang publik** (admin): list `GET /admin/public-spaces` (BE-32) & edit `PATCH /admin/public-spaces/{id}` (BE-33) sudah ada; hapus ruang publik sengaja belum dibuat.
+- **Refresh token** — belum ada refresh terpisah; logout (`POST /auth/logout`, BE-55) mencabut token yang ada lewat blacklist `jti`.

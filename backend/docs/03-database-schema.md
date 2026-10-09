@@ -28,6 +28,7 @@ categories ──┐
 | `laporan_timeline` | `models/laporan_timeline.py` | FK `laporan_id → laporan.id`, cascade delete |
 | `laporan_flag` | `models/laporan_flag.py` | FK `laporan_id → laporan.id` + `user_id → users.id`, unique `(laporan_id, user_id)`, cascade delete (BE-25) |
 | `etl_run` | `models/etl_run.py` | Tanpa FK; satu baris per run ETL (BE-19), dibaca `GET /admin/sync-data` |
+| `token_blacklist` | `models/token_blacklist.py` | Tanpa FK; `jti` token yang di-logout + `expires_at` (BE-55) |
 
 ---
 
@@ -145,6 +146,13 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `hitung` | JSON NULL | Angka `seed_db` dari baris `ETL_HITUNG` (`baru`, `diupdate`, `tanpa_perubahan`, dll); terisi bila tahap `seed_db` sukses |
 | `tahap` | JSON NULL | Daftar tahap: nama, status, detik, 100 baris log terakhir |
 
+### `token_blacklist`
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| `jti` | VARCHAR(36) PK | UUID dari claim `jti` token (bukan token penuh, hindari simpan rahasia) |
+| `expires_at` | DATETIME NOT NULL (index) | Salinan `exp` token; baris dengan nilai ini lewat dibuang oportunis saat logout |
+| `created_at` | DATETIME | `utcnow` |
+
 ---
 
 ## 3. Migrasi Alembic
@@ -163,6 +171,7 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `3996fdaf0f5f_tambah_kolom_lokasi_pilihan_laporan` | Menambah `laporan.lat_lokasi_pilihan`, `long_lokasi_pilihan` (DOUBLE, nullable), titik presisi fasilitas pilihan warga |
 | `fe1d83da4fca_tambah_tabel_laporan_flag` | Menambah tabel `laporan_flag` + unique `(laporan_id, user_id)` — flag pengguna lain atas laporan tayang (BE-25) |
 | `a1b2c3d4e5f6_tambah_alasan_penolakan_laporan` | Menambah `laporan.alasan_penolakan` (TEXT, nullable) — alasan penolakan tersimpan, bukan hanya di timeline (BE-30) |
+| `tambah_tabel_token_blacklist` | Menambah tabel `token_blacklist` — `jti` token yang di-logout + `expires_at` (BE-55) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.

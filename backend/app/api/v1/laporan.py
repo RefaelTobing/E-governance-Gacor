@@ -9,7 +9,6 @@ from app.api.deps import (
     get_db,
     oauth2_scheme_optional,
 )
-from app.core.security import verify_token
 from app.models.laporan import Laporan
 from app.models.user import User
 from app.schemas.laporan import (
@@ -26,18 +25,15 @@ from app.schemas.laporan import (
 )
 from app.schemas.user import ROLE_ADMIN
 from app.services import laporan as crud_laporan
+from app.services.token import user_dari_token
 
 router = APIRouter()
 admin_router = APIRouter()
 
 
 def _peninjau(db: Session, token: Optional[str]) -> Optional[User]:
-    if not token:
-        return None
-    payload = verify_token(token)
-    if not payload:
-        return None
-    return db.query(User).filter(User.id == payload.get("sub")).first()
+    """Pemanggil dari token (bila ada), menghormati blacklist logout (BE-55)."""
+    return user_dari_token(db, token)
 
 
 def _boleh_lihat(db: Session, report: Laporan, token: Optional[str]) -> bool:
@@ -58,16 +54,10 @@ def create_report(
     token: Optional[str] = Depends(oauth2_scheme_optional)
 ):
     """Kirim laporan baru dari warga."""
-    user_id = None
-    if token:
-        try:
-            payload = verify_token(token)
-            if payload:
-                user_id = payload.get("sub")
-        except Exception:
-            pass
-            
-    return crud_laporan.create_report(db, laporan_in, user_id=user_id)
+    # Token blacklist/kadaluarsa diperlakukan anonim, bukan menolak request:
+    # laporan anonim tetap sah (BE-55).
+    user = user_dari_token(db, token)
+    return crud_laporan.create_report(db, laporan_in, user_id=user.id if user else None)
 
 
 @router.get("", response_model=List[LaporanResponse])

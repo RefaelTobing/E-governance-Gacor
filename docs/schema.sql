@@ -122,3 +122,11 @@ CREATE TABLE etl_run (
    hitung JSON,
    tahap JSON
 );
+
+CREATE TABLE token_blacklist (
+   jti VARCHAR(36) NOT NULL PRIMARY KEY,
+   expires_at DATETIME NOT NULL,
+   created_at DATETIME
+);
+
+CREATE INDEX ix_token_blacklist_expires_at ON token_blacklist (expires_at);
