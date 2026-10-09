@@ -1,40 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getUserReports } from '../../../services/laporanService';
 
+// Format tanggal ISO -> "12 Sep 2026" (fallback '' bila kosong/invalid).
+const formatTanggal = (iso) => {
+  if (!iso) return '';
+  const tanggal = new Date(iso);
+  if (Number.isNaN(tanggal.getTime())) return '';
+  return tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
 export const RiwayatLaporanPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('semua');
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchReports = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getUserReports();
+      setReports(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setReports([]);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchReports = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getUserReports();
-        if (isMounted) {
-          setReports(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error('Error fetching reports:', err);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
     fetchReports();
+  }, [fetchReports]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const sesiBerakhir = error?.status === 401;
 
   // Filter Reports by status tab
   const filteredLaporan = reports.filter((item) => {
@@ -47,6 +51,7 @@ export const RiwayatLaporanPage = () => {
   const countPenanganan = reports.filter((r) => r.status === 'dalam_penanganan').length;
   const countSelesai = reports.filter((r) => r.status === 'selesai').length;
   const countVerifikasi = reports.filter((r) => r.status === 'menunggu_verifikasi').length;
+  const countDitolak = reports.filter((r) => r.status === 'ditolak').length;
   const distinctSpaces = new Set(reports.map((r) => r.ruangPublikId || r.ruangPublikNama)).size;
 
   return (
@@ -146,6 +151,24 @@ export const RiwayatLaporanPage = () => {
         >
           Menunggu Verifikasi ({countVerifikasi})
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('ditolak')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 'var(--radius-md)',
+            fontWeight: 600,
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'ditolak' ? 'var(--color-danger)' : 'var(--color-surface)',
+            color: activeTab === 'ditolak' ? 'white' : 'var(--color-text-main)',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          Ditolak ({countDitolak})
+        </button>
       </div>
 
       {/* REPORT LIST CARDS with Loading & Empty State */}
@@ -173,6 +196,36 @@ export const RiwayatLaporanPage = () => {
             </Card>
           ))}
         </div>
+      ) : error ? (
+        <Card>
+          <CardBody>
+            <div role="alert" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)', textAlign: 'center', padding: 'var(--space-lg)' }}>
+              <AlertTriangle size={28} color="var(--color-danger)" />
+              <div>
+                <h3 className="h3" style={{ marginBottom: '4px' }}>
+                  {sesiBerakhir ? 'Sesi Anda Telah Berakhir' : 'Gagal Memuat Laporan'}
+                </h3>
+                <p className="text-small" style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+                  {sesiBerakhir
+                    ? 'Silakan masuk kembali untuk melihat riwayat laporan Anda.'
+                    : 'Terjadi kendala saat mengambil data. Coba lagi nanti.'}
+                </p>
+              </div>
+              {sesiBerakhir ? (
+                <Button
+                  variant="primary"
+                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
+                >
+                  Masuk Kembali
+                </Button>
+              ) : (
+                <Button variant="primary" onClick={fetchReports} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <RefreshCw size={14} /> Coba Lagi
+                </Button>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       ) : reports.length === 0 ? (
         <EmptyState
           title="Belum Ada Laporan Terkirim"
@@ -206,18 +259,26 @@ export const RiwayatLaporanPage = () => {
                       <MapPin size={12} color="var(--color-text-muted)" /> <strong>{item.ruangPublikNama}</strong> • {item.wilayah}
                     </p>
 
-                    {/* Latest Status Timeline Update Box */}
-                    <div style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-primary)' }}>
-                      <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                        <RefreshCw size={12} /> PEMBARUAN TERAKHIR
-                      </span>
-                      <p className="text-small" style={{ fontWeight: 600 }}>
-                        {item.pembaruanTerakhir}
-                      </p>
-                      <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
-                        {item.tanggalPembaruan}
-                      </span>
-                    </div>
+                    {/* Pembaruan terakhir: alasan penolakan (bila ditolak) atau waktu update terakhir */}
+                    {item.status === 'ditolak' && item.alasanPenolakan ? (
+                      <div style={{ backgroundColor: 'var(--color-danger-light, #FEE2E2)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-danger)' }}>
+                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                          <AlertTriangle size={12} /> ALASAN PENOLAKAN
+                        </span>
+                        <p className="text-small" style={{ fontWeight: 600, margin: 0 }}>
+                          {item.alasanPenolakan}
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-primary)' }}>
+                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                          <RefreshCw size={12} /> PEMBARUAN TERAKHIR
+                        </span>
+                        <p className="text-small" style={{ fontWeight: 600, margin: 0 }}>
+                          {item.updatedAt ? `Terakhir diperbarui ${formatTanggal(item.updatedAt)}` : 'Menunggu pembaruan status'}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ textAlign: 'right' }}>

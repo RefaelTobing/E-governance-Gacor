@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useParams, useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import {
   Trees,
   MapPin,
@@ -16,13 +16,16 @@ import {
   AlertTriangle,
   ExternalLink,
   X,
+  ChevronLeft,
+  ChevronRight,
   Flag,
-  Clock3
+  Clock3,
+  Camera
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
@@ -58,6 +61,17 @@ const createCustomIcon = (color = '#0F766E') =>
     popupAnchor: [0, -36],
   });
 
+// Section "Pembaruan Partisipasi Warga": hanya laporan tayang (STATUS_TAYANG backend).
+const FILTER_STATUS_LAPORAN = ['diverifikasi', 'dalam_penanganan', 'selesai'];
+const TAHAP_LAPORAN = 6;
+
+const OPSI_FILTER_LAPORAN = [
+  ['semua', 'Semua'],
+  ['diverifikasi', 'Diverifikasi'],
+  ['dalam_penanganan', 'Dalam Penanganan'],
+  ['selesai', 'Selesai'],
+];
+
 export const DetailRuangPublikPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -73,10 +87,29 @@ export const DetailRuangPublikPage = () => {
   const [showMap, setShowMap] = useState(false);
 
   // Section "Pembaruan Partisipasi Warga" (laporan tayang) + aksi flag (FE-21).
-  const [laporanWarga, setLaporanWarga] = useState([]);
+  const [semuaLaporan, setSemuaLaporan] = useState([]);
   const [isLoadingLaporan, setIsLoadingLaporan] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(TAHAP_LAPORAN);
   const [flaggedIds, setFlaggedIds] = useState([]);
   const [flagError, setFlagError] = useState('');
+
+  // Filter status section partisipasi, tersinkron ke query string (CONVENTIONS §1.2).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
+  const statusFilter = FILTER_STATUS_LAPORAN.includes(statusParam) ? statusParam : 'semua';
+
+  const gantiStatusFilter = (nilai) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (nilai === 'semua') next.delete('status');
+      else next.set('status', nilai);
+      return next;
+    }, { replace: true });
+    setVisibleCount(TAHAP_LAPORAN);
+  };
+
+  // Galeri foto (FE-14): indeks foto yang sedang diperbesar di lightbox (null = tertutup).
+  const [fotoAktifIdx, setFotoAktifIdx] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -106,7 +139,9 @@ export const DetailRuangPublikPage = () => {
     };
   }, [id]);
 
-  // Muat laporan tayang ruang publik ini setelah detail tersedia (section partisipasi warga).
+  // Muat laporan tayang ruang publik ini setelah detail tersedia.
+  // Satu request (limit maksimum backend) dipakai ganda: sumber daftar section
+  // (load-more di sisi klien) + set foto untuk label galeri "Dokumentasi Warga".
   useEffect(() => {
     let isMounted = true;
     if (!detail?.id) return undefined;
@@ -114,11 +149,11 @@ export const DetailRuangPublikPage = () => {
     const muatLaporan = async () => {
       setIsLoadingLaporan(true);
       try {
-        const data = await getSpaceReports(detail.id, { limit: 6 });
-        if (isMounted) setLaporanWarga(Array.isArray(data) ? data : []);
+        const data = await getSpaceReports(detail.id, { limit: 500 });
+        if (isMounted) setSemuaLaporan(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Error fetching laporan ruang publik:', err);
-        if (isMounted) setLaporanWarga([]);
+        if (isMounted) setSemuaLaporan([]);
       } finally {
         if (isMounted) setIsLoadingLaporan(false);
       }
@@ -129,6 +164,25 @@ export const DetailRuangPublikPage = () => {
       isMounted = false;
     };
   }, [detail?.id]);
+
+  // Laporan setelah difilter status (klien-side) dan yang sedang terlihat (load-more).
+  const laporanTerfilter = useMemo(
+    () => (statusFilter === 'semua'
+      ? semuaLaporan
+      : semuaLaporan.filter((lap) => lap.status === statusFilter)),
+    [semuaLaporan, statusFilter]
+  );
+  const laporanTampil = laporanTerfilter.slice(0, visibleCount);
+  const adaLagi = visibleCount < laporanTerfilter.length;
+
+  // Set URL foto laporan warga (untuk melabeli galeri "Dokumentasi Warga").
+  const fotoWargaSet = useMemo(
+    () => new Set(semuaLaporan.map((lap) => lap.foto).filter(Boolean)),
+    [semuaLaporan]
+  );
+
+  const galeriFoto = detail?.foto ?? [];
+  const tampilkanGaleri = galeriFoto.length > 1;
 
   // Tandai laporan warga sebagai tidak pantas (FE-21 / BE-25).
   const handleFlag = async (laporanId) => {
@@ -141,7 +195,7 @@ export const DetailRuangPublikPage = () => {
       const hasil = await flagReport(laporanId);
       setFlaggedIds((prev) => (prev.includes(laporanId) ? prev : [...prev, laporanId]));
       if (hasil?.flag_count != null) {
-        setLaporanWarga((prev) =>
+        setSemuaLaporan((prev) =>
           prev.map((l) => (l.id === laporanId ? { ...l, flagCount: hasil.flag_count } : l))
         );
       }
@@ -504,6 +558,51 @@ export const DetailRuangPublikPage = () => {
         </Card>
       </section>
 
+      {/* SECTION: GALERI FOTO (FE-14) — foto resmi + dokumentasi warga */}
+      {tampilkanGaleri && (
+        <section style={{ marginBottom: 'var(--space-3xl)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+            <div>
+              <span className="text-caption" style={{ fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-primary)' }}>
+                DOKUMENTASI
+              </span>
+              <h2 className="h2">Galeri Foto</h2>
+              <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+                Foto resmi pengelola dan dokumentasi warga untuk ruang publik ini.
+              </p>
+            </div>
+            <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 'var(--space-md)' }}>
+            {galeriFoto.map((url, idx) => {
+              const dariWarga = fotoWargaSet.has(url);
+              return (
+                <button
+                  key={`${url}-${idx}`}
+                  type="button"
+                  onClick={() => setFotoAktifIdx(idx)}
+                  aria-label={`Perbesar foto ${idx + 1} dari ${galeriFoto.length}`}
+                  style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden', height: '110px' }}
+                >
+                  <img
+                    src={url}
+                    alt={`Foto ${detail.nama} ke-${idx + 1}`}
+                    loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                  {dariWarga && (
+                    <span className="badge badge-info" style={{ position: 'absolute', bottom: '6px', left: '6px', fontSize: '11px' }}>
+                      <Camera size={11} /> Dokumentasi Warga
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* SECTION: PEMBARUAN PARTISIPASI WARGA (laporan tayang) */}
       <section style={{ marginBottom: 'var(--space-3xl)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
@@ -516,12 +615,28 @@ export const DetailRuangPublikPage = () => {
               Laporan kondisi fasilitas yang sudah tayang dan dipantau bersama.
             </p>
           </div>
-          <span className="badge badge-neutral">{laporanWarga.length} Laporan Tayang</span>
+          <span className="badge badge-neutral">{semuaLaporan.length} Laporan Tayang</span>
         </div>
 
         {flagError && (
           <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AlertTriangle size={14} /> {flagError}
+          </div>
+        )}
+
+        {!isLoadingLaporan && semuaLaporan.length > 0 && (
+          <div className="facility-filter-group" role="group" aria-label="Filter status laporan" style={{ marginBottom: 'var(--space-lg)' }}>
+            {OPSI_FILTER_LAPORAN.map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                className={`facility-filter-button ${statusFilter === value ? 'is-active' : ''}`}
+                onClick={() => gantiStatusFilter(value)}
+                aria-pressed={statusFilter === value}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         )}
 
@@ -531,50 +646,62 @@ export const DetailRuangPublikPage = () => {
               <Card key={`sk-lap-${n}`}><CardBody><Skeleton height="80px" /></CardBody></Card>
             ))}
           </div>
-        ) : laporanWarga.length === 0 ? (
+        ) : laporanTerfilter.length === 0 ? (
           <Card>
             <CardBody>
               <p className="text-small" style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: 0 }}>
-                Belum ada laporan warga yang tayang untuk ruang publik ini.
+                {semuaLaporan.length === 0
+                  ? 'Belum ada laporan warga yang tayang untuk ruang publik ini.'
+                  : 'Belum ada laporan dengan status ini.'}
               </p>
             </CardBody>
           </Card>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-lg)' }}>
-            {laporanWarga.map((lap) => {
-              const sudahDitandai = flaggedIds.includes(lap.id);
-              const laporanSendiri = user?.id && lap.userId && user.id === lap.userId;
-              return (
-                <Card key={lap.id}>
-                  <CardBody>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                      <h4 className="h3" style={{ fontSize: '16px' }}>{lap.fasilitasNama || 'Fasilitas'}</h4>
-                      <StatusBadge status={lap.status} />
-                    </div>
-                    <div className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock3 size={12} /> {lap.tanggal || '—'} • {lap.jenisMasalah}
-                    </div>
-                    {lap.deskripsi && (
-                      <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-                        {lap.deskripsi}
-                      </p>
-                    )}
-                    {!laporanSendiri && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={sudahDitandai}
-                        onClick={() => handleFlag(lap.id)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: sudahDitandai ? 'var(--color-text-muted)' : 'var(--color-danger)' }}
-                      >
-                        <Flag size={14} /> {sudahDitandai ? 'Sudah Ditandai' : 'Tandai Tidak Pantas'}
-                      </Button>
-                    )}
-                  </CardBody>
-                </Card>
-              );
-            })}
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-lg)' }}>
+              {laporanTampil.map((lap) => {
+                const sudahDitandai = flaggedIds.includes(lap.id);
+                const laporanSendiri = user?.id && lap.userId && user.id === lap.userId;
+                return (
+                  <Card key={lap.id}>
+                    <CardBody>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                        <h4 className="h3" style={{ fontSize: '16px' }}>{lap.fasilitasNama || 'Fasilitas'}</h4>
+                        <StatusBadge status={lap.status} />
+                      </div>
+                      <div className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock3 size={12} /> {lap.tanggal || 'Baru'} • {lap.jenisMasalah}
+                      </div>
+                      {lap.deskripsi && (
+                        <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+                          {lap.deskripsi}
+                        </p>
+                      )}
+                      {!laporanSendiri && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={sudahDitandai}
+                          onClick={() => handleFlag(lap.id)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: sudahDitandai ? 'var(--color-text-muted)' : 'var(--color-danger)' }}
+                        >
+                          <Flag size={14} /> {sudahDitandai ? 'Sudah Ditandai' : 'Tandai Tidak Pantas'}
+                        </Button>
+                      )}
+                    </CardBody>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {adaLagi && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-lg)' }}>
+                <Button variant="outline" onClick={() => setVisibleCount((c) => c + TAHAP_LAPORAN)}>
+                  Muat Lebih Banyak
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -641,6 +768,54 @@ export const DetailRuangPublikPage = () => {
           </Card>
         </div>
       )}
+
+      {/* LIGHTBOX GALERI FOTO (FE-14) */}
+      <Modal
+        open={fotoAktifIdx !== null}
+        onClose={() => setFotoAktifIdx(null)}
+        maxWidth="760px"
+        title={fotoAktifIdx !== null ? `Foto ${fotoAktifIdx + 1} dari ${galeriFoto.length} • ${detail.nama}` : ''}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={fotoAktifIdx === null || fotoAktifIdx <= 0}
+              onClick={() => setFotoAktifIdx((i) => Math.max(0, i - 1))}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+            >
+              <ChevronLeft size={14} /> Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={fotoAktifIdx === null || fotoAktifIdx >= galeriFoto.length - 1}
+              onClick={() => setFotoAktifIdx((i) => Math.min(galeriFoto.length - 1, i + 1))}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+            >
+              Berikutnya <ChevronRight size={14} />
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setFotoAktifIdx(null)}>
+              Tutup
+            </Button>
+          </>
+        }
+      >
+        {fotoAktifIdx !== null && galeriFoto[fotoAktifIdx] && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-sm)' }}>
+            <img
+              src={galeriFoto[fotoAktifIdx]}
+              alt={`Foto ${detail.nama} ke-${fotoAktifIdx + 1}`}
+              style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+            />
+            {fotoWargaSet.has(galeriFoto[fotoAktifIdx]) && (
+              <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Camera size={12} /> Dokumentasi Warga
+              </span>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

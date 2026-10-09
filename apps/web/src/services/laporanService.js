@@ -90,11 +90,35 @@ export const getReports = async (params = {}) => {
 };
 
 /**
- * Ambil daftar laporan milik pengguna (citizen user reports).
+ * Ambil riwayat laporan milik pengguna yang sedang login (BE-50, "Laporan Saya").
+ *
+ * Endpoint `/reports/mine` WAJIB Authorization (token dipasang otomatis oleh
+ * request interceptor). Mengembalikan SEMUA status (termasuk
+ * `menunggu_verifikasi`/`ditolak`) milik pemanggil saja — bukan laporan publik.
+ *
+ * Sengaja TANPA fallback mock: kegagalan (401 sesi berakhir, backend mati) harus
+ * terlihat, bukan berubah jadi daftar kosong yang menyesatkan (lihat §14 prinsip
+ * kerja "jangan menyembunyikan kegagalan").
+ *
  * @param {Object} [params]
+ * @param {string} [params.status]  - Status kanonik atau "semua"
+ * @param {string} [params.wilayah]
+ * @param {string} [params.q]
+ * @param {number} [params.skip]
+ * @param {number} [params.limit]
  */
 export const getUserReports = async (params = {}) => {
-  return await getReports(params);
+  const { status, wilayah, q, skip, limit } = params;
+
+  const rawItems = await api.get('/api/v1/reports/mine', {
+    status: status && status !== 'semua' ? status : undefined,
+    wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
+    q: q || undefined,
+    skip,
+    limit,
+  });
+
+  return (Array.isArray(rawItems) ? rawItems : []).map(transformLaporanResponse);
 };
 
 /**

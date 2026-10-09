@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, CheckCircle2, Clock, Plus, ArrowRight } from 'lucide-react';
+import { ClipboardList, CheckCircle2, Clock, Plus, ArrowRight, RefreshCw, LogIn } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getUserReports } from '../../../services/laporanService';
 import { StatusBadge, Skeleton } from '../../../components';
@@ -12,34 +12,25 @@ export const ProfilDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchReports = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await getUserReports();
-        if (isMounted) {
-          setReports(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError('Gagal memuat data laporan. Coba lagi nanti.');
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchReports();
-
-    return () => {
-      isMounted = false;
-    };
+  const fetchReports = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getUserReports();
+      setReports(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setReports([]);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const sesiBerakhir = error?.status === 401;
 
   const totalLaporan = reports.length;
   const dalamPenanganan = reports.filter((r) => r.status === 'dalam_penanganan').length;
@@ -89,16 +80,33 @@ export const ProfilDashboardPage = () => {
 
       {/* Error state */}
       {error && (
-        <div className="profil-error-state">
-          <strong>Gagal memuat data laporan.</strong>
-          <span>Pastikan koneksi ke server tersedia, lalu muat ulang halaman ini.</span>
+        <div className="profil-error-state" role="alert">
+          <strong>{sesiBerakhir ? 'Sesi Anda telah berakhir.' : 'Gagal memuat data laporan.'}</strong>
+          <span>
+            {sesiBerakhir
+              ? 'Silakan masuk kembali untuk melihat data laporan Anda.'
+              : 'Pastikan koneksi ke server tersedia, lalu coba lagi.'}
+          </span>
+          {sesiBerakhir ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate(`/login?redirect=${encodeURIComponent('/profil')}`)}
+            >
+              <LogIn size={16} aria-hidden="true" /> Masuk Kembali
+            </button>
+          ) : (
+            <button type="button" className="btn btn-primary" onClick={fetchReports}>
+              <RefreshCw size={16} aria-hidden="true" /> Coba Lagi
+            </button>
+          )}
         </div>
       )}
 
       {/* Daftar laporan terkini */}
       <div className="profil-section-head">
         <h2 className="h2">Laporan Terbaru</h2>
-        {!isLoading && totalLaporan > 0 && (
+        {!isLoading && !error && totalLaporan > 0 && (
           <button
             type="button"
             className="profil-link-button"
@@ -122,7 +130,7 @@ export const ProfilDashboardPage = () => {
             </div>
           ))}
         </div>
-      ) : totalLaporan === 0 ? (
+      ) : error ? null : totalLaporan === 0 ? (
         <div className="profil-empty-state">
           <ClipboardList size={36} color="var(--color-text-light)" aria-hidden="true" />
           <h3 className="h3">Belum Ada Laporan Terkirim</h3>

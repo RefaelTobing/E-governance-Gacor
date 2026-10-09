@@ -91,8 +91,6 @@ export const MOCK_LAPORAN = [
     tanggal: '8 Sep 2026',
     status: 'dalam_penanganan',
     statusLabel: 'Dalam Penanganan',
-    pembaruanTerakhir: 'Pengecekan unit lampu dan perbaikan perkabelan bawah tanah oleh petugas pemeliharaan.',
-    tanggalPembaruan: '9 Sep 2026, 09:00 WIB',
     foto: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=600&q=80',
     timeline: [
       { status: 'DILAPORKAN', title: 'Laporan Diterima', date: '8 Sep 2026 • 08:30 WIB', desc: 'Laporan dikirimkan oleh warga mengenai lampu tiang mati di area publik.' },
@@ -115,8 +113,6 @@ export const MOCK_LAPORAN = [
     tanggal: '28 Agu 2026',
     status: 'selesai',
     statusLabel: 'Selesai',
-    pembaruanTerakhir: 'Papan informasi telah dibersihkan & diperbaiki secara tuntas oleh tim kebersihan.',
-    tanggalPembaruan: '31 Agu 2026',
     foto: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&q=80',
     timeline: [
       { status: 'DILAPORKAN', title: 'Laporan Diterima', date: '28 Agu 2026', desc: 'Laporan vandalisme dikirimkan warga.' },
@@ -138,8 +134,6 @@ export const MOCK_LAPORAN = [
     tanggal: '9 Sep 2026',
     status: 'menunggu_verifikasi',
     statusLabel: 'Menunggu Verifikasi',
-    pembaruanTerakhir: 'Menunggu peninjauan pengelola taman setempat.',
-    tanggalPembaruan: 'Hari ini, 10:15 WIB',
     foto: 'https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=600&q=80',
     timeline: [
       { status: 'DILAPORKAN', title: 'Menunggu Verifikasi', date: '9 Sep 2026 • 10:15 WIB', desc: 'Laporan baru dikirimkan dan masuk ke antrian peninjauan pengelola.' }

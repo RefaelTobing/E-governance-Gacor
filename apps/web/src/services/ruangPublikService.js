@@ -1,4 +1,4 @@
-import { api } from '../config/api';
+import { api, assetUrl } from '../config/api';
 import { IS_DEV } from '../config/constants';
 import { MOCK_RUANG_PUBLIK, MOCK_RUANG_PUBLIK_METRICS } from '../data/mockData';
 
@@ -131,6 +131,9 @@ export const getPublicSpaceDetail = async (id) => {
     const data = await api.get(`/api/v1/public-spaces/${id}`);
     const lat = Number.parseFloat(data.latitude);
     const lng = Number.parseFloat(data.longitude);
+    // Galeri publik: backend menggabung foto resmi + foto laporan tayang (gabung_foto).
+    // URL dinormalisasi ke absolut di sini supaya halaman tinggal render.
+    const foto = (Array.isArray(data.foto) ? data.foto : []).map((u) => assetUrl(u));
     const fasilitas = (Array.isArray(data.fasilitas) ? data.fasilitas : []).map((facility) => {
       const facilityLat = Number.parseFloat(facility.latitude ?? facility.koordinat?.lat);
       const facilityLng = Number.parseFloat(facility.longitude ?? facility.koordinat?.lng);
@@ -144,10 +147,11 @@ export const getPublicSpaceDetail = async (id) => {
     return {
       ...data,
       koordinat: Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null,
+      foto,
       kategori: typeof data.kategori === 'object' && data.kategori
         ? data.kategori.label || data.kategori_id || 'Umum'
         : (data.kategori || data.kategori_id || 'Umum'),
-      image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
+      image: data.image_url || data.image || (foto.length > 0 ? foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
       fasilitas,
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
       stats: keStats(data.stats),
