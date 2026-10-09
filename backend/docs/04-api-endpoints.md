@@ -493,7 +493,7 @@ browser membaca zona waktu yang benar.
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
 | Edit ruang publik (admin) | 012 | `/dashboard/data-master` | `PATCH /admin/public-spaces/{id}` (BE-33); list admin sudah ada §3 (BE-32) |
-| Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
+| Proteksi `POST /categories` | 014 | — | BE-54 (`features/admin-auth.md` Gap 1) |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |
 
@@ -505,3 +505,19 @@ browser membaca zona waktu yang benar.
 2. Buka `/docs` → bandingkan daftar operasi dengan §1 — tidak boleh ada endpoint aktif yang tidak terdokumentasi di sini.
 3. Jalankan minimal satu curl per grup (auth, public-spaces, reports, users-admin) dan cocokkan status code dengan tabel.
 4. Bila menambah/mengubah endpoint: perbarui tabel ini **dan** `docs/API.md` di sesi yang sama.
+
+---
+
+## 11. Audit Proteksi Admin (BE-35)
+
+Semua endpoint ber-path `/api/v1/admin/*` memakai `Depends(get_current_admin)` **kecuali** `POST /admin/login` (jalur login memang tanpa token). Konvensi ini dikunci test `tests/unit/test_admin_guard.py::test_semua_route_admin_dijaga_get_current_admin`, yang menolak endpoint `/admin/*` baru tanpa guard.
+
+Catatan konsistensi path (admin tetapi **tidak** di bawah `/admin/*`; sengaja dibiarkan agar tidak memutus kontrak FE):
+
+| Endpoint admin | Path | Guard |
+|---|---|---|
+| Kelola petugas | `/api/v1/users*` | `get_current_admin` |
+| Statistik dashboard/moderasi | `/api/v1/reports/stats/*` | `get_current_admin` |
+| Ubah status laporan | `PATCH /api/v1/reports/{id}/status` | `get_current_admin` |
+
+Sisa gap proteksi: `POST /api/v1/categories` masih terbuka → **BE-54**.

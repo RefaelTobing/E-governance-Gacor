@@ -558,11 +558,17 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     `test_admin_login.py`: admin 200 + token lolos `/auth/me` + role `admin`, warga 403, akun nonaktif 403,
     sandi salah & email tak ada 400, regresi `/auth/login` tetap 200 untuk admin & warga). Tiga kegagalan
     tersisa (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
-- [ ] **[BE-35]** Middleware/dependency proteksi khusus role `admin` di seluruh endpoint `/admin/*`,
+- [x] **[BE-35]** Middleware/dependency proteksi khusus role `admin` di seluruh endpoint `/admin/*`,
       endpoint publik tidak bisa diakses ambigu dengan token admin.
-  - **Parsial:** `get_current_admin` dipakai di `/users*`, `/reports/stats/*`, `PATCH /reports/{id}/status`.
-    **Masih bocor:** `GET /reports`, `GET /reports/{id}`, `POST /categories` -> task **BE-52** dan **BE-54**.
-  - **Verifikasi:** audit tiap endpoint: daftar di `docs/04-api-endpoints.md` cocok dengan kolom Auth di kode.
+  - **Hasil audit:** seluruh endpoint `/api/v1/admin/*` memakai `get_current_admin` kecuali `POST /admin/login`
+    (jalur login). Endpoint admin di prefix publik (`/users*`, `/reports/stats/*`, `PATCH /reports/{id}/status`)
+    juga sudah dijaga; path dibiarkan agar kontrak FE tidak putus.
+  - **Jaminan:** test `tests/unit/test_admin_guard.py::test_semua_route_admin_dijaga_get_current_admin` iterasi
+    `app.routes` dan menolak endpoint `/admin/*` baru tanpa guard. Plus black-box 401/403/200 lintas router dan
+    bukti token admin di `GET /reports` tetap perilaku publik (klausa "tidak ambigu").
+  - **Sisa:** `POST /categories` masih bocor -> **BE-54**. Dicatat di `04-api-endpoints.md` §11.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` 156 -> **162 passed** (6 test baru). Tiga kegagalan
+    tersisa (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
 - [x] **[BE-36]** Konfigurasi CORS mengizinkan domain FE Admin spesifik, terpisah dari FE Publik.
   - **Lokasi kode:** `app/main.py:24` (`FRONTEND_PUBLIC_URL` + `FRONTEND_ADMIN_URL`).
   - **Catatan:** nilai kedua origin menunggu FE Admin benar-benar dipisah (lihat BE-07).

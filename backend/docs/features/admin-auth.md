@@ -23,7 +23,7 @@ Kode terkait:
 | Sesi JWT masa berlaku terbatas | **Selesai** (7 hari) |
 | Tambah/ubah/nonaktifkan/aktifkan petugas | **Selesai** (endpoint `/users`) |
 | Admin aktif terakhir tidak bisa dinonaktifkan | **Selesai** (guard `409`) |
-| Proteksi seluruh endpoint admin termasuk `POST /categories` | **BELUM** — gap (BE-54) |
+| Proteksi seluruh endpoint admin termasuk `POST /categories` | **Sebagian** — semua `/admin/*` terverifikasi `get_current_admin` (BE-35); `POST /categories` masih bocor → BE-54 |
 | Refresh / revoke token | **Belum** — gap opsional (BE-55) |
 
 ---
@@ -146,13 +146,15 @@ Bila memilih A, cukup tandai "ditinjau, tidak diperlukan untuk MVP" dan lanjut.
 
 ### Gap 3 — Audit proteksi admin (checklist, bukan pengembangan baru)
 
-- [ ] Grep seluruh `app/api/v1/*.py`: setiap endpoint yang menulis data admin/moderasi punya `get_current_admin`
+> **Hasil audit (2026-10-08, BE-35):** seluruh endpoint `/api/v1/admin/*` memakai `get_current_admin`, kecuali `POST /admin/login`. Endpoint admin yang hidup di prefix publik (`/users*`, `/reports/stats/*`, `PATCH /reports/{id}/status`) juga sudah dijaga `get_current_admin`; pathnya sengaja dibiarkan agar kontrak FE tidak putus. Konvensi `/admin/*` dikunci test `tests/unit/test_admin_guard.py`. Sisa bocor: `POST /categories` (Gap 1 / BE-54).
+
+- [x] Grep seluruh `app/api/v1/*.py`: setiap endpoint yang menulis data admin/moderasi punya `get_current_admin`
   ```powershell
   Select-String -Path "app\api\v1\*.py" -Pattern "@router\.(post|patch|put|delete)"
   ```
   untuk tiap temuan, pastikan fungsi terkait memuat `Depends(get_current_admin)` — kecuali `POST /auth/register`, `POST /reports`, dan endpoint upload yang memang publik/opsional.
-- [ ] `GET /users*` (semua method) terproteksi — sudah ✅
-- [ ] CORS: `allow_origins` hanya `FRONTEND_PUBLIC_URL` + `FRONTEND_ADMIN_URL` (sudah di `main.py`) — pastikan tidak `*`
+- [x] `GET /users*` (semua method) terproteksi
+- [x] CORS: `allow_origins` hanya `FRONTEND_PUBLIC_URL` + `FRONTEND_ADMIN_URL` (+ localhost dev), bukan `*` (`main.py`)
 - [ ] `SECRET_KEY` di `.env` produksi **bukan** nilai default `.env.example`
 
 ---
