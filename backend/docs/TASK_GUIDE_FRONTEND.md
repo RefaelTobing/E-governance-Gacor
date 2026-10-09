@@ -61,7 +61,7 @@ Status:
 | FE-11 | ✅ | Filter kategori | Filter kategori ruang publik tersedia. |
 | FE-12 | ✅ | Filter fasilitas multi-select | Menggunakan dropdown multi-select khusus, filter dari API, dengan logika client-side AND. Tersinkronisasi ke URL parameter. |
 | FE-13 | ✅ | Detail ruang publik | Menampilkan nama, kategori, alamat, jam, deskripsi, dan fasilitas. |
-| FE-14 | ⚠️ | Galeri foto detail | Foto resmi ada, foto laporan terverifikasi belum digabungkan. |
+| FE-14 | ✅ | Galeri foto detail | Galeri di detail ruang publik: foto resmi + dokumentasi warga digabung backend (`gabung_foto`), label "Dokumentasi Warga" via cross-ref, lightbox (prev/next). |
 | FE-15 | ❌ | Routing OSRM | Tombol Google Maps tersedia, rute OSRM pada peta belum diimplementasikan. |
 
 ### FE-12. Filter fasilitas multi-select
@@ -150,8 +150,8 @@ Status:
 | FE-17 | ✅ | Ambil lokasi HP saat submit | Browser Geolocation API mengirim `lat_user` dan `long_user`. |
 | FE-18 | ✅ | Pilihan identitas anonim atau tampilkan nama | Pilihan tersedia dengan default anonim. |
 | FE-19 | ✅ | Status hasil submit | Mengganti alert umum dengan panel hasil interaktif membedakan laporan tayang dan menunggu tinjauan beserta alasan kualitatif. |
-| FE-20 | ⚠️ | Riwayat laporan per ruang publik | Riwayat warga tersedia, filter atau section per ruang publik belum lengkap. |
-| FE-21 | ❌ | Flag laporan tayang | Belum ada mekanisme laporan tidak pantas oleh pengguna. |
+| FE-20 | ✅ | Riwayat laporan per ruang publik | Section "Pembaruan Partisipasi Warga" diperkaya: filter status tersinkron query string (`?status=`) + tombol "Muat Lebih Banyak". |
+| FE-21 | ✅ | Flag laporan tayang | Aksi "Tandai Tidak Pantas" di detail ruang publik (BE-25); 409 = sudah ditandai. Selesai di Fase C. |
 
 ### FE-19. Status hasil submit laporan
 

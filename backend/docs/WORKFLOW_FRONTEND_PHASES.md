@@ -70,14 +70,14 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **B** | Moderasi Admin | ✅ Selesai & push | `09928ee` |
 | **C** | Flag Laporan | ✅ Selesai & push | `21cf225` |
 | **D** | Data Master & ETL | ✅ Selesai & push | `bb6c752` |
-| **E** | Laporan & Ruang Publik | ⏳ Belum dikerjakan | — |
+| **E** | Laporan & Ruang Publik | ✅ Selesai (E1/E2/E3) — belum di-commit | — |
 | **F** | OSRM Routing (FE-15) | ⏳ Belum dikerjakan | — |
-| **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | *(lihat §8)* |
+| **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | `420b7a9` + `72976f1` |
 | **G (visual)** | Verifikasi 12 layar + responsif + a11y | ⏳ Belum dikerjakan | — |
 | **H** | Testing (FE-29/30/31) | ⏳ Belum dikerjakan | — |
 | **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
 
-**4 dari 9 fase selesai + G-audit (pre-pass).** 5 fase sisa (E, F, G-visual, H, I) — untuk urutan & alasannya, lihat **§11**.
+**5 dari 9 fase selesai + G-audit (pre-pass).** 4 fase sisa (F, G-visual, H, I) — untuk urutan & alasannya, lihat **§11**. Fase E sudah dikerjakan & diverifikasi runtime, **menunggu commit/push**.
 
 ---
 
@@ -260,46 +260,54 @@ komponen `DetailFasilitasRuangPublik.jsx` yang sudah ada, dan tidak menambah rou
 
 ---
 
-## 6. FASE E — Laporan & Ruang Publik  ⏳ BELUM
+## 6. FASE E — Laporan & Ruang Publik  ✅ SELESAI (E1/E2/E3)
 
-Backend **sudah siap semua** untuk tiga task ini.
+Backend **sudah siap semua** untuk tiga task ini. Semua dikerjakan & diverifikasi runtime.
 
-### E1. Laporan Saya per-pengguna  (`GET /reports/mine`, BE-50)  — *prioritas tinggi*
-- **Masalah:** `laporanService.getUserReports()` saat ini cuma `return await getReports(params)`
-  (baris ~94) → menampilkan **semua** laporan tayang publik, bukan milik loginan.
-- **Endpoint:** `GET /api/v1/reports/mine` — **semua status** (termasuk
-  `menunggu_verifikasi`/`ditolak`), wajib `Authorization`, laporan anonim ikut muncul
-  (identitas tetap tertutup di publik).
-- **Aksi:** ubah `getUserReports` untuk memanggil `/reports/mine` + tangani `401`.
-- **File:** `apps/web/src/services/laporanService.js`, cek pemakai di
-  `RiwayatLaporanPage.jsx` & `ProfilDashboardPage.jsx`.
-- **Gerbang:** akun A hanya melihat laporannya sendiri (uji 2 akun berbeda).
+### E1. Laporan Saya per-pengguna  (`GET /reports/mine`, BE-50)  ✅
+- **Masalah (diperbaiki):** `getUserReports()` dulu cuma alias ke `getReports(params)`
+  (endpoint **publik**, semua laporan tayang) → **kebocoran privasi**: user melihat laporan
+  orang lain di halaman "Laporan Saya".
+- **Aksi:** `getUserReports` sekarang memanggil `GET /api/v1/reports/mine` (semua status,
+  wajib auth) **tanpa fallback mock** (endpoint auth/privasi — kegagalan harus terlihat).
+- **401:** panel error + tombol "Masuk Kembali" (`/login?redirect=`) di `RiwayatLaporanPage`
+  & `ProfilDashboardPage` (bukan redirect otomatis).
+- **Bonus perbaikan:** kotak "PEMBARUAN TERAKHIR" di `RiwayatLaporanPage` dulu membaca field
+  mock (`pembaruanTerakhir`/`tanggalPembaruan`) yang **tak ada di kontrak list** → kosong.
+  Diganti data asli: `Terakhir diperbarui {updated_at}` + menampilkan `alasanPenolakan` saat
+  `ditolak`. Tab **"Ditolak"** ditambahkan (dulu status ini tak pernah tampil).
+- **File:** `services/laporanService.js`, `features/laporan/pages/RiwayatLaporanPage.jsx`,
+  `features/profil/pages/ProfilDashboardPage.jsx`, `data/mockData.js` (hapus field mock).
+- **Gerbang:** akun A hanya melihat laporannya sendiri (diuji 2 akun → A=1, B=0).
 
-### E2. FE-20 — Riwayat laporan per ruang publik
-- **Masalah:** service `ruangPublikService.getPublicSpaceReports(id)` **sudah ada tapi belum
-  dipakai halaman mana pun**. Task guide: *"filter atau section per ruang publik belum lengkap"*.
-- **Endpoint:** `GET /api/v1/public-spaces/{id}/reports` (laporan **tayang saja**).
-- **Aksi:** tampilkan riwayat laporan per fasilitas/ruang di
-  `DetailRuangPublikPage` / `DetailStatusLaporanPage`. Pasang **filtra query string**
-  (CONVENTIONS §1.2) supaya bertahan saat refresh.
-- **Catatan:** bagian dari section "Pembaruan Partisipasi Warga" (dibuat di Fase C) —
-  bisa diperkaya dari sini.
+### E2. FE-20 — Riwayat laporan per ruang publik  ✅
+- **Endpoint:** `GET /api/v1/public-spaces/{id}/reports` (laporan **tayang saja**, tanpa
+  param `status` → filter **klien-side**).
+- **Aksi:** section "Pembaruan Partisipasi Warga" (`DetailRuangPublikPage`) diperkaya:
+  tab status **Semua / Diverifikasi / Dalam Penanganan / Selesai** tersinkron ke
+  `?status=` (CONVENTIONS §1.2, bertahan saat refresh) + tombol **"Muat Lebih Banyak"**.
+  Satu request `limit=500` (maks backend) dipakai ganda: sumber daftar + set foto galeri.
+- **File:** `features/ruang-publik/pages/DetailRuangPublikPage.jsx`.
+- **Keputusan scope:** hanya di halaman detail (bukan `DetailStatusLaporanPage` — halaman itu
+  konteks "laporan saya", menampilkan laporan orang lain di situ membingungkan).
 
-### E3. FE-14 — Galeri foto detail
-- **Masalah:** foto **resmi** sudah tampil; foto **laporan terverifikasi belum digabung**.
-- **Endpoint terkait:**
-  - `GET /api/v1/admin/public-spaces/{id}/photos` + `POST` + `DELETE` (foto resmi, admin)
-  - `GET /public-spaces/{id}/reports` → `foto_url` laporan tayang
-- **Aksi:** gabung dua sumber ke satu galeri di `DetailRuangPublikPage`;
-  tandai mana foto resmi vs foto laporan; ukuran/proporsi konsisten (lihat `docs/WORKFLOW_FRONTEND.md` §5:
-  *"gambar jangan dibesarkan semaunya — platform = info ruang publik"*).
-- **Catatan:** FE-16D (koordinat individual fasilitas) **terblokir data** — master fasilitas
-  belum punya koordinat sendiri, jadi posisi awal pakai koordinat ruang publik. Jangan dikerjakan
-  sebelum backend menambahkan kolomnya.
+### E3. FE-14 — Galeri foto detail  ✅
+- **Temuan kontrak:** backend **sudah menggabung** foto resmi + foto laporan tayang di
+  `GET /api/v1/public-spaces/{id}` → `foto: List[str]` (`services/ruang_publik.py:gabung_foto`),
+  **tanpa label sumber**.
+- **Aksi:** section "Galeri Foto" di `DetailRuangPublikPage` (grid proporsi konsisten, tinggi
+  110px; disembunyikan bila ≤1 foto) + **lightbox** (komponen `Modal` generik, prev/next,
+  Esc/klik luar). Label **"Dokumentasi Warga"** diberikan lewat **cross-ref** `fotoUrl` laporan
+  tayang (data asli, tanpa mengubah backend). Foto dinormalisasi ke URL absolut di
+  `ruangPublikService`.
+- **File:** `features/ruang-publik/pages/DetailRuangPublikPage.jsx`,
+  `services/ruangPublikService.js`.
+- **Catatan:** FE-16D (koordinat individual fasilitas) **masih terblokir data** — master fasilitas
+  belum punya koordinat sendiri. Jangan dikerjakan sebelum backend menambahkan kolomnya.
 
-### Gerbang Fase E
+### Gerbang Fase E  ✅
 Alur klik utuh: beranda → daftar → detail → form lapor → status → **laporan saya**
-(hanya milik sendiri) → riwayat per ruang → galeri.
+(hanya milik sendiri) → riwayat per ruang → galeri. Diverifikasi runtime dengan backend hidup.
 
 ---
 
@@ -461,11 +469,11 @@ dipilih agar kerja tidak sia-sia (tidak harus diulang) dan tidak ada risiko
 ```
 0. Commit + push dokumen        ← SEKARANG, wajib sebelum pindah OS (bukan fase)
     ↓
-1. Fase G — bagian AUDIT (G4/G5/G6)   ← pre-pass kilat: fitur terlarang + brand + backlog
+1. Fase G — bagian AUDIT (G4/G5/G6)   ← ✅ SELESAI (pre-pass kilat: fitur terlarang + brand + backlog)
     ↓
-2. Fase E  (E1 → E2 → E3)             ← backend siap; E1 ada isu privasi
+2. Fase E  (E1 → E2 → E3)             ← ✅ SELESAI (backend siap; E1 isu privasi diperbaiki)
     ↓
-3. Fase F  (FE-15 OSRM)               ← mandiri; jadi buffer kalau E terkendala
+3. Fase F  (FE-15 OSRM)               ← BERIKUTNYA; mandiri, jadi buffer
     ↓
 4. Fase G — bagian VISUAL (G1/G2/G3)  ← 12 layar + responsif + a11y, SETELAH UI final
     ↓
@@ -528,6 +536,7 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 - [ ] Responsif + aksesibilitas dasar lolos — **BELUM** (G-visual)
 - [x] Audit fitur terlarang lolos ✅ **(G4)** — grep audit bersih
 - [x] Nama produk hanya `RuangTerbuka` ✅ **(G5)** — grep brand 0 hit
+- [x] Laporan Saya hanya menampilkan laporan sendiri ✅ **(E1)** — uji 2 akun (A=1, B=0)
 - [ ] Tidak ada file `backend/` yang berubah oleh pekerjaan frontend ✅
       (kecuali dokumen docs)
 
@@ -536,7 +545,9 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 ## 13. Riwayat Commit (bagian ini sudah ter-push ✅)
 
 ```
-<HEAD>    chore(frontend): audit fitur terlarang, brand lama, dan backlog teknis (G4-G6)
+(pending) feat(laporan): laporan saya per-pengguna, riwayat per ruang, dan galeri foto (E1-E3)
+72976f1   style(frontend): ganti em dash di komentar enum status (audit antislop R-02)
+420b7a9   chore(frontend): audit fitur terlarang, brand lama, dan backlog teknis (G4-G6)
 3f4ebea   feat(docs): add workflow frontend phases documentation
 bb6c752   feat(data-master): edit manual ruang publik dan penanda field_source (FE-27)
 2695b8d   refactor(routing): App.jsx render dari route-config + halaman 404 (Fase A)
