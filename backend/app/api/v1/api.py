@@ -20,6 +20,11 @@ api_router.include_router(fasilitas.router, prefix="/facilities", tags=["facilit
 api_router.include_router(fasilitas.admin_router, prefix="/admin/facilities", tags=["admin-facilities"])
 api_router.include_router(ruang_publik.router, prefix="/public-spaces", tags=["public-spaces"])
 api_router.include_router(
+    ruang_publik.admin_router,
+    prefix="/admin/public-spaces",
+    tags=["admin-public-spaces"],
+)
+api_router.include_router(
     foto_ruang_publik.admin_router,
     prefix="/admin/public-spaces",
     tags=["admin-public-space-photos"],

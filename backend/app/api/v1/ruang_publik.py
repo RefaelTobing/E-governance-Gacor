@@ -3,13 +3,20 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_current_admin
 from app.core.database import get_db
-from app.schemas.ruang_publik import RuangPublikDetailResponse, RuangPublikListResponse
+from app.models.user import User
+from app.schemas.ruang_publik import (
+    AdminRuangPublikResponse,
+    RuangPublikDetailResponse,
+    RuangPublikListResponse,
+)
 from app.schemas.laporan import LaporanResponse
 from app.services import ruang_publik as crud_ruang_publik
 from app.services import laporan as crud_laporan
 
 router = APIRouter()
+admin_router = APIRouter()
 
 
 @router.get("", response_model=List[RuangPublikListResponse])
@@ -100,3 +107,39 @@ def read_public_space_reports(
             detail="Ruang publik tidak ditemukan",
         )
     return crud_laporan.get_reports_by_ruang_publik(db, ruang_publik_id, skip=skip, limit=limit)
+
+
+# Endpoint di bawah ini khusus Panel Admin (halaman /dashboard/data-master).
+
+@admin_router.get("", response_model=List[AdminRuangPublikResponse])
+def list_ruang_publik_admin(
+    q: Optional[str] = Query(None, description="Cari nama/alamat/wilayah"),
+    category: Optional[str] = Query(None, description="Filter kategori_id"),
+    wilayah: Optional[str] = Query(None, description="Filter wilayah persis"),
+    diedit_manual: Optional[bool] = Query(
+        None, description="True hanya baris yang pernah diedit admin, False yang masih murni sumber"
+    ),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Data master lengkap untuk admin, termasuk penanda kolom hasil edit manual."""
+    rows = crud_ruang_publik.list_ruang_publik_admin(
+        db,
+        q=q,
+        kategori_id=category,
+        wilayah=wilayah,
+        diedit_manual=diedit_manual,
+        skip=skip,
+        limit=limit,
+    )
+    return [
+        AdminRuangPublikResponse.model_validate(ruang, from_attributes=True).model_copy(
+            update={
+                "jumlah_fasilitas": len(ruang.fasilitas),
+                "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
+            }
+        )
+        for ruang in rows
+    ]

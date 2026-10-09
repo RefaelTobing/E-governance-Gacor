@@ -15,14 +15,14 @@ Kode terkait:
 | Aspek PRD FEAT-012 | Status |
 |---|---|
 | Admin mengimpor/memperbarui data dari Satu Data Jakarta | **Sudah** — sinkronisasi bisa dijalankan dari panel admin (`POST /admin/sync-data`, BE-18); jalur lain: scheduler (BE-17) & shell |
-| Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); ruang publik masih GET saja (BE-33 belum) |
+| Admin mengedit data manual | **Sebagian** — fasilitas sudah (CRUD `/admin/facilities`, BE-53); daftar admin ruang publik sudah `GET /admin/public-spaces` (BE-32), edit manual `PATCH` masih BE-33 |
 | Perubahan manual tidak hilang saat sinkronisasi ETL | **Sudah** — field-level merge BE-16: kolom `ETL_OWNED` disegarkan, kolom tercatat `field_source` ditahan (lihat §4) |
 
 ---
 
 ## 1. Kondisi Saat Ini
 
-- Halaman admin FE `/dashboard/data-master` masih baca-saja (hanya `GET /public-spaces`; tombol "Edit Master" belum punya backend). `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
+- Halaman admin FE `/dashboard/data-master`: `GET /admin/public-spaces` (BE-32) sudah menyediakan daftar lengkap dengan penanda `field_source`; tombol "Edit Master" masih menunggu `PATCH` (BE-33). `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
 - Tabel `ruang_publik` & `fasilitas` sudah punya kolom lengkap yang dibutuhkan edit (deskripsi, jam operasional, fasilitas status, dll.).
 - Skema Pydantic update (`RuangPublikUpdate`) sudah tersedia — mempercepat implementasi (tinggal pakai).
 - ETL (`seed_db`, BE-16) **insert baris baru + update terbatas**: hanya kolom `ETL_OWNED`, hanya untuk kolom yang belum tercatat di `field_source` → edit admin otomatis aman (lihat §4).
@@ -38,6 +38,7 @@ Pola wajib untuk seluruh endpoint di bawah: `_: User = Depends(get_current_admin
 
 | Method & Path | Body | Perilaku |
 |---|---|---|
+| `GET /api/v1/admin/public-spaces` | query `?q=&category=&wilayah=&diedit_manual=&skip=&limit=` | Data master lengkap + `field_source` + `jumlah_fasilitas` + `stats` (BE-32) |
 | `PATCH /api/v1/public-spaces/{id}` | `RuangPublikUpdate` (semua field opsional) | Edit sebagian kolom (deskripsi, jam_operasional, alamat, verified, image_url, ...). 404 bila tak ada. |
 | *(opsional)* `POST /api/v1/public-spaces` | `RuangPublikCreate` | Tambah ruang publik manual baru — **hanya bila PRD/produk meminta**; default MVP cukup PATCH + ETL |
 | *(opsional)* `DELETE /api/v1/public-spaces/{id}` | — | **Hati-hati**: cascade menghapus fasilitas & laporan terkait. Rekomendasi MVP: **nonaktifkan soft-delete dulu** (mis. set `verified=false` / flag khusus) atau jangan dibuatkan sama sekali sampai ada kebutuhan jelas |
@@ -87,6 +88,7 @@ Keduanya **wajib mempertahankan** strategi merge §4. Catatan: pipeline ini suda
 
 - [x] Keputusan bentuk path fasilitas (§2.2): namespace admin terpisah `/admin/facilities`
 - [x] Pilih opsi impor Satu Data (§2.3): Opsi A dengan deviasi path & pipeline penuh (BE-18)
+- [x] Implementasi `GET /admin/public-spaces`: service `list_ruang_publik_admin()` (filter `q`/`category`/`wilayah`/`diedit_manual`, urut `nama`, `id`), router `admin_router` + `get_current_admin` + response `AdminRuangPublikResponse` (2026-10-08, BE-32)
 - [ ] Implementasi `PATCH /public-spaces/{id}`:
   - service `update_ruang_publik(db, id, payload)` — update field yang **tidak `None`** di payload (patch semantics, jangan menimpa kolom terisi dengan `None`)
   - router + `get_current_admin` + response `RuangPublikResponse`

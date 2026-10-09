@@ -27,6 +27,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}` | — | Detail satu ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}/reports` | — | Laporan pada satu ruang publik |
+| `GET` | `/api/v1/admin/public-spaces` | **Admin** | Data master ruang publik (penanda `field_source` + hitung fasilitas) |
 | `GET` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Daftar foto resmi ruang publik |
 | `POST` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Unggah foto resmi (multipart `file`) |
 | `DELETE` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos/{foto_id}` | **Admin** | Hapus foto resmi |
@@ -357,6 +358,24 @@ sama seperti list di atas. Tayang = status `diverifikasi` / `dalam_penanganan` /
 ```bash
 curl "http://localhost:8000/api/v1/public-spaces/<id>/reports?limit=20"
 ```
+
+### `GET /api/v1/admin/public-spaces` (admin, BE-32)
+
+Data master lengkap untuk Panel Admin (`/dashboard/data-master`), termasuk
+penanda kolom hasil edit manual (`field_source`) dan hitungan fasilitas per baris.
+
+Query: `q` (nama/alamat/wilayah), `category` (kategori_id), `wilayah`,
+`diedit_manual` (`true`/`false`), `skip`, `limit` (1..500, default 100).
+Urut `nama`, `id` sebagai pemecah seri.
+
+```bash
+curl "http://localhost:8000/api/v1/admin/public-spaces?diedit_manual=true" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+Response: `RuangPublikResponse` lengkap + `jumlah_fasilitas` + `stats{baik,
+perlu_perhatian, rusak}`. `field_source` `null` bila belum pernah disunting.
+Tanpa token → `401`, warga → `403`.
 
 ### `GET /api/v1/admin/public-spaces/{ruang_publik_id}/photos` (admin)
 

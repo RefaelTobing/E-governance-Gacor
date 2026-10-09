@@ -153,6 +153,16 @@ Laporan tayang untuk 1 ruang publik, query `skip`/`limit`. Filter memakai `STATU
 (`status IN ("disetujui","tayang_otomatis")` yang selalu menghasilkan `[]`) sudah diperbaiki oleh **BE-47**;
 regresinya dijaga `tests/unit/test_public_space_reports.py`.
 
+### Data master ruang publik (admin, BE-32)
+
+Prefix `/api/v1/admin/public-spaces`, semua butuh role `admin`; tanpa token → `401`, warga → `403`.
+
+| Endpoint | Query | Catatan |
+|---|---|---|
+| `GET /admin/public-spaces` | `?q=&category=&wilayah=&diedit_manual=&skip=&limit=` | `limit` 1..500 (default 100). Semua kolom `RuangPublikResponse` + `field_source` + `jumlah_fasilitas` + `stats{baik, perlu_perhatian, rusak}` |
+
+`q` mencari nama/alamat/wilayah (LIKE, case-insensitive). `category` = `kategori_id` (nama sama dengan endpoint publik). `diedit_manual=true` hanya baris yang pernah disunting admin (`field_source` terisi), `false` yang masih murni sumber. Urut `nama`, `id` sebagai pemecah seri. `field_source` adalah penanda kolom hasil edit manual (FEAT-012, lihat §4 strategi merge).
+
 ### Kelola foto resmi (admin, BE-48)
 Prefix `/api/v1/admin/public-spaces`, semua butuh role `admin`; tanpa token → `401`, warga → `403`.
 
@@ -461,7 +471,7 @@ browser membaca zona waktu yang benar.
 
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
-| CRUD ruang publik (admin) | 012 | `/dashboard/data-master` | `features/data-master-service.md`; CRUD fasilitas sudah ada (§7) |
+| Edit ruang publik (admin) | 012 | `/dashboard/data-master` | `PATCH /admin/public-spaces/{id}` (BE-33); list admin sudah ada §3 (BE-32) |
 | Proteksi `POST /categories` | 014 | — | `features/admin-auth.md` |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |

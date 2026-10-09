@@ -504,10 +504,19 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 ## B5. Data Master Service - Khusus Admin (FEAT-012)
 
-- [ ] **[BE-32]** `GET /admin/public-spaces` - list lengkap data master untuk Panel Admin (termasuk penanda
+- [x] **[BE-32]** `GET /admin/public-spaces` - list lengkap data master untuk Panel Admin (termasuk penanda
       field hasil edit manual).
-  - **Belum ada:** yang ada hanya `GET /public-spaces` publik. Halaman FE
-    `/dashboard/data-master` kini membaca lewat endpoint publik itu.
+  - **Lokasi kode:** `admin_router` di `app/api/v1/ruang_publik.py` (prefix `/admin/public-spaces`, terdaftar
+    di `api.py`), service `list_ruang_publik_admin()` di `services/ruang_publik.py`, schema
+    `AdminRuangPublikResponse` (`schemas/ruang_publik.py`). Semua `get_current_admin`.
+  - **Keputusan:** (1) filter `q`/`category`/`wilayah` + `diedit_manual` (`true` hanya baris ber-`field_source`,
+    untuk penanda edit manual FEAT-012); (2) response = `RuangPublikResponse` penuh + `field_source` (mentah,
+    sudah ada di parent) + `jumlah_fasilitas` + `stats` (tiga ember, sama dengan publik); (3) urut `nama`, `id`
+    pemecah seri.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` -> **137 passed** (9 test baru
+    `test_admin_ruang_publik.py`: 401/403, urut & isi, `field_source` + hitung fasilitas, filter
+    `q`/`wilayah`/`diedit_manual`, pagination, `limit=501` -> 422). Tiga kegagalan tersisa
+    (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
 - [ ] **[BE-33]** `PATCH /admin/public-spaces/{id}` - edit manual per field; setiap field yang diubah
       otomatis ditandai "diedit manual" (dipakai logika merge di BE-16).
   - **Belum ada.** Tombol "Edit Master" di FE masih `alert()`.

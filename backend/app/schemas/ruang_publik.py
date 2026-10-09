@@ -60,6 +60,17 @@ class RuangPublikDetailResponse(RuangPublikResponse):
     stats: Dict[str, int] = {}
 
 
+class AdminRuangPublikResponse(RuangPublikResponse):
+    """Baris tabel Data Master admin.
+
+    `field_source` dari parent adalah penanda kolom hasil edit manual; `stats`
+    memakai tiga ember yang sama dengan response publik supaya badge FE konsisten.
+    """
+
+    jumlah_fasilitas: int = 0
+    stats: Dict[str, int] = {}
+
+
 class RuangPublikFotoResponse(BaseModel):
     id: str
     ruang_publik_id: str

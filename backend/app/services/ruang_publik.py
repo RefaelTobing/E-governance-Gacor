@@ -120,6 +120,54 @@ def hitung_status_fasilitas(baris: Sequence[Fasilitas]) -> dict[str, int]:
     return hasil
 
 
+def list_ruang_publik_admin(
+    db: Session,
+    q: Optional[str] = None,
+    kategori_id: Optional[str] = None,
+    wilayah: Optional[str] = None,
+    diedit_manual: Optional[bool] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[RuangPublik]:
+    """Semua baris ruang publik untuk tabel Data Master admin.
+
+    Urut `nama` karena data ETL tidak punya waktu dibuat yang bermakna dan tabel
+    FE alfabetis; `id` sebagai pemecah seri agar halaman per-batch tidak melewatkan
+    atau mengulang baris. `diedit_manual=True` menyaring baris yang sudah diubah
+    admin (kolom `field_source` terisi), `False` menyaring yang masih murni sumber.
+    """
+    stmt = select(RuangPublik).options(
+        joinedload(RuangPublik.kategori), selectinload(RuangPublik.fasilitas)
+    )
+
+    if q:
+        pola = f"%{q}%"
+        stmt = stmt.where(
+            or_(
+                RuangPublik.nama.ilike(pola),
+                RuangPublik.alamat.ilike(pola),
+                RuangPublik.wilayah.ilike(pola),
+            )
+        )
+
+    if kategori_id:
+        stmt = stmt.where(RuangPublik.kategori_id == kategori_id)
+
+    if wilayah:
+        stmt = stmt.where(RuangPublik.wilayah == wilayah)
+
+    if diedit_manual is not None:
+        # `field_source` NULL = belum pernah diedit; JSON kosong tetap dianggap terisi.
+        stmt = stmt.where(
+            RuangPublik.field_source.isnot(None)
+            if diedit_manual
+            else RuangPublik.field_source.is_(None)
+        )
+
+    stmt = stmt.order_by(RuangPublik.nama, RuangPublik.id).offset(skip).limit(limit)
+    return list(db.scalars(stmt).unique().all())
+
+
 def get_ruang_publik(db: Session, ruang_publik_id: str) -> Optional[RuangPublik]:
     stmt = (
         select(RuangPublik)
