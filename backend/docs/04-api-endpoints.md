@@ -160,8 +160,11 @@ Prefix `/api/v1/admin/public-spaces`, semua butuh role `admin`; tanpa token → 
 | Endpoint | Query | Catatan |
 |---|---|---|
 | `GET /admin/public-spaces` | `?q=&category=&wilayah=&diedit_manual=&skip=&limit=` | `limit` 1..500 (default 100). Semua kolom `RuangPublikResponse` + `field_source` + `jumlah_fasilitas` + `stats{baik, perlu_perhatian, rusak}` |
+| `PATCH /admin/public-spaces/{id}` | body `RuangPublikUpdate` (semua opsional) | Edit manual; tiap kolom yang diubah ditandai di `field_source`; `404` id tak ada, `400` nama kosong/lat-long di luar rentang, `404` `kategori_id` tak ada |
 
 `q` mencari nama/alamat/wilayah (LIKE, case-insensitive). `category` = `kategori_id` (nama sama dengan endpoint publik). `diedit_manual=true` hanya baris yang pernah disunting admin (`field_source` terisi), `false` yang masih murni sumber. Urut `nama`, `id` sebagai pemecah seri. `field_source` adalah penanda kolom hasil edit manual (FEAT-012, lihat §4 strategi merge).
+
+PATCH: hanya field yang dikirim yang berubah; `null` eksplisit dan body `{}` diperlakukan "tidak diubah" (MVP belum mengizinkan mengosongkan kolom lewat API). Response `AdminRuangPublikResponse` terbaru (dengan `field_source` hasil edit).
 
 ### Kelola foto resmi (admin, BE-48)
 Prefix `/api/v1/admin/public-spaces`, semua butuh role `admin`; tanpa token → `401`, warga → `403`.

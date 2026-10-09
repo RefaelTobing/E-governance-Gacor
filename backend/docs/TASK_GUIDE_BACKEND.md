@@ -517,10 +517,19 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     `test_admin_ruang_publik.py`: 401/403, urut & isi, `field_source` + hitung fasilitas, filter
     `q`/`wilayah`/`diedit_manual`, pagination, `limit=501` -> 422). Tiga kegagalan tersisa
     (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
-- [ ] **[BE-33]** `PATCH /admin/public-spaces/{id}` - edit manual per field; setiap field yang diubah
+- [x] **[BE-33]** `PATCH /admin/public-spaces/{id}` - edit manual per field; setiap field yang diubah
       otomatis ditandai "diedit manual" (dipakai logika merge di BE-16).
-  - **Belum ada.** Tombol "Edit Master" di FE masih `alert()`.
-  - **Prasyarat:** BE-05 (penanda field-level merge).
+  - **Lokasi kode:** route di `admin_router` (`app/api/v1/ruang_publik.py`), service
+    `update_ruang_publik_manual()` + `mark_fields_edited()` (BE-05) di `services/ruang_publik.py`,
+    helper validasi `_bersihkan_ruang_publik()`. Response `AdminRuangPublikResponse` (BE-32).
+  - **Keputusan:** (1) hanya field yang dikirim yang berubah & ditandai (`exclude_unset`); (2) `null`
+    eksplisit & body `{}` = tidak diubah, MVP belum izinkan kosongkan kolom lewat API; (3) validasi
+    `nama` (wajib non-kosong, max 255), `latitude`/`longitude` rentang, `kategori_id` wajib ada
+    (`404`).
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` 137 -> **149 passed** (12 test baru
+    `test_admin_patch_ruang_publik.py`, termasuk merge test jalur API: PATCH `nama`+`latitude` lalu
+    `seed_db` ulang -> 2 kolom ditahan, `longitude` tetap segar). Tiga kegagalan tersisa
+    (`test_foto_ruang_publik`, `test_public_space_reports`) sudah ada sebelum perubahan - butuh MySQL hidup.
 - [x] **[BE-53]** **(baru - hasil audit)** CRUD fasilitas untuk admin:
       `GET/POST /admin/facilities`, `PATCH /admin/facilities/{id}`, `DELETE /admin/facilities/{id}`,
       `POST /admin/facilities/import` (semua `get_current_admin`).

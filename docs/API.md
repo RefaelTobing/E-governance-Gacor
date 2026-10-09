@@ -28,6 +28,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}` | — | Detail satu ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}/reports` | — | Laporan pada satu ruang publik |
 | `GET` | `/api/v1/admin/public-spaces` | **Admin** | Data master ruang publik (penanda `field_source` + hitung fasilitas) |
+| `PATCH` | `/api/v1/admin/public-spaces/{id}` | **Admin** | Edit manual ruang publik; kolom terubah ditandai `field_source` |
 | `GET` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Daftar foto resmi ruang publik |
 | `POST` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos` | **Admin** | Unggah foto resmi (multipart `file`) |
 | `DELETE` | `/api/v1/admin/public-spaces/{ruang_publik_id}/photos/{foto_id}` | **Admin** | Hapus foto resmi |
@@ -376,6 +377,26 @@ curl "http://localhost:8000/api/v1/admin/public-spaces?diedit_manual=true" \
 Response: `RuangPublikResponse` lengkap + `jumlah_fasilitas` + `stats{baik,
 perlu_perhatian, rusak}`. `field_source` `null` bila belum pernah disunting.
 Tanpa token → `401`, warga → `403`.
+
+### `PATCH /api/v1/admin/public-spaces/{id}` (admin, BE-33)
+
+Edit manual satu ruang publik. Body `RuangPublikUpdate`: semua kolom opsional
+(`nama`, `alamat`, `deskripsi`, `jam_operasional`, `tiket_masuk`,
+`akses_disabilitas`, `ramah_hewan`, `verified`, `status_general`, `image_url`,
+`wilayah`, `kecamatan`, `kelurahan`, `latitude`, `longitude`, `kategori_id`).
+
+Hanya field yang dikirim yang berubah; tiap kolom terubah otomatis dicatat di
+`field_source` (penanda merge FEAT-012, dibaca ETL `seed_db` supaya edit admin
+tidak ditimpa sinkronisasi berikutnya). `null` eksplisit dan body `{}` = tidak
+diubah. `404` id tak ada, `400` nama kosong atau latitude/longitude di luar
+rentang, `404` `kategori_id` tak dikenal.
+
+```bash
+curl -X PATCH "http://localhost:8000/api/v1/admin/public-spaces/<id>" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"deskripsi":"Ramp untuk kursi roda","verified":true}'
+```
 
 ### `GET /api/v1/admin/public-spaces/{ruang_publik_id}/photos` (admin)
 

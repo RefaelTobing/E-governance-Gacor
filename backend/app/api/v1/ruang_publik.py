@@ -5,11 +5,14 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_admin
 from app.core.database import get_db
+from app.models.category import Category
+from app.models.ruang_publik import RuangPublik
 from app.models.user import User
 from app.schemas.ruang_publik import (
     AdminRuangPublikResponse,
     RuangPublikDetailResponse,
     RuangPublikListResponse,
+    RuangPublikUpdate,
 )
 from app.schemas.laporan import LaporanResponse
 from app.services import ruang_publik as crud_ruang_publik
@@ -134,12 +137,64 @@ def list_ruang_publik_admin(
         skip=skip,
         limit=limit,
     )
-    return [
-        AdminRuangPublikResponse.model_validate(ruang, from_attributes=True).model_copy(
-            update={
-                "jumlah_fasilitas": len(ruang.fasilitas),
-                "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
-            }
-        )
-        for ruang in rows
-    ]
+    return [_tampilan_ruang_admin(ruang) for ruang in rows]
+
+
+@admin_router.patch("/{ruang_publik_id}", response_model=AdminRuangPublikResponse)
+def update_ruang_publik(
+    ruang_publik_id: str,
+    payload: RuangPublikUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Edit manual ruang publik; tiap kolom yang diubah ditandai di `field_source`.
+
+    Field yang tidak dikirim tidak berubah, dan `null` eksplisit juga diperlakukan
+    sebagai "tidak diubah": MVP belum mengizinkan mengosongkan kolom lewat API.
+    """
+    ruang = crud_ruang_publik.get_ruang_publik(db, ruang_publik_id)
+    if ruang is None:
+        raise HTTPException(status_code=404, detail="Ruang publik tidak ditemukan")
+
+    data = _bersihkan_ruang_publik(payload.model_dump(exclude_unset=True), db)
+    ruang = crud_ruang_publik.update_ruang_publik_manual(db, ruang, data)
+    return _tampilan_ruang_admin(ruang)
+
+
+def _bersihkan_ruang_publik(data: dict, db: Session) -> dict:
+    """Rapikan field yang dikirim klien; `null` eksplisit dibuang (tidak diubah)."""
+    bersih = {}
+    for field, value in data.items():
+        if value is None:
+            continue
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                # Nama wajib bermakna; kolom teks lain yang dikosongkan diabaikan.
+                if field == "nama":
+                    raise HTTPException(status_code=400, detail="Nama tidak boleh kosong")
+                continue
+        if field == "nama" and len(value) > 255:
+            raise HTTPException(status_code=400, detail="Nama maksimal 255 karakter")
+        if field in ("latitude", "longitude"):
+            batas = 90 if field == "latitude" else 180
+            if not -batas <= float(value) <= batas:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{field} harus di antara -{batas} dan {batas}",
+                )
+        if field == "kategori_id" and db.get(Category, value) is None:
+            raise HTTPException(
+                status_code=404, detail=f"Kategori {value} tidak ditemukan"
+            )
+        bersih[field] = value
+    return bersih
+
+
+def _tampilan_ruang_admin(ruang: RuangPublik) -> AdminRuangPublikResponse:
+    return AdminRuangPublikResponse.model_validate(ruang, from_attributes=True).model_copy(
+        update={
+            "jumlah_fasilitas": len(ruang.fasilitas),
+            "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
+        }
+    )

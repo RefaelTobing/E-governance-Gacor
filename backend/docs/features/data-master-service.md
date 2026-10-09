@@ -22,7 +22,7 @@ Kode terkait:
 
 ## 1. Kondisi Saat Ini
 
-- Halaman admin FE `/dashboard/data-master`: `GET /admin/public-spaces` (BE-32) sudah menyediakan daftar lengkap dengan penanda `field_source`; tombol "Edit Master" masih menunggu `PATCH` (BE-33). `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
+- Halaman admin FE `/dashboard/data-master`: `GET /admin/public-spaces` (BE-32) sudah menyediakan daftar lengkap dengan penanda `field_source`, dan `PATCH /admin/public-spaces/{id}` (BE-33) sudah bisa edit manual per kolom; tombol "Edit Master" masih `alert()` di FE. `/dashboard/fasilitas` sudah penuh CRUD lewat `GET/POST/PATCH/DELETE /admin/facilities` + impor CSV (BE-53).
 - Tabel `ruang_publik` & `fasilitas` sudah punya kolom lengkap yang dibutuhkan edit (deskripsi, jam operasional, fasilitas status, dll.).
 - Skema Pydantic update (`RuangPublikUpdate`) sudah tersedia — mempercepat implementasi (tinggal pakai).
 - ETL (`seed_db`, BE-16) **insert baris baru + update terbatas**: hanya kolom `ETL_OWNED`, hanya untuk kolom yang belum tercatat di `field_source` → edit admin otomatis aman (lihat §4).
@@ -39,7 +39,7 @@ Pola wajib untuk seluruh endpoint di bawah: `_: User = Depends(get_current_admin
 | Method & Path | Body | Perilaku |
 |---|---|---|
 | `GET /api/v1/admin/public-spaces` | query `?q=&category=&wilayah=&diedit_manual=&skip=&limit=` | Data master lengkap + `field_source` + `jumlah_fasilitas` + `stats` (BE-32) |
-| `PATCH /api/v1/public-spaces/{id}` | `RuangPublikUpdate` (semua field opsional) | Edit sebagian kolom (deskripsi, jam_operasional, alamat, verified, image_url, ...). 404 bila tak ada. |
+| `PATCH /api/v1/admin/public-spaces/{id}` | `RuangPublikUpdate` (semua field opsional) | Edit sebagian kolom (deskripsi, jam_operasional, alamat, verified, image_url, ...), tiap kolom terubah ditandai `field_source` (BE-33). 404 bila tak ada. |
 | *(opsional)* `POST /api/v1/public-spaces` | `RuangPublikCreate` | Tambah ruang publik manual baru — **hanya bila PRD/produk meminta**; default MVP cukup PATCH + ETL |
 | *(opsional)* `DELETE /api/v1/public-spaces/{id}` | — | **Hati-hati**: cascade menghapus fasilitas & laporan terkait. Rekomendasi MVP: **nonaktifkan soft-delete dulu** (mis. set `verified=false` / flag khusus) atau jangan dibuatkan sama sekali sampai ada kebutuhan jelas |
 
@@ -89,9 +89,9 @@ Keduanya **wajib mempertahankan** strategi merge §4. Catatan: pipeline ini suda
 - [x] Keputusan bentuk path fasilitas (§2.2): namespace admin terpisah `/admin/facilities`
 - [x] Pilih opsi impor Satu Data (§2.3): Opsi A dengan deviasi path & pipeline penuh (BE-18)
 - [x] Implementasi `GET /admin/public-spaces`: service `list_ruang_publik_admin()` (filter `q`/`category`/`wilayah`/`diedit_manual`, urut `nama`, `id`), router `admin_router` + `get_current_admin` + response `AdminRuangPublikResponse` (2026-10-08, BE-32)
-- [ ] Implementasi `PATCH /public-spaces/{id}`:
-  - service `update_ruang_publik(db, id, payload)` — update field yang **tidak `None`** di payload (patch semantics, jangan menimpa kolom terisi dengan `None`)
-  - router + `get_current_admin` + response `RuangPublikResponse`
+- [x] Implementasi `PATCH /admin/public-spaces/{id}`:
+  - service `update_ruang_publik_manual(db, rp, payload)` — set field yang dikirim lalu `mark_fields_edited()` (penanda + commit sekali); payload kosong = no-op
+  - router `admin_router` + `get_current_admin` + response `AdminRuangPublikResponse`; validasi nama/lat-long/`kategori_id` (2026-10-08, BE-33)
 - [x] Implementasi CRUD fasilitas (bentuk path terpilih, lihat §2.2)
 - [x] (Opsi A) endpoint re-sync memanggil seed idempoten — kini lewat pipeline penuh `jalankan_tahap` (BE-18), seed tetap idempoten (BE-16)
 - [x] Daftarkan semua di `app/api/v1/api.py`
@@ -158,12 +158,12 @@ supaya kunci natural bisa dihitung dari database (migrasi `d7b19b0b82cc`).
 
 ## 5. Test Regresi Wajib
 
-- [ ] `PATCH /public-spaces/{id}` tanpa token / token warga → 401/403; token admin → 200
-- [ ] PATCH hanya `deskripsi` → field lain tidak berubah (patch semantics)
-- [ ] PATCH body `{}` / field None → tidak menimpa kolom terisi dengan NULL
+- [x] `PATCH /admin/public-spaces/{id}` tanpa token / token warga → 401/403; token admin → 200 (2026-10-08, `test_admin_patch_ruang_publik.py`)
+- [x] PATCH hanya `deskripsi` → field lain tidak berubah (patch semantics) (2026-10-08)
+- [x] PATCH body `{}` / field None → tidak menimpa kolom terisi dengan NULL (2026-10-08)
 - [x] Tambah fasilitas → muncul di `GET /facilities` (aggregate) & detail ruang publik (2026-10-04, skrip black-box BE-53)
-- [x] **Merge test:** edit `nama` + `latitude` lewat `mark_fields_edited()` → `seed_db` ulang → perubahan tetap ada (`2 kolom ditahan`) dan kolom lain (`longitude` tanpa penanda) tetap ter-update dari CSV; `field_source` tidak pernah ditulis seed (2026-10-04; jalur API menyusul bersama BE-33)
-- [ ] 404 untuk id tak ada; response selalu `RuangPublikResponse` valid
+- [x] **Merge test:** edit `nama` + `latitude` lewat `mark_fields_edited()` → `seed_db` ulang → perubahan tetap ada (`2 kolom ditahan`) dan kolom lain (`longitude` tanpa penanda) tetap ter-update dari CSV; `field_source` tidak pernah ditulis seed (2026-10-04; jalur API kini teruji di `test_merge_etl_menahan_kolom_yang_diedit`, BE-33)
+- [x] 404 untuk id tak ada; response selalu `AdminRuangPublikResponse` valid (2026-10-08)
 
 ---
 
@@ -171,5 +171,5 @@ supaya kunci natural bisa dihitung dari database (migrasi `d7b19b0b82cc`).
 
 - [ ] Hanya membahas FEAT-012 (+ dependensi yang ditandai jelas)
 - [x] Setiap endpoint baru terdaftar: `get_current_admin` ✅, `04-api-endpoints.md` ✅, `docs/API.md` ✅
-- [ ] Strategi merge tertulis dan teruji (test seed ulang)
+- [x] Strategi merge tertulis dan teruji (test seed ulang) ✅ jalur API (BE-33)
 - [x] Tidak ada endpoint tulis untuk warga/publik di file ini

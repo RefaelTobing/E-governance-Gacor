@@ -499,3 +499,24 @@ def mark_fields_edited(
     db.commit()
     db.refresh(ruang_publik)
     return edited_fields(ruang_publik)
+
+
+def update_ruang_publik_manual(
+    db: Session, ruang_publik: RuangPublik, payload: dict
+) -> RuangPublik:
+    """Terapkan edit manual admin dan tandai kolomnya milik admin (FEAT-012).
+
+    `payload` sudah `exclude_unset=True`, jadi hanya kolom yang benar-benar
+    dikirim klien yang berubah dan tercatat di `field_source`. Payload kosong
+    tidak menulis penanda apa pun (no-op), agar timestamp tidak diperbarui
+    tanpa edit nyata.
+    """
+    if not payload:
+        return ruang_publik
+
+    for field, value in payload.items():
+        setattr(ruang_publik, field, value)
+
+    mark_fields_edited(db, ruang_publik, list(payload))
+    db.refresh(ruang_publik)
+    return ruang_publik
