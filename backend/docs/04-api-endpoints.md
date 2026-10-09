@@ -26,7 +26,7 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | `POST` | `/api/v1/auth/logout` | Token | Cabut token pemanggil (blacklist `jti`) (BE-55) |
 | **Kategori & Fasilitas** ||||
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
-| `POST` | `/api/v1/categories` | **— ⚠️ BELUM DILINDUNGI** | Buat kategori (seharusnya admin — gap FEAT-014) |
+| `POST` | `/api/v1/categories` | **Admin** | Buat kategori; `201`, `400` id sudah ada (BE-54) |
 | `GET` | `/api/v1/facilities` | — | Opsi filter fasilitas (aggregate unik) |
 | **Kelola Fasilitas (Admin)** ||||
 | `GET` | `/api/v1/admin/facilities` | **Admin** | Semua baris fasilitas + nama induk (`q`/`kategori`/`status`/`wilayah`, `skip`/`limit`) |
@@ -205,7 +205,7 @@ Katalog hasil `SELECT DISTINCT nama, kategori ... ORDER BY nama`: saat ini 12 ba
 
 ### `GET /api/v1/categories`
 Query `skip` (0), `limit` (100) → `[{ "id": "taman", "label": "Taman", "icon_name": null }]`.
-`POST /api/v1/categories` body `{ "id": "...", "label": "...", "icon_name": "..." }` — **masih tanpa proteksi auth** (harusnya `get_current_admin`, gap FEAT-014).
+`POST /api/v1/categories` (admin, BE-54) body `{ "id": "...", "label": "...", "icon_name": "..." }` → `201`; dilindungi `get_current_admin` (tanpa token `401`, warga `403`), `400` bila id sudah ada.
 
 ---
 
@@ -497,7 +497,6 @@ browser membaca zona waktu yang benar.
 | Gap | FEAT | Konsumen FE | Rencana |
 |---|---|---|---|
 | Edit ruang publik (admin) | 012 | `/dashboard/data-master` | `PATCH /admin/public-spaces/{id}` (BE-33); list admin sudah ada §3 (BE-32) |
-| Proteksi `POST /categories` | 014 | — | BE-54 (`features/admin-auth.md` Gap 1) |
 | Validasi enum status PATCH | 011 | stepper/badge FE | `features/moderation-service.md` |
 | Refresh/logout token | — | sesi aman | `features/admin-auth.md` (opsional) |
 
@@ -512,9 +511,11 @@ browser membaca zona waktu yang benar.
 
 ---
 
-## 11. Audit Proteksi Admin (BE-35)
+## 11. Audit Proteksi Admin (BE-35 + BE-54)
 
 Semua endpoint ber-path `/api/v1/admin/*` memakai `Depends(get_current_admin)` **kecuali** `POST /admin/login` (jalur login memang tanpa token). Konvensi ini dikunci test `tests/unit/test_admin_guard.py::test_semua_route_admin_dijaga_get_current_admin`, yang menolak endpoint `/admin/*` baru tanpa guard.
+
+**Audit BE-54 (seluruh router, publik vs admin):** satu-satunya endpoint tulis yang tadinya bocor adalah `POST /api/v1/categories` — kini `get_current_admin` (tanpa token `401`, warga `403`, admin `201`). Endpoint tulis publik lainnya **sengaja** publik/login: `POST /auth/login`, `POST /auth/register`, `POST /reports` (laporan anonim), `POST /uploads`, `POST /reports/{id}/flag` (login), `POST /auth/logout` (login). Klaim "tidak ada endpoint tulis publik yang bocor" dikunci test `test_admin_guard.py::test_tidak_ada_endpoint_tulis_publik_yang_bocor` (allowlist eksplisit).
 
 Catatan konsistensi path (admin tetapi **tidak** di bawah `/admin/*`; sengaja dibiarkan agar tidak memutus kontrak FE):
 
@@ -523,5 +524,4 @@ Catatan konsistensi path (admin tetapi **tidak** di bawah `/admin/*`; sengaja di
 | Kelola petugas | `/api/v1/users*` | `get_current_admin` |
 | Statistik dashboard/moderasi | `/api/v1/reports/stats/*` | `get_current_admin` |
 | Ubah status laporan | `PATCH /api/v1/reports/{id}/status` | `get_current_admin` |
-
-Sisa gap proteksi: `POST /api/v1/categories` masih terbuka → **BE-54**.
+| Buat kategori | `POST /api/v1/categories` | `get_current_admin` (BE-54) |

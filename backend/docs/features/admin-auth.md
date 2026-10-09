@@ -23,7 +23,7 @@ Kode terkait:
 | Sesi JWT masa berlaku terbatas | **Selesai** (7 hari) |
 | Tambah/ubah/nonaktifkan/aktifkan petugas | **Selesai** (endpoint `/users`) |
 | Admin aktif terakhir tidak bisa dinonaktifkan | **Selesai** (guard `409`) |
-| Proteksi seluruh endpoint admin termasuk `POST /categories` | **Sebagian** — semua `/admin/*` terverifikasi `get_current_admin` (BE-35); `POST /categories` masih bocor → BE-54 |
+| Proteksi seluruh endpoint admin termasuk `POST /categories` | **Selesai** — `/admin/*` terverifikasi (BE-35) + `POST /categories` kini admin (BE-54) |
 | Refresh / revoke token | **Selesai** — `POST /auth/logout` + blacklist `jti` (BE-55, Opsi A) |
 
 ---
@@ -119,12 +119,12 @@ cd "d:\Ruka Jakarta\backend"
 
 ### Gap 1 — `POST /api/v1/categories` belum terproteksi (wajib)
 
-Saat ini `create_category` **tanpa `Depends(get_current_admin)`** → siapa pun tanpa login bisa membuat kategori (data master bisa dirusak publik).
+> **Selesai (2026-10-08, BE-54).** `create_category` kini memakai `Depends(get_current_admin)`; `GET /categories` tetap publik (dipakai FE chip filter). Bonus: id duplikat → `400` (bukan `IntegrityError` 500). Dikunci test `tests/unit/test_categories.py` + allowlist endpoint tulis di `tests/unit/test_admin_guard.py`.
 
 **Langkah:**
-- [ ] Tambahkan `_: User = Depends(get_current_admin)` ke `create_category` (ikuti pola `users.py`)
-- [ ] Test: tanpa token → `401`; token warga → `403`; token admin → `201`
-- [ ] Catat perubahan di `04-api-endpoints.md` (tabel sudah ditandai ⚠) dan `docs/API.md`
+- [x] Tambahkan `_: User = Depends(get_current_admin)` ke `create_category` (ikuti pola `users.py`)
+- [x] Test: tanpa token → `401`; token warga → `403`; token admin → `201`
+- [x] Catat perubahan di `04-api-endpoints.md` (tabel sudah ditandai ⚠) dan `docs/API.md`
 
 **Verifikasi:**
 ```bash

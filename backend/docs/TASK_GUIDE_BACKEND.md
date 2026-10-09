@@ -572,12 +572,18 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 - [x] **[BE-36]** Konfigurasi CORS mengizinkan domain FE Admin spesifik, terpisah dari FE Publik.
   - **Lokasi kode:** `app/main.py:24` (`FRONTEND_PUBLIC_URL` + `FRONTEND_ADMIN_URL`).
   - **Catatan:** nilai kedua origin menunggu FE Admin benar-benar dipisah (lihat BE-07).
-- [ ] **[BE-54]** **(baru - hasil audit)** Tutup sisa kebocoran non-admin: `POST /api/v1/categories`
+- [x] **[BE-54]** **(baru - hasil audit)** Tutup sisa kebocoran non-admin: `POST /api/v1/categories`
       wajib `Depends(get_current_admin)`, lalu audit seluruh router terhadap daftar endpoint publik vs admin
       dan catat hasilnya di `docs/04-api-endpoints.md`.
   - **FEAT:** FEAT-014. **Memperbaiki** BE-35.
-  - **Verifikasi:** `POST /categories` tanpa token -> 403, dengan token admin -> 201; tidak ada endpoint tulis
-    yang bisa dipanggil publik.
+  - **Lokasi kode:** `app/api/v1/categories.py` (`create_category` + `get_current_admin`, cek id duplikat -> `400`).
+  - **Hasil audit:** satu-satunya endpoint tulis yang bocor memang `POST /categories`; sisanya sengaja
+    publik/login (`/auth/login`, `/auth/register`, `/reports`, `/uploads`, `POST /reports/{id}/flag`,
+    `/auth/logout`). Dikunci test allowlist `test_admin_guard.py::test_tidak_ada_endpoint_tulis_publik_yang_bocor`.
+    FE hanya pakai `GET /categories`, jadi guard tidak memutus FE.
+  - **Verifikasi (2026-10-08):** `pytest tests/unit -q` 169 -> **175 passed** (5 test baru `test_categories.py`
+    + 1 test allowlist). Tiga kegagalan tersisa (`test_foto_ruang_publik`, `test_public_space_reports`) sudah
+    ada sebelum perubahan - butuh MySQL hidup. B6 Admin Auth (FEAT-014) tuntas.
 - [x] **[BE-55]** **(baru - hasil audit)** Refresh / logout token (rotasi atau blacklist sederhana),
       supaya sesi tidak hidup 7 hari tanpa kendali saat perangkat hilang/keluar.
   - **Keputusan:** Opsi B minimal - `POST /auth/logout` + tabel `token_blacklist` (`jti` PK + `expires_at`),

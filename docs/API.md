@@ -24,7 +24,7 @@ Swagger UI: <http://localhost:8000/docs>
 | `GET` | `/api/v1/auth/me` | Token | Profil user yang sedang login |
 | `POST` | `/api/v1/auth/logout` | Token | Cabut token (blacklist `jti`) (BE-55) |
 | `GET` | `/api/v1/categories` | — | Daftar kategori ruang publik |
-| `POST` | `/api/v1/categories` | — | Buat kategori baru |
+| `POST` | `/api/v1/categories` | **Admin** | Buat kategori baru (BE-54) |
 | `GET` | `/api/v1/facilities` | — | Opsi filter fasilitas |
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian ruang publik |
 | `GET` | `/api/v1/public-spaces/{ruang_publik_id}` | — | Detail satu ruang publik |
@@ -189,19 +189,15 @@ curl http://localhost:8000/api/v1/categories
 > `icon_name` masih `null` untuk kelima kategori di seed data. Kolomnya sudah
 > ada di skema tapi belum diisi.
 
-### `POST /api/v1/categories`
+### `POST /api/v1/categories` (admin, BE-54)
 
-Body JSON, `id` wajib diisi manual (bukan auto-increment).
+Body JSON, `id` wajib diisi manual (bukan auto-increment). Butuh role `admin`
+(`get_current_admin`); tanpa token `401`, warga `403`, admin `201`. `400` bila
+id sudah ada.
 
 ```json
 { "id": "taman", "label": "Taman", "icon_name": "tree" }
 ```
-
-> **Endpoint ini belum dilindungi.** `create_category` di
-> [categories.py](../backend/app/api/v1/categories.py) tidak memakai
-> `Depends(get_current_admin)`, jadi siapa pun — tanpa login — bisa menambah
-> kategori baru. Kalau kategori jadi data yang bisa rusak oleh publik,
-> tambahkan proteksinya.
 
 ### `GET /api/v1/facilities`
 
