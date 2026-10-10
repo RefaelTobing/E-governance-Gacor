@@ -70,14 +70,14 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **B** | Moderasi Admin | ✅ Selesai & push | `09928ee` |
 | **C** | Flag Laporan | ✅ Selesai & push | `21cf225` |
 | **D** | Data Master & ETL | ✅ Selesai & push | `bb6c752` |
-| **E** | Laporan & Ruang Publik | ✅ Selesai (E1/E2/E3) — belum di-commit | — |
-| **F** | OSRM Routing (FE-15) | ⏳ Belum dikerjakan | — |
+| **E** | Laporan & Ruang Publik | ✅ Selesai & push | `7f81e9e` |
+| **F** | OSRM Routing (FE-15) | ✅ Selesai — belum di-commit | — |
 | **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | `420b7a9` + `72976f1` |
 | **G (visual)** | Verifikasi 12 layar + responsif + a11y | ⏳ Belum dikerjakan | — |
 | **H** | Testing (FE-29/30/31) | ⏳ Belum dikerjakan | — |
 | **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
 
-**5 dari 9 fase selesai + G-audit (pre-pass).** 4 fase sisa (F, G-visual, H, I) — untuk urutan & alasannya, lihat **§11**. Fase E sudah dikerjakan & diverifikasi runtime, **menunggu commit/push**.
+**6 dari 9 fase selesai + G-audit (pre-pass).** Sisa: G-visual, H, I — untuk urutan & alasannya, lihat **§11**.
 
 ---
 
@@ -311,20 +311,25 @@ Alur klik utuh: beranda → daftar → detail → form lapor → status → **la
 
 ---
 
-## 7. FASE F — OSRM Routing (FE-15)  ⏳ BELUM
+## 7. FASE F — OSRM Routing (FE-15)  ✅ SELESAI
 
-- **Status:** ❌ *"Tombol Google Maps tersedia, rute OSRM pada peta belum diimplementasikan."*
-- **Konfigurasi sudah ada tapi belum ada konsumen:**
-  `config/constants.js` mengekspor `OSRM_BASE_URL`
-  (default `https://router.project-osrm.net`), env var `VITE_OSRM_BASE_URL`.
-- **Aksi yang disarankan:**
-  1. Hook `useRuteOsrm` → `GET {OSRM_BASE_URL}/route/v1/driving/{lng1},{lat1};{lng2},{lat2}?overview=full&geometries=geojson`
-  2. Gambar `Polyline` di peta detail (Leaflet sudah terpasang — **jangan tambah library peta baru**).
-  3. Tetap pertahankan tombol **Google Maps** sebagai fallback.
-  4. State: loading, kosong (rute tak ditemukan), error (gagal jaringan) → degradasi aman.
-- **File:** kemungkinan `features/ruang-publik/components/PetaSebaranLokasi.jsx` /
-  komponen peta baru di feature `ruang-publik`, + `hooks/`.
-- **Gerbang:** rute muncul untuk jarak dekat; OSRM down → tombol Google Maps tetap jalan.
+- **Aksi yang dikerjakan:**
+  1. **Fix kritis:** default `OSRM_BASE_URL` di `config/constants.js` diganti
+     `https://router.project-osrm.net` → **`https://router.project-osrm.org`**
+     (domain `.net` **tidak resolve** di jaringan pengujian; `.org` terverifikasi `code=Ok`).
+  2. Hook baru `hooks/useRuteOsrm.js` → `GET {OSRM_BASE_URL}/route/v1/driving/{lng1},{lat1};{lng2},{lat2}?overview=full&geometries=geojson`.
+     Menangani konversi `[lng,lat]`/`[lat,lng]` (anti-swap), `AbortController`,
+     state `isLoading`/`galat`/`tidakDitemukan`, **tanpa fallback mock**.
+  3. `Polyline` (Leaflet, tanpa library peta baru) + **marker lokasi user** (biru)
+     + `fitBounds` agar peta membungkus seluruh rute.
+  4. Tombol **"Petunjuk Arah (Google Maps)"** tetap jadi fallback navigasi.
+  5. Degradasi aman: lokasi belum ada → tombol "Gunakan Lokasi Saya untuk Rute";
+     OSRM down → pesan jujur, peta & tombol Google Maps tetap jalan.
+- **File:** `config/constants.js`, `hooks/useRuteOsrm.js` (baru),
+  `features/ruang-publik/pages/DetailRuangPublikPage.jsx`.
+- **Gerbang:** ✅ rute muncul (diverifikasi runtime: Jakarta → Buperta Cibubur,
+  `code=Ok`, 22.965m, 495 titik, titik ujung tepat di marker); OSRM down → tombol
+  Google Maps tetap jalan.
 
 ---
 
@@ -473,9 +478,9 @@ dipilih agar kerja tidak sia-sia (tidak harus diulang) dan tidak ada risiko
     ↓
 2. Fase E  (E1 → E2 → E3)             ← ✅ SELESAI (backend siap; E1 isu privasi diperbaiki)
     ↓
-3. Fase F  (FE-15 OSRM)               ← BERIKUTNYA; mandiri, jadi buffer
+3. Fase F  (FE-15 OSRM)               ← ✅ SELESAI (mandiri, buffer)
     ↓
-4. Fase G — bagian VISUAL (G1/G2/G3)  ← 12 layar + responsif + a11y, SETELAH UI final
+4. Fase G — bagian VISUAL (G1/G2/G3)  ← BERIKUTNYA; 12 layar + responsif + a11y, SETELAH UI final
     ↓
 5. Fase H  (FE-29 → FE-30 → FE-31)   ← test terhadap kode yang sudah stabil
     ↓
@@ -537,6 +542,7 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 - [x] Audit fitur terlarang lolos ✅ **(G4)** — grep audit bersih
 - [x] Nama produk hanya `RuangTerbuka` ✅ **(G5)** — grep brand 0 hit
 - [x] Laporan Saya hanya menampilkan laporan sendiri ✅ **(E1)** — uji 2 akun (A=1, B=0)
+- [x] Rute OSRM dari lokasi user ke tujuan tampil di peta detail ✅ **(F/FE-15)**
 - [ ] Tidak ada file `backend/` yang berubah oleh pekerjaan frontend ✅
       (kecuali dokumen docs)
 
@@ -545,14 +551,15 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 ## 13. Riwayat Commit (bagian ini sudah ter-push ✅)
 
 ```
-(pending) feat(laporan): laporan saya per-pengguna, riwayat per ruang, dan galeri foto (E1-E3)
+(pending) feat(ruang-publik): FE-15 rute OSRM dari lokasi user ke tujuan di peta detail
+c3e9f3f   feat: add frontend task guides and workflow phases documentation
+7f81e9e   feat(laporan): E1-E3 laporan & ruang publik
+77abc5d   update gitigonore
 72976f1   style(frontend): ganti em dash di komentar enum status (audit antislop R-02)
 420b7a9   chore(frontend): audit fitur terlarang, brand lama, dan backlog teknis (G4-G6)
 3f4ebea   feat(docs): add workflow frontend phases documentation
 bb6c752   feat(data-master): edit manual ruang publik dan penanda field_source (FE-27)
 2695b8d   refactor(routing): App.jsx render dari route-config + halaman 404 (Fase A)
-21cf225   feat(moderasi): daftar laporan ter-flag dan aksi flag warga (FE-26/21)
-09928ee   feat(moderasi): aksi setujui/tolak dan antrian admin (FE-24/25A/25B)
 ```
 
 Sebelum `09928ee` ada `bfdb902` ke atas = kerja **backend** (BE-28…BE-55) — di luar

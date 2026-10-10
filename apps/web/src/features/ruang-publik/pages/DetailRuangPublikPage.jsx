@@ -22,7 +22,7 @@ import {
   Clock3,
   Camera
 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
@@ -30,6 +30,8 @@ import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfil } from '../../../context/ProfilContext';
+import { useGeolocation } from '../../../hooks/useGeolocation';
+import { useRuteOsrm } from '../../../hooks/useRuteOsrm';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -65,6 +67,16 @@ const createCustomIcon = (color = '#0F766E') =>
 const FILTER_STATUS_LAPORAN = ['diverifikasi', 'dalam_penanganan', 'selesai'];
 const TAHAP_LAPORAN = 6;
 
+// Bungkus peta agar menampilkan seluruh rute (asal + tujuan) setelah rute dihitung.
+const FitBounds = ({ positions }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!positions || positions.length < 2) return;
+    map.fitBounds(L.latLngBounds(positions), { padding: [40, 40] });
+  }, [positions, map]);
+  return null;
+};
+
 const OPSI_FILTER_LAPORAN = [
   ['semua', 'Semua'],
   ['diverifikasi', 'Diverifikasi'],
@@ -79,6 +91,15 @@ export const DetailRuangPublikPage = () => {
   const { user, token } = useAuth();
   const { toggleSaveSpace, isSpaceSaved } = useProfil();
   const mapSectionRef = useRef(null);
+
+  // Lokasi pengguna untuk rute (FE-15). Alias `lokasiUser` agar tidak bentrok
+  // dengan `location` milik react-router di atas.
+  const {
+    location: lokasiUser,
+    requestLocation,
+    error: lokasiError,
+  } = useGeolocation();
+  const adaLokasiUser = Number.isFinite(lokasiUser?.lat) && Number.isFinite(lokasiUser?.lng);
 
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -234,6 +255,19 @@ export const DetailRuangPublikPage = () => {
     : null;
   const isSaved = detail ? isSpaceSaved(detail.id) : false;
 
+  // Rute OSRM (FE-15): dihitung hanya saat peta terbuka, ada koordinat tujuan,
+  // dan lokasi pengguna tersedia.
+  const tujuanRute = centerCoords ? { lat: centerCoords[0], lng: centerCoords[1] } : null;
+  const {
+    rute,
+    isLoading: ruteLoading,
+    galat: ruteGalat,
+    tidakDitemukan: ruteTidakDitemukan,
+  } = useRuteOsrm(
+    showMap && adaLokasiUser ? { lat: lokasiUser.lat, lng: lokasiUser.lng } : null,
+    showMap ? tujuanRute : null
+  );
+
   const handleSaveSpace = () => {
     if (!user || !token) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
@@ -358,27 +392,59 @@ export const DetailRuangPublikPage = () => {
                     <p className="text-small" style={{ margin: 0 }}>Koordinat belum tersedia untuk lokasi ini.</p>
                   </div>
                 ) : (
-                <div style={{ height: '400px', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', zIndex: 1, position: 'relative' }}>
-                  <MapContainer
-                    center={centerCoords}
-                    zoom={15}
-                    style={{ height: '100%', width: '100%', filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
-                    scrollWheelZoom={false}
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={centerCoords} icon={createCustomIcon()}>
-                      <Popup>
-                        <div style={{ padding: '4px' }}>
-                          <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{detail.nama}</strong>
-                          <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>{detail.alamat}</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  </MapContainer>
-                </div>
+                <>
+                  {/* Baris status rute + aksi ambil lokasi (FE-15). Degradasi aman:
+                      tanpa lokasi/rute, peta & tombol Google Maps tetap berfungsi. */}
+                  <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-sm)', flexWrap: 'wrap', marginBottom: 'var(--space-sm)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                    <span>
+                      {ruteLoading && 'Menghitung rute dari lokasi Anda...'}
+                      {!ruteLoading && rute && 'Rute dari lokasi Anda ditampilkan pada peta.'}
+                      {!ruteLoading && ruteGalat && `Rute gagal dihitung. ${ruteGalat} Gunakan tombol Petunjuk Arah (Google Maps).`}
+                      {!ruteLoading && !ruteGalat && ruteTidakDitemukan && 'Rute ke lokasi ini belum ditemukan. Gunakan tombol Petunjuk Arah (Google Maps).'}
+                      {!ruteLoading && lokasiError && `Lokasi Anda belum bisa dibaca. ${lokasiError}`}
+                      {!ruteLoading && !adaLokasiUser && !lokasiError && !rute && 'Aktifkan lokasi Anda untuk melihat garis rute di peta.'}
+                    </span>
+                    {!adaLokasiUser && (
+                      <Button variant="outline" size="sm" onClick={requestLocation} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <Navigation size={14} /> Gunakan Lokasi Saya untuk Rute
+                      </Button>
+                    )}
+                  </div>
+                  <div style={{ height: '400px', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', zIndex: 1, position: 'relative' }}>
+                    <MapContainer
+                      center={centerCoords}
+                      zoom={15}
+                      style={{ height: '100%', width: '100%', filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
+                      scrollWheelZoom={false}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      {rute && (
+                        <Polyline positions={rute} pathOptions={{ color: '#0F766E', weight: 4, opacity: 0.85 }} />
+                      )}
+                      {adaLokasiUser && (
+                        <Marker position={[lokasiUser.lat, lokasiUser.lng]} icon={createCustomIcon('#2563EB')}>
+                          <Popup>
+                            <div style={{ padding: '4px' }}>
+                              <strong style={{ fontSize: '14px' }}>Lokasi Anda</strong>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )}
+                      <Marker position={centerCoords} icon={createCustomIcon()}>
+                        <Popup>
+                          <div style={{ padding: '4px' }}>
+                            <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{detail.nama}</strong>
+                            <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>{detail.alamat}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                      {rute && <FitBounds positions={rute} />}
+                    </MapContainer>
+                  </div>
+                </>
                 )}
               </CardBody>
             </Card>

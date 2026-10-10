@@ -62,7 +62,7 @@ Status:
 | FE-12 | ✅ | Filter fasilitas multi-select | Menggunakan dropdown multi-select khusus, filter dari API, dengan logika client-side AND. Tersinkronisasi ke URL parameter. |
 | FE-13 | ✅ | Detail ruang publik | Menampilkan nama, kategori, alamat, jam, deskripsi, dan fasilitas. |
 | FE-14 | ✅ | Galeri foto detail | Galeri di detail ruang publik: foto resmi + dokumentasi warga digabung backend (`gabung_foto`), label "Dokumentasi Warga" via cross-ref, lightbox (prev/next). |
-| FE-15 | ❌ | Routing OSRM | Tombol Google Maps tersedia, rute OSRM pada peta belum diimplementasikan. |
+| FE-15 | ✅ | Routing OSRM | Hook `useRuteOsrm` + `Polyline` di peta detail (marker lokasi user + fitBounds). Default domain diperbaiki ke `router.project-osrm.org`. Tombol Google Maps tetap fallback. |
 
 ### FE-12. Filter fasilitas multi-select
 

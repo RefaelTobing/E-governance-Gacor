@@ -23,10 +23,12 @@ const bacaAngka = (nilai, fallback, namaVar) => {
 // Base URL backend FastAPI (tanpa suffix /api/v1 — path endpoint sudah memuatnya).
 export const API_BASE_URL = bacaString(import.meta.env.VITE_API_BASE_URL, 'http://localhost:8000');
 
-// Endpoint instance publik OSRM. Belum ada konsumen sampai FE-15 (routing) digarap.
+// Endpoint instance publik OSRM untuk rute perjalanan (FE-15).
+// Domain `.org` adalah instance demo resmi; `.net` tidak resolve di sebagian
+// jaringan (terverifikasi 2026-10-09). Bisa dioverride via VITE_OSRM_BASE_URL.
 export const OSRM_BASE_URL = bacaString(
   import.meta.env.VITE_OSRM_BASE_URL,
-  'https://router.project-osrm.net'
+  'https://router.project-osrm.org'
 );
 
 // Radius pencarian default slider (km) pada halaman daftar ruang publik.
