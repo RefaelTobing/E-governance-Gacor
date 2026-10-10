@@ -260,15 +260,15 @@ Status:
 | ID | Status | Task |
 | --- | --- | --- |
 | FE-29 | ✅ | Unit test komponen kritikal memakai React Testing Library (vitest; 7 file/42 test: StatusBadge, Button, Input, Modal, MultiSelectDropdown, redirectAman, useRuteOsrm). |
-| FE-30 | ✅ | Uji manual browser desktop dan mobile untuk halaman publik serta admin — checklist: `CHECKLIST_UJI_MANUAL-2026-10-10.md`. |
-| FE-31 | ✅ | Uji alur end-to-end: cari ruang publik, lihat detail, kirim laporan, cek status, dan moderasi admin — checklist: `CHECKLIST_E2E_FE31-2026-10-10.md`. |
+| FE-30 | ✅ | Uji manual browser desktop dan mobile untuk halaman publik serta admin - checklist: `CHECKLIST_UJI_MANUAL-2026-10-10.md`. |
+| FE-31 | ✅ | Uji alur end-to-end: cari ruang publik, lihat detail, kirim laporan, cek status, dan moderasi admin - checklist: `CHECKLIST_E2E_FE31-2026-10-10.md`. |
 
 ## A5. Build dan Deploy
 
 | ID | Status | Task |
 | --- | --- | --- |
-| FE-32 | ⚠️ | Build production frontend publik dan admin, serta konfigurasi environment production. |
-| FE-33 | ❌ | Deploy frontend publik dan admin ke domain atau subdomain terpisah. |
+| FE-32 | ✅ | Build production frontend publik dan admin, serta konfigurasi environment production (`.env.production`; placeholder URL API `https://api.example.com`). |
+| FE-33 | ❌ | Deploy frontend publik dan admin ke domain atau subdomain terpisah. **Ditunda** atas keputusan user (backend belum di-deploy). |
 
 ## A6. Task Tambahan (Bug Fix & Improvement)
 

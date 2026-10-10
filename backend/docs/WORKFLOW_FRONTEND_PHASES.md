@@ -75,7 +75,7 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | `420b7a9` + `72976f1` |
 | **G (visual)** | Verifikasi visual + responsif + a11y | ✅ Selesai — belum di-commit | (lihat §8) |
 | **H** | Testing (FE-29/30/31) | ✅ Selesai | — |
-| **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
+| **I** | Build & Deploy (FE-32/33) | ✅ FE-32 selesai; FE-33 ditunda | — |
 
 **6 dari 9 fase selesai + G-audit (pre-pass).** Sisa: G-visual, H, I — untuk urutan & alasannya, lihat **§11**.
 
@@ -479,21 +479,31 @@ Grep brand (`Raku|Raku Jakarta|RuangWarga|RUKA|raku|ruka`) di `src/` + `package.
 
 ---
 
-## 10. FASE I — Build & Deploy  ⏳ BELUM
+## 10. FASE I - Build & Deploy  ✅ FE-32 SELESAI / FE-33 DITUNDA
 
 | ID | Task | Status | Catatan |
 |---|---|---|---|
-| FE-32 | Build production + konfigurasi env production | ⚠️ | `npm run build` lokal hijau, tapi `.env.production` belum ada |
-| FE-33 | Deploy frontend publik & admin ke domain/subdomain terpisah | ❌ | |
+| FE-32 | Build production + konfigurasi env production | ✅ | `.env.production` dibuat; build produksi hijau |
+| FE-33 | Deploy frontend publik & admin ke domain/subdomain terpisah | ⏳ Ditunda | Keputusan user: deploy menyusul (backend belum di-deploy) |
+
+**Dikerjakan (FE-32):**
+- **Bug diperbaiki:** `.env` & `.env.example` masih memakai `VITE_OSRM_BASE_URL=https://router.project-osrm.net`
+  (domain **mati**); karena `.env` menimpa default `constants.js`, rute OSRM di **dev sempat gagal**.
+  Diganti ke `.org`.
+- **BARU** `apps/web/.env.production`: 4 env keys; `VITE_API_BASE_URL=https://api.example.com`
+  (placeholder - ganti saat backend punya URL produksi), OSRM `.org`, **tanpa** suffix `/api/v1`.
+- Verifikasi: `npm run build` hijau; bundle produksi memuat `api.example.com`
+  (bukan localhost); `npm test` 42/42; dev server tetap jalan.
+- **Catatan build:** tidak ada warning chunk >500 kB (code-splitting Fase A cukup) →
+  `rollupOptions.output.manualChunks` **tidak diperlukan**.
+- `.env` sudah di-`.gitignore`; `.env.production` aman di-commit (URL publik, bukan secret).
+
+**FE-33 (ditunda):** backend FastAPI belum pernah di-deploy (masih lokal), jadi URL API
+produksi belum ada. Deploy frontend menyusul setelah backend tersedia.
 
 **Pertimbangan env:** `config/constants.js` adalah satu-satunya pembaca `import.meta.env`
-(`VITE_API_BASE_URL` **tanpa** suffix `/api/v1` — dulu pernah double-prefix),
-`VITE_OSRM_BASE_URL`, `VITE_DEFAULT_RADIUS_KM`, `VITE_FAKE_GPS_THRESHOLD_M`.
-Wajib punya `.env.example` sinkron.
-
-Catatan build: bundle utama ~213 kB (setelah code-splitting Fase A) tapi masih ada
-peringatan chunk > 500 kB (Leaflet + Home page) — bisa ditangani
-`rollupOptions.output.manualChunks`.
+(`VITE_API_BASE_URL` **tanpa** suffix `/api/v1`), `VITE_OSRM_BASE_URL`,
+`VITE_DEFAULT_RADIUS_KM`, `VITE_FAKE_GPS_THRESHOLD_M`. `.env.example` sudah sinkron.
 
 ---
 
@@ -518,7 +528,7 @@ dipilih agar kerja tidak sia-sia (tidak harus diulang) dan tidak ada risiko
     ↓
 5. Fase H  (FE-29 → FE-30 → FE-31)   ✅ SELESAI (unit test + checklist manual/E2E); berikutnya Fase I
     ↓
-6. Fase I  (FE-32 → FE-33)            ← build & deploy; gerbang terakhir selalu
+6. Fase I  (FE-32 → FE-33)            ✅ FE-32 selesai (env production + build); FE-33 (deploy) ditunda
 ```
 
 > **Kenapa Fase G dipecah dua?** Karena dua bagiannya punya syarat waktu yang
@@ -579,6 +589,7 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 - [x] Rute OSRM dari lokasi user ke tujuan tampil di peta detail ✅ **(F/FE-15)**
 - [x] Test runner + unit test komponen kritikal hijau ✅ **(FE-29)** — 7 file / 42 test
 - [x] Checklist uji manual (FE-30) & E2E (FE-31) tersedia ✅ — eksekusi manual oleh user
+- [x] Build production + env production ✅ **(FE-32)** — `.env.production` siap (FE-33 deploy ditunda)
 - [ ] Tidak ada file `backend/` yang berubah oleh pekerjaan frontend ✅
       (kecuali dokumen docs)
 
@@ -587,15 +598,15 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 ## 13. Riwayat Commit (bagian ini sudah ter-push ✅)
 
 ```
-(pending) feat(ruang-publik): FE-15 rute OSRM dari lokasi user ke tujuan di peta detail
+(pending) build(frontend) : FE-32 : konfigurasi env production dan perbaikan domain OSRM dev
+687a077   test(frontend) : FE-29 : pasang vitest + unit test komponen kritikal (7 file/42 test) , FE-30 : checklist uji manual desktop & mobile , FE-31 : skenario E2E manual terstruktur
+36ef978   chore: ignore backend visual audit documentation in gitignore
+9129cee   feat(frontend) : G1 : audit 12 layar vs Figma (15 temuan + halaman detail fasilitas baru) , G2 : responsif desktop-first , G3 : aksesibilitas
+6f2581e   feat(ruang-publik): FE-15 rute OSRM dari lokasi user ke tujuan di peta detail
 c3e9f3f   feat: add frontend task guides and workflow phases documentation
 7f81e9e   feat(laporan): E1-E3 laporan & ruang publik
 77abc5d   update gitigonore
 72976f1   style(frontend): ganti em dash di komentar enum status (audit antislop R-02)
-420b7a9   chore(frontend): audit fitur terlarang, brand lama, dan backlog teknis (G4-G6)
-3f4ebea   feat(docs): add workflow frontend phases documentation
-bb6c752   feat(data-master): edit manual ruang publik dan penanda field_source (FE-27)
-2695b8d   refactor(routing): App.jsx render dari route-config + halaman 404 (Fase A)
 ```
 
 Sebelum `09928ee` ada `bfdb902` ke atas = kerja **backend** (BE-28…BE-55) — di luar
