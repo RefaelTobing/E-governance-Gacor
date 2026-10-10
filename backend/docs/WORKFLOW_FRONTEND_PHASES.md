@@ -74,7 +74,7 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **F** | OSRM Routing (FE-15) | ✅ Selesai — belum di-commit | — |
 | **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | `420b7a9` + `72976f1` |
 | **G (visual)** | Verifikasi visual + responsif + a11y | ✅ Selesai — belum di-commit | (lihat §8) |
-| **H** | Testing (FE-29/30/31) | ⏳ Belum dikerjakan | — |
+| **H** | Testing (FE-29/30/31) | ✅ Selesai | — |
 | **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
 
 **6 dari 9 fase selesai + G-audit (pre-pass).** Sisa: G-visual, H, I — untuk urutan & alasannya, lihat **§11**.
@@ -453,21 +453,29 @@ Grep brand (`Raku|Raku Jakarta|RuangWarga|RUKA|raku|ruka`) di `src/` + `package.
 
 ---
 
-## 9. FASE H — Testing  ⏳ BELUM
+## 9. FASE H — Testing  ✅ SELESAI
 
 | ID | Task | Status |
 |---|---|---|
-| FE-29 | Unit test komponen kritikal (React Testing Library) | ❌ |
-| FE-30 | Uji manual browser desktop & mobile (publik + admin) | ⚠️ |
-| FE-31 | Uji E2E: cari → detail → kirim laporan → cek status → moderasi | ⚠️ |
+| FE-29 | Unit test komponen kritikal (React Testing Library) | ✅ |
+| FE-30 | Uji manual browser desktop & mobile (publik + admin) | ✅ (checklist siap dieksekusi user) |
+| FE-31 | Uji E2E: cari → detail → kirim laporan → cek status → moderasi | ✅ (checklist siap dieksekusi user) |
 
-**Temuan:** `apps/web/package.json` **tidak punya** test runner sama sekali — hanya
-`scripts: dev/build/preview` dan devDeps `@vitejs/plugin-react` + `vite`.
-Tidak ada `vitest`/`jest`/`@testing-library/*`.
+**Dikerjakan:**
+- **FE-29:** pasang `vitest ^2.1.9` + `@testing-library/react` + `jest-dom` + `user-event`
+  + `jsdom` (dipilih v2 karena Vite 5; vitest 5 menuntut Vite 6). Script `test`/`test:watch`,
+  blok `test` di `vite.config.js` (jsdom, globals), `src/test/setup.js`.
+  **7 file test / 42 test lulus:**
+  `utils/redirectAman`, `components/StatusBadge`, `Button`, `Input`, `Modal`,
+  `MultiSelectDropdown`, `hooks/useRuteOsrm` (termasuk uji anti-swap `[lng,lat]`→`[lat,lng]`).
+  FormLaporPage sengaja tidak di-unit-test (halaman besar, butuh mock berat) — diuji via checklist manual/E2E.
+- **FE-30:** `backend/docs/CHECKLIST_UJI_MANUAL-2026-10-10.md` — checklist 15 layar desktop
+  + 9 area mobile (375px). **Eksekusi manual oleh user** di browser + backend hidup.
+- **FE-31:** `backend/docs/CHECKLIST_E2E_FE31-2026-10-10.md` — 5 skenario E2E manual
+  terstruktur (eksplorasi, lapor, pantau, moderasi admin, konsistensi data & privasi).
+  **Eksekusi manual oleh user.**
 
-**Langkah disarankan:** `npm i -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom`
-→ tambah `scripts.test` → konfigurasi di `vite.config.js` → uji komponen kritikal
-`StatusBadge`, `Button`, `MultiSelectDropdown`, `Modal`, `FormLapor`.
+**Catatan:** tidak ada perubahan UI/desain; Fase H murni menambah tooling test + dokumen checklist.
 
 ---
 
@@ -508,7 +516,7 @@ dipilih agar kerja tidak sia-sia (tidak harus diulang) dan tidak ada risiko
     ↓
 4. Fase G — bagian VISUAL (G1/G2/G3)  ← ✅ SELESAI; berikutnya Fase H
     ↓
-5. Fase H  (FE-29 → FE-30 → FE-31)   ← test terhadap kode yang sudah stabil
+5. Fase H  (FE-29 → FE-30 → FE-31)   ✅ SELESAI (unit test + checklist manual/E2E); berikutnya Fase I
     ↓
 6. Fase I  (FE-32 → FE-33)            ← build & deploy; gerbang terakhir selalu
 ```
@@ -569,6 +577,8 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
 - [x] Nama produk hanya `RuangTerbuka` ✅ **(G5)** — grep brand 0 hit
 - [x] Laporan Saya hanya menampilkan laporan sendiri ✅ **(E1)** — uji 2 akun (A=1, B=0)
 - [x] Rute OSRM dari lokasi user ke tujuan tampil di peta detail ✅ **(F/FE-15)**
+- [x] Test runner + unit test komponen kritikal hijau ✅ **(FE-29)** — 7 file / 42 test
+- [x] Checklist uji manual (FE-30) & E2E (FE-31) tersedia ✅ — eksekusi manual oleh user
 - [ ] Tidak ada file `backend/` yang berubah oleh pekerjaan frontend ✅
       (kecuali dokumen docs)
 

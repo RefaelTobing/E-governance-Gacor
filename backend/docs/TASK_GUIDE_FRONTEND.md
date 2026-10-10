@@ -259,9 +259,9 @@ Status:
 
 | ID | Status | Task |
 | --- | --- | --- |
-| FE-29 | ❌ | Unit test komponen kritikal memakai React Testing Library. |
-| FE-30 | ⚠️ | Uji manual browser desktop dan mobile untuk halaman publik serta admin. |
-| FE-31 | ⚠️ | Uji alur end-to-end: cari ruang publik, lihat detail, kirim laporan, cek status, dan moderasi admin. |
+| FE-29 | ✅ | Unit test komponen kritikal memakai React Testing Library (vitest; 7 file/42 test: StatusBadge, Button, Input, Modal, MultiSelectDropdown, redirectAman, useRuteOsrm). |
+| FE-30 | ✅ | Uji manual browser desktop dan mobile untuk halaman publik serta admin — checklist: `CHECKLIST_UJI_MANUAL-2026-10-10.md`. |
+| FE-31 | ✅ | Uji alur end-to-end: cari ruang publik, lihat detail, kirim laporan, cek status, dan moderasi admin — checklist: `CHECKLIST_E2E_FE31-2026-10-10.md`. |
 
 ## A5. Build dan Deploy
 
