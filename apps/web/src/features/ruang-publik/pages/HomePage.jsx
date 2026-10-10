@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { MapPin, Gamepad2, Lightbulb, Droplets, Armchair, AlertCircle, ArrowUpRight, CheckCircle2, Trees, TreePine, Building2, ArrowRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 
@@ -39,6 +39,32 @@ const HERO_SLIDES = [
     title: 'Taman Lapangan Banteng',
     location: 'Sawah Besar, Jakarta Pusat'
   }
+];
+
+// Kategori jelajah: memakai kategori_id nyata dari backend (bukan dikarang),
+// agar tautan "Lihat Ruang Publik" benar-benar menyaring dengan benar.
+const KATEGORI_JELAJAH = [
+  {
+    kode: 'KATEGORI 01',
+    judul: 'Taman Kota',
+    slug: 'taman-kota',
+    deskripsi: 'Temukan taman kota asri untuk bersantai bersama keluarga, membaca buku, atau sekedar menikmati udara segar kota.',
+    Icon: Trees,
+  },
+  {
+    kode: 'KATEGORI 02',
+    judul: 'Taman Lingkungan',
+    slug: 'taman-lingkungan',
+    deskripsi: 'Jelajahi taman lingkungan di berbagai penjuru wilayah Jakarta untuk pelestarian lingkungan, penyerapan air, dan area keanekaragaman hayati.',
+    Icon: TreePine,
+  },
+  {
+    kode: 'KATEGORI 03',
+    judul: 'RPTRA',
+    slug: 'rptra',
+    deskripsi: 'Ruang Publik Terpadu Ramah Anak dengan fasilitas olahraga terbuka, area bermain, dan kegiatan komunitas warga Jakarta.',
+    Icon: Building2,
+  },
 ];
 
 export const HomePage = () => {
@@ -505,35 +531,63 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* SECTION 4: BANNER CTA MARI JAGA RUANG BERSAMA */}
+      {/* SECTION 4: TEMUKAN RUANG PUBLIK DI SEKITARMU */}
       <section style={{ padding: 'var(--space-4xl) 0' }}>
+        <div className="container">
+          <h2 className="h2" style={{ marginBottom: 'var(--space-xs)' }}>Temukan Ruang Publik di Sekitarmu</h2>
+          <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3xl)' }}>
+            Jelajahi berbagai ruang publik di Jakarta dan lihat fasilitas yang tersedia di dalamnya.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-lg)' }}>
+            {KATEGORI_JELAJAH.map((kat) => (
+              <Card key={kat.judul} hoverable>
+                <CardBody>
+                  <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                    <kat.Icon size={20} color="#0F766E" />
+                  </div>
+                  <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{kat.kode}</span>
+                  <h4 className="h3" style={{ fontSize: '16px', margin: '4px 0 6px' }}>{kat.judul}</h4>
+                  <p className="text-caption" style={{ marginBottom: 'var(--space-md)' }}>{kat.deskripsi}</p>
+                  <Button variant="outline" size="sm" onClick={() => navigate(`/ruang-publik?kategori=${kat.slug}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    Lihat Ruang Publik <ArrowRight size={14} />
+                  </Button>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: BANNER CTA MARI JAGA RUANG BERSAMA */}
+      <section style={{ padding: '0 0 var(--space-4xl)' }}>
         <div className="container">
           <div className="home-cta-banner">
             <div className="home-cta-content">
               <span className="home-cta-eyebrow">Partisipasi Warga</span>
-              <h2 className="h2" style={{ color: 'white', marginBottom: 'var(--space-sm)' }}>Mari Jaga Ruang Bersama</h2>
-              <p className="text-body" style={{ color: 'rgba(255, 255, 255, 0.92)', marginBottom: 'var(--space-xl)' }}>
+              <h2 className="h2" style={{ color: 'var(--color-text-main)', marginBottom: 'var(--space-sm)' }}>Mari Jaga Ruang Bersama</h2>
+              <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-xl)' }}>
                 Menemukan fasilitas yang rusak saat berkunjung? Laporkan masalah secara mudah untuk pemeliharaan fasilitas bersama.
               </p>
               <div className="home-cta-points">
                 <div className="home-cta-point">
-                  <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
+                  <CheckCircle2 size={18} color="var(--color-primary)" aria-hidden="true" />
                   <span>Laporan dengan foto bukti dan titik lokasi yang jelas</span>
                 </div>
                 <div className="home-cta-point">
-                  <CheckCircle2 size={18} color="#FFFFFF" aria-hidden="true" />
+                  <CheckCircle2 size={18} color="var(--color-primary)" aria-hidden="true" />
                   <span>Laporan ditinjau oleh pengelola sebelum ditayangkan</span>
                 </div>
               </div>
             </div>
             <div className="home-cta-action">
               <Button
-                variant="secondary"
+                variant="primary"
                 size="lg"
                 onClick={() => navigate('/ruang-publik')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
-                <AlertCircle size={20} /> Pelajari Cara Melapor
+                <AlertCircle size={20} /> Laporkan Masalah
               </Button>
               <span className="home-cta-note">Gratis, bisa anonim, tanpa perlu daftar akun</span>
             </div>

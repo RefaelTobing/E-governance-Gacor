@@ -73,7 +73,7 @@ Type: `feat` | `fix` | `refactor` | `docs` | `chore` | `test`.
 | **E** | Laporan & Ruang Publik | ✅ Selesai & push | `7f81e9e` |
 | **F** | OSRM Routing (FE-15) | ✅ Selesai — belum di-commit | — |
 | **G (audit)** | Audit fitur terlarang + brand + backlog | ✅ Selesai & push | `420b7a9` + `72976f1` |
-| **G (visual)** | Verifikasi 12 layar + responsif + a11y | ⏳ Belum dikerjakan | — |
+| **G (visual)** | Verifikasi visual + responsif + a11y | ✅ Selesai — belum di-commit | (lihat §8) |
 | **H** | Testing (FE-29/30/31) | ⏳ Belum dikerjakan | — |
 | **I** | Build & Deploy (FE-32/33) | ⏳ Belum dikerjakan | — |
 
@@ -335,29 +335,55 @@ Alur klik utuh: beranda → daftar → detail → form lapor → status → **la
 
 ## 8. FASE G — Verifikasi Visual, Responsif, A11y, Audit
 
-> **Ahli status:** bagian **AUDIT (G4/G5/G6) SUDAH DIKERJAKAN** sebagai pre-pass (§11).
-> Bagian **VISUAL (G1/G2/G3) masih BELUM** — wajib setelah E & F. Lihat di bawah.
+> **Status:** **Fase G SELESAI** — audit (G4/G5/G6), G1 (visual 12 layar subset,
+> audit lengkap di [`AUDIT_VISUAL_G1-2026-10-10.md`](AUDIT_VISUAL_G1-2026-10-10.md)),
+> G2 (responsif), G3 (a11y) semuanya dikerjakan. Belum di-commit (menunggu satu commit
+> rangkaian Fase G).
 
-### G1. Verifikasi visual 12 layar (Fase 4 workflow)
+### G1. Verifikasi visual 12 layar (Fase 4 workflow) — ✅ subset terpilih dikerjakan
 Sumber gambar: `apps/web/Public/RukaFinalFigma/Screen*.png` + `DESIGN.md`.
 
+**Hasil audit:** 50 temuan; user memilih **15 diperbaiki**, 5 di-skip, sisanya (LOW/deviasi
+disengaja) dibiarkan. Detail per-temuan + label keyakinan: `AUDIT_VISUAL_G1-2026-10-10.md`.
+
+**Dikerjakan (15):** G1-02 (judul login), G1-04 (form register: konfirmasi sandi, hint, S&K,
+footer), G1-14 (banner CTA terang + section "Temukan Ruang Publik di Sekitarmu"), G1-37
+(**halaman baru** Detail Fasilitas publik `/ruang-publik/:id/fasilitas/:fasilitasId`),
+G1-39 (kartu Lokasi Terpilih form lapor), G1-40 (counter deskripsi 200), G1-51/52/54
+(stepper timeline + pill status + kartu bukti foto), G1-60 (tombol "Lihat Riwayat"),
+G1-64 (footer bantuan login pemda), G1-71 (hapus label "Distrik Terpadu"), G1-72 (ekspor
+CSV dashboard), G1-84/87 (stepper + panel aksi detail moderasi).
+
+**Komponen baru:** `components/StepperAlur.jsx` (timeline node+garis, dipakai 2 halaman).
+
 Checklist per layar (`docs/WORKFLOW_FRONTEND.md` §8 Fase 4):
-- [ ] Layout: lebar kontainer, posisi section, kolom, proporsi kartu/peta/gambar
-- [ ] Tipografi: Plus Jakarta Sans, ukuran heading/body, weight, line-height
-- [ ] Spasi: kelipatan **4px** (4/8/12/16/24/32/48/64)
-- [ ] Warna: primary `#0F766E`, badge status, teks, border
-- [ ] Komponen: tombol, badge (**ikon + teks**, bukan warna saja), input, tabel, timeline
-- [ ] Konten: **jangan mengubah konten** demi tampilan "lebih enak"
+- [x] Layout: lebar kontainer, posisi section, kolom, proporsi kartu/peta/gambar
+- [x] Tipografi: Plus Jakarta Sans, ukuran heading/body, weight, line-height
+- [x] Spasi: kelipatan **4px** (4/8/12/16/24/32/48/64)
+- [x] Warna: primary `#0F766E`, badge status, teks, border
+- [x] Komponen: tombol, badge (**ikon + teks**, bukan warna saja), input, tabel, timeline
+- [x] Konten: **jangan mengubah konten** demi tampilan "lebih enak"
 - Layar: 01a/02 beranda, 03 daftar, 04 detail, 05 detail fasilitas, 06 form lapor,
   06B kamera, 07 detail status, 08 laporan saya, 09 login pemda, 10 dashboard,
   11 daftar laporan, 12 detail laporan.
 
-### G2. Responsif (desktop-first, BUKAN mobile-first)
-Navbar mengecil, peta+list menumpuk, kartu 1 kolom, tabel scroll horizontal, form tetap terpakai.
+### G2. Responsif ✅ SELESAI (desktop-first, BUKAN mobile-first)
+- Utilitas baru `.grid-split` → grid dua-kolom ber-lebar px tetap (`minmax(0,1fr) 340px` dll)
+  ditumpuk jadi 1 kolom di ≤768px. Diterapkan di: DetailRuangPublik, DetailStatusLaporan,
+  DetailFasilitasWarga, DetailModerasi, FormLapor, RiwayatLaporan.
+- Navbar publik: menu **tidak lagi dihilangkan** di mobile — jadi scroll horizontal,
+  navbar `flex-wrap` (navigasi tetap bisa dipakai).
+- `StepperAlur`: `minWidth` + `overflow-x:auto` agar tidak pecah di layar sempit.
+- Tabel admin (Dashboard, AntrianModerasi, DataMaster) **sudah** dibungkus `overflow-x:auto`.
 
-### G3. Aksesibilitas
-Kontras teks, ukuran font, fokus keyboard, label form, alt text, target klik;
-**status tidak boleh hanya lewat warna** (wajib ikon + teks).
+### G3. Aksesibilitas ✅ SELESAI
+- **Alt text**: semua `<img>` sudah punya `alt` (diverifikasi grep).
+- **Label form**: komponen `Input` + semua `select`/`textarea` sudah pakai `label htmlFor`.
+- **Fokus keyboard**: tambah `:focus-visible` pada `.profile-dropdown-item` &
+  `.profile-dropdown-logout` (sebelumnya `outline:none` tanpa pengganti).
+- **Kontras**: token sudah WCAG-aware (`--color-success-text`, `--color-danger-text`
+  varian gelap; `--color-text-muted` #64748B = 4.76:1 di putih, lolos AA).
+- **Status bukan warna saja**: `StatusBadge` selalu teks label (bukan dot/warna saja).
 
 ### G4. Audit fitur terlarang ✅ SELESAI (`chore(frontend): audit G4-G6`)
 Temuan awal dokumen (grep 2026-10-09) **semua sudah dibereskan**, plus temuan baru
@@ -480,7 +506,7 @@ dipilih agar kerja tidak sia-sia (tidak harus diulang) dan tidak ada risiko
     ↓
 3. Fase F  (FE-15 OSRM)               ← ✅ SELESAI (mandiri, buffer)
     ↓
-4. Fase G — bagian VISUAL (G1/G2/G3)  ← BERIKUTNYA; 12 layar + responsif + a11y, SETELAH UI final
+4. Fase G — bagian VISUAL (G1/G2/G3)  ← ✅ SELESAI; berikutnya Fase H
     ↓
 5. Fase H  (FE-29 → FE-30 → FE-31)   ← test terhadap kode yang sudah stabil
     ↓
@@ -537,8 +563,8 @@ pass kilat duluan**, jangan pernah menunggu sampai akhir. Intinya tidak berubah 
       (categories.js masih mock & menyendiri)
 - [x] Alur laporan terhubung backend (upload foto, koordinat, FormLaporPage)
 - [ ] Semua 12 layar + `/tentang` terbuka, `npm run build` sukses ✅ build
-- [ ] Semua layar dibandingkan dengan screenshot Figma & diperbaiki — **BELUM** (G-visual)
-- [ ] Responsif + aksesibilitas dasar lolos — **BELUM** (G-visual)
+- [x] Semua layar dibandingkan dengan screenshot Figma & diperbaiki ✅ **(G1)** — audit 50 temuan, 15 terpilih dikerjakan
+- [x] Responsif + aksesibilitas dasar lolos ✅ **(G2/G3)**
 - [x] Audit fitur terlarang lolos ✅ **(G4)** — grep audit bersih
 - [x] Nama produk hanya `RuangTerbuka` ✅ **(G5)** — grep brand 0 hit
 - [x] Laporan Saya hanya menampilkan laporan sendiri ✅ **(E1)** — uji 2 akun (A=1, B=0)

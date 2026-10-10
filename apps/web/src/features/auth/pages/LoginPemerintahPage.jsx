@@ -72,9 +72,19 @@ export const LoginPemerintahPage = () => {
               required
             />
             <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }} disabled={isLoading}>
-              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard Admin →'}
+              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard →'}
             </Button>
           </form>
+
+          <p className="text-caption" style={{ marginTop: 'var(--space-xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
+            Mengalami kendala akses akun instansi?{' '}
+            <a
+              href="mailto:petugas@jakarta.go.id"
+              style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Hubungi administrator sistem
+            </a>
+          </p>
         </CardBody>
       </Card>
     </div>

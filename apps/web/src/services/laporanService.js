@@ -94,7 +94,7 @@ export const getReports = async (params = {}) => {
  *
  * Endpoint `/reports/mine` WAJIB Authorization (token dipasang otomatis oleh
  * request interceptor). Mengembalikan SEMUA status (termasuk
- * `menunggu_verifikasi`/`ditolak`) milik pemanggil saja — bukan laporan publik.
+ * menunggu_verifikasi/ditolak) milik pemanggil saja, bukan laporan publik.
  *
  * Sengaja TANPA fallback mock: kegagalan (401 sesi berakhir, backend mati) harus
  * terlihat, bukan berubah jadi daftar kosong yang menyesatkan (lihat §14 prinsip

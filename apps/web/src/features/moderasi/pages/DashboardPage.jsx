@@ -60,15 +60,38 @@ export const DashboardPage = () => {
     (item.ruangPublikNama || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Ekspor daftar laporan yang sedang tampil ke CSV (klien-side, tanpa backend).
+  const handleUnduhCsv = () => {
+    const header = ['ID', 'Fasilitas', 'Ruang Publik', 'Wilayah', 'Jenis Masalah', 'Status', 'Tanggal'];
+    const baris = filteredLaporan.map((item) => [
+      item.id,
+      item.fasilitasNama || '',
+      item.ruangPublikNama || '',
+      item.wilayah || '',
+      item.jenisMasalah || '',
+      item.statusLabel || item.status || '',
+      item.tanggal || '',
+    ]);
+    const escape = (nilai) => `"${String(nilai ?? '').replace(/"/g, '""')}"`;
+    const csv = [header, ...baris].map((row) => row.map(escape).join(',')).join('\r\n');
+
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `laporan-ruangterbuka-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       {/* HEADER PAGE */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)' }}>
         <div>
-          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            ● DISTRIK TERPADU • WILAYAH DKI JAKARTA
-          </span>
-          <h1 className="text-display" style={{ marginTop: '2px' }}>Dashboard Pengelola Ruang Publik</h1>
+          <h1 className="text-display">Dashboard Pengelola Ruang Publik</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
             Ringkasan verifikasi dan status pemeliharaan fasilitas ruang terbuka hijau Jakarta.
           </p>
@@ -78,7 +101,7 @@ export const DashboardPage = () => {
           <Button variant="outline" size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <Calendar size={14} /> Pembaruan: Hari Ini, 10:45 WIB
           </Button>
-          <Button variant="primary" size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Button variant="primary" size="sm" onClick={handleUnduhCsv} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <Download size={14} /> Unduh Laporan (CSV)
           </Button>
         </div>
@@ -264,7 +287,7 @@ export const DashboardPage = () => {
                         <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{row.jenisMasalah.split('/')[0]}</span>
+                        <span className="badge badge-neutral">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}>

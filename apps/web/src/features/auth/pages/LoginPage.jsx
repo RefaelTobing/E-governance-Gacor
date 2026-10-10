@@ -18,6 +18,8 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nama, setNama] = useState('');
+  const [konfirmasiSandi, setKonfirmasiSandi] = useState('');
+  const [setujuSyarat, setSetujuSyarat] = useState(false);
   
   // UI States
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +34,29 @@ export const LoginPage = () => {
 
     try {
       if (isRegister) {
+        // Validasi klien sebelum kirim (backend hanya menerima name/email/password).
+        if (password.length < 8) {
+          setErrorMsg('Kata sandi minimal 8 karakter.');
+          setIsLoading(false);
+          return;
+        }
+        if (password !== konfirmasiSandi) {
+          setErrorMsg('Konfirmasi kata sandi tidak cocok.');
+          setIsLoading(false);
+          return;
+        }
+        if (!setujuSyarat) {
+          setErrorMsg('Anda harus menyetujui Syarat & Ketentuan untuk mendaftar.');
+          setIsLoading(false);
+          return;
+        }
         await registerWarga({ name: nama, email, password });
         setSuccessMsg('Registrasi berhasil! Silakan masuk dengan akun Anda.');
         setEmail('');
         setPassword('');
         setNama('');
+        setKonfirmasiSandi('');
+        setSetujuSyarat(false);
         setIsRegister(false);
         setIsLoading(false);
         return;
@@ -66,7 +86,7 @@ export const LoginPage = () => {
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>
             <Logo size="lg" asLink={false} showSubtitle={false} style={{ justifyContent: 'center', marginBottom: 'var(--space-sm)' }} />
             <h2 className="h2" style={{ color: 'var(--color-text-main)' }}>
-              {isRegister ? 'Daftar Akun Warga' : 'Masuk Warga Jakarta'}
+              {isRegister ? 'Daftar Akun RuangTerbuka' : 'Masuk ke Akun Anda'}
             </h2>
             <p className="text-small" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
               {isRegister
@@ -97,7 +117,7 @@ export const LoginPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => { setIsRegister(true); setErrorMsg(''); setSuccessMsg(''); }}
+              onClick={() => { setIsRegister(true); setErrorMsg(''); setSuccessMsg(''); setKonfirmasiSandi(''); setSetujuSyarat(false); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -160,11 +180,52 @@ export const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            {isRegister && (
+              <p className="text-caption" style={{ color: 'var(--color-text-muted)', marginTop: '-4px', marginBottom: 'var(--space-md)' }}>
+                Minimal 8 karakter.
+              </p>
+            )}
+
+            {isRegister && (
+              <Input
+                label="Konfirmasi Kata Sandi"
+                type="password"
+                placeholder="Ulangi kata sandi"
+                value={konfirmasiSandi}
+                onChange={(e) => setKonfirmasiSandi(e.target.value)}
+                required
+              />
+            )}
+
+            {isRegister && (
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '4px', marginBottom: 'var(--space-md)', fontSize: '13px', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={setujuSyarat}
+                  onChange={(e) => setSetujuSyarat(e.target.checked)}
+                  style={{ marginTop: '2px' }}
+                />
+                <span>Saya menyetujui Syarat &amp; Ketentuan serta Kebijakan Privasi RuangTerbuka.</span>
+              </label>
+            )}
 
             <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }} disabled={isLoading}>
-              {isLoading ? 'Memproses...' : (isRegister ? 'Daftar Sekarang' : 'Masuk ke Platform')}
+              {isLoading ? 'Memproses...' : (isRegister ? 'Daftar Akun Baru' : 'Masuk')}
             </Button>
           </form>
+
+          {isRegister && (
+            <p className="text-caption" style={{ textAlign: 'center', marginTop: 'var(--space-lg)' }}>
+              Sudah memiliki akun?{' '}
+              <button
+                type="button"
+              onClick={() => { setIsRegister(false); setErrorMsg(''); setSuccessMsg(''); setKonfirmasiSandi(''); setSetujuSyarat(false); }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 600, cursor: 'pointer', padding: 0, font: 'inherit' }}
+              >
+                Masuk ke RuangTerbuka
+              </button>
+            </p>
+          )}
 
           {/* Link Portal Pemerintah */}
           <div style={{ textAlign: 'center', marginTop: 'var(--space-2xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--color-border)' }}>

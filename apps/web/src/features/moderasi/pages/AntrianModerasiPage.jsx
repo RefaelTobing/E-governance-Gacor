@@ -170,7 +170,7 @@ export const AntrianModerasiPage = () => {
                         <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}, <span className="text-caption">{row.wilayah}</span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{row.jenisMasalah.split('/')[0]}</span>
+                        <span className="badge badge-neutral">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}>

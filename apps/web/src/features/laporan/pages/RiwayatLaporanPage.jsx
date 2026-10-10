@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight, AlertTriangle, Eye } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getUserReports } from '../../../services/laporanService';
 
@@ -176,7 +176,7 @@ export const RiwayatLaporanPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {[1, 2].map((n) => (
             <Card key={`skeleton-report-${n}`}>
-              <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
+              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
                 <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" />
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'var(--space-lg)', gap: '12px' }}>
                   <div>
@@ -237,11 +237,11 @@ export const RiwayatLaporanPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {filteredLaporan.map((item) => (
             <Card key={item.id} hoverable>
-              <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
+                <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '160px' }}>
                   <img src={item.foto} alt={item.fasilitasNama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <span className="badge badge-info" style={{ position: 'absolute', top: '12px', left: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <Tag size={12} /> {item.jenisMasalah.split('/')[0]}
+                    <Tag size={12} /> {(item.jenisMasalah || 'Umum').split('/')[0]}
                   </span>
                 </div>
 
@@ -282,9 +282,15 @@ export const RiwayatLaporanPage = () => {
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/laporan-saya/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      Lihat Status Laporan <ArrowRight size={14} />
-                    </Button>
+                    {item.status === 'selesai' ? (
+                      <Button variant="secondary" size="sm" onClick={() => navigate(`/laporan-saya/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Eye size={14} /> Lihat Riwayat
+                      </Button>
+                    ) : (
+                      <Button variant="secondary" size="sm" onClick={() => navigate(`/laporan-saya/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        Lihat Status Laporan <ArrowRight size={14} />
+                      </Button>
+                    )}
                   </div>
                 </CardBody>
               </div>

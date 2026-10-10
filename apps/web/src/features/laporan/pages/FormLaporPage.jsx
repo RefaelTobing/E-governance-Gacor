@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb, Trash2 } from 'lucide-react';
+import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb, Trash2, Tag } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -288,7 +288,7 @@ export const FormLaporPage = () => {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
         <Skeleton height="20px" width="300px" style={{ marginBottom: 'var(--space-md)' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 'var(--space-2xl)' }}>
+        <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 'var(--space-2xl)' }}>
           <div>
             <Skeleton height="36px" width="70%" style={{ marginBottom: '8px' }} />
             <Skeleton height="18px" width="90%" style={{ marginBottom: 'var(--space-2xl)' }} />
@@ -370,24 +370,34 @@ export const FormLaporPage = () => {
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* LOKASI RUANG PUBLIK */}
+            {/* LOKASI TERPILIH (OTOMATIS) */}
             <div className="form-group">
-              <label className="form-label">Lokasi Ruang Publik</label>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-md)',
-                  padding: 'var(--space-md) var(--space-lg)',
-                  backgroundColor: 'var(--color-bg-subtle, #f8fafc)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                }}
-              >
-                <MapPin size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '15px' }}>{detail.nama}</div>
-                  <div className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{detail.alamat || detail.wilayah}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Lokasi Terpilih (Otomatis)</label>
+                <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={12} /> Tersinkron
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-md)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-subtle, #f8fafc)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                  <MapPin size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                  <div>
+                    <div className="text-caption" style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>RUANG PUBLIK</div>
+                    <div style={{ fontWeight: 700, fontSize: '15px' }}>{detail.nama}</div>
+                    <div className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{detail.alamat || detail.wilayah}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-subtle, #f8fafc)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                  <Tag size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                  <div>
+                    <div className="text-caption" style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>FASILITAS</div>
+                    <div style={{ fontWeight: 700, fontSize: '15px' }}>
+                      {fasilitasTersedia.find((f) => f.id === selectedFacilityId)?.nama || 'Belum dipilih'}
+                    </div>
+                    <div className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
+                      {fasilitasTersedia.find((f) => f.id === selectedFacilityId)?.kategori || detail.wilayah}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -440,13 +450,17 @@ export const FormLaporPage = () => {
 
             {/* DESKRIPSI MASALAH */}
             <div className="form-group">
-              <label className="form-label" htmlFor="deskripsi-input">
-                Deskripsi Kondisi Lapangan <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="form-label" htmlFor="deskripsi-input" style={{ marginBottom: 0 }}>
+                  Deskripsi Singkat Kendala <span style={{ color: 'var(--color-danger)' }}>*Wajib</span>
+                </label>
+                <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{deskripsi.length} / 200</span>
+              </div>
               <textarea
                 id="deskripsi-input"
                 className="form-input"
                 rows={4}
+                maxLength={200}
                 placeholder="Jelaskan detail masalah, perkiraan lokasi spesifik, atau potensi bahaya jika tidak segera diperbaiki..."
                 value={deskripsi}
                 onChange={(e) => setDeskripsi(e.target.value)}

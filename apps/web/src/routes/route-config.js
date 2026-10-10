@@ -18,6 +18,7 @@ export const routes = [
   { path: "/home", component: "features/ruang-publik/pages/HomePage", layout: "public" },
   { path: "/ruang-publik", component: "features/ruang-publik/pages/DaftarRuangPublikPage", layout: "public" },
   { path: "/ruang-publik/:id", component: "features/ruang-publik/pages/DetailRuangPublikPage", layout: "public", protected: true },
+  { path: "/ruang-publik/:id/fasilitas/:fasilitasId", component: "features/ruang-publik/pages/DetailFasilitasWargaPage", layout: "public" },
   { path: "/ruang-publik/:id/lapor", component: "features/laporan/pages/FormLaporPage", layout: "public" },
   { path: "/laporan-saya", component: "features/laporan/pages/RiwayatLaporanPage", layout: "public", protected: true },
   { path: "/laporan-saya/:id", component: "features/laporan/pages/DetailStatusLaporanPage", layout: "public", protected: true },

@@ -20,7 +20,7 @@ const bacaAngka = (nilai, fallback, namaVar) => {
   return angka;
 };
 
-// Base URL backend FastAPI (tanpa suffix /api/v1 — path endpoint sudah memuatnya).
+// Base URL backend FastAPI (tanpa suffix /api/v1; path endpoint sudah memuatnya).
 export const API_BASE_URL = bacaString(import.meta.env.VITE_API_BASE_URL, 'http://localhost:8000');
 
 // Endpoint instance publik OSRM untuk rute perjalanan (FE-15).

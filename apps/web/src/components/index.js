@@ -12,4 +12,5 @@ export { default as CategoryChip } from './CategoryChip';
 export { default as Skeleton } from './Skeleton';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as Modal } from './Modal';
+export { default as StepperAlur } from './StepperAlur';
 

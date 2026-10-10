@@ -11,7 +11,7 @@ import {
   History,
   AlertTriangle
 } from 'lucide-react';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, StepperAlur } from '../../../components';
 import { URUTAN_STATUS_LAPORAN } from '../../../config/constants';
 import {
   getReportDetail,
@@ -244,30 +244,18 @@ export const DetailModerasiPage = () => {
             <span className={`badge ${isDitolak ? 'badge-danger' : 'badge-info'}`}>{tahapLabel}</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', position: 'relative' }}>
-            {STATUS_STEPS.map((step, i) => {
-              const selesai = !isDitolak && currentIndex > i;
-              const aktif = !isDitolak && currentIndex === i;
-              const gaya = selesai
-                ? { backgroundColor: 'var(--color-success-light)' }
-                : aktif
-                  ? { backgroundColor: 'var(--color-warning-light)', border: '2px solid var(--color-warning)' }
-                  : { backgroundColor: 'var(--color-bg-main)', opacity: 0.6 };
-              const warnaTeks = selesai ? '#065F46' : aktif ? '#92400E' : 'var(--color-text-main)';
-              const keterangan = selesai ? 'Selesai' : aktif ? 'Aktif Sekarang' : 'Menunggu';
-              return (
-                <div key={step.key} style={{ padding: '12px', borderRadius: 'var(--radius-md)', textAlign: 'center', ...gaya }}>
-                  <div style={{ fontWeight: 700, fontSize: '13px', color: warnaTeks }}>{step.label}</div>
-                  <span className="text-caption" style={{ color: aktif ? '#92400E' : undefined, fontWeight: aktif ? 700 : undefined }}>{keterangan}</span>
-                </div>
-              );
-            })}
+          <div style={{ padding: 'var(--space-md) 0' }}>
+            <StepperAlur
+              langkah={STATUS_STEPS}
+              aktif={isDitolak ? '__none__' : currentStatus}
+              selesaiSemua={currentStatus === 'selesai' && !isDitolak}
+            />
           </div>
         </CardBody>
       </Card>
 
       {/* MAIN TWO COLUMN GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 'var(--space-2xl)' }}>
+      <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 'var(--space-2xl)' }}>
         {/* LEFT COLUMN: REPORT DETAILS */}
         <div>
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
@@ -390,6 +378,28 @@ export const DetailModerasiPage = () => {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Opsi aktif: tahap yang sedang berjalan (highlight) */}
+                <div style={{
+                  border: `1px solid ${currentStatus === 'dalam_penanganan' ? 'var(--color-warning)' : 'var(--color-border)'}`,
+                  backgroundColor: currentStatus === 'dalam_penanganan' ? 'var(--color-warning-light)' : 'var(--color-bg-main)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '12px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <strong className="text-small">Tandai Dalam Penanganan</strong>
+                    {currentStatus === 'dalam_penanganan' && <span className="badge badge-warning">Status Aktif</span>}
+                  </div>
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    disabled={isSubmitting || isRejecting}
+                    onClick={() => handleUpdateStatus('dalam_penanganan')}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    <Wrench size={16} /> Sedang Dikerjakan Petugas
+                  </Button>
+                </div>
+
                 <Button
                   variant="primary"
                   fullWidth
@@ -398,15 +408,6 @@ export const DetailModerasiPage = () => {
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
                   <CheckCircle2 size={16} /> Setujui Laporan
-                </Button>
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  disabled={isSubmitting || isRejecting}
-                  onClick={() => handleUpdateStatus('dalam_penanganan')}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <Wrench size={16} /> Tandai Dalam Penanganan
                 </Button>
                 <Button
                   variant="outline"

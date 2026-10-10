@@ -103,7 +103,6 @@ export const DetailRuangPublikPage = () => {
 
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedFacility, setSelectedFacility] = useState(null);
   const [facilityFilter, setFacilityFilter] = useState('semua');
   const [showMap, setShowMap] = useState(false);
 
@@ -604,7 +603,7 @@ export const DetailRuangPublikPage = () => {
                       </span>
                     </div>
                     <div className="facility-list-actions">
-                      <Button variant="outline" size="sm" onClick={() => setSelectedFacility(fas)}>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/ruang-publik/${detail.id}/fasilitas/${fas.id}`)}>
                         Rincian
                       </Button>
                       <Button
@@ -624,7 +623,7 @@ export const DetailRuangPublikPage = () => {
         </Card>
       </section>
 
-      {/* SECTION: GALERI FOTO (FE-14) — foto resmi + dokumentasi warga */}
+      {/* SECTION: GALERI FOTO (FE-14): foto resmi + dokumentasi warga */}
       {tampilkanGaleri && (
         <section style={{ marginBottom: 'var(--space-3xl)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
@@ -790,50 +789,6 @@ export const DetailRuangPublikPage = () => {
           </Button>
         </CardBody>
       </Card>
-
-      {/* MODAL DETAIL FASILITAS */}
-      {selectedFacility && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <Card style={{ maxWidth: '480px', width: '100%' }}>
-            <CardBody style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 className="h3">{selectedFacility.nama}</h3>
-                <button type="button" onClick={() => setSelectedFacility(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }} aria-label="Tutup">
-                  <X size={20} color="var(--color-text-muted)" />
-                </button>
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <StatusBadge status={selectedFacility.status} />
-              </div>
-
-              {selectedFacility.deskripsi && (
-                <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                  {selectedFacility.deskripsi}
-                </p>
-              )}
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button variant="outline" fullWidth onClick={() => setSelectedFacility(null)}>
-                  Tutup
-                </Button>
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={() => {
-                    const fid = selectedFacility.id;
-                    setSelectedFacility(null);
-                    navigate(`/ruang-publik/${detail.id}/lapor?fasilitas=${fid}`);
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <AlertCircle size={14} /> Laporkan Kerusakan
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-      )}
 
       {/* LIGHTBOX GALERI FOTO (FE-14) */}
       <Modal

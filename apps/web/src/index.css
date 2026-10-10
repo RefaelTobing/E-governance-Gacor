@@ -1721,16 +1721,17 @@ h3, .h3 {
   }
 }
 
-/* Banner CTA split dua kolom */
+/* Banner CTA split dua kolom (gaya terang sesuai Figma) */
 .home-cta-banner {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   gap: var(--space-2xl);
   align-items: center;
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
   border-radius: var(--radius-xl);
   padding: var(--space-3xl);
-  color: #FFFFFF;
+  color: var(--color-text-main);
 }
 
 .home-cta-eyebrow {
@@ -1739,7 +1740,7 @@ h3, .h3 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
   margin-bottom: var(--space-sm);
 }
 
@@ -1754,7 +1755,7 @@ h3, .h3 {
   align-items: center;
   gap: var(--space-sm);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--color-text-main);
 }
 
 .home-cta-action {
@@ -1767,7 +1768,7 @@ h3, .h3 {
 
 .home-cta-note {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {
@@ -2703,4 +2704,43 @@ h3, .h3 {
     padding-left: var(--space-lg);
     padding-right: var(--space-lg);
   }
+}
+
+/* ===========================================================================
+   G2 - Responsif (desktop-first). Grid dua-kolom dengan lebar px tetap
+   ditumpuk jadi satu kolom di layar kecil agar tidak overflow horizontal.
+   =========================================================================== */
+@media (max-width: 768px) {
+  .grid-split {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Navbar publik: jangan hilangkan navigasi di mobile, jadikan menu
+   scroll horizontal dan biarkan baris navbar membungkus. */
+@media (max-width: 768px) {
+  .navbar-container {
+    height: auto;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding-top: var(--space-sm);
+    padding-bottom: var(--space-sm);
+  }
+  .navbar-menu {
+    display: flex;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    gap: var(--space-md);
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* G3 - jaminan indikator fokus global untuk elemen interaktif yang belum
+   punya gaya fokus sendiri (mis. dropdown item yang sebelumnya outline:none). */
+.profile-dropdown-item:focus-visible,
+.profile-dropdown-logout:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }

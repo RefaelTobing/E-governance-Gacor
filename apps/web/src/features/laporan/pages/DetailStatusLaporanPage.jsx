@@ -4,17 +4,15 @@ import {
   Tag,
   Calendar,
   MapPin,
-  CheckCircle2,
-  Wrench,
-  ClipboardList,
   Trees,
   Armchair,
   AlertTriangle,
   Camera,
   ArrowLeft
 } from 'lucide-react';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, StepperAlur } from '../../../components';
 import { getReportDetail } from '../../../services/laporanService';
+import { URUTAN_STATUS_LAPORAN } from '../../../config/constants';
 
 export const DetailStatusLaporanPage = () => {
   const { id } = useParams();
@@ -66,7 +64,7 @@ export const DetailStatusLaporanPage = () => {
             <Skeleton height="18px" width="40%" />
           </CardBody>
         </Card>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 'var(--space-2xl)' }}>
+        <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 'var(--space-2xl)' }}>
           <Card><CardBody style={{ padding: 'var(--space-xl)' }}><Skeleton height="350px" /></CardBody></Card>
           <Card><CardBody style={{ padding: 'var(--space-xl)' }}><Skeleton height="350px" /></CardBody></Card>
         </div>
@@ -135,44 +133,16 @@ export const DetailStatusLaporanPage = () => {
           </span>
           <h2 className="h2" style={{ marginBottom: 'var(--space-xl)' }}>Alur Tindak Lanjut Ruang Publik</h2>
 
-          {/* Stepper Steps */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-lg)' }}>
-            {laporan.timeline.map((step, idx) => (
-              <div
-                key={idx}
-                style={{
-                  backgroundColor: step.status === laporan.status.toUpperCase() ? 'var(--color-warning-light)' : 'var(--color-bg-main)',
-                  padding: 'var(--space-md)',
-                  borderRadius: 'var(--radius-lg)',
-                  borderLeft: `4px solid ${step.status === 'SELESAI' ? 'var(--color-success)' : 'var(--color-primary)'}`
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    {step.status === 'SELESAI' ? (
-                      <CheckCircle2 size={16} color="var(--color-success)" />
-                    ) : step.status === 'DALAM_PENANGANAN' ? (
-                      <Wrench size={16} color="#0F766E" />
-                    ) : (
-                      <ClipboardList size={16} color="var(--color-text-muted)" />
-                    )}
-                  </span>
-                  <strong className="text-small">{step.title}</strong>
-                </div>
-                <div className="text-caption" style={{ fontWeight: 600, color: 'var(--color-primary)', marginBottom: '4px' }}>
-                  {step.date}
-                </div>
-                <p className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
-                  {step.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+          <StepperAlur
+            langkah={URUTAN_STATUS_LAPORAN.map((s) => ({ key: s.key, label: s.label }))}
+            aktif={laporan.status}
+            selesaiSemua={laporan.status === 'selesai'}
+          />
         </CardBody>
       </Card>
 
       {/* TWO COLUMN DETAILS & BUKTI */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 'var(--space-2xl)' }}>
+      <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 'var(--space-2xl)' }}>
         {/* Left Column: Data Fasilitas */}
         <div>
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
@@ -220,12 +190,25 @@ export const DetailStatusLaporanPage = () => {
         <div>
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
-              <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Camera size={16} color="#0F766E" /> Bukti Dokumentasi Warga
-              </h4>
-              <div style={{ height: '200px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '12px' }}>
-                <img src={laporan.foto} alt="Bukti Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h4 className="h3" style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Camera size={16} color="#0F766E" /> Bukti Dokumentasi Warga
+                </h4>
+                <span className="text-caption" style={{ fontWeight: 700 }}>{laporan.foto ? 1 : 0} Berkas Foto</span>
               </div>
+              {laporan.foto ? (
+                <div style={{ position: 'relative', height: '200px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '8px' }}>
+                  <img src={laporan.foto} alt={`Dokumentasi ${laporan.fasilitasNama || 'fasilitas'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="badge badge-success" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '10px' }}>Asli</span>
+                  <span className="text-caption" style={{ position: 'absolute', bottom: '0', left: '0', right: '0', padding: '6px 10px', color: 'white', backgroundColor: 'rgba(15,23,42,0.6)' }}>
+                    {laporan.fasilitasNama || 'Dokumentasi fasilitas'}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+                  <span className="text-caption">Tidak ada foto bukti.</span>
+                </div>
+              )}
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', fontSize: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <MapPin size={12} color="var(--color-text-muted)" /> <strong>Lokasi:</strong> {laporan.fasilitasNama || laporan.wilayah || 'Jakarta'}
