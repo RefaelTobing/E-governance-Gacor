@@ -235,6 +235,110 @@ def gabung_foto(db: Session, ruang_publik: RuangPublik) -> list[str]:
     return hasil
 
 
+def urutan_foto_utama(db: Session, ruang_publik_id: str) -> list[str]:
+    """Kandidat foto utama satu ruang publik, dari yang paling diprioritaskan.
+
+    Aturan pemilihan (lihat `foto_utama`): foto laporan yang punya like terbanyak
+    menang; bila tak ada foto laporan ber-like, jatuh ke foto resmi terlama; lalu
+    `image_url` lama. Urutan di sini = urutan prioritas, jadi pemanggil tinggal
+    ambil elemen pertama yang ada.
+
+    Fitur like (BE-58) belum ada, jadi bagian "like terbanyak" belum mengubah
+    urutan: saat ini yang menentukan hanya ada/tidaknya foto. Ketika tabel
+    `foto_like` dibuat, cukup ubah query laporan di bawah agar mengurutkan
+    `like_count` menurun lebih dulu.
+    """
+    hasil: list[str] = []
+
+    # 1. Foto laporan tayang, terbaru dulu (nanti: urut like terbanyak lalu terbaru).
+    laporan_stmt = (
+        select(Laporan.foto_url)
+        .where(
+            Laporan.ruang_publik_id == ruang_publik_id,
+            Laporan.status.in_(STATUS_TAYANG),
+            Laporan.foto_url.isnot(None),
+            Laporan.foto_url != "",
+        )
+        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
+    )
+    hasil.extend(db.scalars(laporan_stmt).all())
+
+    # 2. Foto resmi (dari tabel ruang_publik_foto), lalu 3. image_url lama.
+    hasil.extend(foto.foto_url for foto in list_foto_resmi(db, ruang_publik_id))
+    ruang = db.get(RuangPublik, ruang_publik_id)
+    if ruang is not None and ruang.image_url:
+        hasil.append(ruang.image_url)
+
+    terlihat: set[str] = set()
+    unik: list[str] = []
+    for url in hasil:
+        if url not in terlihat:
+            terlihat.add(url)
+            unik.append(url)
+    return unik
+
+
+def foto_utama(db: Session, ruang_publik: RuangPublik) -> Optional[str]:
+    """Foto utama satu ruang publik: prioritas pertama dari `urutan_foto_utama`.
+
+    Bila ada beberapa foto, aturannya: foto dengan like user terbanyak menang;
+    kalau tidak ada foto ber-like, ambil foto pertama yang tersedia. Karena
+    like belum ada (BE-58), saat ini hasilnya foto pertama menurut urutan
+    prioritas (laporan tayang terbaru -> foto resmi terlama -> image_url).
+    """
+    kandidat = urutan_foto_utama(db, ruang_publik.id)
+    return kandidat[0] if kandidat else None
+
+
+def foto_utama_per_ruang_publik(db: Session, ids: Sequence[str]) -> dict[str, str]:
+    """Versi batch `foto_utama` untuk daftar ruang publik (hindari N+1).
+
+    Dipakai endpoint daftar: satu query foto laporan + satu query foto resmi +
+    satu query image_url untuk seluruh id, bukan per baris.
+    """
+    ids = list(ids)
+    if not ids:
+        return {}
+
+    hasil: dict[str, str] = {}
+
+    def _setdefault(rp_id: str, url: Optional[str]) -> None:
+        # Hanya isi bila belum ada, supaya prioritas pertama yang tersimpan menang.
+        if url and rp_id not in hasil:
+            hasil[rp_id] = url
+
+    # 1. Foto laporan tayang (terbaru dulu; nanti diurut like terbanyak).
+    laporan_rows = db.execute(
+        select(Laporan.ruang_publik_id, Laporan.foto_url)
+        .where(
+            Laporan.ruang_publik_id.in_(ids),
+            Laporan.status.in_(STATUS_TAYANG),
+            Laporan.foto_url.isnot(None),
+            Laporan.foto_url != "",
+        )
+        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
+    ).all()
+    for rp_id, url in laporan_rows:
+        _setdefault(rp_id, url)
+
+    # 2. Foto resmi (terlama dulu, konsisten dengan list_foto_resmi).
+    resmi_rows = db.execute(
+        select(RuangPublikFoto.ruang_publik_id, RuangPublikFoto.foto_url)
+        .where(RuangPublikFoto.ruang_publik_id.in_(ids))
+        .order_by(RuangPublikFoto.created_at.asc(), RuangPublikFoto.id.asc())
+    ).all()
+    for rp_id, url in resmi_rows:
+        _setdefault(rp_id, url)
+
+    # 3. image_url lama sebagai jaring terakhir.
+    for rp_id, image_url in db.execute(
+        select(RuangPublik.id, RuangPublik.image_url).where(RuangPublik.id.in_(ids))
+    ).all():
+        _setdefault(rp_id, image_url)
+
+    return hasil
+
+
 def list_fasilitas(db: Session) -> list[tuple[str, Optional[str]]]:
     """Daftar fasilitas unik untuk populate filter di FE."""
     stmt = (

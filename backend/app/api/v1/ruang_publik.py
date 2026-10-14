@@ -50,10 +50,15 @@ def read_public_spaces(
         skip=skip,
         limit=limit,
     )
+    # Foto utama per baris, satu query batch (bukan per ruang publik).
+    foto_utama = crud_ruang_publik.foto_utama_per_ruang_publik(
+        db, [ruang.id for ruang, _ in hasil]
+    )
     return [
         RuangPublikListResponse.model_validate(ruang, from_attributes=True).model_copy(
             update={
                 "jarak_km": jarak,
+                "image_url": foto_utama.get(ruang.id, ruang.image_url),
                 "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
             }
         )
@@ -87,9 +92,13 @@ def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
     # Galeri digabung dari tabel foto resmi + laporan tayang; `image_url` lama
     # ikut tampil lewat gabung_foto sehingga kontrak response tidak berubah.
     foto = crud_ruang_publik.gabung_foto(db, ruang)
+    # `image_url` = foto utama (prioritas urutan_foto_utama), supaya hero detail
+    # tidak bergantung pada asumsi FE bahwa foto[0] adalah foto terbaik.
+    utama = crud_ruang_publik.foto_utama(db, ruang)
     return RuangPublikDetailResponse.model_validate(ruang, from_attributes=True).model_copy(
         update={
             "foto": foto,
+            "image_url": utama or ruang.image_url,
             "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
         }
     )

@@ -1,7 +1,7 @@
 # TASK_GUIDE_BACKEND.md - Task Guide Backend Raku Jakarta
 
 Turunan dari [`../../docs/JOBDESK_FE_BE_Raku_Jakarta.md`](../../docs/JOBDESK_FE_BE_Raku_Jakarta.md) bagian B
-(BE-01 s/d BE-45), ditambah task baru **BE-46 s/d BE-56** hasil audit kebutuhan website.
+(BE-01 s/d BE-45), ditambah task baru **BE-46 s/d BE-58** hasil audit kebutuhan website.
 
 Status tiap task **diverifikasi langsung ke kode** di `backend/app/` per dokumen ini dibuat.
 Bila nanti kode berubah, perbarui centangnya di sini (bukan di jobdesk induk).
@@ -39,7 +39,9 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B5 Data Master Service | 3 | 3 | 0 | 0 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 5 | 0 | 0 |
 | B7 Testing | 5 | 0 | 0 | 5 |
-| **Total** | **51** | **46** | **0** | **5** |
+| B9 Konten Situs | 1 | 0 | 0 | 1 |
+| B10 Galeri Foto & Like | 2 | 1 | 0 | 1 |
+| **Total** | **59** | **47** | **0** | **7** |
 
 ---
 
@@ -636,6 +638,46 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Dibutuhkan:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx` dan `TentangPage.jsx`
     (kini memakai mock fallback), `app/api/v1/statistics.py:33` dan `:44` (isi hardcode).
   - **Verifikasi:** response valid UTF-8 saat dirender FE; mengubah testimonial lewat API langsung terlihat di beranda.
+
+---
+
+## B10. Galeri Foto Hasil Scraping & Like Foto User (baru)
+
+- [x] **[BE-57]** Impor foto hasil scraping ke galeri ruang publik lewat alur indeks + endpoint admin.
+  - **Lokasi kode:** `app/etl/build_images_index.py` (buat `data/Images/images_index.csv` dari
+    `images_manifest.csv`, divalidasi ke disk & `data/processed/ruang_publik.csv`),
+    `app/etl/import_photos.py` (login admin + paralel `POST /admin/public-spaces/{id}/photos`,
+    resumable lewat `data/Images/import_photos_log.csv`, opsi `--workers/--resume/--skip-existing/--limit`).
+  - **Keputusan:** impor lewat endpoint admin yang sudah ada (`POST /admin/public-spaces/{id}/photos`,
+    BE-33/`foto_ruang_publik.py`), bukan script tulis-DB langsung — supaya validasi magic bytes/ukuran
+    dan penamaan acak di `storage/ruang-publik/` tetap satu jalur. Foto masuk sebagai foto **resmi**
+    (langsung tayang di galeri `gabung_foto`), tanpa langkah moderasi, sesuai keputusan pemilik proyek.
+  - **Data:** 2605 berkas untuk 569 id (dari 3319 berkas / 728 id di manifest; sisanya id di luar
+    master DB atau berkas tanpa pasangan). Foto yang punya berkas semuanya berstatus `ok`; id
+    `mismatch`/`needs_review`/`nophoto` tidak punya berkas.
+  - **Verifikasi (2026-10-14):** impor penuh `2605 sukses, 0 gagal`; `ruang_publik_foto` = 2605 baris
+    di 569 RP; `GET /public-spaces/{id}` menampilkan array `foto` gabungan; berkas terlayani `200` di
+    `/uploads/ruang-publik/...`.
+  - **Foto utama (2026-10-14):** endpoint daftar & detail kini mengirim `image_url` = foto utama.
+    Aturan: foto laporan dengan like terbanyak menang -> bila tak ada, foto resmi terlama -> `image_url`
+    lama. Helper `foto_utama` / `foto_utama_per_ruang_publik` (batch, bebas N+1) di
+    `app/services/ruang_publik.py`; `RuangPublikListResponse` dapat field `image_url`. Bagian
+    "like terbanyak" menyala penuh saat BE-58 (tabel `foto_like`) selesai. FE memetakan
+    `image_url` -> `image` lewat `assetUrl` di `apps/web/src/services/ruangPublikService.js`.
+
+- [ ] **[BE-58]** Fitur **like** foto user + promosi ke galeri ruang publik (rencana, belum dikerjakan).
+      Konsep: pengguna login bisa menyukai foto (foto resmi scraping maupun foto laporan warga);
+      foto dengan jumlah like melewati ambang tertentu dipromosikan muncul di galeri ruang publik
+      (mis. ikut `gabung_foto` dan/atau tampil lebih dulu).
+  - **Model/tabel baru:** `foto_like` (`id`, `foto_ref_type` [resmi/laporan], `foto_ref_id`, `user_id`,
+    `created_at`; unique `(foto_ref_type, foto_ref_id, user_id)`).
+  - **Endpoint:** `POST` / `DELETE` like (login), sertakan `like_count` pada galeri
+    `GET /public-spaces/{id}`.
+  - **Promosi:** perluas `gabung_foto()` (`app/services/ruang_publik.py`) agar foto laporan user dengan
+    `like_count >= ambang` masuk galeri; ambang di `.env` (mis. `FOTO_LIKE_THRESHOLD`).
+  - **Verifikasi:** like/unlike idempoten & satu per user; foto laporan yang melewati ambang tampil di
+    `GET /public-spaces/{id}`; `like_count` konsisten di daftar & detail.
+  - **Dibutuhkan:** task FE terkait (lihat `TASK_GUIDE_FRONTEND.md`).
 
 ---
 

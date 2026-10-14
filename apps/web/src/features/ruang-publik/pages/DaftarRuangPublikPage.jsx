@@ -17,7 +17,7 @@ const RADIUS_BAWAAN = DEFAULT_RADIUS_KM;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const ukuranHalamanAwal = () => {
   try {
-    const tersimpan = Number(localStorage.getItem('rt_page_size'));
+    const tersimpan = Number(localStorage.getItem('ruka_page_size'));
     return PAGE_SIZE_OPTIONS.includes(tersimpan) ? tersimpan : PAGE_SIZE_OPTIONS[0];
   } catch {
     return PAGE_SIZE_OPTIONS[0];
@@ -213,8 +213,10 @@ export const DaftarRuangPublikPage = () => {
   };
 
   const keHalaman = (nomor) => {
-    const tujuan = Math.min(Math.max(1, nomor), totalHalaman);
-    setSearchParams(tulisHalaman(searchParams, tujuan));
+    setSearchParams((prev) => {
+      const tujuan = Math.min(Math.max(1, nomor), totalHalaman);
+      return tulisHalaman(prev, tujuan);
+    });
   };
 
   const filterSekarang = useRef([searchTerm, selectedKategori, selectedWilayah, sortBy, selectedRadius, selectedFasilitas.join(',')]);
@@ -268,8 +270,19 @@ export const DaftarRuangPublikPage = () => {
     setSearchParams((prev) => tulisHalaman(prev, halamanAktif), { replace: true });
   }, [isLoading, halamanDariUrl, halamanAktif, setSearchParams]);
 
+  // Ukuran halaman disimpan tiap berubah; nomor halaman hanya direset bila
+  // ukuran benar-benar berganti. Dependensi `setSearchParams` sengaja tidak
+  // dijadikan pemicu: di react-router v6 identitasnya ikut berubah tiap URL
+  // berubah, sehingga tanpa penjagaan ini efek akan melempar balik ke halaman 1
+  // setiap kali tombol "Berikutnya" ditekan.
+  const ukuranHalamanSebelumnya = useRef(ukuranHalaman);
   useEffect(() => {
-    localStorage.setItem('rt_page_size', String(ukuranHalaman));
+    localStorage.setItem('ruka_page_size', String(ukuranHalaman));
+
+    const berubah = ukuranHalamanSebelumnya.current !== ukuranHalaman;
+    ukuranHalamanSebelumnya.current = ukuranHalaman;
+    if (!berubah) return;
+
     setSearchParams((prev) => tulisHalaman(prev, 1), { replace: true });
   }, [ukuranHalaman, setSearchParams]);
 

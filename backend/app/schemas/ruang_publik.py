@@ -48,6 +48,7 @@ class RuangPublikListResponse(BaseModel):
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
     verified: Optional[bool] = False
+    image_url: Optional[str] = None
     jarak_km: Optional[float] = None
     fasilitas: List[FasilitasRingkas] = []
     stats: Dict[str, int] = {}
