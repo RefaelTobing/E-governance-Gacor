@@ -626,7 +626,7 @@ scope dokumen ini.
 5. **Catat setiap konflik keputusan** (format: Konflik → Keputusan → Alasan),
    jangan memilih diam-diam.
 6. **Satu commit = satu topik**, Conventional Commits, verifikasi dulu sebelum push.
-
+7. **yang belum = FE-33, FE-25, FE-30, FE-31**
 ---
 
 *Dokumen disusun 2026-10-09. Perbarui §1, §11, §12, §13 setiap kali satu fase selesai.*
