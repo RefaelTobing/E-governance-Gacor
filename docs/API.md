@@ -334,6 +334,7 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
     "latitude": "-6.36388636",
     "longitude": "106.89910953",
     "verified": true,
+    "image_url": "/uploads/ruang-publik/0323d32779bd465e8ddc122d3f400f0c.jpg",
     "jarak_km": null,
     "fasilitas": [
       { "id": "seed-b4555c91a1fb0d46-01", "nama": "Pohon Peneduh", "status": "baik" },
@@ -357,6 +358,11 @@ curl "http://localhost:8000/api/v1/public-spaces?lat=-6.1754&long=106.8272&radiu
 > `jarak_km` bernilai `null` kalau `lat`/`long` tidak dikirim. Field ini dihitung
 > ulang di Python, bukan lewat query SQL.
 >
+> `image_url` = **foto utama** ruang publik (path relatif `/uploads/...`, `null`
+> bila tidak punya foto). Prioritas: foto laporan dengan like terbanyak -> foto
+> resmi terlama -> `image_url` lama. Bagian "like terbanyak" menyala penuh saat
+> fitur like (BE-58) selesai; sebelum itu hasilnya foto pertama yang tersedia.
+>
 > **Catatan data sekarang:** 1200 ruang publik, semua punya `latitude`/
 > `longitude`, jadi `?lat=..&long=..&radius=..` mengembalikan hasil berurut
 > jarak. Baris dengan `latitude` NULL tidak ikut query radius. Kategori
@@ -373,7 +379,9 @@ duplikat; `image_url` lama ikut tampil bila belum punya baris foto), `stats`
 (versi penuh dari `fasilitas`, kunci sama dengan list), `field_source`
 (objek penanda kolom hasil edit admin, `null` bila belum pernah diedit), serta
 `kecamatan` dan `kelurahan` (kolom baru dari merge ETL, `null` bila sumber tidak
-punya) di atas field yang sama dengan response list.
+punya) di atas field yang sama dengan response list. Field `image_url` di sini
+= **foto utama** (kandidat pertama `gabung_foto`/`foto_utama`), bukan selalu
+`image_url` mentah dari tabel.
 
 ```bash
 curl http://localhost:8000/api/v1/public-spaces/<id>

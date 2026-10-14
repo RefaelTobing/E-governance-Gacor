@@ -604,6 +604,27 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ---
 
+### FE-44. Tombol like foto di galeri ruang publik (rencana)
+
+**Status:** ❌ (rencana, menunggu backend BE-58)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Tampilkan tombol like + `like_count` pada tiap foto di galeri (`detail.foto`).
+2. Panggil endpoint like/unlike (BE-58) saat diklik; pengunjung tanpa login diarahkan
+   untuk masuk lebih dulu.
+3. Tandai visual foto yang berasal dari laporan warga yang sudah dipromosikan ke galeri.
+
+**Acceptance criteria:**
+
+- Pengguna login bisa like/unlike; jumlah berubah tanpa reload penuh.
+- Pengunjung tanpa login tidak bisa like (diarahkan ke halaman masuk).
+- Foto laporan dengan like di atas ambang ikut tampil di galeri ruang publik.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
 
 ### Sudah Selesai
@@ -624,6 +645,7 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 - **FE-41** — Pengaturan page size 10/20/50/100
 - **FE-42** — Status fasilitas HomePage jadi Baik
 - **FE-43** — Tampilan session admin di navbar publik
+- **FE-14** — Galeri foto detail ruang publik (data foto scraping sudah masuk via BE-57)
 
 ### Prioritas Berikutnya
 
@@ -632,6 +654,7 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 3. **FE-25A** — Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
 4. **FE-15** — Integrasi OSRM routing (advanced feature)
 5. **FE-21** dan **FE-26** — Fitur flag laporan
+6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
 
 ---
 

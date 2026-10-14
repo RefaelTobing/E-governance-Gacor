@@ -1,6 +1,24 @@
-import { api } from '../config/api';
+import { api, assetUrl } from '../config/api';
 import { IS_DEV } from '../config/constants';
 import { MOCK_RUANG_PUBLIK, MOCK_RUANG_PUBLIK_METRICS } from '../data/mockData';
+
+/**
+ * Gambar cadangan bila ruang publik belum punya foto sama sekali.
+ */
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80';
+
+/**
+ * Ubah foto utama ruang publik jadi URL siap-pakai.
+ * `image_url` backend relatif (mis. /uploads/ruang-publik/xxx.jpg), jadi harus
+ * dilewatkan `assetUrl` agar tidak diresolusi ke origin frontend.
+ */
+const fotoUtama = (item) => {
+  const url = item.image_url || item.image;
+  if (url) return assetUrl(url);
+  if (item.foto && item.foto.length > 0) return assetUrl(item.foto[0]);
+  return FALLBACK_IMAGE;
+};
 
 /**
  * Backend memakai snake_case (perlu_perhatian); UI memakai camelCase.
@@ -42,7 +60,12 @@ export const getPublicSpaces = async (params = {}) => {
     });
 
     const items = Array.isArray(data) ? data : data?.items ?? [];
-    return items.map((item) => ({ ...item, stats: keStats(item.stats) }));
+    return items.map((item) => ({
+      ...item,
+      // Backend mengirim foto utama di `image_url` (relatif); UI memakai `image`.
+      image: fotoUtama(item),
+      stats: keStats(item.stats),
+    }));
   } catch (error) {
     if (IS_DEV) {
       console.info('[ruangPublikService] FastAPI belum terhubung, menggunakan fallback mockData.');
@@ -147,7 +170,9 @@ export const getPublicSpaceDetail = async (id) => {
       kategori: typeof data.kategori === 'object' && data.kategori
         ? data.kategori.label || data.kategori_id || 'Umum'
         : (data.kategori || data.kategori_id || 'Umum'),
-      image: data.image_url || data.image || (data.foto && data.foto.length > 0 ? data.foto[0] : 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80'),
+      image: fotoUtama(data),
+      // Galeri: URL backend relatif, jadi dijadikan absolut untuk <img>.
+      foto: (Array.isArray(data.foto) ? data.foto : []).map(assetUrl),
       fasilitas,
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
       stats: keStats(data.stats),

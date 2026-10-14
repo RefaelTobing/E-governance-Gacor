@@ -418,7 +418,13 @@ export const DataMasterPage = () => {
                   masterList.map((rp) => (
                     <tr key={rp.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                       <td style={{ padding: '12px', fontWeight: 600 }}>📍 {rp.nama}</td>
-                      <td style={{ padding: '12px' }}><span className="badge badge-info">{rp.kategori}</span></td>
+                      <td style={{ padding: '12px' }}>
+                        <span className="badge badge-info">
+                          {typeof rp.kategori === 'object'
+                            ? rp.kategori?.label || 'Kategori'
+                            : rp.kategori || rp.kategori_id || 'Kategori'}
+                        </span>
+                      </td>
                       <td style={{ padding: '12px' }}>{rp.wilayah}</td>
                       <td style={{ padding: '12px' }}>{rp.jamOperasional}</td>
                       <td style={{ padding: '12px' }}>{jumlahFasilitas ? `${jumlahFasilitas[rp.id] || 0} Terdata` : '-'}</td>
