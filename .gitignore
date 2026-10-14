@@ -98,6 +98,4 @@ docs/TECHNICAL_SPEC.md
 # =========================
 # Data Images (foto scraping — berat, jangan di-commit)
 # =========================
-data/Images/images/*
-!data/Images/images/.gitkeep
-backend/docs/AUDIT_VISUAL_G1-2026-10-10.md
+data/Images/images
