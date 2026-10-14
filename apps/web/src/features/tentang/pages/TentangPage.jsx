@@ -82,7 +82,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Berapa lama biasanya laporan saya ditindaklanjuti?',
-    a: 'Setiap laporan akan diverifikasi oleh admin pengelola dalam 1 x 24 jam kerja. Penanganan fisik di lapangan bergantung pada jenis kerusakan dan unit pelaksana terkait.'
+    a: 'Setiap laporan diverifikasi oleh admin pengelola sebelum ditayangkan. Penanganan fisik di lapangan bergantung pada jenis kerusakan dan unit pelaksana terkait.'
   },
   {
     q: 'Bagaimana saya tahu laporan saya sudah diproses?',
@@ -317,7 +317,7 @@ export const TentangPage = () => {
                   Pengawasan Terpadu Bersama Dinas Pertamanan &amp; RPTRA
                 </div>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>
-                  Setiap fasilitas di taman dan RPTRA tercatat secara digital demi percepatan respon perbaikan teknis lapangan.
+                  Setiap fasilitas di taman dan RPTRA tercatat secara digital demi percepatan penanganan kerusakan fasilitas.
                 </p>
                 <div className="tentang-facility-metrics">
                   <div>
@@ -374,7 +374,7 @@ export const TentangPage = () => {
               <h3>Direktori Ruang Publik Jakarta</h3>
 
               <p>
-                Jelajahi ratusan taman kota, RPTRA, hutan kota, dan lapangan olahraga di 5 wilayah kota administratif DKI Jakarta lengkap dengan titik presisi, foto kondisi, jam buka, dan fasilitas.
+                Jelajahi ratusan taman kota, RPTRA, hutan kota, dan lapangan olahraga di 5 wilayah kota administratif DKI Jakarta lengkap dengan titik lokasi, foto kondisi, jam buka, dan fasilitas.
               </p>
 
               <ul className="tentang-feature-points">

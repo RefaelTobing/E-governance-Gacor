@@ -20,13 +20,15 @@ const bacaAngka = (nilai, fallback, namaVar) => {
   return angka;
 };
 
-// Base URL backend FastAPI (tanpa suffix /api/v1 — path endpoint sudah memuatnya).
+// Base URL backend FastAPI (tanpa suffix /api/v1; path endpoint sudah memuatnya).
 export const API_BASE_URL = bacaString(import.meta.env.VITE_API_BASE_URL, 'http://localhost:8000');
 
-// Endpoint instance publik OSRM. Belum ada konsumen sampai FE-15 (routing) digarap.
+// Endpoint instance publik OSRM untuk rute perjalanan (FE-15).
+// Domain `.org` adalah instance demo resmi; `.net` tidak resolve di sebagian
+// jaringan (terverifikasi 2026-10-09). Bisa dioverride via VITE_OSRM_BASE_URL.
 export const OSRM_BASE_URL = bacaString(
   import.meta.env.VITE_OSRM_BASE_URL,
-  'https://router.project-osrm.net'
+  'https://router.project-osrm.org'
 );
 
 // Radius pencarian default slider (km) pada halaman daftar ruang publik.
@@ -52,4 +54,20 @@ export const IS_DEV = import.meta.env.DEV;
 // angka jarak) yang sama.
 export const JAKARTA_CENTER = { lat: -6.2088, lng: 106.8456 };
 
-export const CONSTANTS = {};
+// Enum status laporan, satu sumber kanonik (DESIGN.md §4.4).
+// `key` harus persis sama dengan nilai status dari backend (snake_case).
+export const STATUS_LAPORAN = {
+  MENUNGGU_VERIFIKASI: { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', badgeType: 'info' },
+  DIVERIFIKASI: { key: 'diverifikasi', label: 'Diverifikasi', badgeType: 'info' },
+  DALAM_PENANGANAN: { key: 'dalam_penanganan', label: 'Dalam Penanganan', badgeType: 'warning' },
+  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'success' },
+  DITOLAK: { key: 'ditolak', label: 'Ditolak', badgeType: 'danger' },
+};
+
+// Urutan tahap laporan untuk stepper/timeline progres.
+export const URUTAN_STATUS_LAPORAN = [
+  STATUS_LAPORAN.MENUNGGU_VERIFIKASI,
+  STATUS_LAPORAN.DIVERIFIKASI,
+  STATUS_LAPORAN.DALAM_PENANGANAN,
+  STATUS_LAPORAN.SELESAI,
+];

@@ -4,7 +4,7 @@ import { ChevronDown, HelpCircle, PhoneCall, Mail } from 'lucide-react';
 const FAQ_ITEMS = [
   {
     q: 'Bagaimana cara melaporkan fasilitas publik yang rusak?',
-    a: 'Cari ruang publik yang dimaksud di menu "Ruang Publik", buka halaman detailnya, lalu klik tombol "Laporkan Masalah". Isi formulir dengan deskripsi, foto, dan lokasi presisi.',
+    a: 'Cari ruang publik yang dimaksud di menu "Ruang Publik", buka halaman detailnya, lalu klik tombol "Laporkan Masalah". Isi formulir dengan deskripsi, foto, dan titik lokasi.',
   },
   {
     q: 'Apa itu Mode Identitas Anonim?',
@@ -12,11 +12,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Berapa lama laporan saya diproses oleh petugas?',
-    a: 'Laporan baru akan diverifikasi dalam 1-2 hari kerja. Setelah diverifikasi, status akan diperbarui menjadi "Dalam Penanganan" hingga selesai.',
+    a: 'Laporan baru akan ditinjau oleh pengelola sebelum ditayangkan. Setelah diverifikasi, status akan diperbarui menjadi "Dalam Penanganan" hingga selesai.',
   },
   {
     q: 'Apakah saya bisa mengubah laporan yang sudah dikirim?',
-    a: 'Laporan yang sudah dikirim tidak dapat diubah untuk menjaga integritas audit log. Jika ada pembaruan, Anda dapat menambahkan catatan pada detail laporan.',
+    a: 'Laporan yang sudah dikirim tidak dapat diubah untuk menjaga integritas laporan. Jika ada pembaruan, Anda dapat menambahkan catatan pada detail laporan.',
   },
 ];
 

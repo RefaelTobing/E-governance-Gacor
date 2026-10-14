@@ -42,11 +42,11 @@ export const PetugasLapanganPage = () => {
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Daftar Petugas Lapangan</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
-            Tim teknis dan regu pemeliharaan fasilitas ruang terbuka hijau.
+            Daftar petugas pemeliharaan fasilitas ruang terbuka hijau.
           </p>
         </div>
-        <Button variant="primary" size="sm" onClick={() => alert('Tambah Tim Petugas')}>
-          + Tambah Regu Petugas
+        <Button variant="primary" size="sm" onClick={() => alert('Tambah Petugas')}>
+          + Tambah Petugas
         </Button>
       </div>
 
@@ -87,8 +87,8 @@ export const PetugasLapanganPage = () => {
                   <div><strong>Jumlah Anggota:</strong> {p.anggota} Orang</div>
                   <div style={{ marginTop: '4px' }}><strong>Tugas Saat Ini:</strong> {p.tugas}</div>
                 </div>
-                <Button variant="outline" size="sm" fullWidth onClick={() => alert(`Kontak regu: ${p.nama}`)}>
-                  📞 Hubungi Regu
+                <Button variant="outline" size="sm" fullWidth onClick={() => alert(`Kontak petugas: ${p.nama}`)}>
+                  📞 Hubungi Petugas
                 </Button>
               </CardBody>
             </Card>
@@ -98,8 +98,8 @@ export const PetugasLapanganPage = () => {
         <EmptyState
           title="Tidak Ada Petugas Terdata"
           description="Daftar petugas lapangan operasional saat ini belum tersedia."
-          actionLabel="Tambah Regu Petugas"
-          onAction={() => alert('Tambah Tim Petugas')}
+          actionLabel="Tambah Petugas"
+          onAction={() => alert('Tambah Petugas')}
         />
       )}
     </div>

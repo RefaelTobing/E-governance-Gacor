@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RotateCcw, MapPin } from 'lucide-react';
 import { MOCK_WILAYAH, MOCK_MODERASI_STATS } from '../../../data/mockData';
 import { Button, Card, CardBody, StatusBadge, SearchInput, EmptyState, Skeleton } from '../../../components';
-import { getReports, getModerasiStats } from '../../../services/laporanService';
+import { getAdminReports, getModerasiStats } from '../../../services/laporanService';
 
 export const AntrianModerasiPage = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export const AntrianModerasiPage = () => {
       setIsLoading(true);
       try {
         const [reportsData, statsData] = await Promise.all([
-          getReports(),
+          getAdminReports(),
           getModerasiStats()
         ]);
         if (isMounted) {
@@ -170,7 +170,7 @@ export const AntrianModerasiPage = () => {
                         <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}, <span className="text-caption">{row.wilayah}</span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{row.jenisMasalah.split('/')[0]}</span>
+                        <span className="badge badge-neutral">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}>

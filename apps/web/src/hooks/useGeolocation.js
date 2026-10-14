@@ -99,7 +99,7 @@ export const useGeolocation = () => {
       console.warn('[useGeolocation] kode:', err.code, 'pesan:', err.message);
       if (!masihBerlaku()) return;
 
-      // Akurasi tinggi sering gagal di laptop tanpa GPS; fallback ke
+      // Mode GPS high-accuracy sering gagal di laptop tanpa GPS; fallback ke
       // perkiraan berbasis jaringan sebelum menyatakan gagal.
       if (!sudahCobaUlang && (err.code === TIDAK_TERSEDIA || err.code === HABIS_WAKTU)) {
         baca(OPSI_AKURASI_JARINGAN, senyap, true);

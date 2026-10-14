@@ -8,7 +8,8 @@ import {
   User,
   LogOut,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Flag
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
@@ -59,6 +60,12 @@ export const AdminLayout = () => {
                 className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               >
                 <ClipboardList size={18} /> Daftar Laporan
+              </NavLink>
+              <NavLink
+                to="/dashboard/laporan-terflag"
+                className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+              >
+                <Flag size={18} /> Laporan Ditandai
               </NavLink>
               <NavLink
                 to="/dashboard/fasilitas"
@@ -140,9 +147,6 @@ export const AdminLayout = () => {
             zIndex: 30
           }}
         >
-          <div className="text-small" style={{ fontWeight: 600, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Globe size={16} color="var(--color-primary)" /> DISTRIK TERPADU • WILAYAH DKI JAKARTA
-          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span className="badge badge-success">● Petugas Operasional</span>
             <Link to="/home" target="_blank" style={{ fontSize: '13px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>

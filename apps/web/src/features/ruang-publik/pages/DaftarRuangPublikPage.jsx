@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Globe, RotateCcw, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
-import { Button, SearchInput, SelectDropdown, MultiSelectDropdown, Card, CardBody, StatusBadge, CategoryChip, EmptyState, Skeleton } from '../../../components';
+import { Button, SearchInput, SelectDropdown, MultiSelectDropdown, Card, CardBody, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import { getFacilityOptions } from '../../../services/fasilitasService';
 import { JAKARTA_CENTER, DEFAULT_RADIUS_KM } from '../../../config/constants';
@@ -516,7 +516,6 @@ export const DaftarRuangPublikPage = () => {
           <span className="text-small" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <MapPin size={16} color="#0F766E" /> Peta Sebaran Lokasi (Sesuai Radius & Filter)
           </span>
-          <span className="badge badge-info">Pin Terverifikasi Pemprov</span>
         </div>
         <PetaSebaranLokasi
           items={filteredList}
@@ -592,7 +591,6 @@ export const DaftarRuangPublikPage = () => {
                           </span>
                         )}
                       </div>
-                      <StatusBadge status="baik" customLabel="Terverifikasi" />
                     </div>
 
                     {/* Facility Summary Pills */}

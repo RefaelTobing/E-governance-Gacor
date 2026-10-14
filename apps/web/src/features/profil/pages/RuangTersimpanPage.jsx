@@ -74,7 +74,7 @@ export const RuangTersimpanPage = () => {
           <Bookmark size={36} color="var(--color-text-light)" aria-hidden="true" />
           <h3 className="h3">Belum Ada Ruang Disimpan</h3>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
-            Simpan taman atau ruang publik favorit Anda untuk mengaksesnya dengan cepat.
+            Simpan taman atau ruang publik untuk mengaksesnya dengan cepat.
           </p>
           <button
             type="button"

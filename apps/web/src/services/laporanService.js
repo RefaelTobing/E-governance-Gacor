@@ -4,19 +4,35 @@ import { MOCK_LAPORAN, MOCK_DASHBOARD_STATS, MOCK_MODERASI_STATS } from '../data
 
 // Helper: normalisasi response backend (snake_case) ke bentuk FE (camelCase).
 const transformLaporanResponse = (raw) => {
+  const createdAt = raw.created_at;
   return {
     id: raw.id,
     status: raw.status,
     user: raw.user,
-    createdAt: raw.created_at,
+    // Pemilik laporan (dipakai untuk menyembunyikan aksi flag pada laporan sendiri).
+    userId: raw.user_id,
+    createdAt,
     updatedAt: raw.updated_at,
+    // Tanggal ringkas siap tampil (fallback aman bila created_at kosong/invalid).
+    tanggal: createdAt
+      ? new Date(createdAt).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '',
     ruang_publik_id: raw.ruang_publik_id,
+    ruangPublikId: raw.ruang_publik_id,
     namaPelapor: raw.nama_pelapor,
     modeIdentitas: raw.mode_identitas,
     jenisMasalah: raw.jenis_masalah,
     deskripsi: raw.deskripsi,
     foto: assetUrl(raw.foto_url),
     fotoUrl: raw.foto_url,
+    // Alasan penolakan (BE-30) — tampil di daftar/detail moderasi.
+    alasanPenolakan: raw.alasan_penolakan,
+    // Jumlah pelapor berbeda yang menandai (hanya terisi di endpoint flagged, BE-31).
+    flagCount: raw.flag_count ?? 0,
     // Field turunan dari relasi (disediakan backend pada response laporan)
     ruangPublikNama: raw.ruang_publik_nama,
     fasilitasNama: raw.fasilitas_nama,
@@ -74,11 +90,104 @@ export const getReports = async (params = {}) => {
 };
 
 /**
- * Ambil daftar laporan milik pengguna (citizen user reports).
+ * Ambil riwayat laporan milik pengguna yang sedang login (BE-50, "Laporan Saya").
+ *
+ * Endpoint `/reports/mine` WAJIB Authorization (token dipasang otomatis oleh
+ * request interceptor). Mengembalikan SEMUA status (termasuk
+ * menunggu_verifikasi/ditolak) milik pemanggil saja, bukan laporan publik.
+ *
+ * Sengaja TANPA fallback mock: kegagalan (401 sesi berakhir, backend mati) harus
+ * terlihat, bukan berubah jadi daftar kosong yang menyesatkan (lihat §14 prinsip
+ * kerja "jangan menyembunyikan kegagalan").
+ *
  * @param {Object} [params]
+ * @param {string} [params.status]  - Status kanonik atau "semua"
+ * @param {string} [params.wilayah]
+ * @param {string} [params.q]
+ * @param {number} [params.skip]
+ * @param {number} [params.limit]
  */
 export const getUserReports = async (params = {}) => {
-  return await getReports(params);
+  const { status, wilayah, q, skip, limit } = params;
+
+  const rawItems = await api.get('/api/v1/reports/mine', {
+    status: status && status !== 'semua' ? status : undefined,
+    wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
+    q: q || undefined,
+    skip,
+    limit,
+  });
+
+  return (Array.isArray(rawItems) ? rawItems : []).map(transformLaporanResponse);
+};
+
+/**
+ * Ambil antrian laporan untuk admin (BE-28/BE-52).
+ * Berbeda dari `getReports` (hanya laporan tayang), endpoint ini mengembalikan
+ * SEMUA status termasuk `menunggu_verifikasi`, sehingga admin melihat antrian
+ * tinjauan yang sebenarnya.
+ *
+ * @param {Object} params
+ * @param {string} [params.status]  - Status kanonik atau "semua" (nilai asing -> 422)
+ * @param {string} [params.wilayah]
+ * @param {string} [params.q]
+ * @param {number} [params.skip]
+ * @param {number} [params.limit]
+ */
+export const getAdminReports = async (params = {}) => {
+  const { status, wilayah, q, skip, limit } = params;
+
+  const rawData = await api.get('/api/v1/admin/reports', {
+    status: status && status !== 'semua' ? status : undefined,
+    wilayah: wilayah && wilayah !== 'Semua Wilayah' ? wilayah : undefined,
+    q: q || undefined,
+    skip,
+    limit,
+  });
+
+  const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
+  return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Ambil laporan tayang untuk satu ruang publik (BE: GET /public-spaces/{id}/reports).
+ * Dipakai section "Pembaruan Partisipasi Warga" di halaman detail ruang publik.
+ *
+ * @param {string} ruangPublikId
+ * @param {Object} [params] - { skip, limit }
+ */
+export const getSpaceReports = async (ruangPublikId, params = {}) => {
+  const { skip, limit } = params;
+  const rawData = await api.get(`/api/v1/public-spaces/${ruangPublikId}/reports`, { skip, limit });
+  const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
+  return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Ambil daftar laporan yang ditandai (flagged) pengguna (BE-31).
+ * Terpisah dari antrian; urut `flag_count` desc dari backend. Tiap item
+ * membawa `flagCount` (jumlah pelapor berbeda). Pagination `skip`/`limit`.
+ *
+ * @param {Object} params
+ * @param {number} [params.skip]
+ * @param {number} [params.limit]
+ */
+export const getFlaggedReports = async (params = {}) => {
+  const { skip, limit } = params;
+  const rawData = await api.get('/api/v1/admin/reports/flagged', { skip, limit });
+  const rawItems = Array.isArray(rawData) ? rawData : rawData?.items ?? [];
+  return rawItems.map((item) => transformLaporanResponse(item));
+};
+
+/**
+ * Tandai laporan tayang sebagai tidak pantas (FEAT-011/BE-25).
+ * Wajib login; satu flag per pengguna (409 bila sudah menandai).
+ *
+ * @param {string} id
+ * @returns {Promise<{laporan_id: string, flag_count: number}>}
+ */
+export const flagReport = async (id) => {
+  return await api.post(`/api/v1/reports/${id}/flag`);
 };
 
 /**
@@ -127,7 +236,40 @@ export const createReport = async (reportData) => {
  * @param {Object} updateData
  */
 export const updateReportStatus = async (id, updateData) => {
-  return await api.patch(`/api/v1/reports/${id}/status`, updateData);
+  const raw = await api.patch(`/api/v1/reports/${id}/status`, updateData);
+  return transformLaporanResponse(raw);
+};
+
+/**
+ * Setujui laporan (BE-29): status -> `diverifikasi` (tayang) + timeline.
+ * Guard backend: hanya `menunggu_verifikasi`/`ditolak`; status tayang -> 409.
+ *
+ * @param {string} id
+ * @param {string} [description] - catatan petugas opsional (tanpa catatan -> tanpa body)
+ * @returns {Promise<Object>} laporan detail ternormalisasi
+ */
+export const approveReport = async (id, description) => {
+  const catatan = typeof description === 'string' ? description.trim() : '';
+  const raw = await api.post(
+    `/api/v1/admin/reports/${id}/approve`,
+    catatan ? { description: catatan } : undefined
+  );
+  return transformLaporanResponse(raw);
+};
+
+/**
+ * Tolak laporan (BE-30): status -> `ditolak` + `alasan_penolakan` tersimpan.
+ * Alasan WAJIB (kosong/whitespace -> 422 di backend).
+ *
+ * @param {string} id
+ * @param {string} alasan
+ * @returns {Promise<Object>} laporan detail ternormalisasi
+ */
+export const rejectReport = async (id, alasan) => {
+  const raw = await api.post(`/api/v1/admin/reports/${id}/reject`, {
+    alasan: typeof alasan === 'string' ? alasan.trim() : '',
+  });
+  return transformLaporanResponse(raw);
 };
 
 /**
