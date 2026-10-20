@@ -63,6 +63,9 @@ export const DetailModerasiPage = () => {
   const [rejectError, setRejectError] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
 
+  // Penampil foto ukuran penuh (FE-52).
+  const [isFotoBesar, setIsFotoBesar] = useState(false);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -323,9 +326,20 @@ export const DetailModerasiPage = () => {
               <div>
                 <span className="text-caption" style={{ fontWeight: 700, display: 'block', marginBottom: '8px' }}>BUKTI FOTO WARGA & POSISI TERDATA</span>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-                  <div style={{ height: '160px', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                    <img src={laporan.foto} alt="Bukti Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
+                  {laporan.foto ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsFotoBesar(true)}
+                      aria-label="Perbesar foto bukti"
+                      style={{ width: '100%', aspectRatio: '4 / 3', padding: 0, border: 'none', background: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', overflow: 'hidden', cursor: 'zoom-in', display: 'block' }}
+                    >
+                      <img src={laporan.foto} alt="Bukti Foto" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                    </button>
+                  ) : (
+                    <div style={{ width: '100%', aspectRatio: '4 / 3', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>Tidak ada foto bukti.</span>
+                    </div>
+                  )}
                   <div style={{ backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
                     <span className="text-caption" style={{ fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px', textAlign: 'center' }}>
                       <MapPin size={12} color="#0F766E" /> {laporan.wilayah || 'Wilayah belum tersedia'}
@@ -495,6 +509,34 @@ export const DetailModerasiPage = () => {
             {isRejecting ? 'Menolak…' : 'Tolak Laporan'}
           </Button>
         </div>
+      </Modal>
+
+      {/* PENAMPIL FOTO UKURAN PENUH (FE-52) */}
+      <Modal
+        open={isFotoBesar}
+        onClose={() => setIsFotoBesar(false)}
+        title="Bukti Foto Warga"
+        labelledBy="dialog-foto-title"
+        maxWidth="min(880px, 92vw)"
+        footer={
+          <>
+            <a
+              href={laporan.foto}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: 'var(--color-primary)' }}
+            >
+              Buka berkas asli <ExternalLink size={13} />
+            </a>
+            <Button variant="outline" onClick={() => setIsFotoBesar(false)}>Tutup</Button>
+          </>
+        }
+      >
+        <img
+          src={laporan.foto}
+          alt="Bukti foto ukuran penuh"
+          style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)' }}
+        />
       </Modal>
     </div>
   );

@@ -293,7 +293,7 @@ Ringkasan status:
 | FE-49 | ✅ | Halaman dimulai dari tengah saat berpindah rute |
 | FE-50 | ✅ | Hapus simbol yang tidak membawa informasi di judul dan label |
 | FE-51 | ✅ | Filter kondisi fasilitas publik jadi dropdown |
-| FE-52 | ❌ | Perbaikan tampilan foto bukti di halaman review laporan |
+| FE-52 | ✅ | Perbaikan tampilan foto bukti di halaman review laporan |
 | FE-53 | ❌ | Hapus atau ganti simbol di halaman Tentang |
 | FE-54 | ❌ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 
@@ -1550,7 +1550,7 @@ adalah filter **jenis** fasilitas (mis. toilet, jalur lari). Task ini menyangkut
 
 ### FE-52. Perbaikan tampilan foto bukti di halaman review laporan
 
-**Status:** ❌
+**Status:** ✅
 
 **Catatan penting tentang maksud permintaan:** permintaan aslinya berbunyi
 `gambar yang di review` dan kalimatnya terputus. Task ini disusun dari cacat nyata yang
@@ -1606,6 +1606,24 @@ halaman lain. Di `route-config.js` tidak ada rute bernama `review`. Kandidat ter
 1. Buka `/dashboard/moderasi/:laporanId` dengan akun admin untuk laporan yang punya foto.
 2. Uji juga laporan tanpa foto, pastikan tidak ada ikon gambar rusak.
 3. Buka `/laporan-saya`, `/laporan-saya/:id`, dan galeri detail ruang publik.
+
+**Bukti verifikasi (browser, dev server `localhost:5199`):**
+
+1. Fixture sementara: 2 laporan milik admin (A berfoto portrait 600x900, B tanpa foto)
+   dan 2 foto galeri; setelah verifikasi dihapus dan basisdata kembali kosong.
+2. Halaman verifikasi A: foto `objectFit: contain` dalam kotak 4:3 sehingga seluruh foto
+   terlihat; klik foto membuka modal ukuran penuh (`maxHeight 70vh`) dengan tautan
+   `Buka berkas asli`; `Escape` dan `Enter` pada thumbnail berfungsi.
+3. Halaman verifikasi B: teks "Tidak ada foto bukti." menggantikan gambar, tanpa ikon rusak.
+4. Riwayat laporan: thumbnail tetap `cover` dan bisa diklik ke modal; kartu tanpa foto
+   menampilkan "Tidak ada foto bukti.".
+5. Detail status laporan: foto tetap `cover` dengan tombol perbesar; laporan tanpa foto
+   memakai keadaan kosong lama.
+6. Galeri detail ruang publik: lightbox dan navigasi Sebelumnya/Berikutnya tetap berjalan.
+7. Mobile 390px: kotak foto tetap 4:3 dan modal muat di viewport. Overflow horizontal
+   halaman admin berasal dari `AdminLayout` (sidebar 260px tanpa breakpoint, sudah ada
+   sebelum FE-52; halaman daftar moderasi juga 508px), di luar lingkup task ini.
+8. `npm run build` lulus, tanpa exception konsol.
 
 ---
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight, AlertTriangle, Eye } from 'lucide-react';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
+import { ShieldCheck, ClipboardList, Tag, Calendar, MapPin, RefreshCw, ArrowRight, AlertTriangle, Eye, ExternalLink } from 'lucide-react';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
 import { getUserReports } from '../../../services/laporanService';
 
 // Format tanggal ISO -> "12 Sep 2026" (fallback '' bila kosong/invalid).
@@ -19,6 +19,7 @@ export const RiwayatLaporanPage = () => {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fotoDiperbesar, setFotoDiperbesar] = useState(null);
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
@@ -238,9 +239,20 @@ export const RiwayatLaporanPage = () => {
           {filteredLaporan.map((item) => (
             <Card key={item.id} hoverable>
               <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr' }}>
-                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start' }}>
-                  <img src={item.foto} alt={item.fasilitasNama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
+                {item.foto ? (
+                  <button
+                    type="button"
+                    onClick={() => setFotoDiperbesar({ src: item.foto, alt: item.fasilitasNama })}
+                    aria-label={`Perbesar foto bukti ${item.fasilitasNama}`}
+                    style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}
+                  >
+                    <img src={item.foto} alt={item.fasilitasNama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </button>
+                ) : (
+                  <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>Tidak ada foto bukti.</span>
+                  </div>
+                )}
 
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
@@ -305,6 +317,35 @@ export const RiwayatLaporanPage = () => {
           onAction={() => setActiveTab('semua')}
         />
       )}
+
+      <Modal
+        open={!!fotoDiperbesar}
+        onClose={() => setFotoDiperbesar(null)}
+        title="Bukti Foto"
+        labelledBy="dialog-foto-riwayat-title"
+        maxWidth="min(880px, 92vw)"
+        footer={
+          <>
+            <a
+              href={fotoDiperbesar?.src}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: 'var(--color-primary)' }}
+            >
+              Buka berkas asli <ExternalLink size={13} />
+            </a>
+            <Button variant="outline" onClick={() => setFotoDiperbesar(null)}>Tutup</Button>
+          </>
+        }
+      >
+        {fotoDiperbesar && (
+          <img
+            src={fotoDiperbesar.src}
+            alt={fotoDiperbesar.alt}
+            style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)' }}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

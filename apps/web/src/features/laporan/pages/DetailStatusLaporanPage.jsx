@@ -7,9 +7,10 @@ import {
   Trees,
   Armchair,
   AlertTriangle,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, StepperAlur } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, StepperAlur, Modal } from '../../../components';
 import { getReportDetail } from '../../../services/laporanService';
 import { URUTAN_STATUS_LAPORAN } from '../../../config/constants';
 
@@ -19,6 +20,7 @@ export const DetailStatusLaporanPage = () => {
 
   const [laporan, setLaporan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFotoBesar, setIsFotoBesar] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -196,9 +198,14 @@ export const DetailStatusLaporanPage = () => {
                 <span className="text-caption" style={{ fontWeight: 700 }}>{laporan.foto ? 1 : 0} Berkas Foto</span>
               </div>
               {laporan.foto ? (
-                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsFotoBesar(true)}
+                  aria-label="Perbesar foto dokumentasi"
+                  style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '8px', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', display: 'block' }}
+                >
                   <img src={laporan.foto} alt={`Dokumentasi ${laporan.fasilitasNama || 'fasilitas'}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
+                </button>
               ) : (
                 <div style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
                   <span className="text-caption">Tidak ada foto bukti.</span>
@@ -232,6 +239,33 @@ export const DetailStatusLaporanPage = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={isFotoBesar}
+        onClose={() => setIsFotoBesar(false)}
+        title="Bukti Dokumentasi Warga"
+        labelledBy="dialog-foto-dokumentasi-title"
+        maxWidth="min(880px, 92vw)"
+        footer={
+          <>
+            <a
+              href={laporan.foto}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: 'var(--color-primary)' }}
+            >
+              Buka berkas asli <ExternalLink size={13} />
+            </a>
+            <Button variant="outline" onClick={() => setIsFotoBesar(false)}>Tutup</Button>
+          </>
+        }
+      >
+        <img
+          src={laporan.foto}
+          alt="Dokumentasi ukuran penuh"
+          style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)' }}
+        />
+      </Modal>
     </div>
   );
 };
