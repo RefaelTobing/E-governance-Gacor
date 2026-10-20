@@ -62,7 +62,7 @@ export const Logo = ({
           lineHeight: 1.15,
         }}
       >
-        {/* Baris 1: Ruang (Slate 900) + Terbuka (Teal #0F766E) */}
+        {/* Baris 1: Ruang (text-main) + Terbuka (primary) */}
         <span
           style={{
             fontSize: config.fontSize,
@@ -73,8 +73,8 @@ export const Logo = ({
             lineHeight: 1.15,
           }}
         >
-          <span style={{ color: '#0F172A' }}>Ruang</span>
-          <span style={{ color: '#0F766E' }}>Terbuka</span>
+          <span style={{ color: 'var(--color-text-main)' }}>Ruang</span>
+          <span style={{ color: 'var(--color-primary)' }}>Terbuka</span>
         </span>
 
         {/* Baris 2: Sub-teks JAKARTA */}
@@ -82,7 +82,7 @@ export const Logo = ({
           <span
             style={{
               fontSize: config.subtitleSize,
-              color: '#64748B',
+              color: 'var(--color-text-muted)',
               fontWeight: 700,
               marginTop: config.subMarginTop,
               letterSpacing: '0.12em',

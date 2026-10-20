@@ -155,21 +155,21 @@ export const DetailStatusLaporanPage = () => {
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">RUANG PUBLIK</span>
                   <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Trees size={14} color="#0F766E" /> {laporan.ruangPublikNama}
+                    <Trees size={14} color="var(--color-primary)" /> {laporan.ruangPublikNama}
                   </div>
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
                   <span className="text-caption">FASILITAS TERKAIT</span>
                   <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Armchair size={14} color="#0F766E" /> {laporan.fasilitasNama}
+                    <Armchair size={14} color="var(--color-primary)" /> {laporan.fasilitasNama}
                   </div>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--color-danger-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', color: '#991B1B' }}>
-                <span className="text-caption" style={{ fontWeight: 700, color: '#991B1B' }}>JENIS KENDALA</span>
+              <div style={{ backgroundColor: 'var(--color-danger-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', color: 'var(--color-danger-text)' }}>
+                <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger-text)' }}>JENIS KENDALA</span>
                 <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <AlertTriangle size={14} color="#991B1B" /> {laporan.jenisMasalah}
+                  <AlertTriangle size={14} color="var(--color-danger-text)" /> {laporan.jenisMasalah}
                 </div>
               </div>
 

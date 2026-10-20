@@ -283,7 +283,7 @@ export const EditRuangPublikModal = ({ open, ruang, onClose, onSaved }) => {
         </div>
 
         {errorMsg && (
-          <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 12px', borderRadius: 'var(--radius-md)', marginTop: '12px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+          <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '10px 12px', borderRadius: 'var(--radius-md)', marginTop: '12px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
             <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
             <span>{errorMsg}</span>
           </div>

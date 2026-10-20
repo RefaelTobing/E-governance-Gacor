@@ -23,34 +23,34 @@ class ErrorBoundary extends React.Component {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'var(--color-bg-main)',
           padding: '20px'
         }}>
           <div style={{
             textAlign: 'center',
             maxWidth: '600px',
-            backgroundColor: 'white',
+            backgroundColor: 'var(--color-surface)',
             padding: '40px',
             borderRadius: 'var(--radius-lg)',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-              <AlertCircle size={48} color="#ef4444" />
+              <AlertCircle size={48} color="var(--color-danger)" />
             </div>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px', color: '#0f172a' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px', color: 'var(--color-text-main)' }}>
               Terjadi Kesalahan
             </h1>
-            <p style={{ color: '#64748b', marginBottom: '24px', lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '24px', lineHeight: 1.6 }}>
               Aplikasi mengalami kesalahan. Silakan refresh halaman atau hubungi tim support.
             </p>
-            <details style={{ textAlign: 'left', backgroundColor: '#f1f5f9', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-              <summary style={{ cursor: 'pointer', color: '#475569', fontWeight: 600 }}>
+            <details style={{ textAlign: 'left', backgroundColor: 'var(--color-neutral-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+              <summary style={{ cursor: 'pointer', color: 'var(--color-text-muted)', fontWeight: 600 }}>
                 Detail Error (untuk debugging)
               </summary>
               <pre style={{
                 marginTop: '12px',
                 fontSize: '12px',
-                color: '#64748b',
+                color: 'var(--color-text-muted)',
                 overflow: 'auto',
                 maxHeight: '200px'
               }}>
@@ -60,8 +60,8 @@ class ErrorBoundary extends React.Component {
             <button
               onClick={() => window.location.reload()}
               style={{
-                backgroundColor: '#0f766e',
-                color: 'white',
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-on-primary)',
                 padding: '10px 24px',
                 borderRadius: 'var(--radius-pill)',
                 border: 'none',

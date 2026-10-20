@@ -207,25 +207,25 @@ export const DashboardPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '10px 14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="text-small" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Wrench size={14} color="#0F766E" /> Fasilitas Rusak
+                  <Wrench size={14} color="var(--color-primary)" /> Fasilitas Rusak
                 </span>
                 <strong style={{ color: 'var(--color-primary)' }}>54 Kasus</strong>
               </div>
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '10px 14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="text-small" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Lightbulb size={14} color="#0F766E" /> Lampu Mati
+                  <Lightbulb size={14} color="var(--color-primary)" /> Lampu Mati
                 </span>
                 <strong style={{ color: 'var(--color-primary)' }}>42 Kasus</strong>
               </div>
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '10px 14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="text-small" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Droplets size={14} color="#0F766E" /> Masalah Kebersihan
+                  <Droplets size={14} color="var(--color-primary)" /> Masalah Kebersihan
                 </span>
                 <strong style={{ color: 'var(--color-primary)' }}>32 Kasus</strong>
               </div>
               <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '10px 14px', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="text-small" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Armchair size={14} color="#0F766E" /> Bangku Rusak
+                  <Armchair size={14} color="var(--color-primary)" /> Bangku Rusak
                 </span>
                 <strong style={{ color: 'var(--color-primary)' }}>20 Kasus</strong>
               </div>

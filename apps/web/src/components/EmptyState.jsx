@@ -41,7 +41,7 @@ export const EmptyState = ({
           marginBottom: 'var(--space-md)'
         }}
       >
-        {icon || <Search size={24} color="#0F766E" />}
+        {icon || <Search size={24} color="var(--color-primary)" />}
       </div>
       <h3 className="h3" style={{ marginBottom: 'var(--space-xs)' }}>{title}</h3>
       <p className="text-small" style={{ color: 'var(--color-text-muted)', maxWidth: '400px', marginBottom: actionLabel ? 'var(--space-lg)' : 0 }}>

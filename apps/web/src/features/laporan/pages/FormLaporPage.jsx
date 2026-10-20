@@ -357,8 +357,8 @@ export const FormLaporPage = () => {
             <div
               role="alert"
               style={{
-                backgroundColor: 'var(--color-danger-light, #fee2e2)',
-                color: 'var(--color-danger, #b91c1c)',
+                backgroundColor: 'var(--color-danger-light)',
+                color: 'var(--color-danger-text)',
                 padding: 'var(--space-md)',
                 borderRadius: 'var(--radius-md)',
                 marginBottom: 'var(--space-lg)',
@@ -379,7 +379,7 @@ export const FormLaporPage = () => {
                 </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-md)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-subtle, #f8fafc)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-main)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
                   <MapPin size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
                   <div>
                     <div className="text-caption" style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>RUANG PUBLIK</div>
@@ -387,7 +387,7 @@ export const FormLaporPage = () => {
                     <div className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{detail.alamat || detail.wilayah}</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-subtle, #f8fafc)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-main)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
                   <Tag size={20} color="var(--color-primary)" style={{ flexShrink: 0 }} />
                   <div>
                     <div className="text-caption" style={{ fontWeight: 700, color: 'var(--color-text-muted)' }}>FASILITAS</div>
@@ -510,8 +510,8 @@ export const FormLaporPage = () => {
                 <div
                   role="alert"
                   style={{
-                    backgroundColor: 'var(--color-danger-light, #fee2e2)',
-                    color: 'var(--color-danger, #b91c1c)',
+                    backgroundColor: 'var(--color-danger-light)',
+                    color: 'var(--color-danger-text)',
                     padding: '8px 12px',
                     borderRadius: 'var(--radius-md)',
                     marginBottom: '8px',
@@ -578,7 +578,7 @@ export const FormLaporPage = () => {
                         overflow: 'hidden',
                         display: 'flex',
                         justifyContent: 'center',
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: 'var(--color-bg-main)',
                       }}
                     >
                       <img
@@ -594,7 +594,7 @@ export const FormLaporPage = () => {
                         justifyContent: 'space-between',
                         width: '100%',
                         padding: '6px 12px',
-                        backgroundColor: 'var(--color-bg-subtle, #f1f5f9)',
+                        backgroundColor: 'var(--color-neutral-light)',
                         borderRadius: 'var(--radius-md)',
                         fontSize: '13px',
                         position: 'relative',
@@ -626,7 +626,7 @@ export const FormLaporPage = () => {
                 ) : (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                      <Camera size={28} color="#0F766E" />
+                      <Camera size={28} color="var(--color-primary)" />
                     </div>
                     <div
                       style={{
@@ -719,7 +719,7 @@ export const FormLaporPage = () => {
                 <div><strong>Status Penerangan:</strong> <StatusBadge status="perlu_perhatian" customLabel="Sebagian Butuh Pemeliharaan" /></div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--color-info-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px', fontSize: '12px', color: '#075985', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+              <div style={{ backgroundColor: 'var(--color-info-light)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px', fontSize: '12px', color: 'var(--color-info-text)', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                 <Info size={14} style={{ marginTop: '2px', flexShrink: 0 }} /> Laporan Anda diteruskan kepada pengelola ruang publik terkait. Terima kasih atas kepedulian Anda!
               </div>
 

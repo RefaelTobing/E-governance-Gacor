@@ -47,15 +47,15 @@ export const LaporanTerflagPage = () => {
         </div>
 
         <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
-          <span className="text-caption" style={{ fontWeight: 700, color: '#92400E' }}>TOTAL DITANDAI</span>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: '#92400E' }}>
+          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>TOTAL DITANDAI</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
             {isLoading ? '...' : `${list.length} Laporan`}
           </div>
         </div>
       </div>
 
       {errorMsg && (
-        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
           <span>{errorMsg}</span>
           <Button variant="outline" size="sm" onClick={muatData} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <RotateCcw size={14} /> Coba Lagi

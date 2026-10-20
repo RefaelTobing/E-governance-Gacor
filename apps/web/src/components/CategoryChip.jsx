@@ -58,9 +58,9 @@ export const CategoryChip = ({
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'all var(--transition-fast, 0.2s ease)',
-        backgroundColor: isActive ? '#0F766E' : '#FFFFFF',
-        color: isActive ? '#FFFFFF' : '#475569',
-        border: isActive ? '1px solid #0F766E' : '1px solid #E2E8F0',
+        backgroundColor: isActive ? 'var(--color-primary)' : 'var(--color-surface)',
+        color: isActive ? 'var(--color-on-primary)' : 'var(--color-text-muted)',
+        border: isActive ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
         boxShadow: isActive
           ? '0 2px 4px rgba(15, 118, 110, 0.2)'
           : '0 1px 2px rgba(0, 0, 0, 0.04)',
@@ -69,7 +69,7 @@ export const CategoryChip = ({
     >
       <IconComponent
         size={16}
-        color={isActive ? '#FFFFFF' : '#475569'}
+        color={isActive ? 'var(--color-on-primary)' : 'var(--color-text-muted)'}
         style={{ flexShrink: 0, transition: 'color 0.2s ease' }}
       />
       <span>{catLabel}</span>

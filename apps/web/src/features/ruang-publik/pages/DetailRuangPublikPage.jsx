@@ -497,7 +497,7 @@ export const DetailRuangPublikPage = () => {
                     <MapContainer
                       center={centerCoords}
                       zoom={15}
-                      style={{ height: '100%', width: '100%', filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
+                      style={{ height: '100%', width: '100%', filter: 'grayscale(20%) contrast(1.05)' }}
                       scrollWheelZoom={false}
                     >
                       <TileLayer
@@ -522,7 +522,7 @@ export const DetailRuangPublikPage = () => {
                         <Popup>
                           <div style={{ padding: '4px' }}>
                             <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{detail.nama}</strong>
-                            <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>{detail.alamat}</p>
+                            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: 0 }}>{detail.alamat}</p>
                           </div>
                         </Popup>
                       </Marker>
@@ -545,7 +545,7 @@ export const DetailRuangPublikPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', gap: '8px', flexWrap: 'wrap' }}>
               <div>
                 <h3 className="h3" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Map size={18} color="#0F766E" /> Peta Akses & Batas Kawasan
+                  <Map size={18} color="var(--color-primary)" /> Peta Akses & Batas Kawasan
                 </h3>
                 <p className="text-caption">{detail.alamat}</p>
               </div>
@@ -587,7 +587,7 @@ export const DetailRuangPublikPage = () => {
           <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <h3 className="h3" style={{ fontSize: '18px', marginBottom: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={18} color="#0F766E" /> Jam & Aksesibilitas Warga
+                <Clock size={18} color="var(--color-primary)" /> Jam & Aksesibilitas Warga
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: '8px' }}>
@@ -786,7 +786,7 @@ export const DetailRuangPublikPage = () => {
         </div>
 
         {flagError && (
-          <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AlertTriangle size={14} /> {flagError}
           </div>
         )}
@@ -873,7 +873,7 @@ export const DetailRuangPublikPage = () => {
         <CardBody style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-lg)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AlertTriangle size={24} color="#FFFFFF" />
+              <AlertTriangle size={24} color="var(--color-on-primary)" />
             </div>
             <div>
               <h3 className="h3" style={{ color: 'var(--color-text-main)' }}>Ada fasilitas yang bermasalah?</h3>

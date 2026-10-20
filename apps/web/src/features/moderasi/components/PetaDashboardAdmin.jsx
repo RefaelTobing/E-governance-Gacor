@@ -32,7 +32,7 @@ const createSpaceIcon = () => L.divIcon({
   popupAnchor: [0, -20],
 });
 
-// FE-08: Custom styling bubble cluster (konsisten dengan warna brand #0F766E).
+// FE-08: Custom styling bubble cluster (konsisten dengan warna brand primary).
 const createClusterCustomIcon = (cluster) => {
   const count = cluster.getChildCount();
   let size = 38;
@@ -173,18 +173,18 @@ const PetaDashboardAdmin = () => {
             <Marker key={space.id} position={[space.latitude, space.longitude]} icon={createSpaceIcon()}>
               <Popup minWidth={220}>
                 <div style={{ padding: '4px 0' }}>
-                  <strong style={{ display: 'block', marginBottom: '6px', color: '#0F172A' }}>{space.nama}</strong>
-                  <span style={{ display: 'block', marginBottom: '4px', color: '#475569', fontSize: '12px' }}>{space.alamat || 'Alamat belum tersedia'}</span>
-                  <span style={{ display: 'block', color: '#64748B', fontSize: '12px' }}>{space.wilayah || 'Wilayah belum tersedia'}</span>
-                  {space.verified && <span style={{ display: 'inline-block', marginTop: '8px', color: '#047857', fontSize: '11px', fontWeight: 700 }}>Ruang publik terverifikasi</span>}
+                  <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--color-text-main)' }}>{space.nama}</strong>
+                  <span style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.alamat || 'Alamat belum tersedia'}</span>
+                  <span style={{ display: 'block', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.wilayah || 'Wilayah belum tersedia'}</span>
+                  {space.verified && <span style={{ display: 'inline-block', marginTop: '8px', color: 'var(--color-success-text)', fontSize: '11px', fontWeight: 700 }}>Ruang publik terverifikasi</span>}
                 </div>
               </Popup>
             </Marker>
           ))}
         </MarkerClusterGroup>
       </MapContainer>
-      <div style={{ position: 'absolute', left: '12px', bottom: '12px', zIndex: 400, background: 'rgba(255,255,255,.95)', padding: '8px 10px', borderRadius: 'var(--radius-md)', boxShadow: '0 2px 8px rgba(15,23,42,.15)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#334155' }}>
-        <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0F766E' }} aria-hidden="true" />
+      <div style={{ position: 'absolute', left: '12px', bottom: '12px', zIndex: 400, background: 'var(--color-surface)', padding: '8px 10px', borderRadius: 'var(--radius-md)', boxShadow: '0 2px 8px rgba(15,23,42,.15)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-main)' }}>
+        <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-primary)' }} aria-hidden="true" />
         Semua ruang publik ({locations.length})
       </div>
     </div>

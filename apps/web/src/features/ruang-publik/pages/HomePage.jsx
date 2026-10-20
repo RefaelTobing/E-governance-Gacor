@@ -272,7 +272,7 @@ export const HomePage = () => {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
           .hero-dot-active {
-            background: #0F766E !important;
+            background: var(--color-primary) !important;
             width: 32px !important;
             box-shadow: 0 0 12px rgba(15, 118, 110, 0.9);
           }
@@ -461,7 +461,7 @@ export const HomePage = () => {
             <Card style={{ textAlign: 'left' }}>
               <CardBody>
                 <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Gamepad2 size={20} color="#0F766E" />
+                  <Gamepad2 size={20} color="var(--color-primary)" />
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Playground / Arena Bermain</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Ayunan, perosotan, dan lantai peredam benturan anak.</p>
@@ -472,7 +472,7 @@ export const HomePage = () => {
             <Card style={{ textAlign: 'left' }}>
               <CardBody>
                 <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Lightbulb size={20} color="#0F766E" />
+                  <Lightbulb size={20} color="var(--color-primary)" />
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Penerangan Jalur Taman</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Lampu pedestrian solar cell dan tiang penerangan utama.</p>
@@ -483,7 +483,7 @@ export const HomePage = () => {
             <Card style={{ textAlign: 'left' }}>
               <CardBody>
                 <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Droplets size={20} color="#0F766E" />
+                  <Droplets size={20} color="var(--color-primary)" />
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Fasilitas Sanitasi / Toilet</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Kebersihan toilet umum, kran air, dan wastafel cuci tangan.</p>
@@ -494,7 +494,7 @@ export const HomePage = () => {
             <Card style={{ textAlign: 'left' }}>
               <CardBody>
                 <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                  <Armchair size={20} color="#0F766E" />
+                  <Armchair size={20} color="var(--color-primary)" />
                 </div>
                 <h4 className="h3" style={{ fontSize: '16px', marginBottom: '6px' }}>Bangku & Meja Santai</h4>
                 <p className="text-caption" style={{ marginBottom: '12px' }}>Kenyamanan bangku taman kayu dan gazebo kanopi warga.</p>
@@ -518,7 +518,7 @@ export const HomePage = () => {
               <Card key={kat.judul} hoverable>
                 <CardBody>
                   <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                    <kat.Icon size={20} color="#0F766E" />
+                    <kat.Icon size={20} color="var(--color-primary)" />
                   </div>
                   <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{kat.kode}</span>
                   <h4 className="h3" style={{ fontSize: '16px', margin: '4px 0 6px' }}>{kat.judul}</h4>

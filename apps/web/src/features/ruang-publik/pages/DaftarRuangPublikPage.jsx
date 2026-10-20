@@ -339,7 +339,7 @@ export const DaftarRuangPublikPage = () => {
       {/* HEADER SECTION */}
       <div
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-2xl)',
@@ -514,7 +514,7 @@ export const DaftarRuangPublikPage = () => {
       <div className="card" style={{ marginBottom: 'var(--space-2xl)', overflow: 'hidden' }}>
         <div style={{ padding: 'var(--space-md) var(--space-lg)', backgroundColor: 'var(--color-bg-main)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="text-small" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <MapPin size={16} color="#0F766E" /> Peta Sebaran Lokasi (Sesuai Radius & Filter)
+            <MapPin size={16} color="var(--color-primary)" /> Peta Sebaran Lokasi (Sesuai Radius & Filter)
           </span>
         </div>
         <PetaSebaranLokasi
@@ -694,7 +694,7 @@ export const DaftarRuangPublikPage = () => {
                       borderRadius: 'var(--radius-pill)',
                       border: nomor === halamanAktif ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
                       backgroundColor: nomor === halamanAktif ? 'var(--color-primary)' : 'var(--color-surface)',
-                      color: nomor === halamanAktif ? '#FFFFFF' : 'var(--color-text-main)',
+                      color: nomor === halamanAktif ? 'var(--color-on-primary)' : 'var(--color-text-main)',
                       fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer'

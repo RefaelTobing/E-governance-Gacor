@@ -81,14 +81,14 @@ export const AntrianModerasiPage = () => {
 
         <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
           <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
-            <span className="text-caption" style={{ fontWeight: 700, color: '#92400E' }}>PERLU TINDAKAN</span>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: '#92400E' }}>
+            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>PERLU TINDAKAN</span>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
               {isLoading ? '...' : `${perluTindakanCount} Laporan`}
             </div>
           </div>
           <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-success)' }}>
-            <span className="text-caption" style={{ fontWeight: 700, color: '#065F46' }}>SELESAI PEKAN INI</span>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: '#065F46' }}>
+            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success-text)' }}>SELESAI PEKAN INI</span>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success-text)' }}>
               {isLoading ? '...' : `${selesaiPekanIniCount} Fasilitas`}
             </div>
           </div>

@@ -153,7 +153,7 @@ export const DetailFasilitasWargaPage = () => {
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
               <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={16} color="#0F766E" /> Posisi Fasilitas
+                <MapPin size={16} color="var(--color-primary)" /> Posisi Fasilitas
               </h4>
               {centerCoords ? (
                 <a

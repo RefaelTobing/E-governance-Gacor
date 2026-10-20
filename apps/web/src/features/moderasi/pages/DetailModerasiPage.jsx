@@ -306,8 +306,8 @@ export const DetailModerasiPage = () => {
 
               {/* ALASAN PENOLAKAN (BE-30) */}
               {laporan.alasanPenolakan && (
-                <div style={{ backgroundColor: 'var(--color-danger-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-xl)', color: '#991B1B' }}>
-                  <span className="text-caption" style={{ fontWeight: 700, color: '#991B1B' }}>
+                <div style={{ backgroundColor: 'var(--color-danger-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-xl)', color: 'var(--color-danger-text)' }}>
+                  <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger-text)' }}>
                     ALASAN PENOLAKAN
                   </span>
                   <p className="text-body" style={{ marginTop: '6px' }}>{laporan.alasanPenolakan}</p>
@@ -342,7 +342,7 @@ export const DetailModerasiPage = () => {
                   )}
                   <div style={{ backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
                     <span className="text-caption" style={{ fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px', textAlign: 'center' }}>
-                      <MapPin size={12} color="#0F766E" /> {laporan.wilayah || 'Wilayah belum tersedia'}
+                      <MapPin size={12} color="var(--color-primary)" /> {laporan.wilayah || 'Wilayah belum tersedia'}
                     </span>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(laporan.ruangPublikNama)}`}
@@ -384,7 +384,7 @@ export const DetailModerasiPage = () => {
               </div>
 
               {actionError && (
-                <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 12px', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '10px 12px', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                   <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
                   <span>{actionError}</span>
                 </div>

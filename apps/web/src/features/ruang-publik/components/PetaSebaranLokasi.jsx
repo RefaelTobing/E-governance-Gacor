@@ -139,12 +139,12 @@ const PetaSebaranLokasi = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'var(--color-bg-main)',
           gap: '12px',
           color: 'var(--color-text-muted)',
         }}
       >
-        <Loader size={28} style={{ animation: 'spin 1s linear infinite' }} color="#10b981" />
+        <Loader size={28} style={{ animation: 'spin 1s linear infinite' }} color="var(--color-success)" />
         <span className="text-small">Memuat peta sebaran lokasi...</span>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -169,7 +169,7 @@ const PetaSebaranLokasi = ({
               alignItems: 'center',
               gap: '6px',
               fontSize: '11px',
-              color: '#334155',
+              color: 'var(--color-text-main)',
               pointerEvents: 'none',
             }}
           >
@@ -200,8 +200,8 @@ const PetaSebaranLokasi = ({
               pointerEvents: 'none'
             }}
           >
-            <MapPin size={16} color="#64748B" />
-            <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
+            <MapPin size={16} color="var(--color-text-muted)" />
+            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
               Tidak ada lokasi untuk ditampilkan di peta
             </span>
           </div>
@@ -210,7 +210,7 @@ const PetaSebaranLokasi = ({
         <MapContainer
           center={mapCenter}
           zoom={DEFAULT_ZOOM}
-          style={{ height: '100%', width: '100%', zIndex: 0, filter: 'grayscale(70%) contrast(1.2) brightness(1.05)' }}
+          style={{ height: '100%', width: '100%', zIndex: 0, filter: 'grayscale(20%) contrast(1.05)' }}
           scrollWheelZoom={false}
         >
           <RecenterMap center={mapCenter} />
@@ -252,7 +252,7 @@ const PetaSebaranLokasi = ({
                 <div style={{ fontSize: '12px' }}>
                   <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> Lokasi Anda</strong>
                   {onSetManualLocation && (
-                    <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '11px' }}>
+                    <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: '11px' }}>
                       Geser pin atau klik peta untuk memindahkan lokasi acuan.
                     </p>
                   )}
@@ -276,21 +276,21 @@ const PetaSebaranLokasi = ({
               >
                 <Popup minWidth={200}>
                   <div style={{ padding: '4px 0' }}>
-                    <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0F172A' }}>
+                    <p style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: 'var(--color-text-main)' }}>
                       {item.nama}
                     </p>
-                    <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                       {item.alamat}
                     </p>
                     {item.jarak_km != null && (
-                      <p style={{ fontSize: '10px', color: '#047857', fontWeight: 600, marginBottom: '8px' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-success-text)', fontWeight: 600, marginBottom: '8px' }}>
                         {Number(item.jarak_km).toFixed(1)} km {hasUserLocation ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
                       </p>
                     )}
                     {item.kategori_id && (
                       <span style={{
                         fontSize: '10px', fontWeight: 700,
-                        backgroundColor: '#d1fae5', color: '#047857',
+                        backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-text)',
                         padding: '2px 8px', borderRadius: 'var(--radius-pill)',
                         display: 'inline-block', marginBottom: '8px'
                       }}>
@@ -302,7 +302,7 @@ const PetaSebaranLokasi = ({
                       onClick={() => navigate(`/ruang-publik/${item.id}`)}
                       className="ruang-publik-detail-button"
                       style={{
-                        backgroundColor: 'var(--color-accent, #F59E0B)',
+                        backgroundColor: 'var(--color-accent)',
                         color: 'white',
                         border: 'none',
                         borderRadius: 'var(--radius-pill)',

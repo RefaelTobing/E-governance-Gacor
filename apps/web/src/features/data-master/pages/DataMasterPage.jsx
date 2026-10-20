@@ -390,12 +390,12 @@ export const DataMasterPage = () => {
       <Card>
         <CardBody>
           {suksesMsg && (
-            <div role="status" aria-live="polite" style={{ backgroundColor: 'var(--color-success-light)', color: '#065F46', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px' }}>
+            <div role="status" aria-live="polite" style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-text)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px' }}>
               {suksesMsg}
             </div>
           )}
           {loadError && (
-            <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: '#991B1B', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <span>Gagal memuat data master: {loadError}</span>
               <Button variant="outline" size="sm" onClick={muatUlangMaster}>Coba lagi</Button>
             </div>

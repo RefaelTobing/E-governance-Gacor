@@ -14,7 +14,7 @@ export const NotFoundPage = () => {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-4xl)', paddingBottom: 'var(--space-4xl)' }}>
       <EmptyState
-        icon={<Compass size={24} color="#0F766E" />}
+        icon={<Compass size={24} color="var(--color-primary)" />}
         title="404 — Halaman Tidak Ditemukan"
         description="Alamat yang Anda tuju tidak tersedia atau sudah dipindahkan. Periksa kembali tautannya, atau kembali ke beranda."
         actionLabel="Kembali ke Beranda"

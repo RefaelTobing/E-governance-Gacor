@@ -68,7 +68,7 @@ export const RiwayatLaporanPage = () => {
 
         <div style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-md) var(--space-lg)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--color-primary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ClipboardList size={24} color="#0F766E" />
+            <ClipboardList size={24} color="var(--color-primary)" />
           </div>
           <div>
             <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>KONTRIBUSI KOMUNITAS</span>
@@ -273,7 +273,7 @@ export const RiwayatLaporanPage = () => {
 
                     {/* Pembaruan terakhir: alasan penolakan (bila ditolak) atau waktu update terakhir */}
                     {item.status === 'ditolak' && item.alasanPenolakan ? (
-                      <div style={{ backgroundColor: 'var(--color-danger-light, #FEE2E2)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-danger)' }}>
+                      <div style={{ backgroundColor: 'var(--color-danger-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-danger)' }}>
                         <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger)', marginBottom: '2px' }}>
                           ALASAN PENOLAKAN
                         </span>

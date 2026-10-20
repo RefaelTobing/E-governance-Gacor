@@ -295,7 +295,7 @@ Ringkasan status:
 | FE-51 | ✅ | Filter kondisi fasilitas publik jadi dropdown |
 | FE-52 | ✅ | Perbaikan tampilan foto bukti di halaman review laporan |
 | FE-53 | ✅ | Hapus atau ganti simbol di halaman Tentang |
-| FE-54 | ❌ | Perbaikan sistem warna: badge, mode gelap, dan palet |
+| FE-54 | ✅ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -1720,7 +1720,7 @@ yang tidak menambah informasi apa pun. Ini kandidat pembersihan pertama.
 
 ### FE-54. Perbaikan sistem warna: badge, mode gelap, dan palet
 
-**Status:** ❌
+**Status:** ✅
 
 **Gejala:** pewarnaan keseluruhan terasa seragam dan tidak bermakna. Ini temuan terukur,
 bukan soal selera.
@@ -1822,6 +1822,44 @@ antislop hanya menyaring dan hasilnya cenderung monoton.
 2. Aktifkan mode gelap di `/profil/tema`, lalu periksa semua halaman yang sama.
 3. Periksa kontras badge memakai `.agents/skills/antislop-human/contrast-check.py`.
 4. Periksa judul hero di `/home` pada tema terang dan gelap.
+
+**Bukti verifikasi (browser, dev server `localhost:5199`, Chrome CDP):**
+
+1. Badge bertinta di kedua tema. Token baru: `--color-warning-text`, `--color-info-text`,
+   `--color-neutral-light`, `--color-neutral-text`, `--color-on-primary` (nilai terpisah
+   untuk terang dan gelap). `.badge-success/warning/danger/info/neutral` tidak lagi memakai
+   `#FFFFFF`; latar memakai `--color-*-light`, teks memakai token teks, border memakai warna
+   status. Duplikat `.badge-neutral .badge-dot` dihapus.
+2. Kontras badge terukur (computed browser): terang 4,84 / 6,37 / 5,30 / 5,17 / 6,92; gelap
+   5,94 / 7,56 / 4,62 / 7,41 / 7,58 untuk success/warning/danger/info/neutral. Semua ≥4,5:1.
+3. Mode gelap: `/ruang-publik` dan `/dashboard/data-master` tidak lagi menampilkan badge putih
+   atau blok putih besar (`putihBesar: []`), termasuk 1.001 badge di data master. Chip kategori
+   aktif dan halaman pagination aktif memakai `--color-on-primary` (kontras 5,47 terang,
+   5,83 gelap).
+4. Literal warna JSX: dari 111 kemunculan hex di 22 file menjadi 12 kemunculan di 5 file,
+   semuanya kecualian yang disengaja: warna penanda/cluster/rute Leaflet (peta memakai tile
+   OSM terang, jadi warna penanda harus tetap terhadap citra) dan latar/teks putih di atas
+   foto hero. Seluruh `rgba()` yang tersisa adalah bayangan, overlay foto, atau backdrop modal.
+   Fallback hex di dalam `var(--…, #…)` dihapus; token `--color-bg-subtle` yang tidak pernah
+   didefinisikan diganti `--color-bg-main`/`--color-neutral-light`.
+5. Judul hero: aturan gradien dibungkus `@supports (background-clip: text)` dengan warna solid
+   `#5EEAD4` sebagai cadangan, sehingga `-webkit-text-fill-color: transparent` tidak lagi
+   diterapkan tanpa dukungan. Terang dan gelap: gradien aktif, teks terlihat.
+6. Peta: filter `grayscale(70%) contrast(1.2) brightness(1.05)` menjadi
+   `grayscale(20%) contrast(1.05)` di kedua peta.
+7. Slider radius pada `/ruang-publik` tidak lagi membawa latar putih bawaan browser di mode
+   gelap (`input[type="range"] { background-color: transparent; }`).
+8. Mobile 390px: tanpa overflow horizontal pada `/ruang-publik`; badge tetap bertinta.
+   Catatan: pengukuran `mobile:false` menyisakan scrollbar desktop (clientWidth 375 vs
+   innerWidth 390) sehingga selisih 14px pada toolbar filter hanya artefak pengujian, bukan
+   overflow di perangkat sungguhan.
+9. `npm run build` lulus (2,70 s), tanpa exception JS di konsol. `npm test` tidak dapat
+   dijalankan karena `vitest` dideklarasikan di `package.json` tetapi tidak terpasang di
+   `node_modules` (kondisi lingkungan lama, bukan akibat FE-54).
+10. Bagian dokumen sengaja tidak diubah (keputusan pengguna): `DESIGN.md` belum dirujuk
+    `AGENTS.md`, dan skill `antislop-ui`/`antislop-layoutmobile` belum ada. Koreksi temuan 7:
+    `AGENTS.md` tidak pernah menunjuk kedua skill itu; rujukan hanya ada di
+    `antislop/SKILL.md` sebagai pilihan opsional.
 
 ---
 

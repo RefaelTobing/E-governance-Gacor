@@ -137,14 +137,14 @@ export const LoginPage = () => {
 
           {/* Success Message */}
           {successMsg && (
-            <div style={{ padding: '12px', backgroundColor: '#D1FAE5', color: '#065F46', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
+            <div style={{ padding: '12px', backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-text)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
               {successMsg}
             </div>
           )}
 
           {/* Error Message */}
           {errorMsg && (
-            <div style={{ padding: '12px', backgroundColor: '#FEE2E2', color: '#B91C1C', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
+            <div style={{ padding: '12px', backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
               {errorMsg}
             </div>
           )}

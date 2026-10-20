@@ -24,6 +24,11 @@
      jadi pesan kecil memakai varian gelap ini agar lolos WCAG AA 4,5:1. */
   --color-success-text: #047857;
   --color-danger-text: #B91C1C;
+  --color-warning-text: #92400E;
+  --color-info-text: #0369A1;
+  --color-neutral-light: #F1F5F9;
+  --color-neutral-text: #475569;
+  --color-on-primary: #FFFFFF;
 
   /* Neutral Tokens */
   --color-text-main: #0F172A;
@@ -91,6 +96,11 @@
 
   --color-success-text: #34D399;
   --color-danger-text: #F87171;
+  --color-warning-text: #FCD34D;
+  --color-info-text: #7DD3FC;
+  --color-neutral-light: rgba(148, 163, 184, 0.15);
+  --color-neutral-text: #CBD5E1;
+  --color-on-primary: #042F2C;
 }
 
 /* Base Reset */
@@ -413,8 +423,8 @@ h3, .h3 {
   padding: 3px 9px;
   border-radius: var(--radius-pill);
   line-height: 1.2;
-  background-color: #FFFFFF;
-  border: 1px solid var(--color-border, #E2E8F0);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -427,53 +437,49 @@ h3, .h3 {
 }
 
 .badge-success {
-  background-color: #FFFFFF;
-  color: #047857;
-  border-color: #E2E8F0;
+  background-color: var(--color-success-light);
+  color: var(--color-success-text);
+  border-color: var(--color-success);
 }
 
 .badge-success .badge-dot {
-  background-color: #10B981;
+  background-color: var(--color-success);
 }
 
 .badge-warning {
-  background-color: #FFFBEB;
-  color: #B45309;
-  border-color: #FDE68A;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning);
 }
 
 .badge-warning .badge-dot {
-  background-color: #F59E0B;
+  background-color: var(--color-warning);
 }
 
 .badge-danger {
-  background-color: #FFFFFF;
-  color: #DC2626;
-  border-color: #E2E8F0;
+  background-color: var(--color-danger-light);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger);
 }
 
 .badge-danger .badge-dot {
-  background-color: #EF4444;
+  background-color: var(--color-danger);
 }
 
 .badge-info {
-  background-color: #FFFFFF;
-  color: #0284C7;
-  border-color: #E2E8F0;
+  background-color: var(--color-info-light);
+  color: var(--color-info-text);
+  border-color: var(--color-info);
 }
 
 .badge-info .badge-dot {
-  background-color: #0284C7;
+  background-color: var(--color-info);
 }
 
 .badge-neutral {
-  background-color: #FFFFFF;
-  color: var(--color-text-muted);
-  border-color: #E2E8F0;
-}
-
-.badge-neutral .badge-dot {
-  background-color: #94A3B8;
+  background-color: var(--color-neutral-light);
+  color: var(--color-neutral-text);
+  border-color: var(--color-border);
 }
 
 .badge-neutral .badge-dot {
@@ -673,6 +679,11 @@ h3, .h3 {
 
 .form-input::placeholder, .form-textarea::placeholder {
   color: var(--color-text-light);
+}
+
+/* Slider bawaan browser membawa latar putih; track digambar terpisah. */
+input[type="range"] {
+  background-color: transparent;
 }
 
 /* Navbar Styles */
@@ -1221,15 +1232,21 @@ h3, .h3 {
   border-radius: var(--radius-pill);
 }
 
-/* Hero search pill: hanya di hero beranda, agar halaman lain tetap radius standar */
+/* Judul hero bergradien: warna solid dipakai bila background-clip teks tidak
+   didukung, supaya judul tidak pernah berakhir transparan. */
 .hero-title-gradient {
   display: inline-block;
-  color: #2DD4BF;
-  background: linear-gradient(105deg, #5EEAD4 0%, #2DD4BF 48%, #FCD34D 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #5EEAD4;
   filter: drop-shadow(0 2px 10px rgba(45, 212, 191, 0.28));
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-title-gradient {
+    background: linear-gradient(105deg, #5EEAD4 0%, #2DD4BF 48%, #FCD34D 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
