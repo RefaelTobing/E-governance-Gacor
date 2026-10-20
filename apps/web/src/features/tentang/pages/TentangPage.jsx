@@ -6,16 +6,14 @@ import {
   ShieldCheck,
   Search,
   ChevronDown,
+  ArrowDown,
   Mail,
   Phone,
-  CheckCircle2,
   Gamepad2,
   Lightbulb,
   Droplets,
   Armchair,
   ArrowRight,
-  Trees,
-  Check,
   RotateCcw
 } from 'lucide-react';
 import { getHomeStatistics } from '../../../services/statsService';
@@ -211,7 +209,7 @@ export const TentangPage = () => {
                 fontWeight: 600
               }}
             >
-              <ChevronDown size={17} />
+              <ArrowDown size={17} />
               Cara Kerja Platform
             </button>
           </div>
@@ -221,7 +219,6 @@ export const TentangPage = () => {
             <div className="stat-bar" style={{ borderTop: 'none', paddingTop: 0 }}>
               {/* Stat 1 */}
               <div className="stat-cell">
-                <Trees size={22} color="var(--color-primary)" style={{ marginBottom: 'var(--space-xs)' }} />
                 <div className="stat-value" style={{ color: 'var(--color-primary)' }}>
                   {fmt(stats?.totalRuangPublik)}
                 </div>
@@ -230,7 +227,6 @@ export const TentangPage = () => {
 
               {/* Stat 2 */}
               <div className="stat-cell">
-                <CheckCircle2 size={22} color="var(--color-success)" style={{ marginBottom: 'var(--space-xs)' }} />
                 <div className="stat-value" style={{ color: 'var(--color-success-text)' }}>
                   {fmt(metrics?.statusPrima)}
                 </div>
@@ -239,7 +235,6 @@ export const TentangPage = () => {
 
               {/* Stat 3 */}
               <div className="stat-cell">
-                <ClipboardList size={22} color="var(--color-accent)" style={{ marginBottom: 'var(--space-xs)' }} />
                 <div className="stat-value" style={{ color: 'var(--color-accent)' }}>
                   {fmt(stats?.laporanBulanIni)}
                 </div>
@@ -248,7 +243,6 @@ export const TentangPage = () => {
 
               {/* Stat 4 */}
               <div className="stat-cell">
-                <ShieldCheck size={22} color="var(--color-info)" style={{ marginBottom: 'var(--space-xs)' }} />
                 <div className="stat-value" style={{ color: 'var(--color-info)' }}>
                   {isLoadingStats ? '...' : (stats?.tingkatPenyelesaianPersen != null ? `${stats.tingkatPenyelesaianPersen}%` : '-')}
                 </div>
@@ -308,7 +302,6 @@ export const TentangPage = () => {
               {/* Banner Card RTH */}
               <div className="tentang-rth-banner">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-                  <Trees size={18} color="var(--color-primary)" />
                   <span>Ruang Terbuka Hijau DKI Jakarta</span>
                 </div>
                 <div style={{ color: 'var(--color-text-main)', fontWeight: 800, fontSize: '18px', lineHeight: 1.4, marginBottom: '8px' }}>
@@ -376,10 +369,10 @@ export const TentangPage = () => {
               </p>
 
               <ul className="tentang-feature-points">
-                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Data Koordinat Presisi</li>
-                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Galeri Foto Kondisi</li>
-                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Filter per Wilayah</li>
-                <li><Check size={14} color="var(--color-success)" aria-hidden="true" /> Akses Cepat Laporan</li>
+                <li>Data Koordinat Presisi</li>
+                <li>Galeri Foto Kondisi</li>
+                <li>Filter per Wilayah</li>
+                <li>Akses Cepat Laporan</li>
               </ul>
 
               <button
@@ -395,9 +388,6 @@ export const TentangPage = () => {
 
             {/* Kartu Pendukung: Status & Moderasi */}
             <article className="tentang-feature-card">
-              <div className="tentang-feature-icon">
-                <CheckCircle2 size={24} color="var(--color-primary)" aria-hidden="true" />
-              </div>
               <h3>Status Kondisi Terbuka</h3>
               <p>
                 Setiap fasilitas memiliki indikator kondisi terkini yang diperbarui secara transparan setelah penanganan oleh petugas lapangan.
@@ -405,9 +395,6 @@ export const TentangPage = () => {
             </article>
 
             <article className="tentang-feature-card">
-              <div className="tentang-feature-icon tentang-feature-icon-accent">
-                <ShieldCheck size={24} color="var(--color-accent)" aria-hidden="true" />
-              </div>
               <h3>Moderasi oleh Petugas Resmi</h3>
               <p>
                 Setiap laporan diverifikasi oleh petugas Dinas Pertamanan atau RPTRA untuk memastikan keabsahan dan penanganan yang tepat sasaran.

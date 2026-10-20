@@ -1447,10 +1447,6 @@ h3, .h3 {
   background-color: var(--color-primary-light);
 }
 
-.tentang-feature-card-main .tentang-feature-icon-accent {
-  background-color: var(--color-accent-light);
-}
-
 .tentang-feature-card h3 {
   margin: 0 0 var(--space-sm);
   color: var(--color-text-main);
@@ -1470,25 +1466,14 @@ h3, .h3 {
   line-height: 1.65;
 }
 
-.tentang-feature-icon-accent {
-  background-color: var(--color-accent-light);
-}
-
 .tentang-feature-points {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-md);
   margin: 0 0 var(--space-xl);
-  padding: 0;
+  padding-left: 20px;
   color: var(--color-text-main);
   font-size: 14px;
-  list-style: none;
-}
-
-.tentang-feature-points li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
 }
 
 .faq-contact-grid {

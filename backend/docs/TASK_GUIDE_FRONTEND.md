@@ -294,7 +294,7 @@ Ringkasan status:
 | FE-50 | ✅ | Hapus simbol yang tidak membawa informasi di judul dan label |
 | FE-51 | ✅ | Filter kondisi fasilitas publik jadi dropdown |
 | FE-52 | ✅ | Perbaikan tampilan foto bukti di halaman review laporan |
-| FE-53 | ❌ | Hapus atau ganti simbol di halaman Tentang |
+| FE-53 | ✅ | Hapus atau ganti simbol di halaman Tentang |
 | FE-54 | ❌ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
@@ -1629,7 +1629,7 @@ halaman lain. Di `route-config.js` tidak ada rute bernama `review`. Kandidat ter
 
 ### FE-53. Hapus atau ganti simbol di halaman Tentang
 
-**Status:** ❌
+**Status:** ✅
 
 **Temuan awal:** `TentangPage.jsx` bersih dari emoji. Jadi yang dimaksud simbol di sini
 adalah ikon.
@@ -1690,6 +1690,31 @@ yang tidak menambah informasi apa pun. Ini kandidat pembersihan pertama.
 - Tidak ada impor ikon yang menganggur.
 - Halaman tetap terbaca di desktop dan mobile.
 - `npm run build` dari `apps/web` lulus.
+
+**Bukti verifikasi (browser, dev server `localhost:5199` + build produksi `localhost:5201`):**
+
+1. Tombol `Cara Kerja Platform` memakai ikon `ArrowDown`; tidak ada lagi `ChevronDown`
+   di tombol itu. Klik tombol tetap menggulir ke bagian alur (posisi bagian 0px dari atas).
+2. Empat ikon pada baris statistik dihapus; keempat sel berisi angka dan label saja, tanpa
+   `svg`. Desktop tetap 4 kolom, mobile 390px menjadi 2 kolom tanpa overflow.
+3. Ikon `Trees` pada label banner RTH dihapus; label kapital berdiri sendiri.
+4. Kartu unggulan `Direktori Ruang Publik Jakarta` tetap memakai `MapPin`; dua kartu
+   pendukung (`Status Kondisi Terbuka`, `Moderasi oleh Petugas Resmi`) kini tanpa ikon.
+5. Empat ikon `Check` diganti daftar biasa: `listStyleType: disc`, `padding-left: 20px`,
+   empat butir tanpa `svg`, satu kolom di mobile.
+6. Ikon fungsional utuh: `ChevronDown` akordeon FAQ (buka/tutup berjalan, `aria-expanded`
+   berubah), `RotateCcw` pada `Coba lagi`, serta `Mail`/`Phone` pada tautan
+   `mailto:pengaduan@jakarta.go.id` dan `tel:1500164`.
+7. State error `Coba lagi` diuji pada build produksi (`vite preview`, `IS_DEV=false`) dengan
+   intercept CDP: saat kedua permintaan statistik gagal, banner "Sebagian statistik gagal
+   dimuat." muncul bersama ikon `RotateCcw`; setelah klik `Coba lagi`, banner hilang dan
+   nilai statistik terisi kembali. Tanpa exception JS.
+8. Impor `Trees`, `Check`, dan `CheckCircle2` dihapus; `ArrowDown` ditambahkan. Aturan CSS
+   `.tentang-feature-points li` dan kedua varian `.tentang-feature-icon-accent` yang menjadi
+   yatim ikut dihapus. `npm run build` lulus (2,83 s).
+9. Catatan di luar lingkup: pada build produksi logo tampil rusak karena `LogoRuka.png`
+   berada di `apps/web/` (root), bukan `public/`, sehingga tidak ikut tersalin oleh Vite.
+   Perilaku ini sudah ada sebelum FE-53 dan tidak diubah di task ini.
 
 ---
 
