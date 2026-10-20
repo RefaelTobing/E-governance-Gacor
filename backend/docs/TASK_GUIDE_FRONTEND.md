@@ -286,6 +286,7 @@ Ringkasan status:
 | FE-41 | ✅ | Pengaturan page size 10/20/50/100 |
 | FE-42 | ✅ | Status fasilitas HomePage jadi Baik |
 | FE-43 | ✅ | Tampilan session admin di navbar publik |
+| FE-45 | ❌ | Zoom pinch trackpad di peta (mengezoom halaman, bukan peta) |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -625,7 +626,140 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ---
 
+### FE-45. Zoom pinch trackpad di peta mengezoom halaman, bukan peta
+
+**Status:** ❌
+
+**Gejala:** di laptop, arahkan kursor ke peta OSM lalu lakukan pinch trackpad (dua jari
+keluar/masuk). Yang mengezoom bukan peta, melainkan halaman browser. Scroll biasa (dua
+jari geser) tetap normal.
+
+**Akar masalah:** Chromium menerjemahkan pinch trackpad menjadi event `wheel` dengan
+`ctrlKey = true`, bukan event sentuh. Jadi peta harus merebut event itu dan memanggil
+`preventDefault()`. Tiga dari empat peta mematikan handler wheel Leaflet:
+
+| File | Baris | Nilai |
+| --- | --- | --- |
+| `features/ruang-publik/components/PetaSebaranLokasi.jsx` | 213 | `scrollWheelZoom={false}` |
+| `features/ruang-publik/pages/DetailRuangPublikPage.jsx` | 417 | `scrollWheelZoom={false}` |
+| `features/moderasi/components/PetaDashboardAdmin.jsx` | 155 | `scrollWheelZoom={false}` |
+| `features/laporan/pages/FormLaporPage.jsx` | 661 | `scrollWheelZoom` (aktif) |
+
+Dengan `scrollWheelZoom: false`, Leaflet tidak memasang handler `wheel` sama sekali
+(`ScrollWheelZoom.removeHooks` memanggil `off(container, 'wheel', ...)` di
+`leaflet-src.js`). Tidak ada yang memanggil `preventDefault()`, sehingga browser bebas
+melakukan aksi defaultnya: zoom halaman.
+
+**Bukti verifikasi (browser, dev server `localhost:5173`):**
+
+1. `DOMDebugger.getEventListeners` pada `.leaflet-container` halaman `/ruang-publik`:
+   ada `scroll, click, dblclick, mousedown, mouseup, mouseover, mouseout, mousemove,
+   contextmenu, keypress, keydown, keyup, touchstart ×2, focus, blur`. Event `wheel`
+   **tidak ada**.
+2. Kirim `wheel` dengan `ctrlKey: true` pada kursor yang berada di atas peta:
+   `defaultPrevented = false`, level zoom tile peta tetap `13` (tidak berubah).
+
+Catatan: Leaflet 1.9.4 tidak membedakan `ctrl+wheel` dari wheel biasa; `getWheelDelta()`
+memperlakukan keduanya sama. Satu-satunya pembeda adalah kode kita sendiri.
+
+**File utama (baru):** `apps/web/src/components/PetaZoomPinch.jsx`
+
+**File terkait:**
+
+- `apps/web/src/components/index.js` (tambah barrel export)
+- `apps/web/src/features/ruang-publik/components/PetaSebaranLokasi.jsx`
+- `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+- `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
+
+**Penempatan komponen:** dipakai 3 peta di 2 fitur berbeda (ruang-publik dan moderasi),
+jadi sesuai `docs/CONVENTIONS.md` (aturan penempatan komponen) tempatnya di
+`components/` root, bukan di dalam salah satu fitur.
+
+**Pekerjaan:**
+
+1. Buat komponen `PetaZoomPinch` yang dirender **di dalam** `MapContainer` (memakai
+   `useMap()` dari `react-leaflet`). Komponen memasang listener `wheel` pada container
+   peta dengan `{ passive: false }`, dan **hanya** menangani event yang `ctrlKey === true`:
+
+```jsx
+import { useEffect } from 'react';
+import { useMap } from 'react-leaflet';
+
+/**
+ * Chromium mengirim pinch trackpad sebagai `wheel` + `ctrlKey`.
+ * Saat `scrollWheelZoom={false}`, Leaflet tidak memasang handler wheel sama sekali,
+ * sehingga browser mengezoom halaman. Komponen ini merebut hanya event pinch,
+ * dan membiarkan scroll biasa (tanpa ctrlKey) lewat supaya halaman tetap bisa digeser.
+ */
+const LANGKAH_ZOOM = 0.5;
+
+export const PetaZoomPinch = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const saatWheel = (event) => {
+      if (!event.ctrlKey) return;      // dua jari geser: biarkan halaman yang scroll
+      event.preventDefault();           // pinch: tahan zoom halaman
+
+      const arah = event.deltaY < 0 ? 1 : -1;
+      map.setZoomAround(
+        map.mouseEventToContainerPoint(event),
+        map.getZoom() + arah * LANGKAH_ZOOM
+      );
+    };
+
+    container.addEventListener('wheel', saatWheel, { passive: false });
+    return () => container.removeEventListener('wheel', saatWheel);
+  }, [map]);
+
+  return null;
+};
+
+export default PetaZoomPinch;
+```
+
+   Sketsa di atas adalah titik awal, bukan implementasi final yang sudah diuji.
+   Yang mengikat adalah kriteria penerimaan di bawah.
+
+2. Ekspor dari `apps/web/src/components/index.js`.
+3. Render `<PetaZoomPinch />` di dalam `MapContainer` pada ketiga peta:
+   `PetaSebaranLokasi.jsx`, `DetailRuangPublikPage.jsx`, dan `PetaDashboardAdmin.jsx`.
+4. **Pertahankan `scrollWheelZoom={false}`** di ketiga peta. Kalau diubah jadi aktif,
+   handler wheel Leaflet ikut terpasang dan terjadi penanganan ganda.
+5. Jangan menyentuh `FormLaporPage.jsx`: peta di sana sudah aktif dan perilakunya sudah
+   benar. Samakan hanya kalau memang ingin seragam, dan sebutkan alasannya.
+6. Zoom tetap dibatasi `minZoom`/`maxZoom` peta (otomatis oleh `setZoomAround`).
+
+**Acceptance criteria:**
+
+- Kursor di atas peta + pinch trackpad: level zoom **peta** berubah, halaman browser tidak mengezoom.
+- Zoom terjadi di sekitar titik kursor, bukan selalu di tengah peta.
+- Scroll biasa (dua jari geser, `ctrlKey` false) di atas peta tetap menggulir halaman; peta tidak ikut zoom.
+- Berlaku di ketiga peta (`/ruang-publik`, `/ruang-publik/:id`, `/dashboard`).
+- Zoom berhenti di batas minimum dan maksimum tanpa error.
+- Tidak ada error di console dan listener dibersihkan saat unmount (pindah halaman lalu kembali tanpa penumpukan listener).
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Jalankan `npm run dev` dari `apps/web` dan buka `/ruang-publik`.
+2. Arahkan kursor ke atas peta, lakukan pinch trackpad. Pastikan level zoom peta berubah
+   dan halaman tidak ikut mengezoom.
+3. Ulangi untuk scroll biasa di atas peta: halaman yang bergeser.
+4. Ulangi di `/ruang-publik/:id` (setelah login) dan `/dashboard` (akun admin).
+5. Periksa console browser tetap bersih setelah beberapa kali pindah halaman.
+
+**Di luar cakupan:** pinch **layar sentuh** di HP melewati jalur `touchstart` Leaflet,
+bukan `wheel`. Di sana dua jari harus mendarat di dalam kontainer peta; karena tinggi peta
+saat ini hanya 320px (`PetaSebaranLokasi.jsx:155`), jari mudah jatuh di luar area dan
+pinch ikut mati. Perbaikan itu terpisah dan perlu uji di perangkat fisik.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
+
 
 ### Sudah Selesai
 
@@ -655,6 +789,7 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 4. **FE-15** — Integrasi OSRM routing (advanced feature)
 5. **FE-21** dan **FE-26** — Fitur flag laporan
 6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
+7. **FE-45** — Zoom pinch trackpad di peta (bug: yang mengezoom halaman, bukan peta)
 
 ---
 
