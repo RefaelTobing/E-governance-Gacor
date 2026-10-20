@@ -287,6 +287,15 @@ Ringkasan status:
 | FE-42 | ✅ | Status fasilitas HomePage jadi Baik |
 | FE-43 | ✅ | Tampilan session admin di navbar publik |
 | FE-45 | ❌ | Zoom pinch trackpad di peta (mengezoom halaman, bukan peta) |
+| FE-46 | ❌ | Foto ruang publik jadi kotak, hapus teks di atas foto |
+| FE-47 | ❌ | Tombol panah kiri-kanan pada galeri foto ruang publik |
+| FE-48 | ❌ | Seragamkan rounded corner tombol dan kontrol |
+| FE-49 | ❌ | Halaman dimulai dari tengah saat berpindah rute |
+| FE-50 | ❌ | Hapus simbol yang tidak membawa informasi di judul dan label |
+| FE-51 | ❌ | Filter kondisi fasilitas publik jadi dropdown |
+| FE-52 | ❌ | Perbaikan tampilan foto bukti di halaman review laporan |
+| FE-53 | ❌ | Hapus atau ganti simbol di halaman Tentang |
+| FE-54 | ❌ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -758,6 +767,703 @@ pinch ikut mati. Perbaikan itu terpisah dan perlu uji di perangkat fisik.
 
 ---
 
+### FE-46. Foto ruang publik jadi kotak, hapus teks di atas foto
+
+**Status:** ❌
+
+**Maksud permintaan:** foto ruang publik dibuat berbentuk kotak (rasio persegi), dan
+tulisan nama ruang publik yang menempel di atas foto dihapus.
+
+**Preseden "kotak":** FE-35 sudah menetapkan arti kata ini di proyek. Kartu peta dashboard
+diubah dari tinggi tetap menjadi `aspectRatio: '1 / 1'` + `maxHeight`
+(`PetaDashboardAdmin.jsx:150`). Jadi "kotak" = rasio 1:1, bukan sudut tumpul.
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
+
+**File terkait:**
+
+- `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+- `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+- `apps/web/src/features/laporan/pages/RiwayatLaporanPage.jsx`
+- `apps/web/src/features/laporan/pages/DetailStatusLaporanPage.jsx`
+
+**Tulisan di atas foto yang harus dihapus:**
+
+| Lokasi | Baris | Isi |
+| --- | --- | --- |
+| `HomePage.jsx` | 155-178 | `.hero-location-badge`: `{slide.title} • {slide.location}` |
+| `HomePage.jsx` | 378 | `Rekomendasi Warga` (kartu unggulan) |
+| `HomePage.jsx` | 382 | badge kategori (kartu unggulan) |
+| `HomePage.jsx` | 384 | `{featuredSpaces[0].wilayah}` (kartu unggulan) |
+| `HomePage.jsx` | 448 | badge kategori (2 kartu pendamping) |
+| `HomePage.jsx` | 451 | `{item.wilayah}` (2 kartu pendamping) |
+| `DaftarRuangPublikPage.jsx` | 575-577 | badge kategori di kartu daftar |
+| `DetailRuangPublikPage.jsx` | 495-499 | overlay gelap + pill `Lokasi {detail.nama}` |
+| `RiwayatLaporanPage.jsx` | 243-245 | badge jenis masalah |
+| `DetailStatusLaporanPage.jsx` | 202-206 | badge `Asli` + caption nama fasilitas |
+
+**Pekerjaan:**
+
+1. Ubah setiap kontainer gambar dari tinggi tetap menjadi rasio persegi, mengikuti cara
+   FE-35: `aspectRatio: '1 / 1'` dengan `width: '100%'` dan `maxHeight` yang sesuai
+   konteks kartu. Kontainer yang diubah:
+   - `HomePage.jsx:372` (sekarang `height: '240px'`)
+   - `HomePage.jsx:442` (sekarang `height: '140px'`)
+   - `DetailRuangPublikPage.jsx:489` (sekarang `height: '220px'`)
+   - `RiwayatLaporanPage.jsx:241` (sekarang `minHeight: '160px'` di dalam grid)
+   - `DetailStatusLaporanPage.jsx:200` (sekarang `height: '200px'`)
+2. Hapus seluruh elemen teks yang diposisikan `absolute` di atas foto pada tabel di atas.
+3. Untuk informasi yang hilang karena penghapusan, pindahkan ke luar area foto, jangan
+   dibuang:
+   - Nama dan wilayah ruang publik sudah ada di heading dan baris alamat kartu, jadi cukup dihapus.
+   - Badge kategori sudah ada di tempat lain pada beberapa kartu; kalau hilang seluruhnya,
+     letakkan di baris bawah konten (bukan di atas foto).
+   - Badge `Dokumentasi Warga` di `DetailRuangPublikPage.jsx:659-663` menandai asal foto,
+     jadi bukan sekadar hiasan. Pindahkan ke bawah thumbnail sebagai label terpisah,
+     jangan dihapus.
+   - Badge `Asli` di `DetailStatusLaporanPage.jsx:202` dihapus; status sudah dibawa `StatusBadge`.
+4. Jaga `objectFit: 'cover'` pada foto. Dengan rasio persegi, komposisi tetap penuh tanpa
+   distorsi.
+5. Periksa tidak ada sisa `position: 'relative'` pada kontainer yang tidak lagi butuh
+   penempatan absolut, dan pastikan bayangan/padding kartu tidak goyah setelah tinggi berubah.
+
+**Acceptance criteria:**
+
+- Semua foto ruang publik pada lima file di atas tampil dengan rasio persegi 1:1.
+- Tidak ada tulisan yang menempel di atas foto, kecuali label asal foto yang sudah
+  dipindahkan ke luar area foto.
+- Nama ruang publik, wilayah, dan kategori tetap terbaca di halaman (tidak hilang bersama overlay).
+- Tidak ada layout yang rusak di desktop maupun mobile, tidak ada foto gepeng atau terpotong aneh.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka `/home`, `/ruang-publik`, `/ruang-publik/:id`, `/laporan-saya`, dan `/laporan-saya/:id`.
+2. Pastikan setiap foto berbentuk kotak dan bersih dari tulisan.
+3. Cek satu ruang publik yang punya banyak foto pada galeri detailnya.
+4. Periksa di lebar layar 390px dan 1280px.
+
+---
+
+### FE-47. Tombol panah kiri-kanan pada galeri foto ruang publik
+
+**Status:** ❌
+
+**Kondisi sekarang:** navigasi foto hanya ada di dalam modal lightbox
+(`DetailRuangPublikPage.jsx:794-839`, tombol `Sebelumnya` dan `Berikutnya` di footer Modal).
+Galeri inline di halaman (grid thumbnail, baris 642-667) tidak punya panah sama sekali,
+jadi pengunjung harus membuka foto satu per satu.
+
+**Alasan fitur ini perlu:** dihitung dari `data/Images/output.csv`, ruang publik dengan
+`image_status = ok`: 635 punya 4+ foto, 66 punya 2-3 foto, 27 punya 1 foto. Artinya 96%
+entri berfoto memang punya lebih dari satu gambar.
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Tambahkan tombol panah kiri dan kanan pada galeri inline (baris 642-667), muncul hanya
+   bila `galeriFoto.length > 1`.
+2. Posisikan panah sebagai tombol melayang di tepi kiri dan tepi kanan area galeri, atau
+   sebagai satu baris kontrol di atas grid beserta indikator `Foto n dari m`.
+3. Tambahkan navigasi papan tombol pada lightbox: `ArrowLeft` dan `ArrowRight` untuk
+   berpindah foto, `Escape` untuk menutup. Modal sudah menangani `Escape` sendiri, jadi
+   pastikan `ArrowLeft`/`ArrowRight` tidak bentrok dengan perilaku modal.
+4. Sembunyikan tombol `Sebelumnya` saat `fotoAktifIdx === 0` dan `Berikutnya` saat berada
+   di foto terakhir (sudah dilakukan lewat `disabled`; bisa dipertahankan).
+5. Sinkronkan posisi: membuka foto dari thumbnail harus membuka indeks yang benar, dan
+   tombol panah mengubah `fotoAktifIdx` yang sama.
+6. Beri `aria-label` yang jelas pada kedua tombol panah dan pastikan tombol bisa dijangkau
+   dengan `Tab`.
+7. Jangan mengubah tata letak grid thumbnail selain menambah panah.
+
+**Acceptance criteria:**
+
+- Galeri menampilkan tombol panah kiri-kanan bila foto lebih dari satu.
+- Panah kiri pada foto pertama dan panah kanan pada foto terakhir berhenti dengan
+  aman (tidak error, tidak melewati batas).
+- Panah berfungsi pada galeri inline dan di dalam lightbox.
+- `ArrowLeft`/`ArrowRight` berfungsi saat lightbox terbuka, `Escape` tetap menutup.
+- Indikator posisi foto terlihat (mis. `Foto 2 dari 5`).
+- Tombol bisa dijangkau dan diaktifkan lewat papan tombol saja.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka detail ruang publik yang punya lebih dari satu foto.
+2. Klik panah kiri-kanan di galeri inline, lalu buka satu foto dan uji panah di lightbox.
+3. Uji papan tombol: `Tab` ke tombol panah, `Enter`, lalu `ArrowLeft`/`ArrowRight`/`Escape`.
+4. Buka ruang publik yang hanya punya satu foto dan pastikan panah tidak muncul.
+
+**Di luar cakupan:** panah pada kartu di `/home` dan `/ruang-publik`. Endpoint daftar hanya
+mengirim satu `image_url` per baris (`schemas/ruang_publik.py`, `RuangPublikListResponse`),
+jadi panah di kartu daftar butuh perubahan backend dan tidak dikerjakan di task ini.
+
+---
+
+### FE-48. Seragamkan rounded corner tombol dan kontrol
+
+**Status:** ❌
+
+**Gejala:** dalam satu baris filter saja, sudut tombolnya bercampur antara tajam dan
+membulat.
+
+**Bukti pengukuran live** (`/ruang-publik`, nilai `border-radius` terhitung per elemen):
+
+| Nilai | Elemen |
+| --- | --- |
+| `4px` | `btn btn-ghost btn-sm` (1 elemen) |
+| `4px` | `btn btn-outline btn-sm` (2 elemen) |
+| `9999px` | `select-dropdown-trigger ruang-publik-filter` (3 elemen) |
+| `9999px` | `btn btn-outline btn-sm ruang-publik-filter` (1 elemen) |
+| `9999px` | `btn btn-ghost btn-sm` (1 elemen) |
+| `9999px` | `category-chip` (5 elemen) |
+
+**Akar masalah:** `.btn-sm` memakai `var(--radius-sm)` = `4px`, sedangkan kelas yang
+menimpanya (`.ruang-publik-filter`, `.ruang-publik-detail-button`) memakai
+`var(--radius-pill)`. Karena spesifisitasnya lebih tinggi, hasilnya tidak seragam.
+
+| Selector | Nilai | Baris `index.css` |
+| --- | --- | --- |
+| `.btn` | `var(--radius-md)` = 8px | ~185 |
+| `.btn-sm` | `var(--radius-sm)` = 4px | ~266 |
+| `.btn-lg` | `var(--radius-md)` = 8px | ~405 |
+| `.ruang-publik-detail-button` | pill, dengan `!important` | ~271 |
+| `.ruang-publik-filter` | pill | ~280 |
+| `.select-dropdown-trigger` | pill | ~308 |
+| `.select-dropdown-option` | pill | ~382 |
+| `.badge` | pill | ~420 |
+| `.facility-filter-button` | `var(--radius-md)` = 8px | ~513 |
+
+**Acuan yang sudah ada:** `apps/web/Public/RukaFinalFigma/DESIGN.md` §1.4 dan §1.5 sudah
+menetapkan tombol beradius 8px, dan pill hanya untuk tag status dan tombol oval navigasi.
+Kode sekarang menyimpang dari dokumen desainnya sendiri.
+
+**Nilai literal yang lolos dari sistem token (di JSX):**
+
+| Nilai | Lokasi |
+| --- | --- |
+| `'8px'` | `ErrorBoundary.jsx:46`, `PetaSebaranLokasi.jsx:193` |
+| `'12px'` | `ErrorBoundary.jsx:34` |
+| `'6px'` | `ErrorBoundary.jsx:66` |
+| `'999px'` | `PetaSebaranLokasi.jsx:291` |
+| `'var(--radius-sm, 6px)'` | `Logo.jsx:53` (nilai fallback 6px tidak ada di token) |
+
+**Keputusan yang perlu diambil sebelum mengerjakan:** pilih salah satu standar.
+
+- Opsi A (sesuai DESIGN.md): semua tombol `var(--radius-md)` = 8px. Pill hanya untuk badge,
+  chip, dan tombol oval navigasi.
+- Opsi B: semua tombol pill.
+
+Saran: Opsi A. Kalau semua elemen dibuat pill, tombol, chip, dan badge jadi tidak bisa
+dibedakan bentuknya, dan itu justru salah satu pemicu kesan seragam yang dibahas di FE-54.
+
+**File utama:** `apps/web/src/index.css`
+
+**File terkait:** `ErrorBoundary.jsx`, `Logo.jsx`, `PetaSebaranLokasi.jsx`
+
+**Pekerjaan:**
+
+1. Tetapkan satu nilai radius untuk tombol, lalu terapkan pada `.btn`, `.btn-sm`, `.btn-lg`.
+2. Hapus `!important` pada `.ruang-publik-detail-button` agar tidak ada aturan yang
+   bertengkar dengan `.btn-sm`.
+3. Ganti nilai literal di JSX dengan token `var(--radius-*)` yang sesuai.
+4. Tambahkan token baru bila memang ada nilai yang belum terwakili, misalnya `--radius-xs`
+   untuk 6px, lalu pakai di `Logo.jsx` alih-alih fallback yang tidak ada di token.
+5. Setelah perubahan, periksa kembali seluruh tombol dan kontrol di halaman publik dan
+   admin, bukan hanya halaman daftar.
+6. Periksa juga alias `--radius-md` pada `PetaSebaranLokasi.jsx:193` agar popup peta tetap rapi.
+
+**Acceptance criteria:**
+
+- Semua tombol di aplikasi memakai satu nilai radius yang sama.
+- Tidak ada lagi nilai radius literal di JSX selain `50%` untuk elemen bulat.
+- Tidak ada `!important` yang dipakai untuk memenangkan pertengkaran radius.
+- Tombol kecil, sedang, dan besar terlihat konsisten saat berdampingan.
+- Pemeriksaan `border-radius` terhitung pada satu baris filter menunjukkan satu nilai saja
+  untuk semua tombol.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka `/ruang-publik`, periksa baris filter.
+2. Buka `/home`, `/ruang-publik/:id`, `/tentang`, `/dashboard`, dan satu halaman `/profil`.
+3. Jalankan pemeriksaan di DevTools Console:
+
+```js
+[...document.querySelectorAll('button, a.btn, .btn')]
+  .map(b => getComputedStyle(b).borderRadius)
+  .forEach(r => console.log(r));
+```
+
+   Semua nilai tombol harus sama.
+
+---
+
+### FE-49. Halaman dimulai dari tengah saat berpindah rute
+
+**Status:** ❌
+
+**Gejala:** buka `/ruang-publik`, gulir ke bawah, lalu buka salah satu ruang publik.
+Halaman detail terbuka pada posisi gulir yang sama, bukan dari atas, sehingga foto harus
+dicari dengan menggulir ke atas lebih dulu.
+
+**Bukti verifikasi (browser, dev server `localhost:5173`):**
+
+1. `history.scrollRestoration` bernilai `"auto"`.
+2. Gulir ke `scrollY = 1008` di `/ruang-publik`, lalu klik menu `Tentang`: setelah rute
+   berpindah, `scrollY` tetap `1008` dan posisi `<h1>` halaman baru berada di `y = -847`
+   (artinya judul sudah lewat di atas layar).
+3. Kembali dari `/tentang` ke `/ruang-publik`: `scrollY` tetap `1008`.
+
+**Akar masalah:** tidak ada satu pun komponen atau hook yang mereset posisi gulir saat rute
+berubah. Pencarian seluruh `apps/web/src` untuk `scrollTo`, `ScrollToTop`, dan
+`scrollRestoration` tidak menghasilkan apa pun. `App.jsx` hanya memasang Router dan Routes
+tanpa penanganan gulir. Perilaku `auto` milik browser tidak menolong karena perpindahan ini
+adalah navigasi sisi klien SPA, bukan pemuatan dokumen baru.
+
+**File utama (baru):** `apps/web/src/components/ScrollToAtas.jsx`
+
+**File terkait:**
+
+- `apps/web/src/App.jsx`
+- `apps/web/src/components/index.js`
+- `apps/web/src/main.jsx`
+
+**Pekerjaan:**
+
+1. Buat komponen kecil tanpa tampilan yang memantau `location.pathname` lewat
+   `useLocation()` dan memanggil `window.scrollTo({ top: 0, left: 0, behavior: 'instant' })`
+   setiap kali path berubah.
+2. Render komponen itu di dalam `Router` pada `App.jsx`, di posisi yang tidak terpengaruh
+   perpindahan rute.
+3. Set `history.scrollRestoration = 'manual'` sekali di `main.jsx` agar browser berhenti
+   ikut campur.
+4. **Jangan memakai `behavior: 'smooth'`.** `DetailRuangPublikPage.jsx:236` sudah memanggil
+   `scrollIntoView({ behavior: 'smooth' })` untuk membuka peta. Dua animasi gulir yang
+   berjalan bersamaan akan saling mengganggu.
+5. Pertimbangkan penyaring agar reset dilewati bila URL hanya berubah pada query string,
+   supaya mengganti filter di `/ruang-publik` tidak melempar pengguna ke atas halaman.
+
+**Acceptance criteria:**
+
+- Membuka halaman mana pun selalu dimulai dari posisi paling atas.
+- Berlaku untuk perpindahan antar halaman publik, akun, dan admin.
+- Mengganti filter, urutan, atau nomor halaman di `/ruang-publik` tidak memaksa gulir ke atas.
+- Tombol peta pada detail ruang publik tetap membuka peta dengan lancar, tanpa gulir balik ke atas.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka `/ruang-publik`, gulir ke bawah, klik satu kartu. Halaman harus terbuka di posisi atas.
+2. Ulangi dari `/tentang` ke `/ruang-publik`, dan dari `/dashboard` ke `/dashboard/moderasi`.
+3. Di `/ruang-publik`, ubah filter kategori dan radius; posisi gulir tidak boleh melompat.
+4. Buka `/ruang-publik/:id`, tekan tombol `Tampilkan Peta`; peta terbuka tanpa gulir aneh.
+
+---
+
+### FE-50. Hapus simbol yang tidak membawa informasi di judul dan label
+
+**Status:** ❌
+
+**Daftar lengkap hasil pemindaian** (bukan perkiraan):
+
+**Emoji:**
+
+| Lokasi | Baris | Isi |
+| --- | --- | --- |
+| `PetaSebaranLokasi.jsx` | 250 | `📍 Lokasi Anda` |
+| `PetugasLapanganPage.jsx` | 82 | `📍 Wilayah: {p.wilayah}` |
+| `PetugasLapanganPage.jsx` | 91 | `📞 Hubungi Petugas` |
+| `KelolaAdminPage.jsx` | 145 | `👤 {admin.name}` |
+| `DataMasterPage.jsx` | 433 | `📍 {rp.nama}` |
+
+**Panah dekoratif `→`:**
+
+| Lokasi | Baris | Isi |
+| --- | --- | --- |
+| `PetaSebaranLokasi.jsx` | 314 | `Lihat Detail Ruang →` |
+| `LoginPemerintahPage.jsx` | 75 | `Masuk ke Dashboard →` |
+
+**Label kapital dengan bullet `•` (pola eyebrow template):**
+
+| Lokasi | Baris |
+| --- | --- |
+| `DetailRuangPublikPage.jsx` | 547 |
+| `AntrianModerasiPage.jsx` | 74 |
+| `LaporanTerflagPage.jsx` | 41 |
+| `KelolaAdminPage.jsx` | 106 |
+| `DataMasterPage.jsx` | 165 |
+| `KelolaFasilitasPage.jsx` | 71 |
+
+**Ikon di dalam heading (22 lokasi):**
+
+`DetailRuangPublikPage.jsx:461, 508, 601`; `DetailFasilitasWargaPage.jsx:135, 156`;
+`DetailModerasiPage.jsx:308, 331, 356, 437`; `DashboardPage.jsx:243`;
+`RiwayatLaporanPage.jsx:251, 265, 274`; `DetailStatusLaporanPage.jsx:109, 194`;
+`FormLaporPage.jsx:735`; `StatusHasilSubmit.jsx:139, 145`; `HomePage.jsx:384, 451`;
+`DaftarRuangPublikPage.jsx:614`; `KelolaFasilitasPage.jsx:130`.
+
+**Bullet `•` sebagai pemisah data (bukan hiasan):**
+
+`DaftarRuangPublikPage.jsx:586`; `DetailFasilitasWargaPage.jsx:109`;
+`RiwayatLaporanPage.jsx:259`; `DetailStatusLaporanPage.jsx:122`;
+`DetailRuangPublikPage.jsx:364, 738, 798`; `PublicLayout.jsx:143`; `HomePage.jsx:177`.
+
+**File utama:** `apps/web/src/features/ruang-publik/components/PetaSebaranLokasi.jsx`
+
+**File terkait:** `PetugasLapanganPage.jsx`, `KelolaAdminPage.jsx`, `DataMasterPage.jsx`,
+`LoginPemerintahPage.jsx`, `DetailRuangPublikPage.jsx`, `AntrianModerasiPage.jsx`,
+`LaporanTerflagPage.jsx`, `KelolaFasilitasPage.jsx`, serta 22 lokasi ikon heading pada
+daftar di atas.
+
+**Pekerjaan:**
+
+1. Hapus kelima emoji. Kalau penanda visual masih dibutuhkan, ganti dengan ikon lucide
+   yang sudah dipakai di proyek (mis. `MapPin` untuk lokasi, `Phone` untuk kontak, `User` untuk nama).
+2. Hapus kedua panah `→` pada teks tombol.
+3. Tangani keenam label kapital: buang bullet, dan sederhanakan teksnya menjadi satu frasa
+   tanpa dua bagian yang dipisah. Contoh: `TRANSPARANSI PRASARANA • DIPERBARUI WARGA & DINAS`
+   menjadi `Transparansi prasarana`. Periksa setiap label agar tidak ada informasi yang hilang.
+4. Tinjau 22 ikon di heading. Sisakan hanya pada heading yang menandai blok isi berbeda
+   (mis. `Peta Akses & Batas Kawasan`, `Jam & Aksesibilitas Warga`), dan hapus pada heading
+   yang sudah jelas dari teksnya (mis. `ALASAN PENOLAKAN`, `PEMBARUAN TERAKHIR`,
+   `Informasi Fasilitas`).
+5. Bullet sebagai pemisah data jangan dihapus. Ganti dengan pemisah yang lebih tenang
+   (mis. `·`) atau ubah menjadi elemen terpisah bila barisnya terlalu panjang.
+6. Setelah menghapus ikon, periksa impor yang jadi tidak terpakai agar tidak memicu
+   peringatan lint, dan pastikan jarak antar elemen tetap rapi.
+
+**Acceptance criteria:**
+
+- Tidak ada emoji di seluruh antarmuka.
+- Tidak ada panah `→` sebagai hiasan pada teks tombol.
+- Tidak ada label kapital yang memakai bullet sebagai pemisah.
+- Ikon di heading tersisa hanya pada heading yang benar-benar butuh penanda blok.
+- Informasi substantif tidak ada yang hilang (jenis masalah, tanggal, wilayah, nama fasilitas tetap tampil).
+- Tidak ada impor ikon yang menganggur dan tidak ada peringatan baru.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Jalankan pencarian sisa simbol di seluruh `apps/web/src`:
+
+```bash
+grep -rnP "[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]" apps/web/src --include=*.jsx
+grep -rn "→" apps/web/src --include=*.jsx
+```
+
+   Keduanya harus kosong, kecuali di dalam komentar kode.
+
+2. Buka dan periksa tampilannya pada `/ruang-publik`, `/ruang-publik/:id`,
+   `/laporan-saya`, `/laporan-saya/:id`, `/dashboard`, `/dashboard/moderasi`,
+   `/dashboard/moderasi/:laporanId`, `/dashboard/laporan-terflag`,
+   `/dashboard/data-master`, `/dashboard/fasilitas`, `/dashboard/petugas`,
+   `/dashboard/kelola-admin`, dan `/login-pemerintah`.
+3. Pastikan jenis masalah, tanggal, wilayah, dan nama fasilitas masih terbaca di
+   kartu riwayat laporan dan di peta.
+
+---
+
+### FE-51. Filter kondisi fasilitas publik jadi dropdown
+
+**Status:** ❌
+
+**Lokasi:** `/ruang-publik/:id`, bagian `Kondisi Fasilitas Publik`.
+
+**Kondisi sekarang:** empat tombol filter berjajar di dalam `.facility-filter-group`
+(`DetailRuangPublikPage.jsx:565-582`), memakai state `facilityFilter` (baris 106) dan
+penyaringan di baris 244-246. `index.css:603-609` sudah memuat media query yang menumpuk
+toolbar ini menjadi kolom di layar kecil, tanda bahwa empat tombol plus teks pengantar
+sudah berebut ruang bahkan di layar lebar.
+
+Pola filter yang sama dipakai lagi untuk filter status laporan di baris 693-705
+(`OPSI_FILTER_LAPORAN`) dengan kelas CSS yang sama.
+
+**Solusi yang sudah tersedia:** `apps/web/src/components/SelectDropdown.jsx` sudah lengkap,
+yaitu `aria-haspopup`, `aria-expanded`, navigasi `ArrowUp`/`ArrowDown`/`Home`/`End`, tutup
+dengan `Escape`, deteksi klik di luar, dan prop `placement` untuk membuka ke atas. Komponen
+ini sudah dipakai di `/ruang-publik` untuk `Urutkan` dan `Tampilkan per halaman`. Jadi tidak
+perlu membuat komponen baru.
+
+**Jangan tertukar:** `getFacilityOptions` dan `MultiSelectDropdown` di `/ruang-publik`
+adalah filter **jenis** fasilitas (mis. toilet, jalur lari). Task ini menyangkut filter
+**kondisi** fasilitas (Baik, Perlu Perhatian, Rusak). Dua hal berbeda.
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**File terkait:** `apps/web/src/index.css` (kelas `.facility-filter-*`)
+
+**Pekerjaan:**
+
+1. Ganti tombol filter kondisi fasilitas dengan `SelectDropdown`, dengan opsi
+   `Semua`, `Baik`, `Perlu Perhatian`, `Rusak`.
+2. Sediakan pemetaan label ke nilai status agar `facilityFilter` tetap berisi nilai yang
+   dipakai penyaringan (`semua`, `baik`, `perlu_perhatian`, `rusak`).
+3. Pindahkan tombol penyaring status laporan (baris 693-705) ke pola yang sama agar
+   konsisten, dan pastikan tetap menulis ke query string seperti sekarang.
+4. Lengkapi hitungan pada opsi bila memungkinkan, misalnya `Baik (12)`, memakai angka yang
+   sudah tersedia di `detail.stats`.
+5. Bersihkan CSS `.facility-filter-button` dan `.facility-filter-group` yang menjadi tidak
+   terpakai, termasuk media query di baris 603-609. Jangan hapus kelas yang masih dipakai
+   elemen lain; periksa dulu dengan pencarian.
+6. Pastikan tombol `Tampilkan semua fasilitas` pada keadaan kosong (`facility-reset-filter`)
+   tetap berfungsi.
+7. Pertahankan perilaku dropdown filter yang sudah ada, khususnya penulisan ke query string.
+
+**Acceptance criteria:**
+
+- Filter kondisi fasilitas tampil sebagai dropdown, bukan deretan tombol.
+- Memilih opsi menyaring daftar fasilitas dengan benar, sama seperti perilaku sebelumnya.
+- Opsi `Semua` mengembalikan seluruh daftar.
+- Dropdown bisa dioperasikan dengan papan tombol dan bisa ditutup dengan `Escape`.
+- Keadaan kosong tetap menampilkan pesan dan tombol pengembalian filter.
+- Tidak ada kelas CSS yang tersisa tanpa pemakai.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka detail ruang publik yang punya fasilitas kondisi beragam.
+2. Coba setiap opsi dropdown, pastikan daftar ikut berubah dan angka bertambah tetap benar.
+3. Uji papan tombol: `Tab` ke dropdown, `Enter`, `ArrowDown`, `Enter`, lalu `Escape`.
+4. Uji di lebar 390px dan 1280px.
+
+---
+
+### FE-52. Perbaikan tampilan foto bukti di halaman review laporan
+
+**Status:** ❌
+
+**Catatan penting tentang maksud permintaan:** permintaan aslinya berbunyi
+`gambar yang di review` dan kalimatnya terputus. Task ini disusun dari cacat nyata yang
+ditemukan pada halaman review laporan. Sebelum dikerjakan, konfirmasi dulu apakah maksudnya
+halaman `Verifikasi & Pembaruan Laporan Fasilitas` (`/dashboard/moderasi/:laporanId`) atau
+halaman lain. Di `route-config.js` tidak ada rute bernama `review`. Kandidat terdekat:
+`/dashboard/moderasi/:laporanId` (verifikasi laporan) dan `/dashboard/laporan-terflag`
+(moderasi konten).
+
+**Cacat yang ditemukan:**
+
+1. Foto bukti dipotong paksa. `DetailModerasiPage.jsx:327-329` memakai kontainer
+   `height: '160px'` dengan `objectFit: 'cover'`. Pada halaman verifikasi, pemotongan ini
+   merusak tujuan halamannya sendiri: petugas tidak melihat seluruh bukti.
+2. Foto dirender tanpa penjagaan nilai kosong. `DetailModerasiPage.jsx:328` merender
+   `<img src={laporan.foto}>` tanpa pemeriksaan, sehingga laporan tanpa foto menampilkan
+   ikon gambar rusak. Bandingkan dengan `DetailStatusLaporanPage.jsx:193` yang sudah benar
+   karena memakai pemeriksaan `laporan.foto ? ... : ...`.
+3. Pola pemotongan yang sama ada di tiga tempat lain:
+   `RiwayatLaporanPage.jsx:240-242` (tinggi 240px), `DetailStatusLaporanPage.jsx:200-202`
+   (tinggi 200px), dan thumbnail galeri `DetailRuangPublikPage.jsx:651-657` (tinggi 110px).
+
+**File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`
+
+**File terkait:**
+
+- `apps/web/src/features/laporan/pages/RiwayatLaporanPage.jsx`
+- `apps/web/src/features/laporan/pages/DetailStatusLaporanPage.jsx`
+
+**Pekerjaan:**
+
+1. Pada halaman verifikasi, ganti `objectFit: 'cover'` menjadi `objectFit: 'contain'` dengan
+   latar netral, supaya seluruh foto bukti terlihat tanpa dipotong. Untuk halaman verifikasi,
+   kelengkapan bukti lebih penting daripada kerapian komposisi.
+2. Tambahkan tombol untuk membuka foto ukuran penuh (mis. modal atau tautan ke berkas
+   aslinya) agar petugas tetap bisa memeriksa detail.
+3. Tambahkan penjagaan nilai kosong pada `DetailModerasiPage.jsx`, mengikuti pola
+   `DetailStatusLaporanPage.jsx:193`.
+4. Untuk kartu riwayat dan galeri, tetapkan `objectFit: 'cover'` sebagai pilihan sadar
+   karena itu area ringkas, tetapi pastikan fotonya tetap bisa dibuka ukuran penuh saat diklik.
+5. Tinjau tinggi tetap yang ada dan ganti dengan `aspectRatio` bila tata letaknya lebih stabil.
+
+**Acceptance criteria:**
+
+- Foto bukti pada halaman verifikasi terlihat utuh, tidak terpotong.
+- Laporan tanpa foto menampilkan keadaan kosong yang rapi, tidak ada ikon gambar rusak.
+- Foto bisa dibuka ukuran penuh dari halaman verifikasi.
+- Kartu riwayat dan galeri tetap rapi, dan fotonya bisa diperbesar.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka `/dashboard/moderasi/:laporanId` dengan akun admin untuk laporan yang punya foto.
+2. Uji juga laporan tanpa foto, pastikan tidak ada ikon gambar rusak.
+3. Buka `/laporan-saya`, `/laporan-saya/:id`, dan galeri detail ruang publik.
+
+---
+
+### FE-53. Hapus atau ganti simbol di halaman Tentang
+
+**Status:** ❌
+
+**Temuan awal:** `TentangPage.jsx` bersih dari emoji. Jadi yang dimaksud simbol di sini
+adalah ikon.
+
+**Kandidat hapus atau ganti:**
+
+| Lokasi | Baris | Alasan |
+| --- | --- | --- |
+| `TentangPage.jsx` | 216 | `ChevronDown` pada tombol `Cara Kerja Platform` |
+
+Baris 216 adalah kandidat terkuat. Ikon panah bawah dipasang pada tombol yang bukan
+dropdown, dan halaman ini memang punya bagian FAQ yang benar-benar dropdown dengan ikon
+yang sama (baris 108-112). Satu ikon dipakai untuk dua arti berbeda.
+
+**Kandidat peninjauan (ikon yang tidak menambah informasi):**
+
+| Lokasi | Baris | Isi |
+| --- | --- | --- |
+| `TentangPage.jsx` | 226, 235, 244, 253 | empat ikon pada baris statistik (`Trees`, `CheckCircle2`, `ClipboardList`, `ShieldCheck`) |
+| `TentangPage.jsx` | 313 | ikon `Trees` pada label kapital |
+| `TentangPage.jsx` | 291, 342 | ikon pada setiap kartu alur dan kartu fasilitas |
+| `TentangPage.jsx` | 371, 401, 411 | ikon pada tiga kartu fitur |
+| `TentangPage.jsx` | 381-384 | empat ikon `Check` sebagai pengganti bullet |
+
+Baris 226 sampai 253 menumpuk ikon, angka, dan label sekaligus, sehingga ada empat ikon
+yang tidak menambah informasi apa pun. Ini kandidat pembersihan pertama.
+
+**Jangan dihapus (ikon fungsional):**
+
+| Lokasi | Baris | Alasan |
+| --- | --- | --- |
+| `TentangPage.jsx` | 108-112 | `ChevronDown` akordeon FAQ, menandakan keadaan buka/tutup |
+| `TentangPage.jsx` | 270 | `RotateCcw` pada tombol `Coba lagi` |
+| `TentangPage.jsx` | 437, 448, 458 | `Mail` dan `Phone`, karena ada tautan `mailto:` dan `tel:` |
+
+**File utama:** `apps/web/src/features/tentang/pages/TentangPage.jsx`
+
+**Pekerjaan:**
+
+1. Baris 216: hapus `ChevronDown`, atau ganti dengan ikon yang menandakan gulir ke bawah
+   (mis. `ArrowDown`) supaya tidak sama dengan ikon dropdown.
+2. Baris 226 sampai 253: kurangi menjadi paling banyak satu penanda, atau hapus seluruhnya.
+   Angka dan labelnya sudah menjelaskan isinya. Empat lingkaran ikon berwarna pada satu baris
+   juga membuat warna jadi tidak terarah, lihat FE-54.
+3. Baris 313: hapus ikon `Trees`; label kapitalnya sudah cukup.
+4. Baris 371, 401, 411: tinjau ketiganya bersamaan. Kartu unggulan boleh menyimpan ikonnya,
+   dua kartu pendukung sebaiknya tidak, agar hierarkinya terbaca.
+5. Baris 381-384: ganti keempat ikon `Check` dengan daftar biasa atau satu penanda yang
+   konsisten; empat ikon centang berbaris terasa seperti hiasan.
+6. Setelah perubahan, periksa impor yang tidak terpakai dan pastikan tata letaknya tidak
+   bergeser aneh akibat hilangnya ikon.
+
+**Acceptance criteria:**
+
+- Ikon panah yang membingungkan pada tombol non-dropdown sudah dihilangkan atau diganti.
+- Ikon pada baris statistik sudah dikurangi atau dihapus, dan barisnya tetap rapi.
+- Ikon yang benar-benar berfungsi (FAQ, `Coba lagi`, mailto, tel) tetap ada.
+- Tidak ada impor ikon yang menganggur.
+- Halaman tetap terbaca di desktop dan mobile.
+- `npm run build` dari `apps/web` lulus.
+
+---
+
+### FE-54. Perbaikan sistem warna: badge, mode gelap, dan palet
+
+**Status:** ❌
+
+**Gejala:** pewarnaan keseluruhan terasa seragam dan tidak bermakna. Ini temuan terukur,
+bukan soal selera.
+
+**Temuan 1. Badge status hampir semuanya putih, sehingga tidak menyampaikan status.**
+Pada `index.css`, `.badge-success`, `.badge-danger`, `.badge-info`, dan `.badge-neutral`
+semuanya memakai `background-color: #FFFFFF` dengan `border-color: #E2E8F0`. Hanya
+`.badge-warning` yang bertinta (`#FFFBEB`). Artinya badge `Baik`, `Rusak`, `Info`, dan
+`Netral` tampil sebagai pil putih yang sama, hanya dibedakan titik 6px.
+
+Bukti live: `.badge-success` terhitung `{ bg: rgb(255,255,255), color: rgb(4,120,87),
+border: rgb(226,232,240) }`.
+
+**Temuan 2. Mode gelap rusak karena warna literal.**
+Halaman tema tersedia di `/profil/tema` dan `ProfilContext.jsx:90` memasang
+`data-theme="dark"`. Bukti live setelah tema gelap aktif: badan halaman menjadi
+`rgb(11,17,32)`, tetapi `.badge-success` tetap `rgb(255,255,255)`. Jadi ada pil putih
+menyala di atas kartu gelap.
+
+Penyebabnya, warna yang tidak ikut token dan ditulis langsung di JSX: 23 nilai hex berbeda,
+antara lain `#991B1B` (10 kali), `#64748B` (8), `#475569` (5), `#F8FAFC` (5), `#065F46` (4),
+`#92400E` (4), `#FEE2E2` (4), `#F1F5F9` (3), `#B91C1C` (3), `#D1FAE5` (2), `#334155` (2),
+plus 20 varian `rgba()` literal. Semuanya mengunci tema terang.
+
+**Temuan 3. Palet terlalu banyak dan semuanya dipakai sebagai aksen.**
+Token resmi sudah 12 warna (primary, accent, info, success, warning, danger, masing-masing
+dengan varian light), lalu di JSX dipakai lagi 23 hex di luar token. `DESIGN.md` §1.1
+memang mendefinisikan 9 kategori, jadi persoalannya bukan jumlah token, melainkan
+pemakaiannya tanpa hierarki: teal primary, amber accent, success, warning, dan info
+semuanya muncul sebagai aksen dalam satu halaman.
+
+**Temuan 4. Judul hero memakai teks bergradien.**
+`index.css:1232-1240`, `.hero-title-gradient` memakai
+`linear-gradient(105deg, #5EEAD4 0%, #2DD4BF 48%, #FCD34D 100%)` plus `filter: drop-shadow`.
+Catatan teknis: kelas ini memasang `color: #2DD4BF` sekaligus
+`-webkit-text-fill-color: transparent`. Bila mesin render tidak mendukung `background-clip: text`,
+nilai `color` tidak menolong karena `text-fill-color` sudah transparan, sehingga judulnya
+berisiko hilang. Varian browser ini belum diuji.
+
+**Temuan 5. Peta diredam dan bertabrakan dengan warna merek.**
+`PetaSebaranLokasi.jsx:212` dan `DetailRuangPublikPage.jsx:416` memakai
+`filter: 'grayscale(70%) contrast(1.2) brightness(1.05)'`. Peta OSM diredam menjadi abu-abu,
+sementara marker dan cluster tetap `#0F766E` di atasnya.
+
+**Temuan 6. Dokumen arah desain tidak tersambung ke pekerjaan.**
+`apps/web/Public/RukaFinalFigma/DESIGN.md` sudah berisi token warna, tipografi, jarak,
+radius, dan komponen. Letaknya di dalam folder aset dan tidak dirujuk dari `AGENTS.md`,
+sehingga aturannya tidak dipaksakan dan kode menyimpang.
+
+**Temuan 7. Instalasi antislop belum lengkap.**
+`.agents/skills/` memuat `antislop`, `antislop-code`, `antislop-copywriting`, dan
+`antislop-human`. Yang **tidak ada**: `antislop-ui` dan `antislop-layoutmobile`. Blok
+penunjuk di `AGENTS.md` justru menunjuk ke dua skill yang tidak ada itu. Karena task ini
+adalah pekerjaan UI, dua skill itulah yang paling dibutuhkan.
+
+**Prasyarat sebelum mengerjakan:** tentukan mode antislop. `AGENTS.md` mewajibkan
+pertanyaan ini diajukan sebelum pekerjaan UI dimulai. Pilihannya: memakai aturan antislop
+selama pengerjaan, atau mengaudit setelah selesai. Selain itu, lengkapi dulu
+`antislop-ui` dan `antislop-layoutmobile` supaya ada acuan arah warna. Tanpa arah,
+antislop hanya menyaring dan hasilnya cenderung monoton.
+
+**File utama:** `apps/web/src/index.css`
+
+**File terkait:** seluruh file JSX yang memuat nilai warna literal, serta `AGENTS.md`
+
+**Pekerjaan:**
+
+1. Beri warna pada badge status. Setiap keadaan harus bisa dibedakan tanpa membaca teksnya:
+   latar bertinta, teks gelap, dan titik penanda. Gunakan token yang sudah ada, bukan hex baru.
+2. Pastikan seluruh warna status memakai token yang ikut berubah saat `data-theme="dark"`
+   aktif. Ganti seluruh hex literal di JSX dengan `var(--color-*)`.
+3. Tambahan token bila memang dibutuhkan (mis. `--color-danger-text` sudah ada, pakai itu
+   alih-alih `#991B1B`).
+4. Tetapkan hierarki aksen: satu warna untuk aksi utama, satu untuk penekanan, sisanya hanya
+   untuk status. Tuliskan alasannya di satu baris, sesuai acuan `DESIGN.md`.
+5. Tangani judul hero: ganti teks bergradien dengan warna solid, atau pertahankan gradien
+   dengan nilai cadangan `color` yang aman bila `background-clip: text` tidak didukung.
+6. Tinjau `filter` pada peta. Kurangi peredamannya atau hapus, lalu sesuaikan warna marker
+   agar tidak bertabrakan.
+7. Sambungkan `DESIGN.md` ke `AGENTS.md` agar arah desain benar-benar terpakai. Ini dilakukan
+   dengan persetujuan, karena mengubah berkas masuk.
+8. Uji seluruh perubahan pada tema terang dan tema gelap.
+
+**Acceptance criteria:**
+
+- Badge `Baik`, `Perlu Perhatian`, `Rusak`, `Info`, dan `Netral` bisa dibedakan dari warna
+  latarnya, bukan hanya dari teks atau titik.
+- Mode gelap tidak lagi menampilkan blok putih menyala; seluruh warna status ikut token.
+- Tidak ada lagi nilai warna hex literal di JSX untuk warna yang punya token.
+- Rasio kontras teks pada badge memenuhi WCAG AA 4,5:1 di kedua tema.
+- Judul hero tetap terbaca di semua browser yang didukung, tanpa risiko hilang.
+- Peta tidak lagi terlihat kotor akibat peredaman.
+- Arah desain tertulis jelas dan bisa dirujuk pekerjaan berikutnya.
+- `npm run build` dari `apps/web` lulus.
+
+**Verifikasi:**
+
+1. Buka `/ruang-publik`, `/ruang-publik/:id`, dan `/dashboard` pada tema terang.
+2. Aktifkan mode gelap di `/profil/tema`, lalu periksa semua halaman yang sama.
+3. Periksa kontras badge memakai `.agents/skills/antislop-human/contrast-check.py`.
+4. Periksa judul hero di `/home` pada tema terang dan gelap.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
 
 
@@ -790,6 +1496,15 @@ pinch ikut mati. Perbaikan itu terpisah dan perlu uji di perangkat fisik.
 5. **FE-21** dan **FE-26** — Fitur flag laporan
 6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
 7. **FE-45** — Zoom pinch trackpad di peta (bug: yang mengezoom halaman, bukan peta)
+8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto
+9. **FE-47** — Tombol panah kiri-kanan pada galeri foto
+10. **FE-48** — Seragamkan rounded corner tombol dan kontrol
+11. **FE-49** — Halaman dimulai dari tengah saat berpindah rute (bug navigasi)
+12. **FE-50** — Hapus simbol yang tidak membawa informasi
+13. **FE-51** — Filter kondisi fasilitas publik jadi dropdown
+14. **FE-52** — Perbaikan tampilan foto bukti di halaman review laporan
+15. **FE-53** — Hapus atau ganti simbol di halaman Tentang
+16. **FE-54** — Perbaikan sistem warna: badge, mode gelap, dan palet
 
 ---
 
