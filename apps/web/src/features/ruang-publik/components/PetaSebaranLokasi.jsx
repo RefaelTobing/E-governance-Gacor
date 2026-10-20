@@ -250,7 +250,7 @@ const PetaSebaranLokasi = ({
             >
               <Popup>
                 <div style={{ fontSize: '12px' }}>
-                  <strong>📍 Lokasi Anda</strong>
+                  <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> Lokasi Anda</strong>
                   {onSetManualLocation && (
                     <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '11px' }}>
                       Geser pin atau klik peta untuk memindahkan lokasi acuan.
@@ -314,7 +314,7 @@ const PetaSebaranLokasi = ({
                         marginTop: '8px',
                       }}
                     >
-                      Lihat Detail Ruang →
+                      Lihat Detail Ruang
                     </button>
                   </div>
                 </Popup>

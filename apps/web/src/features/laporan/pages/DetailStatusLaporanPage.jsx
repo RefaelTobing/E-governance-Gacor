@@ -7,7 +7,6 @@ import {
   Trees,
   Armchair,
   AlertTriangle,
-  Camera,
   ArrowLeft
 } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, StepperAlur } from '../../../components';
@@ -119,7 +118,7 @@ export const DetailStatusLaporanPage = () => {
             <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px 16px', borderRadius: 'var(--radius-md)', textAlign: 'right' }}>
               <span className="text-caption" style={{ fontWeight: 700 }}>WILAYAH PENGAWASAN</span>
               <div style={{ fontWeight: 700, color: 'var(--color-primary)', fontSize: '14px' }}>Suku Dinas Pertamanan</div>
-              <span className="text-caption">{laporan.wilayah} • Ruang Terbuka Hijau</span>
+              <span className="text-caption">{laporan.wilayah} · Ruang Terbuka Hijau</span>
             </div>
           </div>
         </CardBody>
@@ -191,8 +190,8 @@ export const DetailStatusLaporanPage = () => {
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h4 className="h3" style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Camera size={16} color="#0F766E" /> Bukti Dokumentasi Warga
+                <h4 className="h3" style={{ fontSize: '16px', margin: 0 }}>
+                  Bukti Dokumentasi Warga
                 </h4>
                 <span className="text-caption" style={{ fontWeight: 700 }}>{laporan.foto ? 1 : 0} Berkas Foto</span>
               </div>

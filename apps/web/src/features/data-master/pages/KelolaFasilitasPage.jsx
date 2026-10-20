@@ -68,7 +68,7 @@ export const KelolaFasilitasPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            DATA MASTER • KETERANGAN RUANG TERBUKA
+            Data master
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Kelola Fasilitas</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>

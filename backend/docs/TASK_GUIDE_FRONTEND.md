@@ -291,7 +291,7 @@ Ringkasan status:
 | FE-47 | ✅ | Tombol panah kiri-kanan pada galeri foto ruang publik |
 | FE-48 | ✅ | Seragamkan rounded corner tombol dan kontrol |
 | FE-49 | ✅ | Halaman dimulai dari tengah saat berpindah rute |
-| FE-50 | ❌ | Hapus simbol yang tidak membawa informasi di judul dan label |
+| FE-50 | ✅ | Hapus simbol yang tidak membawa informasi di judul dan label |
 | FE-51 | ❌ | Filter kondisi fasilitas publik jadi dropdown |
 | FE-52 | ❌ | Perbaikan tampilan foto bukti di halaman review laporan |
 | FE-53 | ❌ | Hapus atau ganti simbol di halaman Tentang |
@@ -1349,7 +1349,7 @@ adalah navigasi sisi klien SPA, bukan pemuatan dokumen baru.
 
 ### FE-50. Hapus simbol yang tidak membawa informasi di judul dan label
 
-**Status:** ❌
+**Status:** ✅
 
 **Daftar lengkap hasil pemindaian** (bukan perkiraan):
 
@@ -1447,6 +1447,24 @@ grep -rn "→" apps/web/src --include=*.jsx
    `/dashboard/kelola-admin`, dan `/login-pemerintah`.
 3. Pastikan jenis masalah, tanggal, wilayah, dan nama fasilitas masih terbaca di
    kartu riwayat laporan dan di peta.
+
+**Bukti verifikasi (browser, dev server `localhost:5199`):**
+
+1. Kedua pencarian simbol bersih: tidak ada emoji sama sekali; `→` hanya tersisa di
+   komentar kode (`FormLaporPage.jsx`).
+2. 17 rute discan dengan sesi admin: 16 halaman tanpa emoji, `→`, bullet `•`, dan tanpa
+   exception konsol; `npm run build` lulus (`✓ built in 3.31s`).
+3. Ikon heading diverifikasi lewat DOM: `Peta Akses & Batas Kawasan`,
+   `Jam & Aksesibilitas Warga`, dan `Posisi Fasilitas` tetap berikon; `Monitoring Laporan
+   Terkini`, `Tindakan Petugas`, `Catatan Pembaruan Timeline`, `Informasi Fasilitas`,
+   `Bukti Dokumentasi Warga`, dan `Panduan Laporan Cepat` tanpa ikon.
+4. Label baru tampil sesuai: `Transparansi prasarana`, `Pusat penanganan fasilitas warga`,
+   `Moderasi konten`, `Data master`, `Manajemen pengguna`.
+5. Info substantif tetap tampil di detail laporan: jenis masalah, tanggal
+   (`20 Okt 2026`), dan wilayah (`Jakarta Pusat`); popup peta menampilkan
+   `Lihat Detail Ruang` tanpa panah.
+6. Fixture data sementara untuk halaman moderasi/riwayat sudah dihapus; database kembali
+   tanpa laporan uji dan tanpa fasilitas uji.
 
 ---
 

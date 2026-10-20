@@ -140,7 +140,7 @@ export const PublicLayout = () => {
           {/* Footer Bottom Copyright */}
           <div className="footer-bottom">
             <div>
-              © 2025 Pemerintah Provinsi DKI Jakarta • RuangTerbuka. Hak Cipta Dilindungi.
+              © 2025 Pemerintah Provinsi DKI Jakarta · RuangTerbuka. Hak Cipta Dilindungi.
             </div>
             <div className="footer-bottom-links">
               <a href="#privasi" className="footer-link">Kebijakan Privasi</a>

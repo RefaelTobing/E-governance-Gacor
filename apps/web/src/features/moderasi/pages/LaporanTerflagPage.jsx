@@ -38,7 +38,7 @@ export const LaporanTerflagPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            MODERASI KONTEN • PENANDAAN WARGA
+            Moderasi konten
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Laporan Ditandai Warga</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MapPin, Phone } from 'lucide-react';
 import { MOCK_PETUGAS } from '../../../data/mockData';
 import { Button, Card, CardBody, EmptyState, Skeleton } from '../../../components';
 
@@ -79,7 +80,7 @@ export const PetugasLapanganPage = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                   <div>
                     <h3 className="h3" style={{ fontSize: '16px' }}>{p.nama}</h3>
-                    <span className="text-caption">📍 Wilayah: {p.wilayah}</span>
+                    <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="var(--color-text-muted)" /> Wilayah: {p.wilayah}</span>
                   </div>
                   <span className="badge badge-success">● {p.status}</span>
                 </div>
@@ -87,8 +88,14 @@ export const PetugasLapanganPage = () => {
                   <div><strong>Jumlah Anggota:</strong> {p.anggota} Orang</div>
                   <div style={{ marginTop: '4px' }}><strong>Tugas Saat Ini:</strong> {p.tugas}</div>
                 </div>
-                <Button variant="outline" size="sm" fullWidth onClick={() => alert(`Kontak petugas: ${p.nama}`)}>
-                  📞 Hubungi Petugas
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => alert(`Kontak petugas: ${p.nama}`)}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  <Phone size={13} /> Hubungi Petugas
                 </Button>
               </CardBody>
             </Card>

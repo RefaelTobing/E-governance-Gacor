@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { User } from 'lucide-react';
 import { Button, Card, CardBody, EmptyState, Skeleton, Input } from '../../../components';
 import api from '../../../config/api';
 
@@ -103,7 +104,7 @@ export const KelolaAdminPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            MANAJEMEN PENGGUNA • SISTEM ADMIN
+            Manajemen pengguna
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Kelola Akun Admin</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
@@ -142,7 +143,9 @@ export const KelolaAdminPage = () => {
                 ) : adminList.length > 0 ? (
                   adminList.map((admin) => (
                     <tr key={admin.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                      <td style={{ padding: '12px', fontWeight: 600 }}>👤 {admin.name}</td>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><User size={13} color="var(--color-text-muted)" /> {admin.name}</span>
+                      </td>
                       <td style={{ padding: '12px' }}>{admin.email}</td>
                       <td style={{ padding: '12px' }}><span className="badge badge-info">{admin.role}</span></td>
                       <td style={{ padding: '12px' }}>

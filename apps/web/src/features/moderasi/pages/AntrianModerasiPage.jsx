@@ -71,7 +71,7 @@ export const AntrianModerasiPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            PUSAT PENANGANAN FASILITAS WARGA • Update Realtime
+            Pusat penanganan fasilitas warga
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Daftar Laporan Fasilitas</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>

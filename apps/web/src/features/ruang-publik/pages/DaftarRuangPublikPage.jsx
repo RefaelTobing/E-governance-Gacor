@@ -583,7 +583,7 @@ export const DaftarRuangPublikPage = () => {
                         </span>
                         <h3 className="h3" style={{ marginBottom: '2px' }}>{item.nama}</h3>
                         <p className="text-caption" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat || 'Alamat tidak tersedia'} • <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>
+                            <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat || 'Alamat tidak tersedia'} · <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>
                         </p>
                         {item.jarak_km !== undefined && item.jarak_km !== null && (
                           <span className="badge badge-neutral" style={{ display: 'inline-block', marginBottom: '8px' }}>

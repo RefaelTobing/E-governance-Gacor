@@ -8,7 +8,6 @@ import {
   Wrench,
   CheckCircle2,
   XCircle,
-  History,
   AlertTriangle
 } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, StepperAlur } from '../../../components';
@@ -26,14 +25,14 @@ const STATUS_STEPS = URUTAN_STATUS_LAPORAN.map((s, i) => ({
   label: `${i + 1}. ${s.label}`,
 }));
 
-// Format waktu ISO -> "8 Sep 2026 • 08:30 WIB" (fallback '' bila kosong/invalid).
+// Format waktu ISO -> "8 Sep 2026 · 08:30 WIB" (fallback '' bila kosong/invalid).
 const formatWaktu = (iso) => {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const tanggal = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   const jam = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  return `${tanggal} • ${jam} WIB`;
+  return `${tanggal} · ${jam} WIB`;
 };
 
 // Warna garis timeline mengikuti status tiap entri.
@@ -230,7 +229,7 @@ export const DetailModerasiPage = () => {
         <div>
           <h1 className="text-display">Verifikasi & Pembaruan Laporan Fasilitas</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Masuk: {laporan.tanggal || '—'} • {laporan.wilayah || 'Wilayah belum tersedia'}
+            Masuk: {laporan.tanggal || '—'} · {laporan.wilayah || 'Wilayah belum tersedia'}
           </p>
         </div>
         <StatusBadge status={currentStatus} />
@@ -305,8 +304,8 @@ export const DetailModerasiPage = () => {
               {/* ALASAN PENOLAKAN (BE-30) */}
               {laporan.alasanPenolakan && (
                 <div style={{ backgroundColor: 'var(--color-danger-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-xl)', color: '#991B1B' }}>
-                  <span className="text-caption" style={{ fontWeight: 700, color: '#991B1B', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <AlertTriangle size={12} /> ALASAN PENOLAKAN
+                  <span className="text-caption" style={{ fontWeight: 700, color: '#991B1B' }}>
+                    ALASAN PENOLAKAN
                   </span>
                   <p className="text-body" style={{ marginTop: '6px' }}>{laporan.alasanPenolakan}</p>
                 </div>
@@ -353,8 +352,8 @@ export const DetailModerasiPage = () => {
           {/* Action Box Petugas */}
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
-              <h3 className="h3" style={{ fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Wrench size={18} color="#0F766E" /> Tindakan Petugas
+              <h3 className="h3" style={{ fontSize: '18px', marginBottom: '8px' }}>
+                Tindakan Petugas
               </h3>
               <p className="text-caption" style={{ marginBottom: '16px' }}>Perbarui status siklus laporan berdasarkan kondisi riil di lapangan.</p>
 
@@ -434,8 +433,8 @@ export const DetailModerasiPage = () => {
           {/* Audit Log Pembaruan */}
           <Card>
             <CardBody>
-              <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <History size={16} color="#0F766E" /> Catatan Pembaruan Timeline
+              <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px' }}>
+                Catatan Pembaruan Timeline
               </h4>
               {laporan.timeline && laporan.timeline.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>

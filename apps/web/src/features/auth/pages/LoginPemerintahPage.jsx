@@ -72,7 +72,7 @@ export const LoginPemerintahPage = () => {
               required
             />
             <Button type="submit" variant="primary" fullWidth size="lg" style={{ marginTop: 'var(--space-md)' }} disabled={isLoading}>
-              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard →'}
+              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard'}
             </Button>
           </form>
 

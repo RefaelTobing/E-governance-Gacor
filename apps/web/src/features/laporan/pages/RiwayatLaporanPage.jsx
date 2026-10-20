@@ -256,14 +256,14 @@ export const RiwayatLaporanPage = () => {
                     </span>
                     <h3 className="h3" style={{ marginBottom: '2px' }}>{item.fasilitasNama}</h3>
                     <p className="text-caption" style={{ marginBottom: 'var(--space-md)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} color="var(--color-text-muted)" /> <strong>{item.ruangPublikNama}</strong> • {item.wilayah}
+                      <MapPin size={12} color="var(--color-text-muted)" /> <strong>{item.ruangPublikNama}</strong> · {item.wilayah}
                     </p>
 
                     {/* Pembaruan terakhir: alasan penolakan (bila ditolak) atau waktu update terakhir */}
                     {item.status === 'ditolak' && item.alasanPenolakan ? (
                       <div style={{ backgroundColor: 'var(--color-danger-light, #FEE2E2)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-danger)' }}>
-                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                          <AlertTriangle size={12} /> ALASAN PENOLAKAN
+                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-danger)', marginBottom: '2px' }}>
+                          ALASAN PENOLAKAN
                         </span>
                         <p className="text-small" style={{ fontWeight: 600, margin: 0 }}>
                           {item.alasanPenolakan}
@@ -271,8 +271,8 @@ export const RiwayatLaporanPage = () => {
                       </div>
                     ) : (
                       <div style={{ backgroundColor: 'var(--color-bg-main)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', borderLeft: '3px solid var(--color-primary)' }}>
-                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                          <RefreshCw size={12} /> PEMBARUAN TERAKHIR
+                        <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)', marginBottom: '2px' }}>
+                          PEMBARUAN TERAKHIR
                         </span>
                         <p className="text-small" style={{ fontWeight: 600, margin: 0 }}>
                           {item.updatedAt ? `Terakhir diperbarui ${formatTanggal(item.updatedAt)}` : 'Menunggu pembaruan status'}

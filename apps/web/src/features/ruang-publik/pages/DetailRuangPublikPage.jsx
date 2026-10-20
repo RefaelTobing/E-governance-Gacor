@@ -407,7 +407,7 @@ export const DetailRuangPublikPage = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Map size={20} color="var(--color-primary)" />
-                    <h3 className="h3" style={{ fontSize: '18px', margin: 0 }}>Peta Interaktif & Rute Kawasan • {detail.nama}</h3>
+                    <h3 className="h3" style={{ fontSize: '18px', margin: 0 }}>Peta Interaktif & Rute Kawasan</h3>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {urlPetunjukArah && (
@@ -587,7 +587,7 @@ export const DetailRuangPublikPage = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
           <div>
             <span className="text-caption" style={{ fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-primary)' }}>
-              TRANSPARANSI PRASARANA • DIPERBARUI WARGA & DINAS
+              Transparansi prasarana
             </span>
             <h2 className="h2">Kondisi Fasilitas Publik</h2>
           </div>
@@ -810,7 +810,7 @@ export const DetailRuangPublikPage = () => {
                         <StatusBadge status={lap.status} />
                       </div>
                       <div className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Clock3 size={12} /> {lap.tanggal || 'Baru'} • {lap.jenisMasalah}
+                        <Clock3 size={12} /> {lap.tanggal || 'Baru'} · {lap.jenisMasalah}
                       </div>
                       {lap.deskripsi && (
                         <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }}>
@@ -870,7 +870,7 @@ export const DetailRuangPublikPage = () => {
         open={lightboxTerbuka}
         onClose={() => setLightboxTerbuka(false)}
         maxWidth="760px"
-        title={lightboxTerbuka ? `Foto ${fotoTerpilih + 1} dari ${galeriFoto.length} • ${detail.nama}` : ''}
+        title={lightboxTerbuka ? `Foto ${fotoTerpilih + 1} dari ${galeriFoto.length} · ${detail.nama}` : ''}
         footer={
           <>
             <Button

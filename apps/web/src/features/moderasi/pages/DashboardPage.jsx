@@ -10,8 +10,7 @@ import {
   MapPin,
   Lightbulb,
   Droplets,
-  Armchair,
-  Radio
+  Armchair
 } from 'lucide-react';
 import { MOCK_DASHBOARD_STATS } from '../../../data/mockData';
 import { Button, Card, CardBody, StatusBadge, SearchInput, EmptyState, Skeleton } from '../../../components';
@@ -240,8 +239,8 @@ export const DashboardPage = () => {
         <CardBody>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
             <div>
-              <h3 className="h3" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Radio size={18} color="#0F766E" /> Monitoring Laporan Terkini
+              <h3 className="h3" style={{ fontSize: '18px' }}>
+                Monitoring Laporan Terkini
               </h3>
               <p className="text-caption">Hubungan terpadu laporan warga, objek fasilitas, dan status penanganan dinas.</p>
             </div>

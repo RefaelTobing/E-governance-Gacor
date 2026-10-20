@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { CheckCircle2, Clock, Home, Send, Eye, MapPin, Tag } from 'lucide-react';
+import { CheckCircle2, Clock, Home, Send, Eye } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge } from '../../../components';
 import { STATUS_LAPORAN } from '../../../config/constants';
 
@@ -136,14 +136,14 @@ export const StatusHasilSubmit = ({
             <strong className="text-small">#{result?.id || '-'}</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
-            <span className="text-caption" style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Tag size={12} /> Fasilitas
+            <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
+              Fasilitas
             </span>
             <strong className="text-small">{result?.fasilitasNama || 'Fasilitas tidak disebutkan'}</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
-            <span className="text-caption" style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={12} /> Ruang Publik
+            <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>
+              Ruang Publik
             </span>
             <strong className="text-small">{result?.ruangPublikNama || 'Ruang publik tidak disebutkan'}</strong>
           </div>

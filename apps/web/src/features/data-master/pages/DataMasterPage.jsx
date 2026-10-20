@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MapPin } from 'lucide-react';
 import { Button, Card, CardBody, EmptyState, Skeleton, Spinner } from '../../../components';
 import { getAdminPublicSpaces, updatePublicSpaceManual } from '../../../services/ruangPublikService';
 import { triggerSync, riwayatSync } from '../../../services/syncService';
@@ -162,7 +163,7 @@ export const DataMasterPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)' }}>
         <div>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-            DATA MASTER • SINKRONISASI SATU DATA
+            Data master
           </span>
           <h1 className="text-display" style={{ marginTop: '2px' }}>Data Master Ruang Publik</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
@@ -430,7 +431,9 @@ export const DataMasterPage = () => {
                     const diedit = kolomDiedit(rp);
                     return (
                       <tr key={rp.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: '12px', fontWeight: 600 }}>📍 {rp.nama}</td>
+                        <td style={{ padding: '12px', fontWeight: 600 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><MapPin size={13} color="var(--color-text-muted)" /> {rp.nama}</span>
+                        </td>
                         <td style={{ padding: '12px' }}>
                           <span className="badge badge-info">
                             {typeof rp.kategori === 'object'

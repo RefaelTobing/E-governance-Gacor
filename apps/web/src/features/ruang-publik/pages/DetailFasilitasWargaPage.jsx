@@ -6,7 +6,6 @@ import {
   AlertCircle,
   ArrowLeft,
   Tag,
-  Info,
 } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
@@ -106,7 +105,7 @@ export const DetailFasilitasWargaPage = () => {
           </div>
           <h1 className="text-display">{fasilitas.nama}</h1>
           <p className="text-small" style={{ color: 'var(--color-text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <MapPin size={14} color="var(--color-text-muted)" /> {fasilitas.lokasiSpesifik || detail.alamat} • {detail.wilayah}
+            <MapPin size={14} color="var(--color-text-muted)" /> {fasilitas.lokasiSpesifik || detail.alamat} · {detail.wilayah}
           </p>
         </CardBody>
       </Card>
@@ -132,8 +131,8 @@ export const DetailFasilitasWargaPage = () => {
 
           <Card>
             <CardBody>
-              <h3 className="h3" style={{ fontSize: '16px', marginBottom: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Info size={16} color="#0F766E" /> Informasi Fasilitas
+              <h3 className="h3" style={{ fontSize: '16px', marginBottom: 'var(--space-md)' }}>
+                Informasi Fasilitas
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)' }}>

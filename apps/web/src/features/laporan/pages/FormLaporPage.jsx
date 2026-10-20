@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { MapPin, Camera, CheckCircle2, Send, Info, Lightbulb, Trash2, Tag } from 'lucide-react';
+import { MapPin, Camera, CheckCircle2, Send, Info, Trash2, Tag } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -732,8 +732,8 @@ export const FormLaporPage = () => {
           {/* Panduan Laporan Cepat */}
           <Card style={{ marginBottom: 'var(--space-xl)' }}>
             <CardBody>
-              <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Lightbulb size={18} color="#0F766E" /> Panduan Laporan Cepat
+              <h4 className="h3" style={{ fontSize: '16px', marginBottom: '12px' }}>
+                Panduan Laporan Cepat
               </h4>
               <ol style={{ paddingLeft: '20px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--color-text-muted)' }}>
                 <li>Pastikan posisi tiang atau fasilitas sesuai dengan titik pin mini peta.</li>

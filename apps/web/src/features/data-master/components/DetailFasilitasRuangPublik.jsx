@@ -169,7 +169,7 @@ export const DetailFasilitasRuangPublik = ({ ruangPublik, fasilitas, isLoading, 
       <h1 className="text-display" style={{ marginTop: '2px' }}>{ruangPublik.nama}</h1>
       <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
         {ruangPublik.wilayah || 'Wilayah belum tersedia'}
-        {' • '}
+        {' · '}
         {jumlahTersedia} dari {STANDAR_FASILITAS.length} fasilitas standar terdata
       </p>
 
