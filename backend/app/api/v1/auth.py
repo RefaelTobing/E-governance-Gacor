@@ -13,6 +13,10 @@ from app.services.token import blacklist_token
 router = APIRouter()
 admin_router = APIRouter()
 
+# Dipakai juga saat akun petugas mencoba login di jalur yang salah, supaya
+# tidak membocorkan bahwa kredensialnya valid dan akunnya berrole petugas.
+PESAN_KREDENSIAL = "Email atau kata sandi salah."
+
 
 def _autentikasi(db: Session, username: str, password: str) -> User:
     """Verifikasi kredensial bersama login publik & admin.
@@ -24,7 +28,7 @@ def _autentikasi(db: Session, username: str, password: str) -> User:
     if not user or not verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password",
+            detail=PESAN_KREDENSIAL,
         )
     if not user.is_active:
         raise HTTPException(
@@ -45,10 +49,15 @@ def _token(user: User) -> dict:
 def login_access_token(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    """
-    OAuth2 compatible token login, get an access token for future requests
-    """
-    return _token(_autentikasi(db, form_data.username, form_data.password))
+    """Login warga. Akun petugas ditolak di sini supaya token admin hanya
+    terbit lewat `/admin/login`, bukan dari halaman login publik."""
+    user = _autentikasi(db, form_data.username, form_data.password)
+    if user.role != ROLE_WARGA:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=PESAN_KREDENSIAL,
+        )
+    return _token(user)
 
 
 @admin_router.post("/login", response_model=Token)
@@ -57,9 +66,8 @@ def admin_login(
 ):
     """Login khusus petugas; role diperiksa sebelum token diterbitkan.
 
-    Berbeda dari `/auth/login` yang menerima semua role, di sini akun `warga`
-    dengan kredensial benar tetap ditolak `403` supaya pemisahan jalur login
-    petugas nyata, bukan hanya proteksi di dependency endpoint.
+    Akun `warga` dengan kredensial benar tetap ditolak `403` supaya pemisahan
+    jalur login petugas nyata, bukan hanya proteksi di dependency endpoint.
     """
     user = _autentikasi(db, form_data.username, form_data.password)
     if user.role != ROLE_ADMIN:
