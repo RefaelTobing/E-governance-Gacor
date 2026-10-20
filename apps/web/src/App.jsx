@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ErrorBoundary, Spinner } from './components';
+import { ErrorBoundary, ScrollToAtas, Spinner } from './components';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import AkunLayout from './layouts/AkunLayout';
@@ -67,6 +67,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ScrollToAtas />
         <Suspense fallback={<PageFallback />}>
           <Routes>
             {/* Redirect statis (mis. "/" -> "/home") */}

@@ -290,7 +290,7 @@ Ringkasan status:
 | FE-46 | ✅ | Foto ruang publik jadi kotak, hapus teks di atas foto |
 | FE-47 | ✅ | Tombol panah kiri-kanan pada galeri foto ruang publik |
 | FE-48 | ✅ | Seragamkan rounded corner tombol dan kontrol |
-| FE-49 | ❌ | Halaman dimulai dari tengah saat berpindah rute |
+| FE-49 | ✅ | Halaman dimulai dari tengah saat berpindah rute |
 | FE-50 | ❌ | Hapus simbol yang tidak membawa informasi di judul dan label |
 | FE-51 | ❌ | Filter kondisi fasilitas publik jadi dropdown |
 | FE-52 | ❌ | Perbaikan tampilan foto bukti di halaman review laporan |
@@ -1287,7 +1287,7 @@ hanya `npm run build`.
 
 ### FE-49. Halaman dimulai dari tengah saat berpindah rute
 
-**Status:** ❌
+**Status:** ✅
 
 **Gejala:** buka `/ruang-publik`, gulir ke bawah, lalu buka salah satu ruang publik.
 Halaman detail terbuka pada posisi gulir yang sama, bukan dari atas, sehingga foto harus

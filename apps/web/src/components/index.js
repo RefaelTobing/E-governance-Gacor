@@ -14,4 +14,5 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as Modal } from './Modal';
 export { default as StepperAlur } from './StepperAlur';
 export { default as PetaZoomPinch } from './PetaZoomPinch';
+export { default as ScrollToAtas } from './ScrollToAtas';
 
