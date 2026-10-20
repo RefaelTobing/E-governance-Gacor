@@ -292,7 +292,7 @@ Ringkasan status:
 | FE-48 | ✅ | Seragamkan rounded corner tombol dan kontrol |
 | FE-49 | ✅ | Halaman dimulai dari tengah saat berpindah rute |
 | FE-50 | ✅ | Hapus simbol yang tidak membawa informasi di judul dan label |
-| FE-51 | ❌ | Filter kondisi fasilitas publik jadi dropdown |
+| FE-51 | ✅ | Filter kondisi fasilitas publik jadi dropdown |
 | FE-52 | ❌ | Perbaikan tampilan foto bukti di halaman review laporan |
 | FE-53 | ❌ | Hapus atau ganti simbol di halaman Tentang |
 | FE-54 | ❌ | Perbaikan sistem warna: badge, mode gelap, dan palet |
@@ -1470,7 +1470,7 @@ grep -rn "→" apps/web/src --include=*.jsx
 
 ### FE-51. Filter kondisi fasilitas publik jadi dropdown
 
-**Status:** ❌
+**Status:** ✅
 
 **Lokasi:** `/ruang-publik/:id`, bagian `Kondisi Fasilitas Publik`.
 
@@ -1530,6 +1530,21 @@ adalah filter **jenis** fasilitas (mis. toilet, jalur lari). Task ini menyangkut
 2. Coba setiap opsi dropdown, pastikan daftar ikut berubah dan angka bertambah tetap benar.
 3. Uji papan tombol: `Tab` ke dropdown, `Enter`, `ArrowDown`, `Enter`, lalu `Escape`.
 4. Uji di lebar 390px dan 1280px.
+
+**Bukti verifikasi (browser, dev server `localhost:5199`):**
+
+1. Fixture sementara: 4 fasilitas (3 `baik`, 1 `perlu_perhatian`, 0 `rusak`) dan
+   3 laporan tayang; setelah verifikasi dihapus dan basisdata kembali kosong.
+2. Dropdown kondisi menampilkan `Semua (4)`, `Baik (3)`, `Perlu Perhatian (1)`,
+   `Rusak (0)`; memilih `Baik` menyisakan 3 baris, memilih `Rusak (0)` memunculkan keadaan
+   kosong, dan tombol reset mengembalikan 4 baris.
+3. Menu tidak terpotong: panel memakai `overflow: visible` dan opsi tetap menerima klik.
+4. Keyboard: `Enter` membuka, `ArrowDown` memindah fokus ke `Baik (3)`, `Enter` memilih,
+   `Escape` menutup dan mengembalikan fokus ke trigger.
+5. Dropdown status laporan: `Semua (3)`; memilih `Diverifikasi (1)` menulis
+   `?status=diverifikasi` dan menyisakan 1 kartu; `Semua` menghapus param.
+6. Lebar 390px: tanpa overflow horizontal dan dropdown selebar toolbar; 1280px normal.
+7. `npm run build` lulus (`✓ built in 2.81s`), tanpa exception konsol.
 
 ---
 

@@ -25,7 +25,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch, SelectDropdown } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
@@ -91,11 +91,18 @@ const FitBounds = ({ positions }) => {
   return null;
 };
 
-const OPSI_FILTER_LAPORAN = [
+const OPSI_STATUS_LAPORAN = [
   ['semua', 'Semua'],
   ['diverifikasi', 'Diverifikasi'],
   ['dalam_penanganan', 'Dalam Penanganan'],
   ['selesai', 'Selesai'],
+];
+
+const OPSI_KONDISI_FASILITAS = [
+  ['semua', 'Semua'],
+  ['baik', 'Baik'],
+  ['perlu_perhatian', 'Perlu Perhatian'],
+  ['rusak', 'Rusak'],
 ];
 
 export const DetailRuangPublikPage = () => {
@@ -211,6 +218,37 @@ export const DetailRuangPublikPage = () => {
   );
   const laporanTampil = laporanTerfilter.slice(0, visibleCount);
   const adaLagi = visibleCount < laporanTerfilter.length;
+
+  // Dropdown memakai label berhitungan; simpan peta dua arah agar nilai filter
+  // tetap berupa kode status, bukan teks label.
+  const opsiKondisi = useMemo(() => {
+    const hitung = {
+      semua: detail?.fasilitas?.length ?? 0,
+      baik: detail?.stats?.baik ?? 0,
+      perlu_perhatian: detail?.stats?.perluPerhatian ?? 0,
+      rusak: detail?.stats?.rusak ?? 0,
+    };
+    const pasangan = OPSI_KONDISI_FASILITAS.map(([nilai, label]) => ({ nilai, label: `${label} (${hitung[nilai]})` }));
+    return {
+      labels: pasangan.map((pasanganItem) => pasanganItem.label),
+      nilaiDariLabel: Object.fromEntries(pasangan.map((pasanganItem) => [pasanganItem.label, pasanganItem.nilai])),
+      labelDariNilai: Object.fromEntries(pasangan.map((pasanganItem) => [pasanganItem.nilai, pasanganItem.label])),
+    };
+  }, [detail]);
+
+  const opsiStatus = useMemo(() => {
+    const hitung = Object.fromEntries(OPSI_STATUS_LAPORAN.map(([nilai]) => [nilai, 0]));
+    hitung.semua = semuaLaporan.length;
+    semuaLaporan.forEach((lap) => {
+      if (hitung[lap.status] !== undefined) hitung[lap.status] += 1;
+    });
+    const pasangan = OPSI_STATUS_LAPORAN.map(([nilai, label]) => ({ nilai, label: `${label} (${hitung[nilai]})` }));
+    return {
+      labels: pasangan.map((pasanganItem) => pasanganItem.label),
+      nilaiDariLabel: Object.fromEntries(pasangan.map((pasanganItem) => [pasanganItem.label, pasanganItem.nilai])),
+      labelDariNilai: Object.fromEntries(pasangan.map((pasanganItem) => [pasanganItem.nilai, pasanganItem.label])),
+    };
+  }, [semuaLaporan]);
 
   // Set URL foto laporan warga (untuk melabeli galeri "Dokumentasi Warga").
   const fotoWargaSet = useMemo(
@@ -605,24 +643,13 @@ export const DetailRuangPublikPage = () => {
               <p className="text-small" style={{ color: 'var(--color-text-muted)' }}>
                 Pilih fasilitas untuk melihat rincian atau mengirim laporan.
               </p>
-              <div className="facility-filter-group" role="group" aria-label="Filter kondisi fasilitas">
-                {[
-                  ['semua', 'Semua'],
-                  ['baik', 'Baik'],
-                  ['perlu_perhatian', 'Perlu Perhatian'],
-                  ['rusak', 'Rusak']
-                ].map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`facility-filter-button ${facilityFilter === value ? 'is-active' : ''}`}
-                    onClick={() => setFacilityFilter(value)}
-                    aria-pressed={facilityFilter === value}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SelectDropdown
+                options={opsiKondisi.labels}
+                value={opsiKondisi.labelDariNilai[facilityFilter]}
+                onChange={(label) => setFacilityFilter(opsiKondisi.nilaiDariLabel[label] ?? 'semua')}
+                ariaLabel="Filter kondisi fasilitas"
+                className="facility-filter-select"
+              />
             </div>
             {filteredFacilities.length === 0 ? (
               <div className="facility-list-empty">
@@ -765,18 +792,14 @@ export const DetailRuangPublikPage = () => {
         )}
 
         {!isLoadingLaporan && semuaLaporan.length > 0 && (
-          <div className="facility-filter-group" role="group" aria-label="Filter status laporan" style={{ marginBottom: 'var(--space-lg)' }}>
-            {OPSI_FILTER_LAPORAN.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                className={`facility-filter-button ${statusFilter === value ? 'is-active' : ''}`}
-                onClick={() => gantiStatusFilter(value)}
-                aria-pressed={statusFilter === value}
-              >
-                {label}
-              </button>
-            ))}
+          <div style={{ marginBottom: 'var(--space-lg)' }}>
+            <SelectDropdown
+              options={opsiStatus.labels}
+              value={opsiStatus.labelDariNilai[statusFilter]}
+              onChange={(label) => gantiStatusFilter(opsiStatus.nilaiDariLabel[label] ?? 'semua')}
+              ariaLabel="Filter status laporan"
+              className="facility-filter-select"
+            />
           </div>
         )}
 
