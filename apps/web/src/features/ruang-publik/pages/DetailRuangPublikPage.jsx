@@ -37,6 +37,20 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
+// Tombol panah galeri (FE-47). Dipakai di baris kontrol galeri.
+const GAYA_TOMBOL_PANAH = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '34px',
+  height: '34px',
+  padding: 0,
+  borderRadius: 'var(--radius-pill)',
+  border: '1px solid var(--color-border)',
+  backgroundColor: 'var(--color-surface)',
+  color: 'var(--color-text-main)',
+};
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -128,8 +142,11 @@ export const DetailRuangPublikPage = () => {
     setVisibleCount(TAHAP_LAPORAN);
   };
 
-  // Galeri foto (FE-14): indeks foto yang sedang diperbesar di lightbox (null = tertutup).
-  const [fotoAktifIdx, setFotoAktifIdx] = useState(null);
+  // Galeri foto (FE-14). `fotoTerpilih` adalah indeks foto yang sedang dipilih,
+  // dipakai bersama oleh galeri di halaman dan lightbox supaya posisinya selalu
+  // sinkron (FE-47). `lightboxTerbuka` hanya mengatur buka-tutup.
+  const [fotoTerpilih, setFotoTerpilih] = useState(0);
+  const [lightboxTerbuka, setLightboxTerbuka] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -203,6 +220,35 @@ export const DetailRuangPublikPage = () => {
 
   const galeriFoto = detail?.foto ?? [];
   const tampilkanGaleri = galeriFoto.length > 1;
+
+  // FE-47: geser pilihan foto satu langkah dan berhenti di ujung galeri.
+  const geserFoto = (arah) => {
+    setFotoTerpilih((i) => Math.min(galeriFoto.length - 1, Math.max(0, i + arah)));
+  };
+
+  // FE-47: kembali ke foto pertama setiap kali pindah ruang publik.
+  useEffect(() => {
+    setFotoTerpilih(0);
+    setLightboxTerbuka(false);
+  }, [detail?.id]);
+
+  // FE-47: panah kiri dan kanan saat lightbox terbuka. Escape tetap ditangani Modal.
+  useEffect(() => {
+    if (!lightboxTerbuka) return undefined;
+
+    const onKey = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setFotoTerpilih((i) => Math.max(0, i - 1));
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setFotoTerpilih((i) => Math.min(galeriFoto.length - 1, i + 1));
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxTerbuka, galeriFoto.length]);
 
   // Tandai laporan warga sebagai tidak pantas (FE-21 / BE-25).
   const handleFlag = async (laporanId) => {
@@ -633,7 +679,34 @@ export const DetailRuangPublikPage = () => {
                 Foto resmi pengelola dan dokumentasi warga untuk ruang publik ini.
               </p>
             </div>
-            <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
+              {galeriFoto.length > 1 && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => geserFoto(-1)}
+                    disabled={fotoTerpilih <= 0}
+                    aria-label="Tampilkan foto sebelumnya"
+                    style={{ ...GAYA_TOMBOL_PANAH, opacity: fotoTerpilih <= 0 ? 0.45 : 1, cursor: fotoTerpilih <= 0 ? 'not-allowed' : 'pointer' }}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="text-caption" aria-live="polite" style={{ minWidth: '108px', textAlign: 'center' }}>
+                    Foto {fotoTerpilih + 1} dari {galeriFoto.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => geserFoto(1)}
+                    disabled={fotoTerpilih >= galeriFoto.length - 1}
+                    aria-label="Tampilkan foto berikutnya"
+                    style={{ ...GAYA_TOMBOL_PANAH, opacity: fotoTerpilih >= galeriFoto.length - 1 ? 0.45 : 1, cursor: fotoTerpilih >= galeriFoto.length - 1 ? 'not-allowed' : 'pointer' }}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+              <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 'var(--space-md)' }}>
@@ -643,9 +716,13 @@ export const DetailRuangPublikPage = () => {
                 <div key={`${url}-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button
                     type="button"
-                    onClick={() => setFotoAktifIdx(idx)}
+                    onClick={() => {
+                      setFotoTerpilih(idx);
+                      setLightboxTerbuka(true);
+                    }}
                     aria-label={`Perbesar foto ${idx + 1} dari ${galeriFoto.length}`}
-                    style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden', aspectRatio: '1 / 1', width: '100%' }}
+                    aria-current={idx === fotoTerpilih ? 'true' : undefined}
+                    style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden', aspectRatio: '1 / 1', width: '100%', outline: idx === fotoTerpilih ? '3px solid var(--color-primary)' : 'none', outlineOffset: '2px' }}
                   >
                     <img
                       src={url}
@@ -790,17 +867,17 @@ export const DetailRuangPublikPage = () => {
 
       {/* LIGHTBOX GALERI FOTO (FE-14) */}
       <Modal
-        open={fotoAktifIdx !== null}
-        onClose={() => setFotoAktifIdx(null)}
+        open={lightboxTerbuka}
+        onClose={() => setLightboxTerbuka(false)}
         maxWidth="760px"
-        title={fotoAktifIdx !== null ? `Foto ${fotoAktifIdx + 1} dari ${galeriFoto.length} • ${detail.nama}` : ''}
+        title={lightboxTerbuka ? `Foto ${fotoTerpilih + 1} dari ${galeriFoto.length} • ${detail.nama}` : ''}
         footer={
           <>
             <Button
               variant="outline"
               size="sm"
-              disabled={fotoAktifIdx === null || fotoAktifIdx <= 0}
-              onClick={() => setFotoAktifIdx((i) => Math.max(0, i - 1))}
+              disabled={fotoTerpilih <= 0}
+              onClick={() => geserFoto(-1)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
             >
               <ChevronLeft size={14} /> Sebelumnya
@@ -808,26 +885,26 @@ export const DetailRuangPublikPage = () => {
             <Button
               variant="outline"
               size="sm"
-              disabled={fotoAktifIdx === null || fotoAktifIdx >= galeriFoto.length - 1}
-              onClick={() => setFotoAktifIdx((i) => Math.min(galeriFoto.length - 1, i + 1))}
+              disabled={fotoTerpilih >= galeriFoto.length - 1}
+              onClick={() => geserFoto(1)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
             >
               Berikutnya <ChevronRight size={14} />
             </Button>
-            <Button variant="primary" size="sm" onClick={() => setFotoAktifIdx(null)}>
+            <Button variant="primary" size="sm" onClick={() => setLightboxTerbuka(false)}>
               Tutup
             </Button>
           </>
         }
       >
-        {fotoAktifIdx !== null && galeriFoto[fotoAktifIdx] && (
+        {lightboxTerbuka && galeriFoto[fotoTerpilih] && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-sm)' }}>
             <img
-              src={galeriFoto[fotoAktifIdx]}
-              alt={`Foto ${detail.nama} ke-${fotoAktifIdx + 1}`}
+              src={galeriFoto[fotoTerpilih]}
+              alt={`Foto ${detail.nama} ke-${fotoTerpilih + 1}`}
               style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
             />
-            {fotoWargaSet.has(galeriFoto[fotoAktifIdx]) && (
+            {fotoWargaSet.has(galeriFoto[fotoTerpilih]) && (
               <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Camera size={12} /> Dokumentasi Warga
               </span>

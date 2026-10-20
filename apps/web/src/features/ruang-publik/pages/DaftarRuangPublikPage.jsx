@@ -603,7 +603,7 @@ export const DaftarRuangPublikPage = () => {
                     {/* Facilities Tag List */}
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: 'var(--space-md)' }}>
                       {item.fasilitas?.map((f) => (
-                        <span key={f.id} style={{ fontSize: '12px', padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-main)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
+                        <span key={f.id} style={{ fontSize: '12px', padding: '2px 8px', borderRadius: 'var(--radius-pill)', backgroundColor: 'var(--color-bg-main)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
                           {f.nama}
                         </span>
                       ))}
@@ -691,7 +691,7 @@ export const DaftarRuangPublikPage = () => {
                       minWidth: '44px',
                       minHeight: '44px',
                       padding: '0 6px',
-                      borderRadius: 'var(--radius-sm)',
+                      borderRadius: 'var(--radius-pill)',
                       border: nomor === halamanAktif ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
                       backgroundColor: nomor === halamanAktif ? 'var(--color-primary)' : 'var(--color-surface)',
                       color: nomor === halamanAktif ? '#FFFFFF' : 'var(--color-text-main)',

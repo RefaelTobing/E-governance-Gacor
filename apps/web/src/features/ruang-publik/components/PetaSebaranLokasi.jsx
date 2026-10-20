@@ -191,7 +191,7 @@ const PetaSebaranLokasi = ({
               zIndex: 1000,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               padding: '10px 14px',
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-md)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               display: 'flex',
               alignItems: 'center',
@@ -291,7 +291,7 @@ const PetaSebaranLokasi = ({
                       <span style={{
                         fontSize: '10px', fontWeight: 700,
                         backgroundColor: '#d1fae5', color: '#047857',
-                        padding: '2px 8px', borderRadius: '999px',
+                        padding: '2px 8px', borderRadius: 'var(--radius-pill)',
                         display: 'inline-block', marginBottom: '8px'
                       }}>
                         {item.kategori_id}

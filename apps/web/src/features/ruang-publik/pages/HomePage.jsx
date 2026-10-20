@@ -265,7 +265,7 @@ export const HomePage = () => {
             display: inline-block;
             width: 10px;
             height: 10px;
-            border-radius: 9999px;
+            border-radius: var(--radius-pill);
             background: rgba(255, 255, 255, 0.45);
             margin: 0 5px;
             cursor: pointer;

@@ -48,6 +48,7 @@
   --space-4xl: 64px;
 
   /* Border Radii */
+  --radius-xs: 6px;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -182,7 +183,7 @@ h3, .h3 {
   font-size: 14px;
   font-weight: 600;
   padding: 10px 18px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -263,12 +264,6 @@ h3, .h3 {
 .btn-sm {
   font-size: 12px;
   padding: 6px 12px;
-  border-radius: var(--radius-sm);
-}
-
-.btn.btn-sm.ruang-publik-detail-button,
-.btn.ruang-publik-detail-button {
-  border-radius: var(--radius-pill) !important;
 }
 
 .ruang-publik-list-card {
@@ -402,7 +397,6 @@ h3, .h3 {
 .btn-lg {
   font-size: 16px;
   padding: 14px 24px;
-  border-radius: var(--radius-md);
 }
 
 .btn-full {
@@ -510,7 +504,7 @@ h3, .h3 {
 .facility-reset-filter {
   min-height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background-color: var(--color-surface);
   color: var(--color-text-muted);
   font: inherit;
@@ -948,7 +942,7 @@ h3, .h3 {
   align-items: center;
   gap: 10px;
   padding: 7px 8px;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-main);
@@ -976,7 +970,7 @@ h3, .h3 {
   gap: 10px;
   width: 100%;
   padding: 7px 8px;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 600;
   color: var(--color-danger, #EF4444);
@@ -1931,7 +1925,7 @@ h3, .h3 {
   min-width: 36px;
   min-height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background-color: var(--color-bg-main);
   color: var(--color-text-main);
   cursor: pointer;
@@ -2063,7 +2057,7 @@ h3, .h3 {
   width: 100%;
   padding: 0 12px;
   border: 1px solid #FCA5A5;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background-color: var(--color-danger-light);
   color: var(--color-danger-text);
   font-size: 14px;
@@ -2111,7 +2105,7 @@ h3, .h3 {
   min-height: 40px;
   padding: 0 12px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background-color: var(--color-surface);
   color: var(--color-text-main);
   font-size: 14px;
@@ -2312,7 +2306,7 @@ h3, .h3 {
   font-weight: 600;
   cursor: pointer;
   padding: 6px 8px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
 }
 
 .profil-link-button:hover {
@@ -2478,7 +2472,7 @@ h3, .h3 {
   width: 36px;
   height: 36px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background-color: var(--color-bg-main);
   color: var(--color-danger-text);
   cursor: pointer;

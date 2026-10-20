@@ -31,7 +31,7 @@ class ErrorBoundary extends React.Component {
             maxWidth: '600px',
             backgroundColor: 'white',
             padding: '40px',
-            borderRadius: '12px',
+            borderRadius: 'var(--radius-lg)',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
             <p style={{ color: '#64748b', marginBottom: '24px', lineHeight: 1.6 }}>
               Aplikasi mengalami kesalahan. Silakan refresh halaman atau hubungi tim support.
             </p>
-            <details style={{ textAlign: 'left', backgroundColor: '#f1f5f9', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+            <details style={{ textAlign: 'left', backgroundColor: '#f1f5f9', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
               <summary style={{ cursor: 'pointer', color: '#475569', fontWeight: 600 }}>
                 Detail Error (untuk debugging)
               </summary>
@@ -63,7 +63,7 @@ class ErrorBoundary extends React.Component {
                 backgroundColor: '#0f766e',
                 color: 'white',
                 padding: '10px 24px',
-                borderRadius: '6px',
+                borderRadius: 'var(--radius-pill)',
                 border: 'none',
                 cursor: 'pointer',
                 fontWeight: 600,

@@ -190,7 +190,6 @@ export const TentangPage = () => {
               onClick={() => navigate('/ruang-publik')}
               className="btn btn-primary"
               style={{
-                borderRadius: 'var(--radius-lg)',
                 padding: '13px 26px',
                 fontSize: '15px',
                 fontWeight: 700
@@ -207,7 +206,6 @@ export const TentangPage = () => {
               }}
               className="btn btn-outline"
               style={{
-                borderRadius: 'var(--radius-lg)',
                 padding: '13px 26px',
                 fontSize: '15px',
                 fontWeight: 600
@@ -388,7 +386,7 @@ export const TentangPage = () => {
                 type="button"
                 onClick={() => navigate('/ruang-publik')}
                 className="btn btn-primary"
-                style={{ borderRadius: 'var(--radius-lg)', width: 'fit-content' }}
+                style={{ width: 'fit-content' }}
               >
                 <span>Buka Direktori Ruang Publik</span>
                 <ArrowRight size={16} />

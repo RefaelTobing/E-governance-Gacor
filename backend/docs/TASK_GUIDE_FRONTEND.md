@@ -288,8 +288,8 @@ Ringkasan status:
 | FE-43 | ✅ | Tampilan session admin di navbar publik |
 | FE-45 | ✅ | Zoom pinch trackpad di peta (selesai, terverifikasi di 3 peta) |
 | FE-46 | ✅ | Foto ruang publik jadi kotak, hapus teks di atas foto |
-| FE-47 | ❌ | Tombol panah kiri-kanan pada galeri foto ruang publik |
-| FE-48 | ❌ | Seragamkan rounded corner tombol dan kontrol |
+| FE-47 | ✅ | Tombol panah kiri-kanan pada galeri foto ruang publik |
+| FE-48 | ✅ | Seragamkan rounded corner tombol dan kontrol |
 | FE-49 | ❌ | Halaman dimulai dari tengah saat berpindah rute |
 | FE-50 | ❌ | Hapus simbol yang tidak membawa informasi di judul dan label |
 | FE-51 | ❌ | Filter kondisi fasilitas publik jadi dropdown |
@@ -982,7 +982,7 @@ maupun teks panjang (diuji: judul panjang dan deskripsi tiga kali lebih panjang)
 
 ### FE-47. Tombol panah kiri-kanan pada galeri foto ruang publik
 
-**Status:** ❌
+**Status:** ✅
 
 **Kondisi sekarang:** navigasi foto hanya ada di dalam modal lightbox
 (`DetailRuangPublikPage.jsx:794-839`, tombol `Sebelumnya` dan `Berikutnya` di footer Modal).
@@ -1034,11 +1034,87 @@ entri berfoto memang punya lebih dari satu gambar.
 mengirim satu `image_url` per baris (`schemas/ruang_publik.py`, `RuangPublikListResponse`),
 jadi panah di kartu daftar butuh perubahan backend dan tidak dikerjakan di task ini.
 
+**Hasil pelaksanaan:**
+
+Satu berkas disentuh: `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`.
+
+1. Baris kontrol galeri ditambahkan di kanan judul, sebaris dengan badge jumlah foto:
+   tombol panah kiri, teks `Foto n dari m`, tombol panah kanan. Dari dua pilihan yang
+   ditulis di rencana, yang dipakai adalah baris kontrol, bukan panah melayang di tepi
+   grid, karena panah melayang di atas kumpulan thumbnail terbaca seperti tombol yang
+   menutupi foto.
+2. Indeks foto disatukan. Sebelumnya hanya ada `fotoAktifIdx` yang sekaligus berarti
+   "lightbox terbuka" (`null` = tertutup). Sekarang ada `fotoTerpilih` sebagai satu-satunya
+   indeks, dipakai bersama oleh sorotan di halaman dan foto di lightbox, plus
+   `lightboxTerbuka` sebagai penanda buka-tutup. Alasannya, kalau panah di halaman juga
+   mengubah indeks yang sama seperti permintaan rencana, panah itu akan ikut membuka
+   lightbox setiap kali ditekan. Dengan pemisahan ini, panah di halaman dan panah di
+   lightbox menggerakkan indeks yang sama tanpa memaksa lightbox terbuka.
+3. Thumbnail yang sedang dipilih ditandai `outline` 3 px warna utama dan
+   `aria-current="true"`. Sengaja memakai `outline`, bukan `border`, supaya ukuran kotak
+   foto hasil FE-46 tidak berubah sedikit pun.
+4. Papan tombol: `ArrowLeft` dan `ArrowRight` menggeser foto saat lightbox terbuka, dan
+   `Escape` tetap ditangani `Modal`. Pendengar tombol dipasang hanya saat lightbox terbuka.
+5. Kedua ujung aman: panah kiri nonaktif di foto pertama, panah kanan nonaktif di foto
+   terakhir, dan `geserFoto` tetap dibatasi `Math.max` dan `Math.min` walau tombolnya
+   ditekan paksa.
+6. Indeks dikembalikan ke nol saat berpindah ruang publik, supaya tidak tertinggal di
+   nomor foto dari halaman sebelumnya.
+
+**Hasil verifikasi jalankan** (semua angka dari DOM, bukan dari tangkapan layar):
+
+- Panah muncul saat foto lebih dari satu, dan tidak muncul sama sekali pada ruang publik
+  yang hanya punya satu foto (diuji pada `rth-930e0d60146a`: bagian Galeri Foto tidak
+  dirender).
+- Posisi awal `Foto 1 dari 4`: panah kiri nonaktif dengan opasitas 0,45, panah kanan aktif.
+- Klik panah kanan tiga kali: indikator bergerak 1, 2, 3, 4 dan sorotan thumbnail mengikuti
+  indeks yang sama. Di foto keempat panah kanan nonaktif, dan menekannya lagi tidak
+  mengubah apa pun (tetap `Foto 4 dari 4`).
+- Klik panah kiri di foto pertama tidak mengubah apa pun (tetap `Foto 1 dari 4`).
+- Klik thumbnail ke-3 membuka lightbox dengan judul `Foto 3 dari 4`, dan indikator di
+  halaman ikut berpindah ke `Foto 3 dari 4`, jadi keduanya sinkron.
+- Di lightbox, `ArrowRight` memindahkan 3 ke 4 dan di ujung tombol `Berikutnya` nonaktif;
+  `ArrowLeft` memindahkan 4 ke 3 dan berhenti di 1; `Escape` menutup lightbox.
+- Papan tombol: tombol panah bisa difokus, `Enter` di panah kanan memindahkan
+  `Foto 1 dari 4` ke `Foto 2 dari 4`, dan setelah itu panah kiri ikut bisa difokus.
+  `Enter` pada panah tidak membuka lightbox.
+- Sorotan hanya ada di satu thumbnail: yang aktif `outline-style: solid` warna
+  `rgb(15, 118, 110)`, sisanya `outline-style: none`.
+- Lebar 390 px: thumbnail 173x173, panah masih di dalam layar, tidak ada geser horizontal.
+- Ukuran thumbnail tetap 164x164 dan foto utama Detail tetap 547x547 persegi, jadi hasil
+  FE-46 tidak terganggu oleh sorotan maupun baris kontrol baru.
+- Error konsol nol pada semua pengujian di atas.
+- `npm run build` dari `apps/web` lulus.
+
+**Cara pengujian, dan kenapa harus begitu.** Backend asli sudah berjalan di port 8000,
+tetapi tabel fotonya kosong: terhitung 1194 ruang publik dan 0 baris di `ruang_publik_foto`.
+Artinya `detail.foto` selalu kosong, bagian Galeri Foto tidak pernah dirender, dan panah
+tidak akan pernah terlihat dengan data asli. Karena itu pengujian galeri dilakukan di jalur
+terpisah: server data di port 8001 dan dev server kedua di port 5174 dengan
+`VITE_API_BASE_URL=http://localhost:8001`. Server yang sedang berjalan milik pemilik repo
+(dev server 5173 dan backend 8000) tidak dihentikan dan tidak diubah. Sesudah pengujian,
+kedua proses tambahan itu dimatikan lagi.
+
+**Temuan yang perlu diketahui di luar task ini:** selama tabel foto masih kosong, seluruh
+bagian Galeri Foto di halaman detail tidak tampil untuk ruang publik mana pun. Foto yang
+sudah dipotong rapi oleh FE-46 dan panah dari FE-47 baru akan terlihat setelah ETL foto
+mengisi `ruang_publik_foto`. Folder `data/Images/images/` di repo juga masih kosong.
+
+**Batas pengujian yang jujur:**
+
+1. Galeri diuji memakai data ruang publik asli dari CSV repo, tetapi disajikan oleh server
+   data sementara, bukan lewat backend FastAPI.
+2. Foto diperiksa memakai gambar SVG pengganti, bukan foto asli.
+3. Belum diuji dengan layar sentuh atau pembaca layar. Papan tombol diuji lewat peristiwa
+   tombol asli dari Chrome DevTools Protocol, bukan pembaca layar.
+4. Jumlah thumbnail yang diuji 1 dan 4. Belum diuji dengan jumlah foto yang jauh lebih
+   banyak sehingga gridnya sampai berbaris banyak.
+
 ---
 
 ### FE-48. Seragamkan rounded corner tombol dan kontrol
 
-**Status:** ❌
+**Status:** ✅
 
 **Gejala:** dalam satu baris filter saja, sudut tombolnya bercampur antara tajam dan
 membulat.
@@ -1132,6 +1208,80 @@ dibedakan bentuknya, dan itu justru salah satu pemicu kesan seragam yang dibahas
 ```
 
    Semua nilai tombol harus sama.
+
+**Keputusan yang diambil:** Opsi B (semua tombol pill `9999px`), dipilih pemilik repo
+setelah dua opsi di atas ditawarkan. Karena itu `DESIGN.md` §1.4 dan §1.5 ikut diperbarui:
+tombol pindah dari `8px` ke `9999px`, sedangkan input form dan popover dropdown tetap `8px`.
+Tanpa pembaruan dokumen, kode akan kembali menyimpang dari dokumen desainnya sendiri.
+
+**Yang dikerjakan:**
+
+1. Satu sumber nilai radius tombol: `.btn` memakai `var(--radius-pill)`. `.btn-sm` dan
+   `.btn-lg` tidak lagi menulis `border-radius` sendiri, jadi kecil, sedang, dan besar
+   otomatis mewarisi nilai yang sama.
+2. Aturan `!important` dihapus seluruhnya. Blok
+   `.btn.btn-sm.ruang-publik-detail-button, .btn.ruang-publik-detail-button` dibuang karena
+   `.btn` dan `.ruang-publik-detail-button` sekarang sama-sama pill; tidak ada lagi aturan
+   yang perlu dimenangkan.
+3. Kontrol lain yang punya permukaan sendiri diseragamkan: `.facility-filter-button` dan
+   `.facility-reset-filter` (8px → pill), `.akun-sidebar-close`, `.akun-logout-button`,
+   `.akun-menu-toggle`, `.profil-link-button`, `.profil-remove-button`, dan
+   `.profile-dropdown-logout`.
+4. Token `--radius-xs: 6px` ditambahkan. `Logo.jsx` memakai token itu menggantikan
+   `var(--radius-sm, 6px)`; fallback lama sebenarnya tidak pernah terpakai sehingga logo
+   selama ini 4px, sekarang benar 6px sesuai nilai yang dimaksud.
+5. Nilai literal di JSX dihabiskan: `ErrorBoundary.jsx` (12px → `--radius-lg`, 8px →
+   `--radius-md`, 6px pada tombol Refresh → pill), `PetaSebaranLokasi.jsx` (8px →
+   `--radius-md`, `999px` pada chip kategori → pill), `.hero-dot` di `HomePage.jsx`
+   (`9999px` → pill), chip fasilitas di `DaftarRuangPublikPage.jsx` (4px → pill), lima tab
+   status `RiwayatLaporanPage.jsx`, tombol nomor halaman, switch Masuk/Daftar di
+   `LoginPage.jsx`, tombol keluar `AdminLayout.jsx`, panah galeri `DetailRuangPublikPage.jsx`,
+   dan tiga tombol CTA `TentangPage.jsx` yang menimpa radius `.btn`. Fallback
+   `var(--radius-md, 6px)` pada dropdown profil ikut dirapikan karena 6px bukan nilai
+   `--radius-md`.
+
+**Hasil pengukuran** (`getComputedStyle(...).borderRadius` per elemen, Chrome headless lewat
+CDP, dev server baru di `localhost:5199`):
+
+| Halaman | Tombol | Nilai terhitung |
+| --- | --- | --- |
+| `/ruang-publik` | 28 | `9999px` semua, termasuk baris filter (reset, Gunakan Lokasi Saya, tiga dropdown, chip kategori) |
+| `/home` | 15 | `9999px` semua |
+| `/tentang` | 5 tombol `.btn` | `9999px` semua |
+| `/login`, `/login-pemerintah` | 4 dan 2 | `9999px` semua |
+| `/ruang-publik/:id` | 12 | `9999px` semua, termasuk `facility-filter-button` |
+| `/laporan-saya` | 8 | `9999px` semua, termasuk lima tab status |
+| `/profil` | 6 | `9999px` semua |
+| `/profil/keamanan` | 7 | 6 tombol `9999px`, 1 tombol teks "Lihat Sandi" `0px` |
+| `/profil/tersimpan` | 6 | `9999px` semua |
+| `/profil/bantuan` | 9 | 5 tombol `9999px`, 4 baris akordeon `0px` |
+| `/profil/tema` | 8 | 5 tombol `9999px`, 3 kartu pilihan tema `12px` |
+| `/dashboard`, `/dashboard/moderasi`, `/dashboard/fasilitas`, `/dashboard/data-master` | 3, 3, 14, 502 | `9999px` semua |
+
+Pemeriksaan statis: tidak ada lagi angka radius di JSX maupun CSS selain `50%` untuk elemen
+bulat dan marker peta, dan tidak ada `!important` untuk radius. `npm run build` dari
+`apps/web` lulus.
+
+**Pengecualian yang disengaja**, yaitu elemen `<button>` yang bukan tombol berbentuk kontrol,
+jadi tidak ikut dipill:
+
+- Baris akordeon `.tentang-faq-toggle` dan `.profil-faq-trigger` (`0px`): selebar kartu
+  induknya, tanpa latar. Kalau dipill, ring fokusnya berbentuk stadium dan tidak lagi
+  mengikuti sudut kartu.
+- Tombol teks tanpa latar: `.profil-show-pass` ("Lihat Sandi"), "Hapus semua" pada dropdown
+  fasilitas, dan tautan "Masuk ke RuangTerbuka" di form daftar.
+- Wadah berbentuk kartu atau media yang kebetulan dirender sebagai `<button>`:
+  `.profil-theme-card` dan `.profil-report-item` (12px) serta thumbnail galeri di halaman
+  detail (8px). Ketiganya memakai radius struktural. Kalau ikut dipill, foto dan kartu
+  berubah jadi stadium, yaitu keseragaman bentuk yang justru dikritik di FE-54.
+
+**Catatan pengujian:** dev server `5173` yang sudah berjalan menyajikan `index.css` hasil
+transform lama (sebagian aturan masih `8px`) walaupun file di disk sudah berubah; permintaan
+`/src/index.css?direct` mengembalikan isi terbaru, jadi ini cache transform Vite, bukan file
+yang salah. Audit dilakukan lewat dev server kedua di `5199` dan server `5173` milik pemilik
+repo tidak dihentikan. `5173` perlu di-restart agar peramban memuat aturan baru. `npm test`
+tidak dapat dijalankan karena binari `vitest` tidak ada di `node_modules`; yang tersedia
+hanya `npm run build`.
 
 ---
 
@@ -1632,8 +1782,8 @@ antislop hanya menyaring dan hasilnya cenderung monoton.
 6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
 7. **FE-45** — Zoom pinch trackpad di peta (selesai, terverifikasi di tiga peta)
 8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto (selesai)
-9. **FE-47** — Tombol panah kiri-kanan pada galeri foto
-10. **FE-48** — Seragamkan rounded corner tombol dan kontrol
+9. **FE-47** — Tombol panah kiri-kanan pada galeri foto (selesai)
+10. **FE-48** — Seragamkan rounded corner tombol dan kontrol (selesai)
 11. **FE-49** — Halaman dimulai dari tengah saat berpindah rute (bug navigasi)
 12. **FE-50** — Hapus simbol yang tidak membawa informasi
 13. **FE-51** — Filter kondisi fasilitas publik jadi dropdown

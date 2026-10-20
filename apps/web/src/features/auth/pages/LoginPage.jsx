@@ -96,7 +96,7 @@ export const LoginPage = () => {
           </div>
 
           {/* Tab Mode Switch */}
-          <div style={{ display: 'flex', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', padding: '4px', marginBottom: 'var(--space-xl)' }}>
+          <div style={{ display: 'flex', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-pill)', padding: '4px', marginBottom: 'var(--space-xl)' }}>
             <button
               type="button"
               onClick={() => { setIsRegister(false); setErrorMsg(''); setSuccessMsg(''); }}
@@ -104,7 +104,7 @@ export const LoginPage = () => {
                 flex: 1,
                 padding: '8px',
                 border: 'none',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--radius-pill)',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -122,7 +122,7 @@ export const LoginPage = () => {
                 flex: 1,
                 padding: '8px',
                 border: 'none',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: 'var(--radius-pill)',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',

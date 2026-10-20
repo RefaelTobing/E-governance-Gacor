@@ -50,20 +50,23 @@ Sistem jarak berbasis kelipatan **4px** untuk konsistensi layout mikro dan makro
 
 ### 1.4 Sudut Kelengkungan (Border Radius Tokens)
 
+* **Extra Small (`6px`)**: Dipakai pada Logo dan elemen kecil yang sudutnya tidak boleh
+  ikut membulat penuh.
 * **Small (`4px`)**: Dipakai pada Badge status kecil, Checkbox, Tooltip.
-* **Medium (`8px`)**: Dipakai pada Tombol, Input Form, Dropdown Popover.
+* **Medium (`8px`)**: Dipakai pada Input Form, Textarea, Dropdown Popover.
 * **Large (`12px`)**: Dipakai pada Kartu Fasilitas, Dialog Kecil.
 * **Extra Large (`16px`)**: Dipakai pada Kartu Ruang Publik, Banner CTA, Container Modal.
-* **Full / Pill (`9999px`)**: Dipakai pada Tag Status, Tombol Oval Navigasi.
+* **Full / Pill (`9999px`)**: Dipakai pada semua Tombol (kecil, sedang, besar), Chip filter,
+  Tag Status, dan Tombol Oval Navigasi.
 
 ### 1.5 Komponen Tokens (Component Tokens)
 
 #### 1. Tombol (Buttons)
-* **Primary**: Background `#0F766E`, Teks Putih, Radius `8px`.
-* **Secondary**: Background `#F59E0B`, Teks Putih, Radius `8px`.
+* **Primary**: Background `#0F766E`, Teks Putih, Radius `9999px` (pill).
+* **Secondary**: Background `#F59E0B`, Teks Putih, Radius `9999px` (pill).
 * **Outline**: Border `#0F172A`, Background Transparan, Teks Slate `#0F172A`.
 * **Ghost**: Background Transparan, Teks Teal `#0F766E`.
-* **Danger**: Background `#EF4444`, Teks Putih, Radius `8px`.
+* **Danger**: Background `#EF4444`, Teks Putih, Radius `9999px` (pill).
 
 #### 2. Elemen Formulir (Form Elements)
 * **Search Input**: Input pencarian dengan ikon kaca pembesar, background `#F8FAFC`, border `#E2E8F0`, radius `8px`.

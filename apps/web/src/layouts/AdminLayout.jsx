@@ -112,7 +112,7 @@ export const AdminLayout = () => {
             style={{
               width: '100%',
               padding: '6px 12px',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius-pill)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-bg-main)',
               color: 'var(--color-danger)',

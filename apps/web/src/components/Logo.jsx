@@ -50,7 +50,7 @@ export const Logo = ({
           width: `${config.imgSize}px`,
           height: `${config.imgSize}px`,
           objectFit: 'contain',
-          borderRadius: 'var(--radius-sm, 6px)',
+          borderRadius: 'var(--radius-xs)',
           flexShrink: 0,
         }}
       />

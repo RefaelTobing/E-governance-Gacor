@@ -85,7 +85,7 @@ export const RiwayatLaporanPage = () => {
           onClick={() => setActiveTab('semua')}
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: 'var(--radius-pill)',
             fontWeight: 600,
             fontSize: '14px',
             border: 'none',
@@ -103,7 +103,7 @@ export const RiwayatLaporanPage = () => {
           onClick={() => setActiveTab('dalam_penanganan')}
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: 'var(--radius-pill)',
             fontWeight: 600,
             fontSize: '14px',
             border: 'none',
@@ -121,7 +121,7 @@ export const RiwayatLaporanPage = () => {
           onClick={() => setActiveTab('selesai')}
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: 'var(--radius-pill)',
             fontWeight: 600,
             fontSize: '14px',
             border: 'none',
@@ -139,7 +139,7 @@ export const RiwayatLaporanPage = () => {
           onClick={() => setActiveTab('menunggu_verifikasi')}
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: 'var(--radius-pill)',
             fontWeight: 600,
             fontSize: '14px',
             border: 'none',
@@ -157,7 +157,7 @@ export const RiwayatLaporanPage = () => {
           onClick={() => setActiveTab('ditolak')}
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: 'var(--radius-pill)',
             fontWeight: 600,
             fontSize: '14px',
             border: 'none',
