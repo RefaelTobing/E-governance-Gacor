@@ -570,17 +570,17 @@ export const DaftarRuangPublikPage = () => {
           {itemTerlihat.map((item) => (
             <Card key={item.id} hoverable className="ruang-publik-list-card">
               <div className="kartu-ruang">
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  <img src={item.image} alt={item.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <span className="badge badge-info" style={{ position: 'absolute', top: '12px', left: '12px' }}>
-                    {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
-                  </span>
+                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start' }}>
+                  <img src={item.image} alt={item.nama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
+                        <span className="badge badge-info" style={{ marginBottom: '6px', display: 'inline-block' }}>
+                          {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
+                        </span>
                         <h3 className="h3" style={{ marginBottom: '2px' }}>{item.nama}</h3>
                         <p className="text-caption" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <MapPin size={14} color="var(--color-text-muted)" /> {item.alamat || 'Alamat tidak tersedia'} • <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{item.wilayah}</span>

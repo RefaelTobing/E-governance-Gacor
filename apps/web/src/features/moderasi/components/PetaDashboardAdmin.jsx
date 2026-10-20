@@ -3,7 +3,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { AlertTriangle, MapPin, RotateCcw } from 'lucide-react';
 import L from 'leaflet';
-import { Button } from '../../../components';
+import { Button, PetaZoomPinch } from '../../../components';
 import { getAllPublicSpaces } from '../../../services/ruangPublikService';
 import { JAKARTA_CENTER } from '../../../config/constants';
 
@@ -160,6 +160,8 @@ const PetaDashboardAdmin = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {/* FE-45: pinch trackpad (wheel + ctrlKey) mengezoom peta, bukan halaman. */}
+        <PetaZoomPinch />
         {/* FE-08: Clustering marker ruang publik */}
         <MarkerClusterGroup
           chunkedLoading

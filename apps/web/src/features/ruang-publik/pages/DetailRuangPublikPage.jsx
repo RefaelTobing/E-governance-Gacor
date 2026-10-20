@@ -25,7 +25,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal } from '../../../components';
+import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
@@ -420,6 +420,8 @@ export const DetailRuangPublikPage = () => {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
+                      {/* FE-45: pinch trackpad (wheel + ctrlKey) mengezoom peta, bukan halaman. */}
+                      <PetaZoomPinch />
                       {rute && (
                         <Polyline positions={rute} pathOptions={{ color: '#0F766E', weight: 4, opacity: 0.85 }} />
                       )}
@@ -486,17 +488,12 @@ export const DetailRuangPublikPage = () => {
               </div>
             </div>
 
-            <div style={{ height: '220px', borderRadius: 'var(--radius-md)', overflow: 'hidden', position: 'relative' }}>
+            <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
               <img
                 src={detail.image}
-                alt="Peta Lokasi"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                alt={`Foto ${detail.nama}`}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
               />
-              <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ backgroundColor: 'white', padding: '8px 16px', borderRadius: 'var(--radius-pill)', fontWeight: 700, boxShadow: 'var(--shadow-md)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={14} color="#0F766E" /> Lokasi {detail.nama}
-                </div>
-              </div>
             </div>
           </CardBody>
         </Card>
@@ -643,25 +640,26 @@ export const DetailRuangPublikPage = () => {
             {galeriFoto.map((url, idx) => {
               const dariWarga = fotoWargaSet.has(url);
               return (
-                <button
-                  key={`${url}-${idx}`}
-                  type="button"
-                  onClick={() => setFotoAktifIdx(idx)}
-                  aria-label={`Perbesar foto ${idx + 1} dari ${galeriFoto.length}`}
-                  style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden', height: '110px' }}
-                >
-                  <img
-                    src={url}
-                    alt={`Foto ${detail.nama} ke-${idx + 1}`}
-                    loading="lazy"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
+                <div key={`${url}-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFotoAktifIdx(idx)}
+                    aria-label={`Perbesar foto ${idx + 1} dari ${galeriFoto.length}`}
+                    style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden', aspectRatio: '1 / 1', width: '100%' }}
+                  >
+                    <img
+                      src={url}
+                      alt={`Foto ${detail.nama} ke-${idx + 1}`}
+                      loading="lazy"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </button>
                   {dariWarga && (
-                    <span className="badge badge-info" style={{ position: 'absolute', bottom: '6px', left: '6px', fontSize: '11px' }}>
+                    <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                       <Camera size={11} /> Dokumentasi Warga
                     </span>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>

@@ -197,12 +197,8 @@ export const DetailStatusLaporanPage = () => {
                 <span className="text-caption" style={{ fontWeight: 700 }}>{laporan.foto ? 1 : 0} Berkas Foto</span>
               </div>
               {laporan.foto ? (
-                <div style={{ position: 'relative', height: '200px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '8px' }}>
-                  <img src={laporan.foto} alt={`Dokumentasi ${laporan.fasilitasNama || 'fasilitas'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <span className="badge badge-success" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '10px' }}>Asli</span>
-                  <span className="text-caption" style={{ position: 'absolute', bottom: '0', left: '0', right: '0', padding: '6px 10px', color: 'white', backgroundColor: 'rgba(15,23,42,0.6)' }}>
-                    {laporan.fasilitasNama || 'Dokumentasi fasilitas'}
-                  </span>
+                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '8px' }}>
+                  <img src={laporan.foto} alt={`Dokumentasi ${laporan.fasilitasNama || 'fasilitas'}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ) : (
                 <div style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)', marginBottom: '8px' }}>

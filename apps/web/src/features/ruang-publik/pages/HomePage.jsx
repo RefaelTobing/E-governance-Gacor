@@ -151,31 +151,6 @@ export const HomePage = () => {
                     objectPosition: 'center'
                   }}
                 />
-                {/* Location indicator badge bottom right */}
-                <div
-                  className="hero-location-badge"
-                  style={{
-                    position: 'absolute',
-                    bottom: '32px',
-                    right: '32px',
-                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: 'var(--radius-pill, 9999px)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                    zIndex: 2
-                  }}
-                >
-                  <MapPin size={14} color="#2DD4BF" />
-                  <span>{slide.title} • {slide.location}</span>
-                </div>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -313,9 +288,6 @@ export const HomePage = () => {
               padding-top: 64px !important;
               padding-bottom: 72px !important;
             }
-            .hero-location-badge {
-              display: none !important;
-            }
           }
         `}</style>
       </section>
@@ -369,27 +341,29 @@ export const HomePage = () => {
               {featuredSpaces[0] && (
                 <div className="home-space-main-col">
                   <Card hoverable className="home-space-card home-space-card-featured">
-                    <div style={{ position: 'relative', height: '240px', width: '100%' }}>
+                    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'center' }}>
                       <img
                         src={featuredSpaces[0].image}
                         alt={featuredSpaces[0].nama}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="home-space-pick" style={{ position: 'absolute', top: '12px', left: '12px' }}>
-                        Rekomendasi Warga
-                      </span>
-                      <span className="badge badge-info" style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'var(--color-surface)' }}>
-                        {typeof featuredSpaces[0].kategori === 'object' ? featuredSpaces[0].kategori?.label || 'Kategori' : featuredSpaces[0].kategori || featuredSpaces[0].kategori_id || 'Kategori'}
-                      </span>
-                      <span className="text-caption" style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 10px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={12} color="#FFFFFF" /> {featuredSpaces[0].wilayah}
-                      </span>
                     </div>
 
                     <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-xl)' }}>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <div>
+                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: 'var(--space-sm)' }}>
+                            <span className="badge badge-info">
+                              {typeof featuredSpaces[0].kategori === 'object' ? featuredSpaces[0].kategori?.label || 'Kategori' : featuredSpaces[0].kategori || featuredSpaces[0].kategori_id || 'Kategori'}
+                            </span>
+                            <span className="home-space-pick">
+                              Rekomendasi Warga
+                            </span>
+                          </div>
                           <h3 className="h3" style={{ marginBottom: 'var(--space-xs)', fontSize: '22px' }}>{featuredSpaces[0].nama}</h3>
+                          <p className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-sm)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={12} color="var(--color-text-muted)" /> {featuredSpaces[0].wilayah}
+                          </p>
                           <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {featuredSpaces[0].deskripsi}
                           </p>
@@ -439,23 +413,23 @@ export const HomePage = () => {
               <div className="home-space-side-col">
                 {featuredSpaces.slice(1, 3).map((item) => (
                   <Card key={item.id} hoverable className="home-space-card home-space-card-side">
-                    <div style={{ position: 'relative', height: '140px', width: '100%' }}>
+                    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%' }}>
                       <img
                         src={item.image}
                         alt={item.nama}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="badge badge-info" style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: 'var(--color-surface)', fontSize: '11px' }}>
-                        {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
-                      </span>
-                      <span className="text-caption" style={{ position: 'absolute', bottom: '8px', left: '8px', backgroundColor: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '2px 8px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
-                        <MapPin size={10} color="#FFFFFF" /> {item.wilayah}
-                      </span>
                     </div>
 
                     <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-md)' }}>
                       <div>
+                        <span className="badge badge-info" style={{ fontSize: '11px', marginBottom: '6px', display: 'inline-block' }}>
+                          {typeof item.kategori === 'object' ? item.kategori?.label || 'Kategori' : item.kategori || item.kategori_id || 'Kategori'}
+                        </span>
                         <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item.nama}</h4>
+                        <p className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-xs)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
+                          <MapPin size={11} color="var(--color-text-muted)" /> {item.wilayah}
+                        </p>
                         <p className="text-caption" style={{ marginBottom: 'var(--space-sm)', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {item.deskripsi}
                         </p>

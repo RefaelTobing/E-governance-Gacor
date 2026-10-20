@@ -1106,8 +1106,12 @@ h3, .h3 {
 }
 
 .home-space-card-side > div:first-child {
-  height: 100% !important;
-  min-height: 180px;
+  /* align-self center: aspect-ratio hanya berlaku bila tinggi tidak dipaksa
+     mengisi baris grid, dan foto tetap di tengah bila badan kartu lebih tinggi. */
+  align-self: center;
+  height: auto !important;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
 }
 
 .home-space-card-side .card-body {
@@ -1121,6 +1125,12 @@ h3, .h3 {
 .home-space-card-featured {
   border-color: var(--color-primary);
   box-shadow: 0 12px 28px -6px rgba(15, 118, 110, 0.18);
+  /* Foto kartu unggulan dibuat persegi, jadi kartunya disusun mendatar supaya
+     tinggi kartu tidak ikut memanjang setinggi lebar kolomnya. Ukuran kolom foto
+     dipatok tetap, bukan otomatis, supaya rasionya selalu 1:1 walau teksnya
+     panjang. */
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
 }
 
 @media (max-width: 992px) {
@@ -1136,7 +1146,7 @@ h3, .h3 {
     flex-direction: column;
   }
   .home-space-card-side > div:first-child {
-    height: 180px !important;
+    height: auto !important;
     min-height: 0;
   }
 }
@@ -1203,8 +1213,8 @@ h3, .h3 {
 }
 
 @media (max-width: 768px) {
-  .home-space-card-featured > div:first-child {
-    height: 200px !important;
+  .home-space-card-featured {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

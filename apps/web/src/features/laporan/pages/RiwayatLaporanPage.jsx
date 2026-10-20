@@ -237,12 +237,9 @@ export const RiwayatLaporanPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {filteredLaporan.map((item) => (
             <Card key={item.id} hoverable>
-              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
-                <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '160px' }}>
-                  <img src={item.foto} alt={item.fasilitasNama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <span className="badge badge-info" style={{ position: 'absolute', top: '12px', left: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <Tag size={12} /> {(item.jenisMasalah || 'Umum').split('/')[0]}
-                  </span>
+              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr' }}>
+                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start' }}>
+                  <img src={item.foto} alt={item.fasilitasNama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -254,6 +251,9 @@ export const RiwayatLaporanPage = () => {
                       <StatusBadge status={item.status} />
                     </div>
 
+                    <span className="badge badge-info" style={{ marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Tag size={12} /> {(item.jenisMasalah || 'Umum').split('/')[0]}
+                    </span>
                     <h3 className="h3" style={{ marginBottom: '2px' }}>{item.fasilitasNama}</h3>
                     <p className="text-caption" style={{ marginBottom: 'var(--space-md)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <MapPin size={12} color="var(--color-text-muted)" /> <strong>{item.ruangPublikNama}</strong> • {item.wilayah}

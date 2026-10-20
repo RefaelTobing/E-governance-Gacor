@@ -286,8 +286,8 @@ Ringkasan status:
 | FE-41 | ✅ | Pengaturan page size 10/20/50/100 |
 | FE-42 | ✅ | Status fasilitas HomePage jadi Baik |
 | FE-43 | ✅ | Tampilan session admin di navbar publik |
-| FE-45 | ❌ | Zoom pinch trackpad di peta (mengezoom halaman, bukan peta) |
-| FE-46 | ❌ | Foto ruang publik jadi kotak, hapus teks di atas foto |
+| FE-45 | ✅ | Zoom pinch trackpad di peta (selesai, terverifikasi di 3 peta) |
+| FE-46 | ✅ | Foto ruang publik jadi kotak, hapus teks di atas foto |
 | FE-47 | ❌ | Tombol panah kiri-kanan pada galeri foto ruang publik |
 | FE-48 | ❌ | Seragamkan rounded corner tombol dan kontrol |
 | FE-49 | ❌ | Halaman dimulai dari tengah saat berpindah rute |
@@ -637,7 +637,62 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ### FE-45. Zoom pinch trackpad di peta mengezoom halaman, bukan peta
 
-**Status:** ❌
+**Status:** ✅
+
+**Sudah dikerjakan:**
+
+1. Komponen baru `apps/web/src/components/PetaZoomPinch.jsx`, dirender di dalam
+   `MapContainer` pada tiga peta: `PetaSebaranLokasi.jsx:218`,
+   `DetailRuangPublikPage.jsx:424`, `PetaDashboardAdmin.jsx:164`.
+2. Diekspor dari `apps/web/src/components/index.js`.
+3. `scrollWheelZoom={false}` dipertahankan di ketiga peta, supaya tidak terjadi
+   penanganan ganda antara handler Leaflet dan komponen ini.
+4. `FormLaporPage.jsx` dibiarkan apa adanya, karena handler wheel-nya memang sudah aktif.
+5. `npm run build` dari `apps/web` lulus.
+
+**Hasil verifikasi jalankan** (dev server 5173, Chromium lebar 1280px, event `ctrl+wheel`
+dikirim lewat Chrome DevTools Protocol):
+
+| Kriteria | `/ruang-publik` | `/ruang-publik/:id` | `/dashboard` |
+| --- | --- | --- | --- |
+| `wheel` listener terpasang | ada (sebelumnya tidak ada) | ada | ada |
+| pinch dicegah | `defaultPrevented = true` | terbukti sama | terbukti sama |
+| level zoom peta berubah | 13 → 15 → 14 | 15 → 17 → 16 | 13 → 15 → 14 |
+| halaman tidak ikut mengezoom | `visualViewport.scale` 1, `devicePixelRatio` 1 | sama | sama |
+| scroll biasa tetap menggulir halaman | `scrollY` 411 → 971, zoom tetap 14 | `scrollY` 251 → 811, zoom tetap | `scrollY` 406 → 831, zoom tetap |
+| error konsol | tidak ada | tidak ada | tidak ada |
+
+Uji tambahan pada `/ruang-publik`:
+
+- **Zoom terkunci di titik kursor.** Pinch di 4 posisi berbeda; koordinat di bawah kursor
+  hanya bergeser `0.000005` sampai `0.000069` derajat, sementara pusat peta bergeser
+  `0.0024` sampai `0.0397` derajat. Artinya peta tidak selalu mengezoom ke tengah.
+- **Batas zoom.** Rentang peta `minZoom` 0 dan `maxZoom` 18. Dari zoom 13 dengan 28
+  dorongan masuk, hasilnya berhenti tepat di 18 tanpa error.
+- **Pembersihan listener.** Jumlah listener `wheel` tetap 1 setelah keluar-masuk rute
+  sebanyak 3 kali, jadi tidak ada penumpukan.
+
+**Perbandingan sebelum dan sesudah** (bukti bug-nya nyata dan perbaikannya nyata): pada
+kode sebelum FE-45, `.leaflet-container` tidak memiliki listener `wheel` sama sekali,
+`ctrl+wheel` tiba dengan `defaultPrevented = false`, dan zoom peta tetap 13.
+
+**Catatan pengujian yang penting untuk diingat.** Pengujian peta dengan peramban otomatis
+bisa memberi hasil palsu bila tab tidak sedang ditampilkan: `requestAnimationFrame` tidak
+menyala, sehingga animasi zoom Leaflet tidak pernah selesai, `_animatingZoom` tertinggal
+bernilai benar, dan SEMUA zoom berhenti bekerja, termasuk tombol `+`/`-` bawaan Leaflet.
+Terukur langsung: 0 frame per 1,2 detik sebelum tab dibawa ke depan, lalu 144 frame
+sesudahnya. Karena itu, panggil `Page.bringToFront` sebelum menguji peta.
+
+**Batas pengujian yang jujur:**
+
+1. Pinch dikirim sebagai event `ctrl+wheel`, persis mekanisme yang dipakai Chromium untuk
+   pinch trackpad, tetapi tetap bukan jari di permukaan trackpad fisik. Belum diuji di
+   perangkat nyata.
+2. Batas bawah zoom tidak dibuktikan sampai dasar; yang terbukti adalah batas atas.
+3. Bukan pengujian layar sentuh di HP. Pinch layar sentuh lewat jalur `touchstart` Leaflet,
+   masalah berbeda, lihat bagian "Di luar cakupan" di bawah.
+4. Halaman yang butuh login diuji memakai mock backend sementara, bukan FastAPI + database
+   asli (MySQL di mesin ini tidak berjalan).
 
 **Gejala:** di laptop, arahkan kursor ke peta OSM lalu lakukan pinch trackpad (dua jari
 keluar/masuk). Yang mengezoom bukan peta, melainkan halaman browser. Scroll biasa (dua
@@ -769,7 +824,7 @@ pinch ikut mati. Perbaikan itu terpisah dan perlu uji di perangkat fisik.
 
 ### FE-46. Foto ruang publik jadi kotak, hapus teks di atas foto
 
-**Status:** ❌
+**Status:** ✅
 
 **Maksud permintaan:** foto ruang publik dibuat berbentuk kotak (rasio persegi), dan
 tulisan nama ruang publik yang menempel di atas foto dihapus.
@@ -842,6 +897,86 @@ diubah dari tinggi tetap menjadi `aspectRatio: '1 / 1'` + `maxHeight`
 2. Pastikan setiap foto berbentuk kotak dan bersih dari tulisan.
 3. Cek satu ruang publik yang punya banyak foto pada galeri detailnya.
 4. Periksa di lebar layar 390px dan 1280px.
+
+**Hasil pelaksanaan:**
+
+Foto dibuat persegi 1:1 dengan `aspectRatio: '1 / 1'` pada tujuh kotak foto, lalu
+`alignSelf` disetel sesuai konteks kartu. Tinggi tetap lama (240px, 140px, 220px, 110px,
+200px) dihapus seluruhnya.
+
+| Halaman | Foto | Sebelum | Sesudah |
+| --- | --- | --- | --- |
+| Beranda | kartu unggulan | 730x240 (rasio 3,04) | 340x340 (1:1) |
+| Beranda | dua kartu samping | 195x225 (0,87) | 195x195 (1:1) |
+| Daftar | thumbnail kartu | 260x221 (1,18) | 260x260 (1:1) |
+| Detail | foto utama | 547x220 (2,48) | 547x547 (1:1) |
+| Detail | thumbnail galeri | 164x110 (1,49) | 164x164 (1:1) |
+| Laporan Saya | foto kartu | 240 tebal bebas | 240x240 (1:1) |
+| Detail Status Laporan | foto bukti | 330x200 (1,65) | 330x330 (1:1) |
+
+Tulisan yang dihapus dari atas foto: badge hero Beranda (nama ruang publik dan wilayah),
+pill `Lokasi {nama}` di foto utama Detail, badge `Asli` dan caption nama fasilitas di
+Detail Status Laporan, badge kategori di kartu Daftar, badge kategori dan wilayah di kartu
+Beranda, serta badge jenis masalah di kartu Laporan Saya.
+
+Informasi yang tidak dibuang, hanya dipindah keluar dari area foto:
+
+- Kategori di kartu Daftar dan di kartu Beranda pindah ke baris pertama isi kartu.
+- Wilayah di kartu Beranda pindah ke bawah judul, karena sebelumnya hanya ada di atas foto.
+- `Rekomendasi Warga` di kartu unggulan pindah ke baris badge di atas judul.
+- `Dokumentasi Warga` di galeri Detail pindah ke bawah thumbnail, potongan foto asli 6 px.
+- Jenis masalah di kartu Laporan Saya pindah ke atas nama fasilitas.
+
+**Temuan teknis yang menentukan hasilnya.** `aspectRatio` pada kotak foto tidak berlaku
+selama gambar di dalamnya masih ikut mengalir, karena `height: 100%` pada gambar membuat
+tingginya menyetir tinggi kotak. Terukur: kotak 260 px memaksa tinggi jadi 266 px.
+Perbaikannya, gambar diberi `position: absolute; inset: 0`. Setelah itu kotak jadi tepat
+260x260, dan bentuknya tetap persegi walau gambar aslinya potret (diuji dengan gambar
+rasio 1:3: kotak tetap persegi dan tidak melar).
+
+Kartu unggulan Beranda juga diubah jadi mendatar (`display: grid`) supaya tinggi kartu
+tidak ikut memanjang setinggi lebar kolomnya. Kolom foto dipatok tetap 340 px, bukan
+otomatis, karena versi otomatis terbukti gagal saat teksnya panjang (foto jadi 232x316,
+tidak persegi, dan meluber). Dengan patokan tetap, rasionya tetap 1:1 pada teks normal
+maupun teks panjang (diuji: judul panjang dan deskripsi tiga kali lebih panjang).
+
+**Perbedaan dari rencana di atas, supaya tidak menyesatkan:**
+
+1. Foto yang dijadikan persegi bukan hanya lima kontainer yang didaftar, melainkan tujuh,
+   karena galeri Detail punya satu kotak sendiri dan kartu Laporan Saya juga.
+2. Badge kategori, jenis masalah, `Rekomendasi Warga`, dan wilayah tidak dihapus, melainkan
+   dipindah keluar dari foto. Alasannya dua: desain Figma memang menaruh badge kategori di
+   atas foto, dan menghapusnya berarti informasi wilayah hilang karena di kartu Beranda
+   wilayah hanya muncul di atas foto.
+3. Berkas yang disentuh ada enam, bukan lima: bertambah `apps/web/src/index.css` karena
+   aturan `height: 100% !important` pada kartu samping dan kartu unggulan harus diubah,
+   kalau tidak foto tidak akan pernah bisa persegi.
+
+**Hasil verifikasi jalankan** (dev server 5173, Chromium 1280px, semua angka diambil dari
+`getBoundingClientRect` di DOM):
+
+- Ketujuh kotak foto terukur persegi tepat, selisih sisi di bawah 1,5 px.
+- `textContent` di dalam setiap kotak foto kosong, jadi tidak ada tulisan yang menempel.
+- Tidak ada elemen yang meluber keluar kartu pada pengujian teks panjang.
+- Beranda: foto kartu unggulan 340x340 dengan sisa ruang 35 px di atas dan 35 px di bawah,
+  artinya foto tetap di tengah kolomnya.
+- Lebar 390 px: foto kartu 356x356, semua persegi, tidak ada geser horizontal.
+- Lebar 768 px: foto kartu unggulan 703x703, kartu samping 343x343, semuanya persegi,
+  tidak ada geser horizontal.
+- `npm run build` dari `apps/web` lulus.
+
+**Batas pengujian yang jujur:**
+
+1. Halaman diuji memakai server data sementara (bukan FastAPI + MySQL, karena MySQL di
+   mesin ini tidak berjalan). Datanya diambil apa adanya dari CSV di repo, tetapi ini bukan
+   backend asli.
+2. Foto aslinya tidak ada di repo (folder `data/Images/images/` kosong), jadi bentuk foto
+   diperiksa memakai gambar SVG pengganti. Justru inilah yang membuka temuan pada bagian
+   "Temuan teknis" di atas, karena tinggi kotak ikut berubah mengikuti rasio gambar.
+3. Belum diuji di perangkat asli dan layar sentuh. Pengujian lebar layar memakai emulasi
+   peramban.
+4. Keindahan tata letak hanya dinilai dari pengukuran dan tangkapan layar. Penilaian rasa
+   desain tetap perlu mata pemilik produk.
 
 ---
 
@@ -1495,8 +1630,8 @@ antislop hanya menyaring dan hasilnya cenderung monoton.
 4. **FE-15** — Integrasi OSRM routing (advanced feature)
 5. **FE-21** dan **FE-26** — Fitur flag laporan
 6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
-7. **FE-45** — Zoom pinch trackpad di peta (bug: yang mengezoom halaman, bukan peta)
-8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto
+7. **FE-45** — Zoom pinch trackpad di peta (selesai, terverifikasi di tiga peta)
+8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto (selesai)
 9. **FE-47** — Tombol panah kiri-kanan pada galeri foto
 10. **FE-48** — Seragamkan rounded corner tombol dan kontrol
 11. **FE-49** — Halaman dimulai dari tengah saat berpindah rute (bug navigasi)

@@ -5,6 +5,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MapPin, Loader } from 'lucide-react';
 import L from 'leaflet';
 import { JAKARTA_CENTER } from '../../../config/constants';
+import { PetaZoomPinch } from '../../../components';
 
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -213,6 +214,8 @@ const PetaSebaranLokasi = ({
           scrollWheelZoom={false}
         >
           <RecenterMap center={mapCenter} />
+          {/* FE-45: pinch trackpad (wheel + ctrlKey) mengezoom peta, bukan halaman. */}
+          <PetaZoomPinch />
           {onSetManualLocation && <PetaKlikHandler onPilih={onSetManualLocation} />}
 
           <TileLayer
