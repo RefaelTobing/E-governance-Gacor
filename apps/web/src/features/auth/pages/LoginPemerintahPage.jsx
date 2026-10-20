@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { Button, Input, Card, CardBody, Logo } from '../../../components';
+import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
 import { loginPemerintah, getMe } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
 
@@ -64,9 +64,8 @@ export const LoginPemerintahPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <Input
+            <PasswordInput
               label="Kata Sandi"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

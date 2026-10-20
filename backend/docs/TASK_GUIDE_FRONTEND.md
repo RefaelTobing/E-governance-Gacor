@@ -296,6 +296,7 @@ Ringkasan status:
 | FE-52 | ✅ | Perbaikan tampilan foto bukti di halaman review laporan |
 | FE-53 | ✅ | Hapus atau ganti simbol di halaman Tentang |
 | FE-54 | ✅ | Perbaikan sistem warna: badge, mode gelap, dan palet |
+| FE-55 | ✅ | Tombol tampilkan/sembunyikan kata sandi di login, daftar, dan kelola admin |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -1861,6 +1862,46 @@ antislop hanya menyaring dan hasilnya cenderung monoton.
     `AGENTS.md` tidak pernah menunjuk kedua skill itu; rujukan hanya ada di
     `antislop/SKILL.md` sebagai pilihan opsional.
 
+### FE-55. Tombol tampilkan/sembunyikan kata sandi
+
+**Status:** ✅
+
+**Gejala:** seluruh bidang kata sandi hanya bisa diketik buta. Salah ketik baru ketahuan
+setelah login/daftar gagal, dan pengguna tidak punya cara memeriksa apa yang sudah diketik.
+Pola ini berlaku di tiga tempat: login/daftar warga, login pemerintah, dan modal kelola admin.
+
+**Perubahan:**
+1. Komponen baru `apps/web/src/components/PasswordInput.jsx`, mengikuti prop dan markup
+   `Input.jsx` (`label`, `error`, `required`, `className`, `...props`) dengan tambahan tombol
+   mata di dalam bidang. `Input.jsx` tidak diubah, jadi seluruh pemakaian lain tetap.
+2. Tombol memakai `type="button"` sehingga klik mata tidak mengirim formulir; ikon
+   `Eye`/`EyeOff` (lucide, 18px) dan `aria-label` "Tampilkan/Sembunyikan kata sandi" plus
+   `aria-pressed`. `padding-right: 44px` mencegah teks tertimpa tombol.
+3. Dipasang di 5 bidang: `LoginPage` (Kata Sandi, Konfirmasi Kata Sandi), `LoginPemerintahPage`
+   (Kata Sandi), `KelolaAdminPage` (Kata Sandi, Kata Sandi Baru). Dua field teks di modal
+   kelola admin (Nama Lengkap, Email) ikut dipindah ke `Input` agar label dan tinggi bidang
+   dalam satu modal seragam; logika `formData`/`editFormData` tidak berubah.
+4. `autoComplete` sengaja tidak ditambahkan agar perilaku pengisian otomatis tidak bergeser
+   dari kondisi sebelumnya (di luar lingkup task).
+
+**Bukti (11/11 lolos, CDP Chrome, dev `:5199`):**
+1. Login warga: kondisi awal `type=password`, `aria-pressed=false`, ikon `lucide-eye`,
+   `padding-right` terhitung 44px, tombol 36px berada di dalam kotak input.
+2. Label terhubung ke input (`htmlFor === id`) dan id tetap sama sebelum/sesudah mengetik
+   (`password-…`), jadi klik label tetap memfokuskan bidang.
+3. Setelah klik: `type=text`, nilai `Rahasia123` terbaca, ikon `lucide-eye-off`,
+   `aria-pressed=true`, label berubah jadi "Sembunyikan kata sandi".
+4. Klik kedua: kembali `type=password` tanpa kehilangan nilai yang sudah diketik.
+5. Keyboard: tombol menerima fokus, Enter men-toggle (`focused: true`, `type` berubah).
+6. Mode daftar (`/login?mode=register`): dua bidang punya tombol sendiri; menampilkan
+   Kata Sandi tidak ikut membuka Konfirmasi Kata Sandi (`["text","password"]`).
+7. Login pemerintah: toggle bekerja dengan nilai `AdminRahasia9`, ikon berganti.
+8. Modal kelola admin (tambah): toggle bekerja dengan nilai `AdminBaru123`.
+9. Modal kelola admin (edit): mulai tersembunyi, klik menampilkan, ikon berganti.
+10. Mobile 390px: tombol tetap 36px di dalam input, tanpa overflow horizontal.
+11. `npm run build` lulus (2,75 s), tanpa exception JS di konsol. `Input.test.jsx` tidak
+    tersentuh karena `Input` tidak berubah.
+
 ---
 
 ## Prioritas Rekomendasi (Diperbarui)
@@ -1904,6 +1945,7 @@ antislop hanya menyaring dan hasilnya cenderung monoton.
 14. **FE-52** — Perbaikan tampilan foto bukti di halaman review laporan
 15. **FE-53** — Hapus atau ganti simbol di halaman Tentang
 16. **FE-54** — Perbaikan sistem warna: badge, mode gelap, dan palet
+17. **FE-55** — Tombol tampilkan/sembunyikan kata sandi (selesai)
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
-import { Button, Card, CardBody, EmptyState, Skeleton, Input } from '../../../components';
+import { Button, Card, CardBody, EmptyState, Skeleton, Input, PasswordInput } from '../../../components';
 import api from '../../../config/api';
 
 export const KelolaAdminPage = () => {
@@ -197,36 +197,25 @@ export const KelolaAdminPage = () => {
             <h3 style={{ marginBottom: '16px' }}>Tambah Admin Baru</h3>
             {errorMsg && <div style={{ color: 'red', marginBottom: '12px', fontSize: '13px' }}>{errorMsg}</div>}
             <form onSubmit={handleCreateAdmin}>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Nama Lengkap</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{ width: '100%', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
-                />
-              </div>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Email</label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  style={{ width: '100%', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
-                />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Kata Sandi</label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  style={{ width: '100%', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
-                />
-              </div>
+              <Input
+                label="Nama Lengkap"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+              <Input
+                label="Email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+              <PasswordInput
+                label="Kata Sandi"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                 <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>Batal</Button>
                 <Button type="submit" variant="primary" size="sm">Simpan</Button>
@@ -249,25 +238,17 @@ export const KelolaAdminPage = () => {
             </p>
             {errorMsg && <div style={{ color: 'red', marginBottom: '12px', fontSize: '13px' }}>{errorMsg}</div>}
             <form onSubmit={handleEditAdmin}>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Nama Lengkap</label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  style={{ width: '100%', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
-                />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>Kata Sandi Baru (opsional)</label>
-                <input
-                  type="password"
-                  placeholder="Kosongkan jika tidak diubah"
-                  value={editFormData.password}
-                  onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                  style={{ width: '100%', padding: '8px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
-                />
-              </div>
+              <Input
+                label="Nama Lengkap"
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+              />
+              <PasswordInput
+                label="Kata Sandi Baru (opsional)"
+                placeholder="Kosongkan jika tidak diubah"
+                value={editFormData.password}
+                onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+              />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                 <Button type="button" variant="outline" size="sm" onClick={() => setIsEditModalOpen(false)}>Batal</Button>
                 <Button type="submit" variant="primary" size="sm">Simpan</Button>

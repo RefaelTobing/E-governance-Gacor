@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { Button, Input, Card, CardBody, Logo } from '../../../components';
+import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
 import { loginPemerintah, getMe, registerWarga } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
 
@@ -172,9 +172,8 @@ export const LoginPage = () => {
               required
             />
 
-            <Input
+            <PasswordInput
               label="Kata Sandi"
-              type="password"
               placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -187,9 +186,8 @@ export const LoginPage = () => {
             )}
 
             {isRegister && (
-              <Input
+              <PasswordInput
                 label="Konfirmasi Kata Sandi"
-                type="password"
                 placeholder="Ulangi kata sandi"
                 value={konfirmasiSandi}
                 onChange={(e) => setKonfirmasiSandi(e.target.value)}
