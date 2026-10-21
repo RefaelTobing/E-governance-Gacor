@@ -1,12 +1,13 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
+from urllib.request import urlopen
 from sqlalchemy import select, and_, func
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 
 from app.core.config import settings
-from app.core.exif_utils import extract_gps_from_file
+from app.core.exif_utils import extract_gps_from_bytes, extract_gps_from_file
 from app.core.utils import haversine_km
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
@@ -21,6 +22,33 @@ from app.schemas.laporan import (
 from app.services import ruang_publik as crud_ruang_publik
 from app.services import user as crud_user
 
+# Foto bukti harus berasal dari unggahan sistem sendiri: path lokal /uploads/laporan/
+# (mode filesystem) atau public URL bucket Supabase Storage untuk laporan.
+PREFIX_LOKAL = "/uploads/laporan/"
+
+
+def _foto_dari_sistem(foto_url: str) -> bool:
+    if foto_url.startswith(PREFIX_LOKAL):
+        return ".." not in foto_url
+    if settings.SUPABASE_URL:
+        bucket = settings.SUPABASE_STORAGE_BUCKET_LAPORAN
+        dasar = f"{settings.SUPABASE_URL.rstrip('/')}/storage/v1/object/public/{bucket}/"
+        return foto_url.startswith(dasar) and ".." not in foto_url
+    return False
+
+
+def _exif_dari_foto(foto_url: str) -> tuple[float | None, float | None]:
+    """Ambil koordinat EXIF dari foto: unduh bila URL Supabase, baca file bila lokal."""
+    if foto_url.startswith(PREFIX_LOKAL):
+        path = os.path.join(settings.UPLOAD_DIR, foto_url.removeprefix("/uploads/"))
+        return extract_gps_from_file(path)
+    try:
+        with urlopen(foto_url, timeout=10) as resp:
+            return extract_gps_from_bytes(resp.read())
+    except Exception:
+        return None, None
+
+
 def create_report(
     db: Session, 
     laporan_in: LaporanCreate,
@@ -32,17 +60,20 @@ def create_report(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Foto bukti fisik wajib diunggah."
         )
-    if not laporan_in.foto_url.startswith("/uploads/laporan/") or ".." in laporan_in.foto_url:
+    if not _foto_dari_sistem(laporan_in.foto_url):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URL foto tidak valid (harus berada di /uploads/laporan/)."
+            detail="URL foto tidak valid (harus berasal dari unggahan sistem)."
         )
-    rel_path = laporan_in.foto_url.removeprefix("/uploads/")
-    if not os.path.isfile(os.path.join(settings.UPLOAD_DIR, rel_path)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File foto tidak ditemukan di server."
-        )
+    # Mode filesystem: file harus benar-benar ada di disk. URL Supabase sudah
+    # diverifikasi lewat domain+bucket, tidak dicek keberadaannya di sini.
+    if laporan_in.foto_url.startswith(PREFIX_LOKAL):
+        rel_path = laporan_in.foto_url.removeprefix("/uploads/")
+        if not os.path.isfile(os.path.join(settings.UPLOAD_DIR, rel_path)):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File foto tidak ditemukan di server."
+            )
 
     # Koordinat opsional sampai BE-23, tapi kalau diisi harus berpasangan.
     if (laporan_in.lat_user is None) != (laporan_in.long_user is None):
@@ -120,8 +151,7 @@ def create_report(
     db.add(timeline)
     db.commit()
 
-    exif_path = os.path.join(settings.UPLOAD_DIR, laporan_in.foto_url.removeprefix("/uploads/"))
-    lat_exif, lon_exif = extract_gps_from_file(exif_path)
+    lat_exif, lon_exif = _exif_dari_foto(laporan_in.foto_url)
     if lat_exif is not None and lon_exif is not None:
         db_laporan.lat_exif = lat_exif
         db_laporan.long_exif = lon_exif

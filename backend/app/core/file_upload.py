@@ -1,6 +1,7 @@
 import os
 from uuid import uuid4
 from fastapi import UploadFile, HTTPException, status
+from supabase import create_client, Client
 from app.core.config import settings
 
 ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
@@ -45,10 +46,28 @@ def validate_image_upload(file: UploadFile) -> None:
             detail="Isi file bukan gambar asli (magic bytes tidak cocok)."
         )
 
+_supabase: Client | None = None
+
+
+def get_supabase() -> Client:
+    """Client Supabase singleton (service_role; melewati RLS untuk upload)."""
+    global _supabase
+    if _supabase is None:
+        _supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+    return _supabase
+
+
+def _nama_bucket(subfolder: str) -> str:
+    return getattr(settings, f"SUPABASE_STORAGE_BUCKET_{subfolder.upper().replace('-', '_')}")
+
+
 def save_upload_file(file: UploadFile, subfolder: str) -> str:
-    """
-    Menyimpan file ke folder yang ditentukan dan mengembalikan path relatif-nya
-    (misal: /uploads/laporan/namafile.jpg)
+    """Simpan file dan kembalikan URL yang bisa dipakai sebagai foto_url.
+
+    Bila `SUPABASE_URL` diisi, file diunggah ke Supabase Storage dan hasilnya
+    public URL absolut. Bila kosong (mis. saat unit test), file ditulis ke
+    filesystem lokal dan hasilnya path relatif `/uploads/...` seperti semula.
+    `subfolder` menentukan bucket/target: "laporan" atau "ruang-publik".
     """
     validate_image_upload(file)
 
@@ -57,16 +76,22 @@ def save_upload_file(file: UploadFile, subfolder: str) -> str:
     file.file.seek(0)
     ext = _deteksi_ekstensi(header) or ".jpg"
     unique_filename = f"{uuid4().hex}{ext}"
+    data = file.file.read()
 
-    # Direktori tujuan: misal storage/laporan
+    if settings.SUPABASE_URL:
+        content_type = file.content_type or "image/jpeg"
+        bucket = _nama_bucket(subfolder)
+        supabase = get_supabase()
+        supabase.storage.from_(bucket).upload(
+            path=unique_filename,
+            file=data,
+            file_options={"content-type": content_type, "upsert": "true"},
+        )
+        return supabase.storage.from_(bucket).get_public_url(unique_filename)
+
+    # Fallback lokal (tanpa Supabase): simpan di UPLOAD_DIR/<subfolder>.
     dest_dir = os.path.join(settings.UPLOAD_DIR, subfolder)
     os.makedirs(dest_dir, exist_ok=True)
-
-    # Path absolut untuk menyimpan file
-    file_path = os.path.join(dest_dir, unique_filename)
-
-    with open(file_path, "wb") as buffer:
-        buffer.write(file.file.read())
-
-    # Return path publik yang bisa diakses via web
+    with open(os.path.join(dest_dir, unique_filename), "wb") as buffer:
+        buffer.write(data)
     return f"/uploads/{subfolder}/{unique_filename}"

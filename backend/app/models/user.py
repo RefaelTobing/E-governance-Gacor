@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Boolean, Column, String, DateTime
+from sqlalchemy import Boolean, Column, String, DateTime, text
 from app.models.base import Base, utcnow
 
 class User(Base):
@@ -12,6 +12,6 @@ class User(Base):
     role = Column(String(20), default="warga")
     # Admin menonaktifkan akun, bukan menghapusnya: laporan yang sudah pernah
     # dibuat user itu harus tetap punya pemiliknya.
-    is_active = Column(Boolean, nullable=False, default=True, server_default="1")
+    is_active = Column(Boolean, nullable=False, default=True, server_default=text("true"))
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)

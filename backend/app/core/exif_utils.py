@@ -1,5 +1,7 @@
+import io
 import math
 from typing import Any
+
 from PIL import Image
 
 GPSINFO_TAG = 34853
@@ -49,28 +51,41 @@ def _dms_to_decimal(dms: Any, ref: Any, allowed_refs: tuple[str, ...]) -> float 
 def extract_gps_from_file(absolute_path: str) -> tuple[float | None, float | None]:
     try:
         with Image.open(absolute_path) as img:
-            exif_data = img._getexif()
-            if not exif_data:
-                return None, None
-
-            gps_info = exif_data.get(GPSINFO_TAG)
-            if not gps_info or not isinstance(gps_info, dict):
-                return None, None
-
-            lat_dms = gps_info.get(2)
-            lat_ref = gps_info.get(1)
-            lon_dms = gps_info.get(4)
-            lon_ref = gps_info.get(3)
-
-            if not (lat_dms and lon_dms and lat_ref and lon_ref):
-                return None, None
-
-            lat = _dms_to_decimal(lat_dms, lat_ref, ("N", "S"))
-            lon = _dms_to_decimal(lon_dms, lon_ref, ("E", "W"))
-
-            if lat is None or lon is None:
-                return None, None
-
-            return lat, lon
+            return _gps_from_image(img)
     except Exception:
         return None, None
+
+
+def extract_gps_from_bytes(data: bytes) -> tuple[float | None, float | None]:
+    """Ekstraksi EXIF dari byte gambar (mis. hasil unduhan dari Supabase Storage)."""
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            return _gps_from_image(img)
+    except Exception:
+        return None, None
+
+
+def _gps_from_image(img: Image.Image) -> tuple[float | None, float | None]:
+    exif_data = img._getexif()
+    if not exif_data:
+        return None, None
+
+    gps_info = exif_data.get(GPSINFO_TAG)
+    if not gps_info or not isinstance(gps_info, dict):
+        return None, None
+
+    lat_dms = gps_info.get(2)
+    lat_ref = gps_info.get(1)
+    lon_dms = gps_info.get(4)
+    lon_ref = gps_info.get(3)
+
+    if not (lat_dms and lon_dms and lat_ref and lon_ref):
+        return None, None
+
+    lat = _dms_to_decimal(lat_dms, lat_ref, ("N", "S"))
+    lon = _dms_to_decimal(lon_dms, lon_ref, ("E", "W"))
+
+    if lat is None or lon is None:
+        return None, None
+
+    return lat, lon

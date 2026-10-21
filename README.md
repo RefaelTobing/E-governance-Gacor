@@ -3,11 +3,10 @@
 Sistem Informasi Ruang Publik dan Pelaporan Fasilitas Berbasis Web di Kota Jakarta.
 ## Mulai Cepat
 
-Butuh 3 terminal: database, backend, frontend.
+Butuh 2 terminal (database pakai Supabase cloud, tanpa server lokal).
 
 ```bash
-# 1. Database (Docker Desktop harus jalan dulu)
-docker compose up -d
+# 1. Database (Supabase): isi DATABASE_URL dulu di backend/.env, lalu migrasi
 cd "d:\Ruka Jakarta\backend" && ..\.venv\Scripts\python.exe -m alembic upgrade head
 
 # 2. Backend  -> http://localhost:8000/docs

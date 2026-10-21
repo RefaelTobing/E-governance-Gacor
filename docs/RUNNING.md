@@ -1,13 +1,13 @@
 # Menjalankan Ruka Jakarta
 
-Butuh tiga terminal (atau tiga tab) + Docker Desktop: satu untuk database, satu
-untuk backend, satu untuk frontend.
+Butuh tiga terminal (atau tiga tab): satu untuk backend, satu untuk frontend, dan
+koneksi ke database Supabase (cloud, tidak perlu dijalankan lokal).
 
 Ringkasnya:
 
 | Lapisan | Port | Perintah |
 |---|---|---|
-| MySQL 8 (Docker) | 3306 | `docker compose up -d` |
+| Database (Supabase Postgres) | 6543 (pooler) | diakses lewat `DATABASE_URL`, tanpa server lokal |
 | Backend (FastAPI) | 8000 | `uvicorn app.main:app --reload` |
 | Frontend (Vite) | 5173 | `npm run dev` |
 
@@ -19,11 +19,9 @@ Ringkasnya:
 
 ## 0. Yang perlu terpasang sekali saja
 
-- **Docker Desktop** — untuk MySQL. Pastikan sudah dibuka dan statusnya
-  "Docker Desktop is running" sebelum lanjut. Kalau belum, `docker ps` akan
-  gagal.
 - **Python 3.13** — sudah ada di mesin ini (`python --version`).
 - **Node.js 18+** — cek dengan `node --version`.
+- **Akun/kredensial Supabase** — isi `backend/.env` (lihat bagian 1).
 
 ### Virtual environment backend
 
@@ -40,30 +38,48 @@ pip install -r backend\requirements.txt
 
 ---
 
-## 1. Database (MySQL)
+## 1. Database (Supabase Postgres)
 
+Tidak ada Docker/MySQL lokal. Backend terhubung ke Supabase lewat
+`DATABASE_URL` di `backend/.env`.
+
+Isi `backend/.env` (contoh, salin dari `backend/.env.example`):
+
+```dotenv
+# Connection Pooler Supabase (mode Transaction, port 6543), driver psycopg v3.
+# User memakai suffix project-ref: postgres.<project-ref>
+DATABASE_URL=postgresql+psycopg://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SERVICE_KEY=<service-role-key>
+SUPABASE_STORAGE_BUCKET_LAPORAN=laporan
+SUPABASE_STORAGE_BUCKET_RUANG_PUBLIK=ruang-publik
 ```
-cd "d:\Ruka Jakarta"
-docker compose up -d
+
+> **Kenapa Pooler, bukan direct?** Host direct `db.<ref>.supabase.co` hanya
+> punya alamat IPv6; jaringan tanpa IPv6 gagal resolve. Pooler punya IPv4 dan
+> menahan jumlah koneksi. Karena PgBouncer transaction mode tidak mendukung
+> prepared statements, `app/core/database.py` memakai
+> `poolclass=NullPool` + `connect_args={"prepare_threshold": None}`.
+
+### Bucket Storage
+
+Di Supabase **Storage**, buat dua bucket **public**: `laporan` dan
+`ruang-publik`, lalu jalankan policy baca publik di **SQL Editor**:
+
+```sql
+create policy "public read laporan"
+  on storage.objects for select
+  using (bucket_id = 'laporan');
+
+create policy "public read ruang-publik"
+  on storage.objects for select
+  using (bucket_id = 'ruang-publik');
 ```
-
-Cek sudah siap:
-
-```
-docker ps
-```
-
-Yang diharapkan: satu container bernama `raku-db` dengan status `healthy`.
-
-> **MySQL butuh ~30 detik** untuk inisialisasi saat volume masih kosong.
-> `docker ps` yang statusnya `starting` (bukan `healthy`) belum bisa dipakai.
-
-Kalau `raku-db` sudah pernah jalan, cukup `docker compose start` — data di
-`mysql-data` tidak hilang.
 
 ### Migrasi
 
-Bikin dulu tabel-tabelnya:
+Bikin tabel-tabelnya (schema Postgres tunggal, hasil autogenerate dari model):
 
 ```
 cd "d:\Ruka Jakarta\backend"
@@ -75,6 +91,10 @@ Cek statusnya:
 ```
 ..\.venv\Scripts\python.exe -m alembic current
 ```
+
+> Migration MySQL lama diarsipkan di `backend/alembic/versions_mysql_archive/`
+> dan tidak lagi dipakai. Skema Postgres dibuat dari nol di
+> `backend/alembic/versions/`.
 
 ### Isi data awal
 
@@ -92,10 +112,10 @@ Tanpa langkah kedua, `/dashboard/fasilitas`, filter fasilitas publik, dan daftar
 fasilitas di halaman detail kosong.
 
 Lihat `backend/docs/features/etl-worker.md` untuk urutan lengkap (`extract_satudata`,
-`read_raw`, `transform_rth_raw`). Seed membaca `data/processed/ruang_publik.csv` (1200
-baris, semua punya koordinat). File lain bisa dipakai lewat `--file`, dan
-`--reset` mengganti total isi `ruang_publik` + `categories` (backup DB dulu;
-perintahnya ditolak kalau masih ada laporan/fasilitas). File kandidat di
+`read_raw`, `transform_rth_raw`). Seed membaca `data/processed/ruang_publik_terbaru.csv`
+(1200 baris, semua punya koordinat, sebagian berisi `jam_operasional`). File lain bisa
+dipakai lewat `--file`, dan `--reset` mengganti total isi `ruang_publik` + `categories`
+(backup DB dulu; perintahnya ditolak kalau masih ada laporan/fasilitas). File kandidat di
 `data/processed/kandidat/` (hasil transform, belum direview) ditolak kecuali
 `--pakai-kandidat`.
 
@@ -191,7 +211,8 @@ cd "d:\Ruka Jakarta\backend"
 > **Harus pakai `.venv`.** Python global di mesin ini punya pasangan
 > httpx/starlette yang tidak kompatibel, jadi `TestClient` akan gagal dengan
 > `TypeError: Client.__init__() got an unexpected keyword argument 'app'`.
-> Test-nya sendiri tidak menyentuh MySQL — pakai SQLite in-memory.
+> Test-nya sendiri tidak menyentuh Supabase — pakai SQLite in-memory, dan
+> storage di-fallback ke filesystem lokal (fixture `_storage_lokal`).
 
 ---
 
@@ -199,30 +220,44 @@ cd "d:\Ruka Jakarta\backend"
 
 | # | Service | Kapan harus hidup |
 |---|---|---|
-| 1 | Docker Desktop | Selalu, sebelum command docker apa pun |
-| 2 | `raku-db` (MySQL) | Backend tidak bisa query apa pun tanpa ini |
-| 3 | Backend uvicorn | FE butuh data dari API |
-| 4 | Frontend Vite | Untuk buka website |
+| 1 | Supabase (cloud) | Backend tidak bisa query apa pun tanpa koneksi ini |
+| 2 | Backend uvicorn | FE butuh data dari API |
+| 3 | Frontend Vite | Untuk buka website |
 
 Yang paling sering bikin bingung: **`/health` hijau bukan berarti database siap.**
-Endpoint itu cuma memastikan proses server hidup, dan tetap mengembalikan `ok`
-kalau MySQL mati. Cek database terpisah:
+Endpoint itu cuma memastikan proses server hidup. Cek database terpisah:
 
 ```
-docker ps
+cd "d:\Ruka Jakarta\backend"
+..\.venv\Scripts\python.exe -c "from app.core.database import engine; from sqlalchemy import text; print(engine.connect().execute(text('select 1')).scalar())"
 ```
+
+Harapan: mencetak `1`.
 
 ---
 
 ## Troubleshooting
 
-**Docker: `Cannot connect to the Docker daemon`**
-Docker Desktop belum jalan. Buka aplikasinya, tunggu sampai ikonnya tidak
-lagi menunjukkan "starting".
+**`failed to resolve host 'db.<ref>.supabase.co'`**
+Itu host direct yang hanya punya IPv6. Pakai host **pooler**
+(`aws-0-<region>.pooler.supabase.com:6543`) dengan user `postgres.<project-ref>`.
+
+**`password authentication failed for user "postgres"`**
+Password database salah. Reset di Supabase → Project Settings → Database →
+Reset database password, lalu perbarui `DATABASE_URL`.
+
+**`prepared statement "s1" already exists`**
+Muncul bila memakai pooler transaction mode tanpa `NullPool` /
+`prepare_threshold=None`. Sudah ditangani di `app/core/database.py`; jangan
+dilepas.
+
+**Upload sukses tapi gambar 404 di browser**
+Bucket belum public atau policy `select` belum dibuat. Ulangi bagian bucket di
+atas.
 
 **Backend 500 di semua endpoint**
-MySQL mati. `docker compose up -d` lalu tunggu sampai status container
-`healthy`.
+Koneksi Supabase gagal. Cek `DATABASE_URL` di `backend/.env` (host pooler,
+password), lalu tes `select 1` seperti di atas.
 
 **Port 8000 dipakai proses lain**
 

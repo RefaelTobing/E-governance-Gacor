@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     # File Uploads
     UPLOAD_DIR: str = "storage"
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024 # 5 MB
+
+    # Supabase Storage (upload foto). Koneksi DB sendiri memakai DATABASE_URL.
+    # service_role key melewati RLS: hanya dipakai backend, jangan taruh di FE.
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
+    SUPABASE_STORAGE_BUCKET_LAPORAN: str = "laporan"
+    SUPABASE_STORAGE_BUCKET_RUANG_PUBLIK: str = "ruang-publik"
     
     # Seed admin pertama, hanya dibaca `python -m app.etl.seed_admin`. Kosongkan
     # atau hapus setelah admin pertama dibuat.

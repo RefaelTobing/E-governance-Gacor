@@ -6,5 +6,5 @@ Base = declarative_base()
 
 
 def utcnow() -> datetime:
-    """Waktu UTC tanpa tzinfo, sesuai kolom MySQL DATETIME yang tidak menyimpan zona waktu."""
+    """Waktu UTC tanpa tzinfo, konsisten dengan kolom timestamp yang naive."""
     return datetime.now(timezone.utc).replace(tzinfo=None)

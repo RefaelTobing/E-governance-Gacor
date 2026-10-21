@@ -1,5 +1,14 @@
 # Migrasi Ruka Jakarta ke Supabase
 
+> **STATUS: SELESAI (2026-10-21).** Migrasi sudah dijalankan: DB pindah ke
+> Supabase Postgres, foto pindah ke Supabase Storage, data di-seed ulang, dan
+> smoke test lulus. Dokumen ini disimpan sebagai catatan langkah + rollback.
+>
+> **Penyimpangan dari rencana awal:** memakai **Pooler transaction mode (6543)**
+> dengan `NullPool` + `prepare_threshold=None`, bukan direct connection.
+> Alasannya: host direct `db.<project-ref>.supabase.co` hanya punya alamat
+> IPv6 dan gagal resolve di jaringan IPv4-only. Pooler punya IPv4.
+
 Dokumen ini adalah checklist eksekusi untuk memindahkan backend Ruka Jakarta
 dari **MySQL 8.0 (Docker lokal)** ke **Supabase Postgres**, sekaligus
 memindahkan penyimpanan foto dari filesystem lokal ke **Supabase Storage**.
@@ -511,10 +520,24 @@ dipindah (Fase 3.1) supaya `down_revision` tidak menggantung.
 
 ## Ringkasan Checklist
 
-- [ ] Fase 0 — Project Supabase, connection string pooler, dua bucket + policy
-- [ ] Fase 1 — `psycopg` + `supabase-py`, config, `.env`
-- [ ] Fase 2 — `database.py` pooler-safe, `user.py` `server_default`
-- [ ] Fase 3 — Arsip migration lama, generate + jalankan migration Postgres
-- [ ] Fase 4 — `seed_db`, `seed_fasilitas`, `seed_admin`
-- [ ] Fase 5 — Storage ke Supabase, hapus static mount
-- [ ] Fase 6 — Update docs, verifikasi koneksi, smoke test, pytest
+- [x] Fase 0 — Project Supabase, connection string pooler, dua bucket + policy
+- [x] Fase 1 — `psycopg` + `supabase-py`, config, `.env`
+- [x] Fase 2 — `database.py` pooler-safe, `user.py` `server_default`
+- [x] Fase 3 — Arsip migration lama, generate + jalankan migration Postgres
+- [x] Fase 4 — `seed_db`, `seed_fasilitas`, `seed_admin`
+- [x] Fase 5 — Storage ke Supabase, hapus static mount
+- [x] Fase 6 — Update docs, verifikasi koneksi, smoke test, pytest
+
+### Catatan pasca-migrasi
+
+- `app/core/file_upload.py` adaptif: bila `SUPABASE_URL` diisi → unggah ke
+  Supabase Storage; bila kosong (unit test) → fallback filesystem lokal
+  `/uploads/...`. Test memaksa mode lokal lewat fixture `_storage_lokal`.
+- `app/services/laporan.py` menerima `foto_url` dari bucket Supabase (cek
+  domain + bucket) atau prefix lokal `/uploads/laporan/`; EXIF dibaca dari
+  unduhan URL (Supabase) atau file lokal. Ini menjaga fitur anti fake-GPS
+  (BE-23) tetap jalan.
+- Migration MySQL lama ada di `backend/alembic/versions_mysql_archive/`
+  (tidak dipakai). Skema Postgres tunggal:
+  `backend/alembic/versions/05c54b098320_initial_postgres_schema.py`.
+- `docs/schema.sql` sudah digenerate ulang sebagai DDL Postgres.
