@@ -133,8 +133,8 @@ Konsekuensi:
 
 | Kelompok | Kolom | Aturan |
 |---|---|---|
-| `ETL_OWNED` | `nama`, `kecamatan`, `kelurahan`, `wilayah`, `alamat`, `latitude`, `longitude`, `kategori_id` | Ditulis ulang dari file sumber, **kecuali** kolom sudah tercatat di `field_source`. Nilai sumber NULL dilewati (tidak mengosongkan data terisi). |
-| `KOLOM_ADMIN` | `deskripsi`, `jam_operasional`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan`, `verified`, `status_general`, `image_url` | Tidak pernah ditulis ETL, berapa pun isi sumbernya. |
+| `ETL_OWNED` | `nama`, `kecamatan`, `kelurahan`, `wilayah`, `alamat`, `latitude`, `longitude`, `kategori_id`, `jam_operasional` | Ditulis ulang dari file sumber, **kecuali** kolom sudah tercatat di `field_source`. Nilai sumber NULL dilewati (tidak mengosongkan data terisi). `jam_operasional` diisi dari `data/raw/jam_buka_ruang_publik_jakarta.xlsx` dan **tidak menimpa** jam yang sudah diedit admin. |
+| `KOLOM_ADMIN` | `deskripsi`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan`, `verified`, `status_general`, `image_url` | Tidak pernah ditulis ETL, berapa pun isi sumbernya. |
 | `KOLOM_SISTEM` | `id`, `field_source`, `created_at`, `updated_at` | Ditulis sistem (`mark_fields_edited()`, timestamp); `id` sekaligus kunci pencocokan pertama. |
 
 Kolom tabel yang belum masuk salah satu kelompok membuat seed **berhenti dengan pesan error**

@@ -31,9 +31,10 @@ from typing import Optional
 
 import pandas as pd
 
+from app.etl.jam_operasional import ambil_jam
 from app.etl.kategori import KATEGORI_TIPE, kategori_id_dari_tipe
 from app.etl.kunci import kunci_alami, teks as _teks
-from app.etl.read_raw import read_raw_csv
+from app.etl.read_raw import read_raw_csv, read_raw_xlsx
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw"
@@ -44,6 +45,7 @@ MASTER = PROCESSED_DIR / "ruang_publik.csv"
 GEO_RTH = RAW_DIR / "geoportal_rth_koordinat.csv"
 GEO_RPTRA = RAW_DIR / "geoportal_rptra_koordinat.csv"
 SAT_RPTRA = RAW_DIR / "satudata_rptra.csv"
+JAM_BUKA = RAW_DIR / "jam_buka_ruang_publik_jakarta.xlsx"
 
 JENIS_TIPE = ("Taman Lingkungan", "Taman Interaktif", "Taman Kota")
 WILAYAH_PREFIX = ("Kota Adm. ", "Kab. Adm. ")
@@ -265,6 +267,24 @@ def _baris_kandidat(kandidat: list[dict]) -> list[dict]:
     return rows
 
 
+def _segarkan_jam(master: pd.DataFrame, df_jam: pd.DataFrame) -> dict:
+    """Isi kolom jam_operasional dari berkas jam buka, dicocokkan by id.
+
+    Nilai sumber yang kosong dibiarkan None supaya seed_db tidak menghapus jam
+    yang sudah terisi. String ringkas per hari disusun di app.etl.jam_operasional.
+    """
+    peta = {str(r["id"]): ambil_jam(r) for r in df_jam.to_dict("records")}
+    # Master membaca kolom kosong sebagai float64 (semua NaN); ubah ke teks dulu.
+    master["jam_operasional"] = master["jam_operasional"].astype(object)
+    terisi = 0
+    for i, r in master.iterrows():
+        jam = peta.get(str(r["id"]))
+        if jam:
+            master.at[i, "jam_operasional"] = jam
+            terisi += 1
+    return {"baris_sumber": len(df_jam), "terisi": terisi, "tanpa_pasangan": int(master["id"].notna().sum()) - terisi}
+
+
 def main() -> None:
     if not MASTER.exists():
         raise SystemExit(f"master tidak ditemukan: {MASTER}")
@@ -287,6 +307,12 @@ def main() -> None:
     index = {r["key"]: r for r in sumber}
     segar = _segarkan_master(master, index)
     kandidat = [r for k, r in index.items() if k not in master_keys]
+
+    if JAM_BUKA.exists():
+        df_jam = read_raw_xlsx(JAM_BUKA, sheet_name="jam_buka")
+        jam = _segarkan_jam(master, df_jam)
+    else:
+        jam = None
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     KANDIDAT_DIR.mkdir(parents=True, exist_ok=True)
@@ -320,6 +346,7 @@ def main() -> None:
             "daftar_tanpa_pasangan": segar["tanpa_pasangan"],
             "koordinat_luar_rentang": segar["koordinat_luar_rentang"],
         },
+        "jam_operasional": jam or {"catatan": f"{JAM_BUKA.name} tidak ditemukan, jam tidak diisi"},
         "kandidat": {
             "total": len(kandidat),
             "per_tipe": per_tipe,
@@ -341,6 +368,13 @@ def main() -> None:
         f" | tanpa pasangan {len(segar['tanpa_pasangan'])}"
     )
     print(f"kandidat   : {len(kandidat)} baris -> data/processed/kandidat/ruang_publik_kandidat.csv")
+    if jam:
+        print(
+            f"jam buka   : {jam['terisi']} baris terisi dari {jam['baris_sumber']} "
+            f"(sumber {JAM_BUKA.name})"
+        )
+    else:
+        print(f"jam buka   : {JAM_BUKA.name} tidak ditemukan, kolom jam_operasional dibiarkan")
     print("keluaran   : ruang_publik_terbaru.csv, categories.json, transform_laporan.json")
     if segar["koordinat_luar_rentang"]:
         print("koordinat master di luar rentang DKI, dipertahankan apa adanya:")

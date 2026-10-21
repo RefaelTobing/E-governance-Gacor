@@ -53,10 +53,10 @@ KOLOM_RUANG_PUBLIK = {
 # KOLOM_ADMIN: milik admin, tidak pernah ditulis ETL berapa pun isinya.
 ETL_OWNED = {
     "nama", "kecamatan", "kelurahan", "wilayah", "alamat",
-    "latitude", "longitude", "kategori_id",
+    "latitude", "longitude", "kategori_id", "jam_operasional",
 }
 KOLOM_ADMIN = {
-    "deskripsi", "jam_operasional", "tiket_masuk", "akses_disabilitas",
+    "deskripsi", "tiket_masuk", "akses_disabilitas",
     "ramah_hewan", "verified", "status_general", "image_url",
 }
 KOLOM_SISTEM = {"id", "field_source", "created_at", "updated_at"}

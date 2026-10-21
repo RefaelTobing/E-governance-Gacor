@@ -33,9 +33,18 @@ def read_raw_xls(path: Path) -> pd.DataFrame:
     return _clean(tables[0])
 
 
+def read_raw_xlsx(path: Path, sheet_name: str | int | None = None) -> pd.DataFrame:
+    # .xlsx asli (bukan HTML) dibaca lewat openpyxl. Semua nilai dipaksa teks agar
+    # jam seperti "07.00-18.00" tidak berubah tipe.
+    return _clean(pd.read_excel(path, sheet_name=sheet_name, dtype=str))
+
+
 def read_raw_file(path: Path) -> pd.DataFrame:
-    if path.suffix.lower() == ".csv":
+    suffix = path.suffix.lower()
+    if suffix == ".csv":
         return read_raw_csv(path)
+    if suffix == ".xlsx":
+        return read_raw_xlsx(path)
     return read_raw_xls(path)
 
 

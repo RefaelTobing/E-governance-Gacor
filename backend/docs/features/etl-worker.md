@@ -6,7 +6,9 @@
 Kode terkait (semua di `app/etl/`):
 - `extract_satudata.py` — **tahap Extract (BE-14):** unduh dataset terbaru dari Satu Data Jakarta +
   layer koordinat Jakarta Satu Geoportal ke `data/raw/`
-- `read_raw.py` — baca file mentah dari `data/raw/`
+- `read_raw.py` — baca file mentah dari `data/raw/` (`.csv`, `.xls` HTML, `.xlsx`)
+- `jam_operasional.py` — susun `jam_operasional` ringkas per hari dari berkas `jam_buka_*.xlsx`
+  (utamakan kolom `jam_senin`..`jam_minggu`, cadangan teks `jam_operasional (Google Maps)`)
 - `kategori.py` — master kategori (4 tipe) dipakai seed dan transform
 - `kunci.py` — normalisasi `nama|kecamatan|kelurahan` dipakai transform (BE-15) dan load (BE-16),
   supaya kedua tahap menghitung kunci yang sama
@@ -33,10 +35,14 @@ Data:
   | `geoportal_rptra_koordinat.csv` | ArcGIS `RPTRA_DKI_Jakarta` | 324 baris, `NAMA_RPTRA` + `X`/`Y` + alamat |
 
   Tiap CSV punya `<nama>.meta.json` (tanggal unduh, jumlah baris, kolom, tanggal rilis sumber).
+- **Sumber manual (bukan hasil extract):** `jam_buka_ruang_publik_jakarta.xlsx` (sheet `jam_buka`,
+  1534 baris keyed `id`). Jam buka hasil pengambilan Google Maps — 360 dari 1200 baris master punya
+  jam per hari. Berkas ini **tidak** diunduh `extract_satudata.py`, jadi harus disalin manual ke
+  `data/raw/` bila hilang; bila tidak ada, transform melewati pengisian jam tanpa gagal.
 - **Hasil Transform (BE-15):**
   | File | Isi |
   |---|---|
-  | `ruang_publik_terbaru.csv` | 1200 baris, id & urutan identik master; hanya `latitude`/`longitude`/`tipe`/`kategori_id` disegarkan (1121 baris ketemu sumber) |
+  | `ruang_publik_terbaru.csv` | 1200 baris, id & urutan identik master; hanya `latitude`/`longitude`/`tipe`/`kategori_id`/`jam_operasional` disegarkan (1121 baris ketemu sumber, 360 baris terisi jam) |
   | `kandidat/ruang_publik_kandidat.csv` | 687 baris baru, `verified=False`, **ditolak `seed_db`** tanpa `--pakai-kandidat` |
   | `transform_laporan.json` | buang per alasan, 79 baris master tanpa pasangan sumber, 1 koordinat luar rentang |
 - **File lama:** `data/raw/rth_dki_coordinates.csv` dan `data-ruang-terbuka-hijau-(rth)-komponen-data.xls`
