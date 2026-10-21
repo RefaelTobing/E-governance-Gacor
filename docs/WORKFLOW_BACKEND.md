@@ -78,8 +78,7 @@ Jalankan urutan ini pada sesi kerja pertama (lewati bila sudah pernah di sesi ya
 5. Cek skema: `backend/app/models/__init__.py` + `docs/schema.sql` + `alembic current`.
 6. Cek status migrasi & data:
    ```
-   docker ps                                # container raku-db harus healthy
-   ..\.venv\Scripts\python.exe -m alembic current
+   ..\.venv\Scripts\python.exe -m alembic current   # database: Supabase Postgres (DATABASE_URL di backend/.env)
    ```
    (perintah dijalankan dari `backend/`)
 7. Baca `apps/web/src/services/*.js` (**baca saja, jangan ubah**) untuk tahu endpoint apa yang FE panggil dan bentuk field yang diharapkan.

@@ -45,7 +45,7 @@ raku-jakarta/
 │   │   ├── core/
 │   │   │   ├── config.py                  # settings dasar (env loader)
 │   │   │   ├── security.py                # skeleton JWT util, belum ada logic role
-│   │   │   └── database.py                # koneksi MySQL (SQLAlchemy engine/session)
+│   │   │   └── database.py                # koneksi Supabase Postgres (SQLAlchemy engine/session)
 │   │   ├── models/
 │   │   │   └── .gitkeep
 │   │   ├── schemas/
@@ -75,5 +75,4 @@ raku-jakarta/
 │   ├── CONVENTIONS.md
 │   └── decision-log.md
 │
-├── docker-compose.yml
 └── README.md

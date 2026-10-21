@@ -62,7 +62,7 @@ Swagger UI: <http://localhost:8000/docs>
 ### `GET /health`
 
 Dipakai memastikan proses server hidup. **Tidak** memastikan database siap —
-endpoint ini tetap hijau saat MySQL mati, jadi jangan dipakai sebagai sinyal
+endpoint ini tetap hijau saat database mati, jadi jangan dipakai sebagai sinyal
 "backend siap dipakai".
 
 ```json

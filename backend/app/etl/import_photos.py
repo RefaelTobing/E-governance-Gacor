@@ -16,7 +16,9 @@ argumen baris perintah (argumen tersimpan di riwayat shell).
 `--workers` menjalankan beberapa unggahan paralel (ThreadPoolExecutor). Server
 dev bisa ~1-2 detik per request, jadi 2605 berkas sekuensial sangat lama; naikkan
 worker bila server sanggup. Jangan setel terlalu tinggi agar tidak membanjiri
-database.
+database. **Di Windows `--workers` dipaksa 1**: klien Supabase Storage tidak
+thread-safe di sana (sering `500 WinError 10035`), jadi paralel malah menggagalkan
+unggahan.
 
 Log per berkas ditulis ke `data/Images/import_photos_log.csv` (disegarkan tiap
 `--flush-every` unggahan), dipakai oleh `--resume` agar cukup menambal yang
@@ -121,12 +123,18 @@ def main() -> None:
     parser.add_argument("--skip-existing", action="store_true", help="lewati RP yang sudah punya foto resmi")
     parser.add_argument("--resume", action="store_true", help="lewati berkas yang sudah sukses di log")
     parser.add_argument("--delay", type=float, default=0.05, help="jeda antar-request per worker (detik)")
-    parser.add_argument("--workers", type=int, default=1, help="jumlah unggahan paralel (default 1)")
+    parser.add_argument("--workers", type=int, default=1, help="jumlah unggahan paralel (dipaksa 1 di Windows)")
     parser.add_argument("--flush-every", type=int, default=50, help="tulis log tiap N hasil (untuk --resume)")
     args = parser.parse_args()
 
     if not args.email or not args.password:
         raise SystemExit("email & password admin wajib (argumen atau env RUKA_ADMIN_EMAIL/RUKA_ADMIN_PASSWORD)")
+
+    # Klien Supabase Storage tidak thread-safe di Windows: >1 worker memicu
+    # "500 WinError 10035" beruntun. Paksa sekuensial agar hasilnya andal.
+    if os.name == "nt" and args.workers > 1:
+        print(f"peringatan  : --workers {args.workers} dipaksa 1 di Windows (klien Supabase tidak thread-safe)")
+        args.workers = 1
 
     baris = _baca_index(Path(args.index))
     if args.limit:
