@@ -238,7 +238,8 @@ export const getPublicSpaceReports = async (id, params = {}) => {
 };
 
 // ===========================================================================
-// ADMIN — Data Master ruang publik (BE-32/BE-33). Halaman /dashboard/data-master.
+// ADMIN — Data Master ruang publik (BE-32/BE-33). Halaman /dashboard/fasilitas
+// (sejak FE-56 menyatu dengan kelola fasilitas; /dashboard/data-master redirect).
 // Endpoint admin sengaja TIDAK memakai fallback mock: kegagalan harus terlihat
 // (bukan diam-diam menampilkan data kosong yang menyesatkan admin).
 // ===========================================================================

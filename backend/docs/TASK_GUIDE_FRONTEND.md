@@ -200,7 +200,7 @@ Status:
 | FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` perlu ganti URL (sesi FE). |
 | FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. Tombol **Setujui** (BE-29) dan **Tolak** (BE-30) belum ada; endpoint `POST /admin/reports/{id}/approve` dan `POST /admin/reports/{id}/reject` sudah siap, lihat sub-bagian FE-25A/FE-25B di bawah. |
 | FE-26 | ❌ | Daftar laporan yang di-flag | Backend siap: `GET /api/v1/admin/reports/flagged` (BE-31) mengembalikan laporan ter-flag + `flag_count`, urut terbanyak. UI belum dibuat. |
-| FE-27 | ⚠️ | Manajemen data master ruang publik | Halaman tersedia, indikator edit manual perlu diverifikasi/dilengkapi. |
+| FE-27 | ✅ | Manajemen data master ruang publik | Link sidebar ditambahkan; indikator edit manual terverifikasi ke backend asli (PATCH hanya kolom berubah). |
 | FE-28 | ❌ | Trigger sinkronisasi ETL dari admin | Endpoint backend tersedia, kontrol UI belum tersedia. |
 
 ### FE-25A. Tombol Setujui di Detail Moderasi (integrasi BE-29)
@@ -297,6 +297,7 @@ Ringkasan status:
 | FE-53 | ✅ | Hapus atau ganti simbol di halaman Tentang |
 | FE-54 | ✅ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 | FE-55 | ✅ | Tombol tampilkan/sembunyikan kata sandi di login, daftar, dan kelola admin |
+| FE-56 | ✅ | Gabungkan data master ke halaman kelola fasilitas |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -1348,6 +1349,57 @@ adalah navigasi sisi klien SPA, bukan pemuatan dokumen baru.
 
 ---
 
+### FE-27. Manajemen data master ruang publik
+
+**Status:** ✅
+
+**Gejala:** halaman `/dashboard/data-master` sudah berfungsi dan rutenya terdaftar dengan
+`protected: true, role: "admin"` (`route-config.js:43`), tetapi sidebar admin
+(`layouts/AdminLayout.jsx`) tidak punya tautan ke sana. Satu-satunya cara masuk adalah
+mengetik URL langsung, sehingga halaman tampak "hilang" padahal aktif.
+
+**Perubahan:**
+1. `AdminLayout.jsx`: `NavLink` baru **Data Master** (ikon lucide `Database`) setelah
+   Kelola Fasilitas, memakai gaya `admin-nav-item` yang sama (hover + status aktif).
+   Catatan: link ini dilepas lagi di FE-56 saat halamannya digabung ke Kelola Fasilitas.
+2. Indikator edit manual diuji ulang terhadap **backend asli** (MySQL `raku_db`, 500 baris),
+   bukan mock: kolom SUMBER DATA, modal 13 bidang, pratinjau kolom, dan payload PATCH.
+
+**Bukti (13/13 lolos, CDP Chrome, dev `:5199`, backend `:8000`):**
+1. Sidebar admin memuat link "Data Master" dengan `href="/dashboard/data-master"`.
+2. Klik link membuka halaman dan menu berstatus `.active`.
+3. Tabel memiliki kolom **SUMBER DATA** (7 kolom total).
+4. Kondisi awal 500 baris: 500 "Sumber Satu Data", 0 "diedit manual".
+5. Modal Edit Master terisi nilai asli (`Buperta Cibubur`), tombol "Simpan Perubahan"
+   nonaktif, pratinjau "Belum ada perubahan".
+6. Mengubah Deskripsi: pratinjau menandai `Deskripsi` dan tombol simpan aktif.
+7. Payload PATCH terverifikasi hanya `{"deskripsi":"…"}` — bukan seluruh kolom, sehingga
+   `field_source` hanya menandai kolom itu (inti FE-27).
+8. Setelah simpan: pesan sukses muncul dan badge berubah menjadi "1 kolom diedit manual"
+   dengan `title="Kolom: deskripsi"`.
+9. Setelah reload, penanda tetap terbaca dari backend.
+10. Modal dibuka ulang tanpa perubahan: tombol simpan tetap nonaktif (no-op dijaga).
+11. Mode gelap: badan `rgb(11,17,32)`, badge tidak putih (`rgba(2,132,199,0.15)`).
+12. Mobile 390px: link tampil, tabel punya scroll sendiri. Catatan: layout admin memang
+    overflow horizontal di 390px **sebelum** perubahan ini (`/dashboard` 682px,
+    `/dashboard/fasilitas` 511px, `/dashboard/data-master` 454px); uji kausal dengan
+    melepas link dari DOM menghasilkan 454px → 454px, jadi link baru tidak menambah overflow.
+13. `npm run build` lulus (2,72 s), konsol tanpa exception JS.
+
+**Catatan backend (di luar lingkup frontend):** `_bersihkan_ruang_publik`
+(`app/api/v1/ruang_publik.py:181-185`) mengabaikan string kosong untuk kolom teks selain
+`nama`, sehingga field seperti `deskripsi` tidak bisa dikosongkan lewat UI. Perilaku ini
+sudah ada sebelum task ini; tidak diubah.
+
+**Kebersihan data uji:** artefak edit manual (deskripsi + `field_source`) dibersihkan
+kembali dari DB dev setelah pengujian; `SELECT COUNT(*) ... WHERE field_source IS NOT NULL`
+kembali 0.
+
+**Sejak FE-56:** halaman ini menyatu ke `/dashboard/fasilitas`; rute
+`/dashboard/data-master` kini hanya redirect.
+
+---
+
 ### FE-50. Hapus simbol yang tidak membawa informasi di judul dan label
 
 **Status:** ✅
@@ -1902,6 +1954,59 @@ Pola ini berlaku di tiga tempat: login/daftar warga, login pemerintah, dan modal
 11. `npm run build` lulus (2,75 s), tanpa exception JS di konsol. `Input.test.jsx` tidak
     tersentuh karena `Input` tidak berubah.
 
+### FE-56. Gabungkan data master ke halaman kelola fasilitas
+
+**Status:** ✅
+
+**Gejala:** dua halaman mengelola entitas yang sama (ruang publik) tetapi terpisah tanpa
+tautan silang: `/dashboard/data-master` (491 baris: impor Satu Data, riwayat sinkronisasi,
+edit manual) dan `/dashboard/fasilitas` (186 baris: pencarian, pagination, pintu ke 12
+fasilitas standar). Data master juga tidak punya pencarian/pagination sama sekali
+(limit 500 dari total 1.194 baris), sedangkan kelola fasilitas tidak memperlihatkan
+penanda sumber data.
+
+**Perubahan:**
+1. `KelolaFasilitasPage` menjadi halaman induk: tabel 7 kolom
+   (NAMA, KATEGORI, ALAMAT, WILAYAH, FASILITAS STANDAR, SUMBER DATA, AKSI) dengan aksi
+   **Edit Master** dan **Lihat Fasilitas** pada baris yang sama.
+2. Sumber data pindah ke `GET /admin/public-spaces` (membawa `field_source`), pencarian
+   server-side (`q`, debounce 300 ms) + pagination 10/20/50/100; total dari
+   `GET /public-spaces/stats`.
+3. Panel impor/riwayat diekstrak ke `components/SinkronisasiPanel.jsx` agar halaman tidak
+   membengkak; riwayat dilipat di dalam `<details>`.
+4. Rute `/dashboard/data-master` kini `redirectTo: "/dashboard/fasilitas"`; menu sidebar
+   kembali 6 item (tanpa "Data Master"); `DataMasterPage.jsx` dihapus agar tidak ada kode mati.
+5. **Perbaikan backend 1 baris:** filter `q` pada `get_public_spaces_stats`
+   (`app/services/ruang_publik.py`) sebelumnya hanya `nama OR alamat`, sedangkan daftar
+   memakai `nama OR alamat OR wilayah`. Akibatnya "Halaman X dari Y" salah saat mencari
+   wilayah. Kini keduanya selaras; pemanggil stats tanpa `q` tidak terpengaruh.
+
+**Bukti (16/16 lolos, CDP Chrome, dev `:5199`, backend `:8000`):**
+1. Sidebar: tepat 6 menu, "Data Master" hilang, "Kelola Fasilitas" tetap.
+2. `/dashboard/data-master` redirect ke `/dashboard/fasilitas` dan judulnya benar.
+3. Panel "Sinkronisasi Satu Data" + tombol "Impor Data Satu Data" + riwayat tampil.
+   Tombol impor **tidak diklik** saat pengujian karena memicu ETL nyata.
+4. Tabel 7 kolom sesuai daftar di atas, 10 baris per halaman, badge N/12 dan SUMBER DATA
+   tampil; header menunjukkan 1.194 ruang publik.
+5. Pencarian "Buperta" → total 2, 2 baris. Pencarian "Jakarta Selatan" → total 321 dan
+   "Halaman 1 dari 33" (total sama dengan jumlah baris admin untuk `q` yang sama; ini
+   regresi langsung atas perbaikan backend).
+6. Tombol halaman berikutnya memuat baris berbeda ("Halaman 2 dari 33").
+7. Page size 20 → "Halaman 1 dari 17"; reset pencarian → 1.194 dan "Halaman 1 dari 60".
+8. Pencarian tanpa hasil menampilkan EmptyState + "Reset pencarian" yang berfungsi.
+9. Edit Master: payload PATCH hanya `{"deskripsi": …}` dan badge berubah menjadi
+   "1 kolom diedit manual" (`title="Kolom: deskripsi"`).
+10. "Lihat Fasilitas" membuka `/dashboard/fasilitas/:id` (halaman standar 12 fasilitas) dan
+    daftar dapat dibuka kembali.
+11. Mode gelap: badan `rgb(11,17,32)`, badge tidak putih.
+12. Mobile 390px: menu tetap 6, tabel punya scroll sendiri. Overflow halaman 511px adalah
+    kondisi layout admin yang sudah ada sebelum FE-56 (sama seperti halaman admin lain),
+    bukan akibat penggabungan.
+13. `npm run build` lulus (2,71 s), konsol tanpa exception JS.
+
+**Kebersihan data uji:** deskripsi + `field_source` baris uji dikembalikan ke NULL setelah
+pengujian; `COUNT(*) WHERE field_source IS NOT NULL` = 0.
+
 ---
 
 ## Prioritas Rekomendasi (Diperbarui)
@@ -1915,6 +2020,7 @@ Pola ini berlaku di tiga tempat: login/daftar warga, login pemerintah, dan modal
 - **FE-08** — Clustering marker peta publik & dashboard admin
 - **FE-12** — Filter fasilitas multi-select
 - **FE-19** — Tampilkan status hasil submit laporan
+- **FE-27** — Manajemen data master ruang publik (link sidebar + indikator edit manual)
 - **FE-34** — Kolom alamat di kelola fasilitas
 - **FE-35** — Kartu peta sebaran dashboard jadi kotak
 - **FE-36** — Detail ruang publik wajib login
@@ -1926,6 +2032,7 @@ Pola ini berlaku di tiga tempat: login/daftar warga, login pemerintah, dan modal
 - **FE-42** — Status fasilitas HomePage jadi Baik
 - **FE-43** — Tampilan session admin di navbar publik
 - **FE-14** — Galeri foto detail ruang publik (data foto scraping sudah masuk via BE-57)
+- **FE-56** — Data master menyatu dengan halaman kelola fasilitas
 
 ### Prioritas Berikutnya
 
@@ -1946,6 +2053,7 @@ Pola ini berlaku di tiga tempat: login/daftar warga, login pemerintah, dan modal
 15. **FE-53** — Hapus atau ganti simbol di halaman Tentang
 16. **FE-54** — Perbaikan sistem warna: badge, mode gelap, dan palet
 17. **FE-55** — Tombol tampilkan/sembunyikan kata sandi (selesai)
+18. **FE-56** — Gabungkan data master ke halaman kelola fasilitas (selesai)
 
 ---
 

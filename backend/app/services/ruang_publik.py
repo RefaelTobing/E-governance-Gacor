@@ -541,7 +541,11 @@ def get_public_spaces_stats(db: Session, q: Optional[str] = None) -> dict:
     if q:
         pola = f"%{q}%"
         total_stmt = total_stmt.filter(
-            or_(RuangPublik.nama.ilike(pola), RuangPublik.alamat.ilike(pola))
+            or_(
+                RuangPublik.nama.ilike(pola),
+                RuangPublik.alamat.ilike(pola),
+                RuangPublik.wilayah.ilike(pola),
+            )
         )
     total_ruang_publik = total_stmt.scalar() or 0
 
