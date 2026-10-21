@@ -54,24 +54,6 @@ export const IS_DEV = import.meta.env.DEV;
 // angka jarak) yang sama.
 export const JAKARTA_CENTER = { lat: -6.2088, lng: 106.8456 };
 
-// Kotak pembatas DKI Jakarta dengan margin tipis. Lokasi pengguna di luar kotak
-// ini (mis. dibuka dari luar kota) tidak dipakai sebagai titik acuan jarak,
-// karena semua jarak jadi 600 km lebih dan urutan "terdekat" kehilangan arti.
-export const JAKARTA_BOUNDS = {
-  minLat: -6.45,
-  maxLat: -5.9,
-  minLng: 106.55,
-  maxLng: 107.05,
-};
-
-export const dalamJakarta = (lat, lng) =>
-  Number.isFinite(lat)
-  && Number.isFinite(lng)
-  && lat >= JAKARTA_BOUNDS.minLat
-  && lat <= JAKARTA_BOUNDS.maxLat
-  && lng >= JAKARTA_BOUNDS.minLng
-  && lng <= JAKARTA_BOUNDS.maxLng;
-
 // Enum status laporan, satu sumber kanonik (DESIGN.md §4.4).
 // `key` harus persis sama dengan nilai status dari backend (snake_case).
 export const STATUS_LAPORAN = {

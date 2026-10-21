@@ -5,7 +5,7 @@ import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
 import { Button, SearchInput, SelectDropdown, MultiSelectDropdown, Card, CardBody, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import { getFacilityOptions } from '../../../services/fasilitasService';
-import { JAKARTA_CENTER, DEFAULT_RADIUS_KM, dalamJakarta } from '../../../config/constants';
+import { JAKARTA_CENTER, DEFAULT_RADIUS_KM } from '../../../config/constants';
 import { getCategories } from '../../../services/categoryService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
 import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
@@ -81,11 +81,11 @@ export const DaftarRuangPublikPage = () => {
     clearLocation,
   } = useGeolocation();
 
-  // Lokasi dari luar Jakarta membuat semua jarak 600 km lebih dan urutan
-  // "terdekat" kehilangan arti, jadi titik acuan jatuh ke pusat kota.
-  const memakaiLokasiSendiri = dalamJakarta(location.lat, location.lng);
-  const acuanLat = memakaiLokasiSendiri ? location.lat : JAKARTA_CENTER.lat;
-  const acuanLng = memakaiLokasiSendiri ? location.lng : JAKARTA_CENTER.lng;
+  // Pakai lokasi device apa adanya (GPS/manual), termasuk di luar Jakarta.
+  // Pusat kota hanya dipakai bila pengguna belum punya lokasi sama sekali.
+  const punyaLokasi = Number.isFinite(location.lat) && Number.isFinite(location.lng);
+  const acuanLat = punyaLokasi ? location.lat : JAKARTA_CENTER.lat;
+  const acuanLng = punyaLokasi ? location.lng : JAKARTA_CENTER.lng;
 
   // Metrik ringkas dihitung backend atas seluruh tabel. "Status prima" dan
   // "perhatian" adalah hitungan fasilitas, bukan ruang publik, jadi angkanya
@@ -451,10 +451,10 @@ export const DaftarRuangPublikPage = () => {
           </div>
         )}
 
-        {location.lat !== null && (
+        {punyaLokasi && (
           <div
             style={{
-              color: memakaiLokasiSendiri ? 'var(--color-success-text)' : 'var(--color-warning-text)',
+              color: 'var(--color-success-text)',
               fontSize: '13px',
               marginBottom: '12px',
               display: 'flex',
@@ -465,9 +465,7 @@ export const DaftarRuangPublikPage = () => {
             }}
           >
             <span>
-              {memakaiLokasiSendiri
-                ? `Jarak dihitung dari lokasi Anda ${isManual ? '(ditandai manual di peta)' : '(perangkat GPS)'}.`
-                : 'Lokasi Anda di luar Jakarta, jadi jarak dihitung dari pusat Jakarta.'}
+              {`Jarak dihitung dari lokasi Anda ${isManual ? '(ditandai manual di peta)' : '(perangkat GPS)'}.`}
             </span>
             <Button
               variant="ghost"
@@ -529,7 +527,7 @@ export const DaftarRuangPublikPage = () => {
         <PetaSebaranLokasi
           items={filteredList}
           loading={isLoading}
-          userLocation={memakaiLokasiSendiri ? location : { lat: null, lng: null }}
+          userLocation={location}
           onSetManualLocation={setManualLocation}
         />
       </div>
@@ -600,7 +598,7 @@ export const DaftarRuangPublikPage = () => {
                         </p>
                         {item.jarak_km !== undefined && item.jarak_km !== null && (
                           <span className="badge badge-neutral" style={{ display: 'inline-block', marginBottom: '8px' }}>
-                            {item.jarak_km.toFixed(2)} km {memakaiLokasiSendiri ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
+                            {item.jarak_km.toFixed(2)} km {punyaLokasi ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
                           </span>
                         )}
                       </div>
