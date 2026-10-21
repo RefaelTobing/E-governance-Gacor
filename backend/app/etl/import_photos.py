@@ -75,9 +75,10 @@ def _tulis_log(baris: list[dict]) -> None:
 
 
 def _login(base_url: str, email: str, password: str) -> str:
-    # /auth/login memakai OAuth2 password flow: field `username` diisi email.
+    # Impor foto butuh akses admin, jadi lewat jalur /admin/login (OAuth2 password
+    # flow: field `username` diisi email). /auth/login hanya menerima role warga.
     resp = requests.post(
-        f"{base_url}/api/v1/auth/login",
+        f"{base_url}/api/v1/admin/login",
         data={"username": email, "password": password},
         timeout=30,
     )
