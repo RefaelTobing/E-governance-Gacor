@@ -342,7 +342,7 @@ export const HomePage = () => {
               {featuredSpaces[0] && (
                 <div className="home-space-main-col">
                   <Card hoverable className="home-space-card home-space-card-featured">
-                    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'center' }}>
+                    <div style={{ position: 'relative', width: '100%' }}>
                       {featuredSpaces[0].image ? (
                         <img
                           src={featuredSpaces[0].image}
@@ -426,7 +426,7 @@ export const HomePage = () => {
               <div className="home-space-side-col">
                 {featuredSpaces.slice(1, 3).map((item) => (
                   <Card key={item.id} hoverable className="home-space-card home-space-card-side">
-                    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%' }}>
+                    <div style={{ position: 'relative', width: '100%' }}>
                       {item.image ? (
                         <img
                           src={item.image}

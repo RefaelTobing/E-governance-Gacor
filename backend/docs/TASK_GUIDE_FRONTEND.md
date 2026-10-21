@@ -299,6 +299,7 @@ Ringkasan status:
 | FE-55 | ✅ | Tombol tampilkan/sembunyikan kata sandi di login, daftar, dan kelola admin |
 | FE-56 | ✅ | Gabungkan data master ke halaman kelola fasilitas |
 | FE-57 | ✅ | Foto pengganti per kategori dan info kosong disembunyikan |
+| FE-58 | ✅ | Foto kartu Beranda penuh tinggi tanpa strip putih |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -2075,6 +2076,48 @@ foto asli dan baris jam otomatis tampil tanpa perubahan kode.
 
 ---
 
+### FE-58. Foto kartu Beranda penuh tinggi tanpa strip putih
+
+**Status:** ✅
+
+**Gejala:** foto/placeholder di kartu Beranda terlihat "kepotong". Di kartu unggulan ada
+bidang putih di atas dan di bawah blok foto, sehingga blok berwarna tampak mengambang di
+tengah kartu. Di kartu samping, blok foto menempel ke tepi kiri dan sudut tajamnya tersabit
+lengkung sudut kartu.
+
+**Akar masalah (diukur lewat CDP, bukan perkiraan):** aturan foto 1:1 dari FE-46 membuat kotak
+foto berukuran 340×340 di dalam kolom kartu yang tingginya 415 px, dan `align-self: center`
+meletakkannya di tengah sehingga menyisakan 38 px di atas + 37 px di bawah. Kartu samping
+memakai `align-self: center` + `aspect-ratio: 1/1` yang sama, jadi blok fotonya tidak pernah
+mengisi tinggi kartu.
+
+**Perubahan:**
+1. `HomePage.jsx`: hapus `aspectRatio: '1 / 1'` dan `alignSelf: 'center'` dari kotak foto kartu
+   unggulan dan dua kartu samping. Tinggi kotak foto kini mengikuti tinggi kartu.
+2. `index.css`: aturan `.home-space-card-side > div:first-child` menjadi `align-self: stretch`
+   (full-bleed); `aspect-ratio: 1/1` hanya dipasang lagi di layar ≤992 px saat kartu samping
+   menumpuk vertikal. Kartu unggulan mendapat `aspect-ratio: 1/1` di layar ≤768 px saat
+   kolomnya menumpuk, supaya blok foto tidak kolaps.
+3. Tidak ada perubahan pada halaman Daftar maupun Detail; rasio 1:1 di sana tetap seperti FE-46.
+
+**Bukti (26/26 lolos, CDP Chrome, build 2,92 s, dev `:5173`, backend `:8000`):**
+1. Desktop 1330 px: kartu unggulan 741×300, kotak foto 340×298, sisa atas/bawah 1 px (garis
+   tepi kartu) — strip putih hilang.
+2. Desktop 1330 px: dua kartu samping 467×142, kotak foto 198×140, sisa atas/bawah 1 px.
+3. Desktop: tidak ada overflow horizontal; konsol bersih.
+4. Tablet 800 px: kartu unggulan full-bleed (sisa 1 px), kartu samping 359×359 (1:1) penuh lebar.
+5. Mobile 390 px: kartu unggulan dan samping 356×356 (1:1), tidak ada overflow horizontal.
+6. Mode gelap: sisa atas/bawah tetap 1 px di ketiga kartu, konsol bersih.
+7. Daftar: 10 kartu tampil, konsol bersih (tidak ikut berubah).
+8. Detail: rute tetap meminta login dan halaman tidak kosong; konsol bersih.
+9. Semua skenario: tidak ada exception JS maupun console error.
+
+**Catatan:** isi halaman Detail tidak diverifikasi ulang pada FE-58 karena kredensial admin di
+`backend/.env` sudah tidak cocok dengan data di database (login ditolak); halaman Detail tidak
+disentuh oleh FE-58 sehingga bukti FE-57 masih berlaku.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
 
 
@@ -2100,6 +2143,7 @@ foto asli dan baris jam otomatis tampil tanpa perubahan kode.
 - **FE-14** — Galeri foto detail ruang publik (data foto scraping sudah masuk via BE-57)
 - **FE-56** — Data master menyatu dengan halaman kelola fasilitas
 - **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan
+- **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih
 
 ### Prioritas Berikutnya
 
@@ -2122,6 +2166,7 @@ foto asli dan baris jam otomatis tampil tanpa perubahan kode.
 17. **FE-55** — Tombol tampilkan/sembunyikan kata sandi (selesai)
 18. **FE-56** — Gabungkan data master ke halaman kelola fasilitas (selesai)
 19. **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan (selesai)
+20. **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih (selesai)
 
 ---
 

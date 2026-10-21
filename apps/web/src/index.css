@@ -1100,12 +1100,10 @@ input[type="range"] {
 }
 
 .home-space-card-side > div:first-child {
-  /* align-self center: aspect-ratio hanya berlaku bila tinggi tidak dipaksa
-     mengisi baris grid, dan foto tetap di tengah bila badan kartu lebih tinggi. */
-  align-self: center;
-  height: auto !important;
+  /* Full-bleed: foto mengisi tinggi kartu, jadi tidak ada strip kosong di atas
+     atau bawah. Sudut mengikuti radius kartu karena kartu memakai overflow hidden. */
+  align-self: stretch;
   min-height: 0;
-  aspect-ratio: 1 / 1;
 }
 
 .home-space-card-side .card-body {
@@ -1140,7 +1138,7 @@ input[type="range"] {
     flex-direction: column;
   }
   .home-space-card-side > div:first-child {
-    height: auto !important;
+    aspect-ratio: 1 / 1;
     min-height: 0;
   }
 }
@@ -1209,6 +1207,11 @@ input[type="range"] {
 @media (max-width: 768px) {
   .home-space-card-featured {
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* Kartu unggulan menumpuk: foto kembali kotak 1:1 supaya tidak kolaps. */
+  .home-space-card-featured > div:first-child {
+    aspect-ratio: 1 / 1;
+    min-height: 0;
   }
 }
 
