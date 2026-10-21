@@ -1,19 +1,26 @@
 import { http } from '../config/api';
 
-/**
- * Login pengelola (admin/dinas).
- * FastAPI OAuth2 password flow memakai application/x-www-form-urlencoded.
- * Response body sudah dibuka oleh response interceptor.
- */
-export const loginPemerintah = async (email, password) => {
+const postLogin = async (endpoint, email, password) => {
   const formData = new URLSearchParams();
   formData.append('username', email);
   formData.append('password', password);
 
-  return await http.post('/api/v1/auth/login', formData, {
+  return await http.post(endpoint, formData, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   });
 };
+
+/**
+ * Login warga. Backend menolak akun petugas di endpoint ini.
+ */
+export const loginWarga = async (email, password) =>
+  postLogin('/api/v1/auth/login', email, password);
+
+/**
+ * Login petugas. Backend memeriksa role sebelum menerbitkan token.
+ */
+export const loginAdmin = async (email, password) =>
+  postLogin('/api/v1/auth/admin/login', email, password);
 
 /**
  * Registrasi akun warga.

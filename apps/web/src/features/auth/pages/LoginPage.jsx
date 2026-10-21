@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
-import { loginPemerintah, getMe, registerWarga } from '../../../services/authService';
+import { loginWarga, getMe, registerWarga } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
 
 export const LoginPage = () => {
@@ -63,11 +63,18 @@ export const LoginPage = () => {
       }
 
       // Login Call
-      const tokenData = await loginPemerintah(email, password);
+      const tokenData = await loginWarga(email, password);
       const token = tokenData.access_token;
 
       // Fetch current user details
       const userData = await getMe(token);
+
+      // Backend menolak petugas di /auth/login; cek ini menahan sesi non-warga
+      // seandainya token lama/endpoint lain lolos ke halaman ini. Pesannya
+      // disamakan dengan kredensial salah agar role akun tidak terbocor.
+      if (userData.role !== 'warga') {
+        throw new Error('Email atau kata sandi salah.');
+      }
 
       login(userData, token);
       navigate(redirectTujuan || '/home');

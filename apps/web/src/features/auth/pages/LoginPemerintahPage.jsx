@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
-import { loginPemerintah, getMe } from '../../../services/authService';
+import { loginAdmin, getMe } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
 
 export const LoginPemerintahPage = () => {
@@ -21,7 +21,7 @@ export const LoginPemerintahPage = () => {
     setIsLoading(true);
     
     try {
-      const tokenData = await loginPemerintah(email, password);
+      const tokenData = await loginAdmin(email, password);
       const userData = await getMe(tokenData.access_token);
       
       if (userData.role !== 'admin' && userData.role !== 'dinas') {
