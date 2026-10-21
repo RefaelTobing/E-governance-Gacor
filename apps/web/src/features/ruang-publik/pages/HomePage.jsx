@@ -17,6 +17,7 @@ import heroImg4 from '../../../slidderHero/4.jpg';
 import { MOCK_CATEGORIES } from '../../../data/mockData';
 import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleton, EmptyState } from '../../../components';
 import { getPublicSpaces } from '../../../services/ruangPublikService';
+import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
 
 const HERO_SLIDES = [
   {
@@ -342,11 +343,15 @@ export const HomePage = () => {
                 <div className="home-space-main-col">
                   <Card hoverable className="home-space-card home-space-card-featured">
                     <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'center' }}>
-                      <img
-                        src={featuredSpaces[0].image}
-                        alt={featuredSpaces[0].nama}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                      {featuredSpaces[0].image ? (
+                        <img
+                          src={featuredSpaces[0].image}
+                          alt={featuredSpaces[0].nama}
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <FotoRuangPlaceholder kategoriId={featuredSpaces[0].kategori_id} iconSize={44} />
+                      )}
                     </div>
 
                     <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-xl)' }}>
@@ -364,9 +369,11 @@ export const HomePage = () => {
                           <p className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-sm)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <MapPin size={12} color="var(--color-text-muted)" /> {featuredSpaces[0].wilayah}
                           </p>
-                          <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {featuredSpaces[0].deskripsi}
-                          </p>
+                          {featuredSpaces[0].deskripsi && (
+                            <p className="text-body" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-md)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {featuredSpaces[0].deskripsi}
+                            </p>
+                          )}
                         </div>
 
                         {/* Facility Condition Summary Box */}
@@ -375,26 +382,32 @@ export const HomePage = () => {
                             Kondisi Fasilitas
                           </span>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                            {featuredSpaces[0].fasilitas?.slice(0, 4).map((fas) => (
-                              <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
-                                <span
-                                  title={fas.nama}
-                                  style={{
-                                    display: 'inline-block',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: '120px',
-                                    flex: 1,
-                                    minWidth: 0,
-                                    color: 'var(--color-text-main)'
-                                  }}
-                                >
-                                  {fas.nama}
-                                </span>
-                                <StatusBadge status={fas.status} />
-                              </div>
-                            ))}
+                            {featuredSpaces[0].fasilitas?.length > 0 ? (
+                              featuredSpaces[0].fasilitas.slice(0, 4).map((fas) => (
+                                <div key={fas.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', minWidth: 0, gap: '6px' }}>
+                                  <span
+                                    title={fas.nama}
+                                    style={{
+                                      display: 'inline-block',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      maxWidth: '120px',
+                                      flex: 1,
+                                      minWidth: 0,
+                                      color: 'var(--color-text-main)'
+                                    }}
+                                  >
+                                    {fas.nama}
+                                  </span>
+                                  <StatusBadge status={fas.status} />
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-caption" style={{ margin: 0, gridColumn: '1 / -1', color: 'var(--color-text-muted)' }}>
+                                Belum ada data fasilitas untuk ruang ini.
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -414,11 +427,15 @@ export const HomePage = () => {
                 {featuredSpaces.slice(1, 3).map((item) => (
                   <Card key={item.id} hoverable className="home-space-card home-space-card-side">
                     <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%' }}>
-                      <img
-                        src={item.image}
-                        alt={item.nama}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.nama}
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <FotoRuangPlaceholder kategoriId={item.kategori_id} iconSize={36} />
+                      )}
                     </div>
 
                     <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', padding: 'var(--space-md)' }}>
@@ -430,9 +447,11 @@ export const HomePage = () => {
                         <p className="text-caption" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-xs)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
                           <MapPin size={11} color="var(--color-text-muted)" /> {item.wilayah}
                         </p>
-                        <p className="text-caption" style={{ marginBottom: 'var(--space-sm)', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {item.deskripsi}
-                        </p>
+                        {item.deskripsi && (
+                          <p className="text-caption" style={{ marginBottom: 'var(--space-sm)', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {item.deskripsi}
+                          </p>
+                        )}
                       </div>
 
                       <div style={{ marginTop: 'auto', paddingTop: 'var(--space-sm)' }}>

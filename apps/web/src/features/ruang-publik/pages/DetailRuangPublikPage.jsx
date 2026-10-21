@@ -27,6 +27,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch, SelectDropdown } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
 import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfil } from '../../../context/ProfilContext';
@@ -573,11 +574,15 @@ export const DetailRuangPublikPage = () => {
             </div>
 
             <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-              <img
-                src={detail.image}
-                alt={`Foto ${detail.nama}`}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              {detail.image ? (
+                <img
+                  src={detail.image}
+                  alt={`Foto ${detail.nama}`}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <FotoRuangPlaceholder kategoriId={detail.kategori_id} iconSize={44} />
+              )}
             </div>
           </CardBody>
         </Card>
@@ -611,11 +616,13 @@ export const DetailRuangPublikPage = () => {
               </div>
             </div>
 
-            <div style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginTop: 'var(--space-lg)' }}>
-              <p className="text-caption" style={{ color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <PawPrint size={14} /> {detail.ramahHewan}
-              </p>
-            </div>
+            {detail.ramahHewan && (
+              <div style={{ backgroundColor: 'var(--color-primary-light)', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginTop: 'var(--space-lg)' }}>
+                <p className="text-caption" style={{ color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <PawPrint size={14} /> {detail.ramahHewan}
+                </p>
+              </div>
+            )}
           </CardBody>
         </Card>
       </div>

@@ -298,6 +298,7 @@ Ringkasan status:
 | FE-54 | ✅ | Perbaikan sistem warna: badge, mode gelap, dan palet |
 | FE-55 | ✅ | Tombol tampilkan/sembunyikan kata sandi di login, daftar, dan kelola admin |
 | FE-56 | ✅ | Gabungkan data master ke halaman kelola fasilitas |
+| FE-57 | ✅ | Foto pengganti per kategori dan info kosong disembunyikan |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -2009,6 +2010,71 @@ pengujian; `COUNT(*) WHERE field_source IS NOT NULL` = 0.
 
 ---
 
+### FE-57. Foto pengganti per kategori dan info kosong disembunyikan
+
+**Status:** ✅
+
+**Gejala:** kartu di Beranda dan Daftar Ruang Publik menampilkan foto taman yang sama persis
+untuk semua tempat, dan foto itu terpotong karena dipaksa kotak 1:1. Beberapa label juga
+muncul tanpa isi: "Jam Operasional:" menggantung kosong, kotak "Kondisi Fasilitas" di kartu
+unggulan tampil kosong, dan jarak "607,16 km dari lokasi Anda" muncul saat halaman dibuka dari
+luar Jakarta.
+
+**Akar masalah data (diverifikasi ke database, bukan asumsi):**
+1. Tidak ada satu pun foto di sistem: `ruang_publik.image_url` terisi 0 dari 1.194 baris,
+   tabel `ruang_publik_foto` 0 baris, folder `uploads/` tidak ada, dan `image_url` di
+   `data/processed/ruang_publik_mentah.json` (6.413 baris) juga kosong semua.
+   Jadi `FALLBACK_IMAGE` Unsplash yang lama dipakai untuk **semua** tempat.
+2. `jam_operasional`, `tiket_masuk`, `akses_disabilitas`, `ramah_hewan`, `status_general`,
+   dan `deskripsi` terisi 0 dari 1.194 baris.
+3. Tabel `fasilitas` 0 baris, sehingga ringkasan kondisi fasilitas selalu 0 dan kotak
+   "Kondisi Fasilitas" di Beranda tidak punya isi.
+
+**Perubahan:**
+1. Komponen baru `features/ruang-publik/components/FotoRuangPlaceholder.jsx`: bidang warna
+   lembut + ikon kategori + teks "Foto belum tersedia". Empat kategori memakai token warna
+   semantik yang sudah ada (teal, biru, amber, hijau) dan otomatis menyesuaikan mode gelap.
+2. `ruangPublikService.js`: `fotoUtama()` tidak lagi memakai foto stok Unsplash; mengembalikan
+   `null` bila tidak ada foto, sehingga UI merender placeholder. Foto asli (bila suatu saat
+   ada di `image_url`, `foto[]`, atau tabel foto) tetap dipakai lebih dulu.
+3. Empat titik render foto memakai placeholder saat `image` null: kartu unggulan dan dua kartu
+   samping di Beranda, kartu daftar, dan foto hero halaman detail.
+4. Baris "Jam Operasional:" disembunyikan saat kosong (daftar), dan nilai "TBA" di detail
+   diganti "Belum tersedia" untuk jam buka, tiket masuk, dan akses disabilitas; kotak ramah
+   hewan tidak dirender bila kosong.
+5. Kotak "Kondisi Fasilitas" di Beranda menampilkan "Belum ada data fasilitas untuk ruang ini."
+   saat daftar fasilitas kosong; paragraf deskripsi yang kosong tidak lagi dirender (termasuk
+   di kartu samping).
+6. Jarak: helper `dalamJakarta()` di `config/constants.js` memakai kotak pembatas DKI Jakarta.
+   Lokasi pengguna di luar kotak itu tidak dipakai sebagai titik acuan; daftar, label jarak,
+   sort "Jarak Terdekat", dan pusat peta memakai `JAKARTA_CENTER` dengan label
+   "dari pusat Jakarta" serta keterangan "Lokasi Anda di luar Jakarta...". GPS di dalam
+   Jakarta tetap berperilaku seperti sebelumnya ("dari lokasi Anda").
+
+**Bukti (36/36 lolos, CDP Chrome, build 2,33 s, dev `:5199`, backend `:8000`):**
+1. Beranda: 0 gambar Unsplash, 3 placeholder dengan 3 warna kategori berbeda.
+2. Beranda: kotak kondisi berisi "Belum ada data fasilitas untuk ruang ini.".
+3. Beranda: tidak ada paragraf deskripsi kosong yang dirender.
+4. Beranda: tanpa overflow horizontal; konsol bersih.
+5. Daftar: 0 gambar Unsplash, 10 placeholder pada halaman pertama, 3 warna kategori.
+6. Daftar: teks "Jam Operasional" tidak muncul lagi; judul "Menampilkan 1194 Ruang Publik".
+7. Daftar tanpa lokasi: seluruh badge "dari pusat Jakarta", jarak maksimal 0,79 km.
+8. Lokasi di dalam Jakarta (sessionStorage `-6.2, 106.85`): badge "dari lokasi Anda" dan banner
+   "Jarak dihitung dari lokasi Anda (perangkat GPS)".
+9. Lokasi Surabaya (`-7.2575, 112.7521`): badge kembali "dari pusat Jakarta", jarak maksimal
+   0,79 km (tidak ada 607 km), banner "Lokasi Anda di luar Jakarta...".
+10. Detail (`/ruang-publik/rth-09107c86114d`, login admin): placeholder kategori tampil,
+    0 foto Unsplash, "Jam Buka: Belum tersedia", 0 label "TBA" tersisa, konsol bersih.
+11. Mode gelap: latar `rgb(11, 17, 32)`, placeholder tetap tampil dengan warna kategori berbeda.
+12. Mobile 390px (Beranda dan Daftar): overflow horizontal 0.
+13. Semua skenario: tidak ada exception JS maupun console error.
+
+**Catatan:** angka total 1.194 dan kondisi fasilitas 0/0 bukan akibat FE-57; itu kondisi data
+saat ini (tidak ada foto, fasilitas, dan jam operasional di database). Begitu data diisi,
+foto asli dan baris jam otomatis tampil tanpa perubahan kode.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
 
 
@@ -2033,6 +2099,7 @@ pengujian; `COUNT(*) WHERE field_source IS NOT NULL` = 0.
 - **FE-43** — Tampilan session admin di navbar publik
 - **FE-14** — Galeri foto detail ruang publik (data foto scraping sudah masuk via BE-57)
 - **FE-56** — Data master menyatu dengan halaman kelola fasilitas
+- **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan
 
 ### Prioritas Berikutnya
 
@@ -2054,6 +2121,7 @@ pengujian; `COUNT(*) WHERE field_source IS NOT NULL` = 0.
 16. **FE-54** — Perbaikan sistem warna: badge, mode gelap, dan palet
 17. **FE-55** — Tombol tampilkan/sembunyikan kata sandi (selesai)
 18. **FE-56** — Gabungkan data master ke halaman kelola fasilitas (selesai)
+19. **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan (selesai)
 
 ---
 

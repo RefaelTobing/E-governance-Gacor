@@ -3,21 +3,16 @@ import { IS_DEV } from '../config/constants';
 import { MOCK_RUANG_PUBLIK, MOCK_RUANG_PUBLIK_METRICS } from '../data/mockData';
 
 /**
- * Gambar cadangan bila ruang publik belum punya foto sama sekali.
- */
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80';
-
-/**
  * Ubah foto utama ruang publik jadi URL siap-pakai.
  * `image_url` backend relatif (mis. /uploads/ruang-publik/xxx.jpg), jadi harus
  * dilewatkan `assetUrl` agar tidak diresolusi ke origin frontend.
+ * `null` berarti belum ada foto, dan UI menampilkan placeholder kategori.
  */
 const fotoUtama = (item) => {
   const url = item.image_url || item.image;
   if (url) return assetUrl(url);
-  if (item.foto && item.foto.length > 0) return assetUrl(item.foto[0]);
-  return FALLBACK_IMAGE;
+  if (Array.isArray(item.foto) && item.foto.length > 0) return assetUrl(item.foto[0]);
+  return null;
 };
 
 /**
@@ -64,6 +59,9 @@ export const getPublicSpaces = async (params = {}) => {
       ...item,
       // Backend mengirim foto utama di `image_url` (relatif); UI memakai `image`.
       image: fotoUtama(item),
+      // Endpoint daftar belum mengirim jam operasional; baris jam disembunyikan
+      // saat nilainya kosong supaya label tidak menggantung tanpa isi.
+      jamOperasional: item.jam_operasional ?? item.jamOperasional ?? null,
       stats: keStats(item.stats),
     }));
   } catch (error) {
@@ -180,10 +178,12 @@ export const getPublicSpaceDetail = async (id) => {
       fasilitas,
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
       stats: keStats(data.stats),
-      jamOperasional: data.jam_operasional || data.jamOperasional || 'TBA',
-      ramahHewan: data.ramah_hewan || data.ramahHewan || 'TBA',
-      aksesDisabilitas: data.akses_disabilitas || data.aksesDisabilitas || 'TBA',
-      tiketMasuk: data.tiket_masuk || data.tiketMasuk || 'TBA',
+      jamOperasional: data.jam_operasional || data.jamOperasional || 'Belum tersedia',
+      // Kosong = tidak ada data, bukan "TBA"; UI menyembunyikan penanda yang
+      // tidak punya isi (lihat kotak ramah hewan di halaman detail).
+      ramahHewan: data.ramah_hewan || data.ramahHewan || null,
+      aksesDisabilitas: data.akses_disabilitas || data.aksesDisabilitas || 'Belum tersedia',
+      tiketMasuk: data.tiket_masuk || data.tiketMasuk || 'Belum tersedia',
       wilayah: data.wilayah || 'TBA'
     };
   } catch (error) {

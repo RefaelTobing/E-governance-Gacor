@@ -5,9 +5,10 @@ import { MOCK_WILAYAH, MOCK_CATEGORIES } from '../../../data/mockData';
 import { Button, SearchInput, SelectDropdown, MultiSelectDropdown, Card, CardBody, CategoryChip, EmptyState, Skeleton } from '../../../components';
 import { getAllPublicSpaces, getPublicSpacesStats } from '../../../services/ruangPublikService';
 import { getFacilityOptions } from '../../../services/fasilitasService';
-import { JAKARTA_CENTER, DEFAULT_RADIUS_KM } from '../../../config/constants';
+import { JAKARTA_CENTER, DEFAULT_RADIUS_KM, dalamJakarta } from '../../../config/constants';
 import { getCategories } from '../../../services/categoryService';
 import PetaSebaranLokasi from '../components/PetaSebaranLokasi';
+import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
 import useGeolocation from '../../../hooks/useGeolocation';
 import 'leaflet/dist/leaflet.css';
 
@@ -80,6 +81,12 @@ export const DaftarRuangPublikPage = () => {
     clearLocation,
   } = useGeolocation();
 
+  // Lokasi dari luar Jakarta membuat semua jarak 600 km lebih dan urutan
+  // "terdekat" kehilangan arti, jadi titik acuan jatuh ke pusat kota.
+  const memakaiLokasiSendiri = dalamJakarta(location.lat, location.lng);
+  const acuanLat = memakaiLokasiSendiri ? location.lat : JAKARTA_CENTER.lat;
+  const acuanLng = memakaiLokasiSendiri ? location.lng : JAKARTA_CENTER.lng;
+
   // Metrik ringkas dihitung backend atas seluruh tabel. "Status prima" dan
   // "perhatian" adalah hitungan fasilitas, bukan ruang publik, jadi angkanya
   // tidak bisa diturunkan dari daftar yang tampil di bawah.
@@ -107,8 +114,8 @@ export const DaftarRuangPublikPage = () => {
       setIsLoading(true);
       try {
         const data = await getAllPublicSpaces({
-          lat: Number.isFinite(location.lat) ? location.lat : JAKARTA_CENTER.lat,
-          lng: Number.isFinite(location.lng) ? location.lng : JAKARTA_CENTER.lng
+          lat: acuanLat,
+          lng: acuanLng
         });
         if (isMounted) {
           setSpaces(data);
@@ -127,7 +134,7 @@ export const DaftarRuangPublikPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [location.lat, location.lng]);
+  }, [acuanLat, acuanLng]);
 
   // Chip kategori mengikuti tabel categories lewat API, bukan daftar statis.
   useEffect(() => {
@@ -447,7 +454,7 @@ export const DaftarRuangPublikPage = () => {
         {location.lat !== null && (
           <div
             style={{
-              color: 'var(--color-success-text)',
+              color: memakaiLokasiSendiri ? 'var(--color-success-text)' : 'var(--color-warning-text)',
               fontSize: '13px',
               marginBottom: '12px',
               display: 'flex',
@@ -458,7 +465,9 @@ export const DaftarRuangPublikPage = () => {
             }}
           >
             <span>
-              Jarak dihitung dari lokasi Anda {isManual ? '(ditandai manual di peta)' : '(perangkat GPS)'}.
+              {memakaiLokasiSendiri
+                ? `Jarak dihitung dari lokasi Anda ${isManual ? '(ditandai manual di peta)' : '(perangkat GPS)'}.`
+                : 'Lokasi Anda di luar Jakarta, jadi jarak dihitung dari pusat Jakarta.'}
             </span>
             <Button
               variant="ghost"
@@ -520,7 +529,7 @@ export const DaftarRuangPublikPage = () => {
         <PetaSebaranLokasi
           items={filteredList}
           loading={isLoading}
-          userLocation={location}
+          userLocation={memakaiLokasiSendiri ? location : { lat: null, lng: null }}
           onSetManualLocation={setManualLocation}
         />
       </div>
@@ -571,7 +580,11 @@ export const DaftarRuangPublikPage = () => {
             <Card key={item.id} hoverable className="ruang-publik-list-card">
               <div className="kartu-ruang">
                 <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start' }}>
-                  <img src={item.image} alt={item.nama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {item.image ? (
+                    <img src={item.image} alt={item.nama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <FotoRuangPlaceholder kategoriId={item.kategori_id} iconSize={34} />
+                  )}
                 </div>
 
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -587,7 +600,7 @@ export const DaftarRuangPublikPage = () => {
                         </p>
                         {item.jarak_km !== undefined && item.jarak_km !== null && (
                           <span className="badge badge-neutral" style={{ display: 'inline-block', marginBottom: '8px' }}>
-                            {item.jarak_km.toFixed(2)} km {Number.isFinite(location.lat) ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
+                            {item.jarak_km.toFixed(2)} km {memakaiLokasiSendiri ? 'dari lokasi Anda' : 'dari pusat Jakarta'}
                           </span>
                         )}
                       </div>
@@ -610,10 +623,12 @@ export const DaftarRuangPublikPage = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)' }}>
-                    <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={14} color="var(--color-text-muted)" /> Jam Operasional: <strong>{item.jamOperasional}</strong>
-                    </span>
+                  <div style={{ display: 'flex', justifyContent: item.jamOperasional ? 'space-between' : 'flex-end', alignItems: 'center', paddingTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)' }}>
+                    {item.jamOperasional && (
+                      <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={14} color="var(--color-text-muted)" /> Jam Operasional: <strong>{item.jamOperasional}</strong>
+                      </span>
+                    )}
                     <Button variant="secondary" className="ruang-publik-detail-button" size="sm" onClick={() => navigate(`/ruang-publik/${item.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       Lihat Detail Ruang <ArrowRight size={14} />
                     </Button>
