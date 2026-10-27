@@ -196,16 +196,27 @@ Status:
 | ID | Status | Task | Catatan |
 | --- | --- | --- | --- |
 | FE-22 | ✅ | Struktur panel admin dan routing | Admin layout serta route dashboard tersedia dalam aplikasi saat ini. |
-| FE-23 | ⚠️ | Login admin | Halaman login dan guard tersedia, alur redirect perlu diuji. |
-| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` perlu ganti URL (sesi FE). |
-| FE-25 | ⚠️ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi masih perlu memakai data laporan, bukan teks hardcode. Tombol **Setujui** (BE-29) dan **Tolak** (BE-30) belum ada; endpoint `POST /admin/reports/{id}/approve` dan `POST /admin/reports/{id}/reject` sudah siap, lihat sub-bagian FE-25A/FE-25B di bawah. |
-| FE-26 | ❌ | Daftar laporan yang di-flag | Backend siap: `GET /api/v1/admin/reports/flagged` (BE-31) mengembalikan laporan ter-flag + `flag_count`, urut terbanyak. UI belum dibuat. |
+| FE-23 | ✅ | Login admin | Halaman login + guard bekerja. `RequireAuth` sudah mengarahkan ke `/login-pemerintah?redirect=...`; `RequireAdmin` kini konsisten (dulu membuang user non-admin ke `/home`). Login salah sandi menampilkan "Email atau kata sandi salah." tanpa membersihkan sesi. |
+| FE-24 | ✅ | Dashboard moderasi laporan | Daftar laporan menunggu verifikasi tersedia. **Catatan BE-52/BE-28:** baca antrian dari `GET /api/v1/admin/reports` (semua status, `?status` tervalidasi kanonik), bukan `GET /reports` yang kini hanya laporan tayang; `AntrianModerasiPage`/`DashboardPage` sudah memakai `getAdminReports()` (`AntrianModerasiPage.jsx:25`, `DashboardPage.jsx:34`). |
+| FE-25 | ✅ | Detail laporan moderasi | Foto, deskripsi, dan aksi status tersedia. Titik presisi sudah memakai data laporan (`laporan.lokasiPilihan`, `DetailModerasiPage.jsx:287`), bukan teks hardcode. Tombol **Setujui** (BE-29) dan **Tolak** (BE-30) sudah ada, lihat sub-bagian FE-25A/FE-25B di bawah. |
+| FE-26 | ✅ | Daftar laporan yang di-flag | Backend `GET /api/v1/admin/reports/flagged` (BE-31) mengembalikan laporan ter-flag + `flag_count`, urut terbanyak. UI: `LaporanTerflagPage.jsx` (route `/dashboard/laporan-terflag`, `route-config.js:42`), link sidebar "Laporan Ditandai" (`AdminLayout.jsx:68`), data lewat `getFlaggedReports()` (`laporanService.js:175`). |
 | FE-27 | ✅ | Manajemen data master ruang publik | Link sidebar ditambahkan; indikator edit manual terverifikasi ke backend asli (PATCH hanya kolom berubah). |
-| FE-28 | ❌ | Trigger sinkronisasi ETL dari admin | Endpoint backend tersedia, kontrol UI belum tersedia. |
+| FE-28 | ✅ | Trigger sinkronisasi ETL dari admin | Endpoint `POST`/`GET /api/v1/admin/sync-data` (`sync_data.py`, `api.py:38`) dipakai lewat `services/syncService.js`. Panel `SinkronisasiPanel.jsx` (tombol jalankan, hasil, riwayat) tampil di `KelolaFasilitasPage.jsx:126`. |
 
 ### FE-25A. Tombol Setujui di Detail Moderasi (integrasi BE-29)
 
-**Status:** ❌ (backend siap sejak 2026-10-08, UI belum ada)
+**Status:** ✅ (UI sudah ada; endpoint BE-29 sejak 2026-10-08)
+
+**Bukti runtime (2026-10-27):** tombol "Setujui Laporan" ada di urutan pertama panel Tindakan Petugas (`DetailModerasiPage.jsx:418`), disabled kecuali status `menunggu_verifikasi`/`ditolak`. Diuji di browser (dev server kedua `:5174` + mock server `:8001`, karena sesi admin backend asli tidak tersedia):
+
+| Skenario | Hasil terukur |
+| --- | --- |
+| Laporan `menunggu_verifikasi`, klik Setujui | status jadi `diverifikasi`, timeline bertambah "Laporan disetujui", aplikasi kembali ke `/dashboard/moderasi` |
+| Approve saat backend sudah memindahkan status (409) | alert "Laporan tidak bisa disetujui dari status diverifikasi", detail dimuat ulang, tombol jadi disabled, tidak ada sukses palsu |
+| Laporan `diverifikasi`/`dalam_penanganan`/`selesai` | tombol Setujui disabled + teks alasan status |
+| Tanpa sesi admin | route dijaga, diarahkan ke `/login-pemerintah`, tombol tidak ada (permintaan tidak terkirim) |
+
+Kontrak backend asli dicek langsung: `POST /api/v1/admin/reports/{id}/approve` menjawab `401` (route hidup), dan guard `409` untuk status di luar `menunggu_verifikasi`/`ditolak` ada di `backend/app/api/v1/laporan.py:158`. **Belum diuji:** klik tombol di backend asli dengan sesi admin (kredensial tidak dipakai di sesi agen ini) - dua laporan uji `[UJI FE-25A]`/`[UJI FE-25B]` sudah dibuat di database untuk langkah itu.
 
 **File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
 
@@ -230,7 +241,19 @@ Status:
 
 ### FE-25B. Tombol Tolak di Detail Moderasi (integrasi BE-30)
 
-**Status:** ❌ (backend siap sejak 2026-10-09, UI belum ada)
+**Status:** ✅ (UI sudah ada; endpoint BE-30 sejak 2026-10-09)
+
+**Bukti runtime (2026-10-27):** dialog "Tolak Laporan" memakai `rejectReport` (`{ alasan }`); tombol submit disabled selama alasan kosong, dan tombol Tolak disabled saat laporan sudah `ditolak`. Diuji di browser (dev server kedua `:5174` + mock server `:8001`):
+
+| Skenario | Hasil terukur |
+| --- | --- |
+| Alasan kosong | tombol submit disabled (permintaan tidak terkirim) |
+| Alasan terisi, submit | status jadi `ditolak`, blok "ALASAN PENOLAKAN" menampilkan alasan yang diketik, timeline bertambah "Laporan ditolak" |
+| Reject saat backend sudah menolak laporan (409) | alert "Laporan sudah berstatus ditolak", detail dimuat ulang, tidak ada sukses palsu |
+| Laporan `ditolak` | tombol Tolak disabled + teks alasan status |
+
+Backend asli: `POST /api/v1/admin/reports/{id}/reject` menjawab `401` tanpa token (route hidup), `422` untuk alasan kosong, `409` untuk laporan yang sudah ditolak (`backend/app/api/v1/laporan.py:192`). **Belum diuji:** submit di backend asli dengan sesi admin.
+**Temuan terpisah (bukan FE-25B):** token rusak/kedaluwarsa memunculkan pesan mentah `Could not validate credentials` - itu lingkup FE-65.
 
 **File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
 
@@ -300,6 +323,14 @@ Ringkasan status:
 | FE-56 | ✅ | Gabungkan data master ke halaman kelola fasilitas |
 | FE-57 | ✅ | Foto pengganti per kategori dan info kosong disembunyikan |
 | FE-58 | ✅ | Foto kartu Beranda penuh tinggi tanpa strip putih |
+| FE-59 | ✅ | Jarak dan radius memakai lokasi pengguna langsung | Gerbang `dalamJakarta()`/`JAKARTA_BOUNDS` sudah hilang dari `config/constants.js`; acuan = `location` bila ada (`DaftarRuangPublikPage.jsx:87`), fallback `JAKARTA_CENTER`. Selesai lewat commit `d2c991c`. |
+| FE-60 | ❌ | Kartu daftar: kolom foto lebih lebar dan responsif | Revisi Gambar 1. |
+| FE-61 | ❌ | Carousel foto pada pratinjau Peta Akses | Revisi Gambar 4. |
+| FE-62 | ❌ | Batasi 3 item + tombol Tampilkan Semua | Revisi Gambar 5. |
+| FE-63 | ❌ | Tombol Lihat Semua di galeri dan partisipasi warga | Revisi Gambar 6. |
+| FE-64 | ❌ | Hero Beranda: overlay lebih terang dan judul warna solid | Revisi Gambar 7. |
+| FE-65 | ✅ | Bersihkan header admin dan tangani sesi kedaluwarsa | Badge "● Petugas Operasional" dihapus, role sidebar pakai role asli, interceptor 401 membersihkan sesi + mengarahkan ke login dengan pesan Indonesia. Revisi Gambar 8 & 9. |
+| FE-66 | ❌ | Peta admin: tombol fullscreen dan pin warna status | Revisi Gambar 10 & 11. |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -2118,6 +2149,237 @@ disentuh oleh FE-58 sehingga bukti FE-57 masih berlaku.
 
 ---
 
+### FE-59. Jarak dan radius memakai lokasi pengguna langsung
+
+**Status:** ✅ (selesai lewat commit `d2c991c`; menggantikan sebagian perilaku FE-57)
+
+**Bukti (2026-10-27):** `dalamJakarta()` dan `JAKARTA_BOUNDS` tidak ada lagi di `config/constants.js` (tersisa hanya `JAKARTA_CENTER`); acuan jarak = `location` dari `useGeolocation` (`DaftarRuangPublikPage.jsx:87`), banner "Jarak dihitung dari lokasi Anda" (`:468`), badge "dari lokasi Anda" (`:601`).
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+
+**File terkait:** `apps/web/src/config/constants.js`
+
+**Pekerjaan:**
+
+1. Buang gerbang `dalamJakarta()`. Titik acuan jarak = `location` dari `useGeolocation` selama
+   `lat`/`lng` terisi; `JAKARTA_CENTER` hanya dipakai bila pengguna belum berbagi lokasi.
+2. Banner lokasi: hapus cabang "Lokasi Anda di luar Jakarta, jadi jarak dihitung dari pusat
+   Jakarta." Ganti jadi satu kalimat "Jarak dihitung dari lokasi Anda (perangkat GPS)" atau
+   "(ditandai manual di peta)".
+3. Badge jarak di kartu: "dari lokasi Anda" bila lokasi ada, "dari pusat Jakarta" bila belum ada.
+4. Hapus `dalamJakarta()` dan `JAKARTA_BOUNDS` dari `constants.js` bila tidak dipakai modul lain
+   (jangan tinggalkan kode mati).
+5. Radius pencarian, slider, dan urutan "Jarak Terdekat" tidak diubah; hanya basis hitungnya.
+
+**Acceptance criteria:**
+
+- Lokasi di luar Jakarta (uji `-7.2575, 112.7521`) memakai jarak dari titik itu; tidak ada lagi
+  banner "di luar Jakarta".
+- Lokasi di dalam Jakarta berperilaku sama seperti sebelumnya.
+- Tanpa izin lokasi: fallback pusat Jakarta, label "dari pusat Jakarta", tombol
+  "Gunakan Lokasi Saya" tetap berfungsi.
+- Sort dan filter radius konsisten dengan acuan baru; tidak ada exception konsol.
+
+**Catatan:** ini keputusan user (revisi Gambar 2 & 3). Jarak ratusan kilometer dari luar Jakarta
+diterima sebagai hasil yang benar, bukan bug seperti pada FE-57.
+
+---
+
+### FE-60. Kartu daftar: kolom foto lebih lebar dan responsif (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Grid `.kartu-ruang` dari `260px 1fr` menjadi `clamp(240px, 30%, 400px) 1fr`, supaya kolom foto
+   ikut melebar di layar besar.
+2. Kotak foto: hapus `aspectRatio: '1 / 1'` dan `alignSelf: 'start'`, ganti jadi mengisi tinggi
+   baris (stretch) seperti pola FE-58.
+3. Di ≤599 px (kartu menumpuk) pasang lagi `aspect-ratio: 1/1` supaya blok foto tidak kolaps.
+
+**Acceptance criteria:**
+
+- Desktop 1330/900/760 px: foto menempel tepi kiri kartu (sisa ≤1 px) dan tingginya sama dengan
+  tinggi kartu; lebar kolom sekitar 30% dari lebar kartu.
+- 560/390 px: foto 1:1 penuh lebar, tidak kolaps, tanpa overflow horizontal.
+- Skeleton loading ikut memakai layout baru.
+- Build lulus; konsol bersih.
+
+---
+
+### FE-61. Carousel foto pada pratinjau Peta Akses (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Foto di kartu "Peta Akses & Batas Kawasan" memakai `galeriFoto[fotoTerpilih]` bila galeri ada;
+   fallback ke `detail.image` atau placeholder seperti sekarang.
+2. Tambah panah kiri/kanan + label "Foto X dari Y" di kartu itu, hanya bila `galeriFoto.length > 1`.
+   Pakai `geserFoto()` yang sudah ada supaya sinkron dua arah dengan Galeri Foto.
+3. Tombol disabled di ujung galeri, `aria-label` jelas, gaya mengikuti `GAYA_TOMBOL_PANAH`.
+
+**Acceptance criteria:**
+
+- Dengan ≥2 foto: panah menggeser pratinjau dan sorotan di Galeri Foto ikut pindah; label berubah.
+- 1 foto atau tanpa foto: tidak ada panah; placeholder tetap tampil.
+- Fokus keyboard terlihat; tidak ada error konsol.
+
+---
+
+### FE-62. Batasi 3 item + tombol Tampilkan Semua (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Daftar fasilitas: tampilkan 3 baris pertama; tombol "Tampilkan Semua (N)" dan
+   "Tampilkan Lebih Sedikit" di bawah daftar.
+2. Daftar laporan "Pembaruan Partisipasi Warga": jumlah awal 3; tombol "Tampilkan Semua"
+   menggantikan "Muat Lebih Banyak".
+3. Filter kondisi/status yang sudah ada tetap berfungsi; state batas direset saat filter berubah.
+4. Jumlah total di header/badge tidak berubah (tetap total data, bukan jumlah yang tampil).
+
+**Acceptance criteria:**
+
+- Default hanya 3 item pada kedua daftar saat data lebih dari 3.
+- Tombol menampilkan seluruh sisa item; daftar fasilitas bisa disembunyikan lagi.
+- Data ≤3: tombol tidak muncul.
+- Tidak ada error konsol; build lulus.
+
+---
+
+### FE-63. Tombol Lihat Semua di galeri dan partisipasi warga (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+
+**Pekerjaan:**
+
+1. Header Galeri Foto: tombol "Lihat Semua" di pojok kanan, membuka lightbox pada foto terpilih.
+2. Header Pembaruan Partisipasi Warga: tombol "Lihat Semua" mengarah ke `/laporan-saya`.
+3. Gaya tombol outline/ghost ukuran sm dengan ikon panah, konsisten dengan tombol lain.
+
+**Acceptance criteria:**
+
+- Galeri: klik membuka lightbox; panah dan Esc di lightbox tetap berfungsi.
+- Partisipasi: klik membuka `/laporan-saya`; pengguna tanpa sesi diarahkan ke login.
+- Tombol tidak tampil bila section tidak punya isi (galeri tanpa foto, laporan 0).
+- Di mobile tombol tidak menumpuk buruk (wrap rapi).
+
+---
+
+### FE-64. Hero Beranda: overlay lebih terang dan judul warna solid (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
+
+**File terkait:** `apps/web/src/index.css`
+
+**Pekerjaan:**
+
+1. Overlay hero diturunkan: `rgba(15, 23, 42, 0.60/0.70/0.88)` menjadi sekitar
+   `0.42/0.55/0.72`, supaya foto latar lebih terang.
+2. Hapus `.hero-title-gradient` (gradient + `background-clip: text`). Judul memakai satu warna
+   solid; kandidat `#5EEAD4` atau `#FFFFFF`, dipilih setelah cek kontras.
+3. Sesuaikan `textShadow` bila perlu agar judul dan subtitle tetap terbaca di semua slide.
+
+**Acceptance criteria:**
+
+- Judul tidak lagi bergradien: `color` solid dan `-webkit-text-fill-color` bukan `transparent`.
+- Kontras judul dan subtitle ≥4.5:1 pada keempat gambar hero, diukur di area paling terang.
+- Latar hero terukur lebih terang dari sebelumnya (luminance naik).
+- Build lulus; konsol bersih; mode gelap tetap aman.
+
+---
+
+### FE-65. Bersihkan header admin dan tangani sesi kedaluwarsa
+
+**Status:** ✅
+
+**Bukti runtime (2026-10-27):** diuji di browser (dev server kedua `:5174` + mock `:8001` yang menolak token palsu dengan `401`).
+
+| Skenario | Hasil terukur |
+| --- | --- |
+| Token valid, buka `/dashboard/laporan-terflag` | tabel tampil 2 baris, tanpa banner error |
+| Token palsu, buka halaman admin | sesi dibersihkan (`access_token`/`user` = null), diarahkan ke `/login-pemerintah?redirect=%2Fdashboard%2Flaporan-terflag&sesi=berakhir`, pesan "Sesi Anda telah berakhir. Silakan masuk kembali." tampil, tidak ada teks mentah `Could not validate credentials` |
+| Salah sandi di form login | pesan "Email atau kata sandi salah.", sesi tidak dibersihkan, tidak ada redirect berulang (401 dari `/auth/*/login` dikecualikan dari penanganan sesi) |
+| Login benar lalu "Keluar Admin" | masuk `/dashboard`, logout menghapus sesi dan kembali ke halaman login |
+| Header admin | badge "● Petugas Operasional" hilang; sidebar menampilkan nama user + label role asli ("Admin Pengelola"/"Petugas Dinas"), bukan "Pengawas Distrik" hardcode |
+
+**Akar masalah "Could not validate credentials" (poin 2):** pesan itu hanya keluar dari `get_current_user` saat `user_dari_token` mengembalikan `None` (`backend/app/api/deps.py:23`), yaitu token tidak bisa didekode (SECRET_KEY beda/format rusak), `jti` ada di blacklist (sudah logout), `sub` kosong, user tidak ada, atau `is_active` false (`backend/app/services/token.py:20-41`). Role bukan admin TIDAK menghasilkan 401 melainkan 403 "Hanya admin yang boleh mengakses endpoint ini" (`backend/app/api/deps.py:47`). Masa berlaku token 7 hari (`core/config.py:13`), jadi penyebab paling mungkin adalah token sisa sesi lama (sudah logout/blacklist) atau token dari SECRET_KEY lain setelah backend dipindah ke Supabase - bukan sekadar kedaluwarsa.
+
+**Catatan:** `RiwayatLaporanPage.jsx:42` masih punya penanganan 401 sendiri; sekarang interceptor pusat yang lebih dulu menangani, jadi blok itu hanya jalur cadangan (tidak dihapus agar halaman tetap aman bila interceptor dimatikan).
+
+**File utama:** `apps/web/src/layouts/AdminLayout.jsx`
+
+**File terkait:** `apps/web/src/config/api.js`, `apps/web/src/features/moderasi/pages/LaporanTerflagPage.jsx`
+
+**Pekerjaan:**
+
+1. Hapus badge hardcoded "● Petugas Operasional" di top bar admin; role pengelola sudah terlihat
+   di blok akun sidebar.
+2. Reproduksi error "Could not validate credentials" pada `GET /api/v1/admin/reports/flagged`
+   memakai JWT yang dibuat dari `SECRET_KEY` backend (tanpa mengubah data), lalu tentukan akarnya:
+   token kedaluwarsa/blacklist, role, atau endpoint.
+3. Bila 401 karena sesi: interceptor response membersihkan sesi dan mengarahkan ke
+   `/login-pemerintah` dengan pesan "Sesi berakhir. Silakan masuk kembali.". Halaman menampilkan
+   pesan itu, bukan detail mentah dari backend.
+4. Petakan pesan 401/403 ke bahasa Indonesia di helper pembaca pesan error.
+
+**Acceptance criteria:**
+
+- Badge "Petugas Operasional" hilang; tidak ada badge menggantung di top bar.
+- Request admin dengan token rusak/kedaluwarsa: pengguna diarahkan ke login dengan pesan jelas,
+  tanpa banner "Could not validate credentials".
+- Request admin dengan token valid: halaman Laporan Ditandai menampilkan data atau empty state
+  tanpa error.
+- Login normal dan logout tetap berjalan.
+
+**Catatan:** bila akar masalah ternyata di backend (role/endpoint), perbaikannya dicatat terpisah,
+bukan ditambal di frontend.
+
+---
+
+### FE-66. Peta admin: tombol fullscreen dan pin warna status laporan (rencana)
+
+**Status:** ❌ (rencana)
+
+**File utama:** `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
+
+**File terkait:** `apps/web/src/features/moderasi/pages/DashboardPage.jsx`
+
+**Pekerjaan:**
+
+1. Tombol "Lihat Full" di pojok kontainer peta memanggil `requestFullscreen()` pada wrapper;
+   tinggi peta jadi `100vh` saat fullscreen, dan `map.invalidateSize()` dipanggil setelah masuk
+   maupun keluar (event `fullscreenchange`).
+2. Warna pin: hijau = ruang publik tanpa laporan aktif; kuning = punya sedikitnya satu laporan
+   aktif (`menunggu_verifikasi`, `diverifikasi`, `dalam_penanganan`). Sumber data
+   `getAdminReports({ limit: 500 })`, dihitung per `ruang_publik_id`.
+3. Legenda kecil di peta: "Tanpa laporan aktif" (hijau) dan "Ada laporan aktif" (kuning).
+4. Bila data laporan gagal dimuat, semua pin hijau dan peta tetap jalan.
+5. Cluster tetap memakai warna brand (tidak diubah).
+
+**Acceptance criteria:**
+
+- Klik "Lihat Full": peta memenuhi layar, zoom/pan tetap berfungsi; Esc keluar dan ukuran peta
+  kembali normal tanpa area abu-abu.
+- Pin kuning hanya untuk ruang publik dengan laporan aktif; jumlahnya sama dengan jumlah
+  `ruang_publik_id` unik pada laporan aktif.
+- Popup pin kuning menyebut jumlah laporan aktif.
+- Tidak ada error konsol; build lulus.
+
+---
+
 ## Prioritas Rekomendasi (Diperbarui)
 
 
@@ -2144,14 +2406,23 @@ disentuh oleh FE-58 sehingga bukti FE-57 masih berlaku.
 - **FE-56** — Data master menyatu dengan halaman kelola fasilitas
 - **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan
 - **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih
+- **FE-24** — Dashboard moderasi laporan (antrian baca `GET /admin/reports`)
+- **FE-25** — Detail laporan moderasi (titik presisi dari data laporan)
+- **FE-25A** — Tombol Setujui di detail moderasi (BE-29)
+- **FE-25B** — Tombol Tolak + alasan penolakan di detail moderasi (BE-30)
+- **FE-26** — Daftar laporan yang di-flag (BE-31)
+- **FE-28** — Trigger sinkronisasi ETL dari admin
+- **FE-59** — Jarak dan radius memakai lokasi pengguna langsung
+- **FE-23** — Login admin (redirect guard konsisten)
+- **FE-65** — Header admin bersih + sesi kedaluwarsa ditangani terpusat
 
 ### Prioritas Berikutnya
 
-1. **FE-28** — Trigger manual ETL dari UI (admin operasional)
-2. **FE-25** — Fix hardcode presisi di moderasi (data accuracy)
-3. **FE-25A** — Tombol Setujui integrasi BE-29 (endpoint sudah siap, lihat sub-bagian A3)
-4. **FE-15** — Integrasi OSRM routing (advanced feature)
-5. **FE-21** dan **FE-26** — Fitur flag laporan
+1. **FE-28** — Trigger manual ETL dari UI (selesai)
+2. **FE-25** — Fix hardcode presisi di moderasi (selesai)
+3. **FE-25A** — Tombol Setujui integrasi BE-29 (selesai)
+4. **FE-15** — Integrasi OSRM routing (selesai)
+5. **FE-21** dan **FE-26** — Fitur flag laporan (selesai)
 6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
 7. **FE-45** — Zoom pinch trackpad di peta (selesai, terverifikasi di tiga peta)
 8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto (selesai)
@@ -2167,6 +2438,14 @@ disentuh oleh FE-58 sehingga bukti FE-57 masih berlaku.
 18. **FE-56** — Gabungkan data master ke halaman kelola fasilitas (selesai)
 19. **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan (selesai)
 20. **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih (selesai)
+21. **FE-59** — Jarak dan radius memakai lokasi pengguna langsung (selesai)
+22. **FE-60** — Kartu daftar: kolom foto lebih lebar dan responsif (rencana)
+23. **FE-61** — Carousel foto pada pratinjau Peta Akses (rencana)
+24. **FE-62** — Batasi 3 item + tombol Tampilkan Semua (rencana)
+25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (rencana)
+26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (rencana)
+27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
+28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (rencana)
 
 ---
 

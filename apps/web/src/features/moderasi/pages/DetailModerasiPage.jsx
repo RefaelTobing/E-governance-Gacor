@@ -11,7 +11,13 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, StepperAlur } from '../../../components';
-import { URUTAN_STATUS_LAPORAN } from '../../../config/constants';
+import {
+  URUTAN_STATUS_LAPORAN,
+  LABEL_STATUS_LAPORAN,
+  bolehTransisiStatus,
+  bolehSetujuiLaporan,
+  bolehTolakLaporan
+} from '../../../config/constants';
 import {
   getReportDetail,
   updateReportStatus,
@@ -34,6 +40,12 @@ const formatWaktu = (iso) => {
   const jam = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   return `${tanggal} · ${jam} WIB`;
 };
+
+// Gabungkan daftar label jadi kalimat: "A", "A dan B", "A, B, dan C".
+const gabungDaftar = (daftar) =>
+  daftar.length <= 1
+    ? (daftar[0] ?? '')
+    : `${daftar.slice(0, -1).join(', ')} dan ${daftar[daftar.length - 1]}`;
 
 // Warna garis timeline mengikuti status tiap entri.
 const warnaTimeline = (status) => {
@@ -210,6 +222,19 @@ export const DetailModerasiPage = () => {
       </div>
     );
   }
+
+  // Ketersediaan tombol mengikuti aturan transisi backend (BE-51/BE-29/BE-30),
+  // supaya 409/422 cuma jadi penjaga, bukan jalur normal.
+  const bolehSetujui = bolehSetujuiLaporan(currentStatus);
+  const bolehDalamPenanganan = bolehTransisiStatus(currentStatus, 'dalam_penanganan');
+  const bolehSelesai = bolehTransisiStatus(currentStatus, 'selesai');
+  const bolehTolak = bolehTolakLaporan(currentStatus);
+  const tindakanNonaktif = [
+    !bolehSetujui && 'Setujui',
+    !bolehDalamPenanganan && 'Dalam Penanganan',
+    !bolehSelesai && 'Tandai Selesai',
+    !bolehTolak && 'Tolak'
+  ].filter(Boolean);
 
   const isDitolak = currentStatus === 'ditolak';
   const currentIndex = STATUS_STEPS.findIndex((s) => s.key === currentStatus);
@@ -391,6 +416,17 @@ export const DetailModerasiPage = () => {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Setujui ditaruh paling atas: aksi utama pada laporan belum tayang (FE-25A). */}
+                <Button
+                  variant="primary"
+                  fullWidth
+                  disabled={isSubmitting || isRejecting || !bolehSetujui}
+                  onClick={handleApprove}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  <CheckCircle2 size={16} /> Setujui Laporan
+                </Button>
+
                 {/* Opsi aktif: tahap yang sedang berjalan (highlight) */}
                 <div style={{
                   border: `1px solid ${currentStatus === 'dalam_penanganan' ? 'var(--color-warning)' : 'var(--color-border)'}`,
@@ -405,7 +441,7 @@ export const DetailModerasiPage = () => {
                   <Button
                     variant="secondary"
                     fullWidth
-                    disabled={isSubmitting || isRejecting}
+                    disabled={isSubmitting || isRejecting || !bolehDalamPenanganan}
                     onClick={() => handleUpdateStatus('dalam_penanganan')}
                     style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
@@ -414,18 +450,9 @@ export const DetailModerasiPage = () => {
                 </div>
 
                 <Button
-                  variant="primary"
-                  fullWidth
-                  disabled={isSubmitting || isRejecting}
-                  onClick={handleApprove}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <CheckCircle2 size={16} /> Setujui Laporan
-                </Button>
-                <Button
                   variant="outline"
                   fullWidth
-                  disabled={isSubmitting || isRejecting}
+                  disabled={isSubmitting || isRejecting || !bolehSelesai}
                   onClick={() => handleUpdateStatus('selesai')}
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
@@ -434,12 +461,19 @@ export const DetailModerasiPage = () => {
                 <Button
                   variant="danger"
                   fullWidth
-                  disabled={isSubmitting || isRejecting}
+                  disabled={isSubmitting || isRejecting || !bolehTolak}
                   onClick={bukaDialogTolak}
                   style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
                   <XCircle size={16} /> Tolak Laporan (Spam / Tidak Sesuai)
                 </Button>
+
+                {tindakanNonaktif.length > 0 && (
+                  <p className="text-caption" style={{ margin: 0 }}>
+                    Status saat ini: <strong>{LABEL_STATUS_LAPORAN[currentStatus] || currentStatus}</strong>. Tombol{' '}
+                    {gabungDaftar(tindakanNonaktif)} dinonaktifkan karena backend menolak transisi dari status ini.
+                  </p>
+                )}
               </div>
             </CardBody>
           </Card>
