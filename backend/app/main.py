@@ -1,5 +1,8 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -8,6 +11,13 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+# Berkas unggahan mode filesystem dilayani di `/uploads/...` (lihat
+# app/core/file_upload.py). Tanpa mount ini URL `/uploads/...` yang dikembalikan
+# save_upload_file berujung 404. Saat Supabase aktif, URL-nya absolut ke
+# Supabase, jadi mount hanya relevan untuk fallback lokal/testing.
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # Rate limit dipasang sebelum CORS: middleware terakhir yang ditambah = terluar,
 # jadi CORS harus paling akhir supaya header tetap menempel pada respons 429.
