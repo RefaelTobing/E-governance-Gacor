@@ -324,11 +324,11 @@ Ringkasan status:
 | FE-57 | ✅ | Foto pengganti per kategori dan info kosong disembunyikan |
 | FE-58 | ✅ | Foto kartu Beranda penuh tinggi tanpa strip putih |
 | FE-59 | ✅ | Jarak dan radius memakai lokasi pengguna langsung | Gerbang `dalamJakarta()`/`JAKARTA_BOUNDS` sudah hilang dari `config/constants.js`; acuan = `location` bila ada (`DaftarRuangPublikPage.jsx:87`), fallback `JAKARTA_CENTER`. Selesai lewat commit `d2c991c`. |
-| FE-60 | ❌ | Kartu daftar: kolom foto lebih lebar dan responsif | Revisi Gambar 1. |
+| FE-60 | ✅ | Kartu daftar: kolom foto lebih lebar dan responsif | Grid `clamp(240px, 30%, 400px) 1fr`; foto mengisi tinggi baris kartu, kembali 1:1 saat kartu menumpuk. Terukur di 1330/900/760/560/390 px. Revisi Gambar 1. |
 | FE-61 | ❌ | Carousel foto pada pratinjau Peta Akses | Revisi Gambar 4. |
 | FE-62 | ❌ | Batasi 3 item + tombol Tampilkan Semua | Revisi Gambar 5. |
 | FE-63 | ❌ | Tombol Lihat Semua di galeri dan partisipasi warga | Revisi Gambar 6. |
-| FE-64 | ❌ | Hero Beranda: overlay lebih terang dan judul warna solid | Revisi Gambar 7. |
+| FE-64 | ✅ | Hero Beranda: overlay lebih terang dan judul warna solid | Overlay 0.60/0.70/0.88 -> 0.22/0.32/0.50 + pita scrim area teks; gradien judul dihapus, judul putih solid. Kontras terukur 5.77:1, luminance hero naik. Revisi Gambar 7. |
 | FE-65 | ✅ | Bersihkan header admin dan tangani sesi kedaluwarsa | Badge "● Petugas Operasional" dihapus, role sidebar pakai role asli, interceptor 401 membersihkan sesi + mengarahkan ke login dengan pesan Indonesia. Revisi Gambar 8 & 9. |
 | FE-66 | ❌ | Peta admin: tombol fullscreen dan pin warna status | Revisi Gambar 10 & 11. |
 
@@ -2185,9 +2185,21 @@ diterima sebagai hasil yang benar, bukan bug seperti pada FE-57.
 
 ---
 
-### FE-60. Kartu daftar: kolom foto lebih lebar dan responsif (rencana)
+### FE-60. Kartu daftar: kolom foto lebih lebar dan responsif
 
-**Status:** ❌ (rencana)
+**Status:** ✅
+
+**Bukti terukur (2026-10-27)** - `getBoundingClientRect` di `/ruang-publik`, viewport diemulasikan lewat CDP:
+
+| Viewport | Lebar kartu | Lebar foto | % lebar kartu | Selisih tinggi foto vs kartu | Rasio foto | Overflow X |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1330 px | 1230 | 369 | 30.0% | 0 px | 1.854 | tidak |
+| 900 px | 835 | 251 | 30.0% | 0 px | 1.259 | tidak |
+| 760 px | 711 | 240 | 33.8% (batas bawah clamp) | 0 px | 1.206 | tidak |
+| 560 px | 526 | 526 | 100% (menumpuk) | - | 1.000 | tidak |
+| 390 px | 356 | 356 | 100% (menumpuk) | - | 1.000 | tidak |
+
+Foto menempel tepi kiri kartu (selisih 0 px) di semua lebar. Skeleton loading memakai pembungkus `.kartu-ruang-foto` yang sama (terukur 365x199 saat status loading, jadi layout tidak melompat setelah data datang).
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DaftarRuangPublikPage.jsx`
 
@@ -2276,9 +2288,19 @@ diterima sebagai hasil yang benar, bukan bug seperti pada FE-57.
 
 ---
 
-### FE-64. Hero Beranda: overlay lebih terang dan judul warna solid (rencana)
+### FE-64. Hero Beranda: overlay lebih terang dan judul warna solid
 
-**Status:** ❌ (rencana)
+**Status:** ✅
+
+**Bukti terukur (2026-10-27)** - A/B di renderer nyata pada slide yang sama (konten hero disembunyikan, latar diukur dari screenshot; luminansi relatif WCAG dihitung dengan PIL):
+
+| Ukuran | Sebelum (0.60/0.70/0.88) | Sesudah | Target |
+| --- | --- | --- | --- |
+| Kontras judul terburuk (4 slide) | 5.26:1 | **5.77:1** | >= 4.5:1 |
+| Kontras subtitle terburuk | 6.28:1 | **6.34:1** | >= 4.5:1 |
+| Rata-rata luminance hero | 0.0371 | **0.0516** (+39%) | naik |
+
+**Penyimpangan dari draft (disengaja, berdasarkan pengukuran):** overlay final `0.22/0.32/0.50`, bukan `0.42/0.55/0.72`. Dengan 0.42/0.55/0.72 kontras judul putih hanya 3.1-3.7:1 (teal 2.1-2.5:1) di titik foto paling terang, jadi gagal AC. Solusinya: overlay utama dibuat lebih terang lagi (foto lebih hidup) + pita scrim `linear-gradient(180deg, ... 0.55 ...)` khusus di area judul/subtitle, sehingga teks tetap >= 4.5:1 sementara area lain justru lebih terang dari sebelumnya. Judul memakai `#FFFFFF` (teal `#5EEAD4` hanya 3.2:1, ditolak), subtitle dinaikkan dari `rgba(255,255,255,0.95)` ke `#FFFFFF`, dan `.hero-title-gradient` dihapus dari `index.css` (terverifikasi: `color` = `rgb(255,255,255)`, `-webkit-text-fill-color` = `rgb(255,255,255)`, `background-image: none`).
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/HomePage.jsx`
 
@@ -2415,6 +2437,8 @@ bukan ditambal di frontend.
 - **FE-59** — Jarak dan radius memakai lokasi pengguna langsung
 - **FE-23** — Login admin (redirect guard konsisten)
 - **FE-65** — Header admin bersih + sesi kedaluwarsa ditangani terpusat
+- **FE-60** — Kartu daftar: kolom foto 30% + foto mengisi tinggi kartu
+- **FE-64** — Hero Beranda: overlay lebih terang + judul putih solid (kontras terukur)
 
 ### Prioritas Berikutnya
 
@@ -2439,11 +2463,11 @@ bukan ditambal di frontend.
 19. **FE-57** — Foto pengganti per kategori dan info kosong disembunyikan (selesai)
 20. **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih (selesai)
 21. **FE-59** — Jarak dan radius memakai lokasi pengguna langsung (selesai)
-22. **FE-60** — Kartu daftar: kolom foto lebih lebar dan responsif (rencana)
+22. **FE-60** — Kartu daftar: kolom foto lebih lebar dan responsif (selesai)
 23. **FE-61** — Carousel foto pada pratinjau Peta Akses (rencana)
 24. **FE-62** — Batasi 3 item + tombol Tampilkan Semua (rencana)
 25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (rencana)
-26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (rencana)
+26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (selesai)
 27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
 28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (rencana)
 

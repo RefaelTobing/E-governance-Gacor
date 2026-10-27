@@ -322,8 +322,16 @@ export const DaftarRuangPublikPage = () => {
       <style>{`
         .kartu-ruang {
           display: grid;
-          grid-template-columns: 260px 1fr;
+          grid-template-columns: clamp(240px, 30%, 400px) 1fr;
           min-height: 180px;
+        }
+        /* FE-60: blok foto mengisi tinggi baris kartu (bukan kotak 1:1 yang
+           menyisakan ruang kosong), lalu kembali 1:1 saat kartu menumpuk. */
+        .kartu-ruang-foto {
+          position: relative;
+          width: 100%;
+          min-height: 100%;
+          overflow: hidden;
         }
         .navigasi-nomor {
           display: flex;
@@ -340,6 +348,7 @@ export const DaftarRuangPublikPage = () => {
         }
         @media (max-width: 599px) {
           .kartu-ruang { grid-template-columns: 1fr; }
+          .kartu-ruang-foto { aspect-ratio: 1 / 1; min-height: 0; }
         }
       `}</style>
 
@@ -553,7 +562,9 @@ export const DaftarRuangPublikPage = () => {
           {[1, 2, 3].map((n) => (
             <Card key={`skeleton-space-${n}`}>
               <div className="kartu-ruang">
-                <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" />
+                <div className="kartu-ruang-foto">
+                  <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" style={{ height: '100%' }} />
+                </div>
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'var(--space-lg)', gap: '12px' }}>
                   <div>
                     <Skeleton height="24px" width="50%" style={{ marginBottom: '8px' }} />
@@ -577,7 +588,7 @@ export const DaftarRuangPublikPage = () => {
           {itemTerlihat.map((item) => (
             <Card key={item.id} hoverable className="ruang-publik-list-card">
               <div className="kartu-ruang">
-                <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start' }}>
+                <div className="kartu-ruang-foto">
                   {item.image ? (
                     <img src={item.image} alt={item.nama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (

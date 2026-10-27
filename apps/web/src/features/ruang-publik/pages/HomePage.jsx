@@ -19,6 +19,10 @@ import { Button, SearchInput, Card, CardBody, StatusBadge, CategoryChip, Skeleto
 import { getPublicSpaces } from '../../../services/ruangPublikService';
 import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
 
+// Warna judul hero (FE-64). Satu warna solid, bukan gradien; nilainya dipilih
+// setelah mengukur kontras terhadap foto + overlay tergelap/terang (target >= 4.5:1).
+const WARNA_JUDUL_HERO = '#FFFFFF';
+
 const HERO_SLIDES = [
   {
     image: heroImg1,
@@ -162,7 +166,22 @@ export const HomePage = () => {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.60) 0%, rgba(15, 23, 42, 0.70) 50%, rgba(15, 23, 42, 0.88) 100%)',
+            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.22) 0%, rgba(15, 23, 42, 0.32) 50%, rgba(15, 23, 42, 0.50) 100%)',
+            zIndex: 2,
+            pointerEvents: 'none'
+          }}
+        />
+
+        {/* Scrim lokal area teks (FE-64): overlay utama dibuat lebih terang supaya foto
+            terbaca, sementara blok judul+subtitle butuh latar lebih gelap agar kontras
+            teks tetap >= 4.5:1 di titik foto paling terang. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(180deg, rgba(15, 23, 42, 0) 8.1%, rgba(15, 23, 42, 0.55) 15.3%, rgba(15, 23, 42, 0.55) 53.2%, rgba(15, 23, 42, 0) 60.5%)',
             zIndex: 2,
             pointerEvents: 'none'
           }}
@@ -196,14 +215,14 @@ export const HomePage = () => {
               lineHeight: 1.2
             }}
           >
-            <span className="hero-title-gradient">Pantau Kondisi</span>{' '}
+            <span style={{ color: WARNA_JUDUL_HERO }}>Pantau Kondisi</span>{' '}
             <span>Ruang Publik Jakarta</span>
           </h1>
 
           <p
             className="text-body hero-subtitle"
             style={{
-              color: 'rgba(255, 255, 255, 0.95)',
+              color: '#FFFFFF',
               marginBottom: '32px',
               maxWidth: '720px',
               fontSize: 'clamp(1rem, 2vw, 1.15rem)',
