@@ -18,9 +18,11 @@ export const loginWarga = async (email, password) =>
 
 /**
  * Login petugas. Backend memeriksa role sebelum menerbitkan token.
+ * Router admin_router didaftarkan di prefix `/admin` (app/api/v1/api.py),
+ * jadi path-nya `/api/v1/admin/login`, bukan `/api/v1/auth/admin/login`.
  */
 export const loginAdmin = async (email, password) =>
-  postLogin('/api/v1/auth/admin/login', email, password);
+  postLogin('/api/v1/admin/login', email, password);
 
 /**
  * Registrasi akun warga.

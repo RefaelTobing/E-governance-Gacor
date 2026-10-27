@@ -23,12 +23,14 @@ export const DashboardPage = () => {
   const [laporanList, setLaporanList] = useState([]);
   const [stats, setStats] = useState(MOCK_DASHBOARD_STATS);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchDashboard = async () => {
       setIsLoading(true);
+      setErrorMsg('');
       try {
         const [reportsData, statsData] = await Promise.all([
           getAdminReports(),
@@ -39,7 +41,9 @@ export const DashboardPage = () => {
           if (statsData) setStats(statsData);
         }
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+        if (isMounted) {
+          setErrorMsg(err.message || 'Data dashboard gagal dimuat.');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -107,6 +111,11 @@ export const DashboardPage = () => {
       </div>
 
       {/* 4 SUMMARY STATISTIC CARDS */}
+      {errorMsg && (
+        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px' }}>
+          {errorMsg}
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
         <Card>
           <CardBody>

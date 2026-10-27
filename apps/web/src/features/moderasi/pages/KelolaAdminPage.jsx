@@ -12,14 +12,16 @@ export const KelolaAdminPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', password: '' });
+  const [loadError, setLoadError] = useState('');
 
   const fetchAdmins = async () => {
     setIsLoading(true);
+    setLoadError('');
     try {
       const data = await api.get('/api/v1/users', { include_inactive: true });
-      setAdminList(data);
+      setAdminList(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error fetching admins:', err);
+      setLoadError(err.message || 'Daftar admin gagal dimuat.');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +40,7 @@ export const KelolaAdminPage = () => {
       setFormData({ name: '', email: '', password: '' });
       fetchAdmins();
     } catch (err) {
-      setErrorMsg('Gagal menambahkan admin. Pastikan email belum terdaftar.');
+      setErrorMsg(err.message || 'Gagal menambahkan admin. Pastikan email belum terdaftar.');
     }
   };
 
@@ -48,7 +50,7 @@ export const KelolaAdminPage = () => {
       await api.delete(`/api/v1/users/${id}`);
       fetchAdmins();
     } catch (err) {
-      alert('Gagal menonaktifkan admin.');
+      alert(err.message || 'Gagal menonaktifkan admin.');
     }
   };
 
@@ -57,7 +59,7 @@ export const KelolaAdminPage = () => {
       await api.post(`/api/v1/users/${id}/activate`);
       fetchAdmins();
     } catch (err) {
-      alert('Gagal mengaktifkan admin.');
+      alert(err.message || 'Gagal mengaktifkan admin.');
     }
   };
 
@@ -95,7 +97,7 @@ export const KelolaAdminPage = () => {
       setEditFormData({ name: '', password: '' });
       fetchAdmins();
     } catch (err) {
-      setErrorMsg('Gagal mengubah data admin.');
+      setErrorMsg(err.message || 'Gagal mengubah data admin.');
     }
   };
 
@@ -115,6 +117,12 @@ export const KelolaAdminPage = () => {
           + Tambah Admin Baru
         </Button>
       </div>
+
+      {loadError && (
+        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px' }}>
+          {loadError}
+        </div>
+      )}
 
       <Card>
         <CardBody>

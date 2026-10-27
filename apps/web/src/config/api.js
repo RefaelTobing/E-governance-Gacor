@@ -81,6 +81,19 @@ instance.interceptors.response.use(
     }
 
     const { status, data } = error.response;
+
+    // 401 = token tidak ada / kedaluwarsa / sudah di-blacklist (logout).
+    // Bersihkan sesi yang tidak berlaku lagi supaya request berikutnya tidak
+    // mengulang 401 terus-menerus; pengalihan ke login ditangani RequireAuth.
+    if (status === 401) {
+      const sudahLogin = !!localStorage.getItem('access_token');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      if (sudahLogin) {
+        window.dispatchEvent(new Event('ruka:sesi-berakhir'));
+      }
+    }
+
     const normalized = new Error(bacaPesanError(data, status));
     normalized.status = status;
     normalized.detail = data?.detail;

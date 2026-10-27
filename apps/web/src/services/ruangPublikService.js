@@ -187,13 +187,12 @@ export const getPublicSpaceDetail = async (id) => {
       wilayah: data.wilayah || 'TBA'
     };
   } catch (error) {
-    if (IS_DEV) {
-      console.info(`[ruangPublikService] Fallback mock data untuk ID: ${id}`);
-      const found = MOCK_RUANG_PUBLIK.find((item) => item.id === id);
-      if (found) {
-        return found;
-      }
-      return null;
+    // 404 berarti ID memang tidak ada; jangan diganti mock. Fallback hanya
+    // untuk backend yang belum bisa dijangkau (status null).
+    if (error.status === 404) return null;
+    if (IS_DEV && error.status == null) {
+      console.info(`[ruangPublikService] Backend tidak terjangkau, memakai mock untuk ID: ${id}`);
+      return MOCK_RUANG_PUBLIK.find((item) => item.id === id) || null;
     }
     throw error;
   }

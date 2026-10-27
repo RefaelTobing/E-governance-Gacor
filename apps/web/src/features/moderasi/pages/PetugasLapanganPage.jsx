@@ -8,30 +8,12 @@ export const PetugasLapanganPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchPetugas = async () => {
-      setIsLoading(true);
-      try {
-        // Placeholder for FastAPI endpoint (e.g. /api/v1/officers)
-        // Fallback to MOCK_PETUGAS during development
-        if (isMounted) {
-          setPetugasList(MOCK_PETUGAS);
-        }
-      } catch (err) {
-        console.error('Error fetching officers:', err);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchPetugas();
-
-    return () => {
-      isMounted = false;
-    };
+    // Backend belum punya endpoint petugas lapangan; `/api/v1/users` hanya
+    // mengembalikan akun admin dan tidak memuat wilayah/anggota/tugas.
+    // Halaman ini sementara memakai data contoh dan menandainya terang-terangan
+    // supaya tidak terbaca sebagai data operasional yang sebenarnya.
+    setPetugasList(MOCK_PETUGAS);
+    setIsLoading(false);
   }, []);
 
   return (
