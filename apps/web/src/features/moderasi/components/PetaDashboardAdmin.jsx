@@ -102,7 +102,12 @@ const SesuaikanUkuranPeta = ({ pemicu }) => {
   const map = useMap();
 
   useEffect(() => {
-    const timer = setTimeout(() => map.invalidateSize(), 120);
+    // `map.stop()` dulu: bila peta masih dalam animasi zoom, invalidateSize bisa
+    // meninggalkan state animasi yang membuat kontrol zoom berhenti merespons.
+    const timer = setTimeout(() => {
+      map.stop();
+      map.invalidateSize();
+    }, 150);
     return () => clearTimeout(timer);
   }, [pemicu, map]);
 
@@ -116,7 +121,11 @@ const PetaDashboardAdmin = () => {
   // FE-66: { ruang_publik_id: jumlah laporan aktif }.
   const [laporanAktif, setLaporanAktif] = useState({});
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // FE-66: mode penuh berbasis CSS, dipakai bila Fullscreen API ditolak browser
+  // (mis. izin permissions-policy atau lingkungan embedded).
+  const [modePenuh, setModePenuh] = useState(false);
   const wrapperRef = useRef(null);
+  const penuh = isFullscreen || modePenuh;
 
   const muatRuangPublik = async () => {
     setIsLoading(true);
@@ -168,16 +177,46 @@ const PetaDashboardAdmin = () => {
     return () => document.removeEventListener('fullscreenchange', saatBerubah);
   }, []);
 
+  // FE-66: keluar dari mode penuh (API atau fallback CSS).
+  const keluarPenuh = async () => {
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        /* diabaikan: state CSS tetap dibersihkan di bawah */
+      }
+    }
+    setModePenuh(false);
+  };
+
   const toggleFullscreen = async () => {
     const elemen = wrapperRef.current;
     if (!elemen) return;
+
+    if (penuh) {
+      await keluarPenuh();
+      return;
+    }
+
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await elemen.requestFullscreen();
+      await elemen.requestFullscreen();
+      // Bila API berhasil, `fullscreenchange` yang menyalakan isFullscreen.
     } catch {
-      // Browser menolak (kebijakan izin / mode embedded): biarkan ukuran apa adanya.
+      // API ditolak: tetap beri tampilan penuh lewat CSS supaya tombol tidak diam saja.
+      setModePenuh(true);
     }
   };
+
+  // Esc keluar dari mode penuh CSS (pada Fullscreen API, Esc ditangani browser).
+  useEffect(() => {
+    if (!modePenuh) return undefined;
+
+    const saatTombol = (event) => {
+      if (event.key === 'Escape') setModePenuh(false);
+    };
+    document.addEventListener('keydown', saatTombol);
+    return () => document.removeEventListener('keydown', saatTombol);
+  }, [modePenuh]);
 
   // FE-08: Seluruh titik lolos filter dirender; MarkerClusterGroup menangani
   // kepadatan tinggi tanpa perlu membatasi jumlah marker.
@@ -228,7 +267,9 @@ const PetaDashboardAdmin = () => {
       ref={wrapperRef}
       style={isFullscreen
         ? { position: 'relative', width: '100%', height: '100vh', backgroundColor: 'var(--color-surface)' }
-        : { position: 'relative', aspectRatio: '1 / 1', width: '100%', maxHeight: '520px' }}
+        : modePenuh
+          ? { position: 'fixed', inset: 0, zIndex: 2000, width: '100vw', height: '100vh', backgroundColor: 'var(--color-surface)' }
+          : { position: 'relative', aspectRatio: '1 / 1', width: '100%', maxHeight: '520px' }}
     >
       <MapContainer
         center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]}
@@ -238,7 +279,7 @@ const PetaDashboardAdmin = () => {
       >
         <RecenterMap center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]} />
         <FitMapBounds locations={locations} />
-        <SesuaikanUkuranPeta pemicu={isFullscreen} />
+        <SesuaikanUkuranPeta pemicu={penuh} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -291,8 +332,8 @@ const PetaDashboardAdmin = () => {
           onClick={toggleFullscreen}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--color-surface)' }}
         >
-          {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-          {isFullscreen ? 'Keluar Full' : 'Lihat Full'}
+          {penuh ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          {penuh ? 'Keluar Full' : 'Lihat Full'}
         </Button>
       </div>
 

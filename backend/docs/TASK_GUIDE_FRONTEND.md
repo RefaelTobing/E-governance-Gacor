@@ -189,7 +189,7 @@ Status:
 | FE-16A | ✅ | Peta titik presisi fasilitas | Form laporan memakai Leaflet dan tile OpenStreetMap. |
 | FE-16B | ✅ | Pin lokasi fasilitas | Pin dapat digeser atau dipindahkan dengan klik peta. |
 | FE-16C | ✅ | Kirim koordinat lokasi fasilitas | Mengirim `lat_lokasi_pilihan` dan `long_lokasi_pilihan`, terpisah dari GPS HP pengguna. |
-| FE-16D | ⚠️ | Koordinat individual fasilitas | Master fasilitas belum memiliki koordinat individual, sehingga posisi awal menggunakan koordinat ruang publik. |
+| FE-16D | ⚠️ | Koordinat individual fasilitas | **Sisi FE sudah siap**: `ruangPublikService.js:158` memetakan `latitude`/`longitude` per fasilitas ke `koordinat`, dan `FormLaporPage.jsx:39,93,132` memakainya sebagai titik awal pin dengan fallback ke koordinat ruang publik. Sisa blocker murni backend: tabel `fasilitas` belum punya kolom `latitude`/`longitude` dan `FasilitasResponse`/`FasilitasCreate`/`FasilitasUpdate` belum memuatnya (`backend/app/models/fasilitas.py`, `backend/app/schemas/fasilitas.py`). Begitu backend menambah dua kolom + field itu, FE langsung memakainya tanpa perubahan. |
 
 ## A3. Panel Admin
 
@@ -2413,9 +2413,14 @@ bukan ditambal di frontend.
 | 3 ruang publik: 2 aktif, 1 tidak | legenda "Tanpa laporan aktif (1)" + "Ada laporan aktif (2)", sesuai hitungan `ruang_publik_id` unik dari 5 laporan (2 RP aktif) |
 | `GET /admin/reports` sengaja dibuat gagal (500) | semua pin hijau, legenda "Ada laporan aktif (0)", tile peta tetap termuat |
 | Tombol "Lihat Full" diklik (Fullscreen API di-stub) | `requestFullscreen` dipanggil pada wrapper peta, label berubah "Keluar Full", wrapper berganti ke `height: 100vh`; klik "Keluar Full" memanggil `exitFullscreen` dan gaya kembali `aspect-ratio: 1/1` |
+| Fallback CSS saat API ditolak browser (jalur yang benar-benar jalan di sini) | wrapper jadi `position: fixed; inset: 0; z-index: 2000` berukuran **1280x633 = viewport**, kontainer peta ikut 1280x633 (jadi `invalidateSize` bekerja, tanpa sisa abu-abu), label "Keluar Full"; klik "Keluar Full"/Esc mengembalikan ukuran ke 417x417 dan label "Lihat Full" |
 | Cluster | tetap memakai warna brand `#0F766E` (tidak diubah) |
 
-**Belum terverifikasi:** perilaku fullscreen sesungguhnya (peta memenuhi layar, Esc keluar, tanpa area abu-abu). Browser harness menolak izin dengan `TypeError: Permissions check failed` meski `document.fullscreenEnabled === true`, jadi yang terbukti hanya wiring-nya (target `requestFullscreen`, perubahan label, gaya `100vh`, dan pemanggilan `map.invalidateSize()` lewat efek `SesuaikanUkuranPeta`). Perlu sekali cek manual di browser biasa: klik "Lihat Full", pastikan peta penuh layar dan zoom/pan jalan, lalu Esc dan ukuran kembali tanpa area abu-abu.
+**Tambahan implementasi:** bila browser menolak Fullscreen API, tombol tidak lagi diam: peta masuk mode penuh berbasis CSS (`position: fixed; inset: 0`), dan Esc/klik "Keluar Full" mengeluarkannya. Ini yang membuat perilaku "peta memenuhi layar" tetap bisa diuji di lingkungan yang memblokir API.
+
+**Belum terverifikasi (perlu cek manual singkat):**
+- Jalur Fullscreen API asli di browser biasa (harness menolak dengan `TypeError: Permissions check failed` walau `document.fullscreenEnabled === true`).
+- Zoom/pan saat mode penuh: di harness ini klik kontrol zoom tidak mengubah level peta, bahkan di mode normal maupun setelah reload penuh (indikasi keterbatasan harness, bukan bukti bug aplikasi), dan uji drag terakhir gagal karena CDP timeout. Cek manual: saat mode penuh, zoom +/- dan geser peta harus jalan, lalu Esc keluar tanpa area abu-abu.
 
 **File utama:** `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
 
@@ -2515,7 +2520,7 @@ bukan ditambal di frontend.
 25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (selesai)
 26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (selesai)
 27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
-28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (⚠️ pin/legenda selesai, cek fullscreen manual)
+28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (⚠️ pin/legenda + mode penuh CSS selesai; zoom & Fullscreen API perlu cek manual)
 
 ---
 
