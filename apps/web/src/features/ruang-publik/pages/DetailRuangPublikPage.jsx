@@ -80,7 +80,10 @@ const createCustomIcon = (color = '#0F766E') =>
 
 // Section "Pembaruan Partisipasi Warga": hanya laporan tayang (STATUS_TAYANG backend).
 const FILTER_STATUS_LAPORAN = ['diverifikasi', 'dalam_penanganan', 'selesai'];
-const TAHAP_LAPORAN = 6;
+// FE-62: daftar fasilitas & laporan menampilkan 3 item dulu, sisanya lewat
+// tombol "Tampilkan Semua" agar section tidak memanjang.
+const AWAL_FASILITAS = 3;
+const AWAL_LAPORAN = 3;
 
 // Bungkus peta agar menampilkan seluruh rute (asal + tujuan) setelah rute dihitung.
 const FitBounds = ({ positions }) => {
@@ -131,7 +134,8 @@ export const DetailRuangPublikPage = () => {
   // Section "Pembaruan Partisipasi Warga" (laporan tayang) + aksi flag (FE-21).
   const [semuaLaporan, setSemuaLaporan] = useState([]);
   const [isLoadingLaporan, setIsLoadingLaporan] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(TAHAP_LAPORAN);
+  const [visibleCount, setVisibleCount] = useState(AWAL_LAPORAN);
+  const [tampilSemuaFasilitas, setTampilSemuaFasilitas] = useState(false);
   const [flaggedIds, setFlaggedIds] = useState([]);
   const [flagError, setFlagError] = useState('');
 
@@ -147,7 +151,7 @@ export const DetailRuangPublikPage = () => {
       else next.set('status', nilai);
       return next;
     }, { replace: true });
-    setVisibleCount(TAHAP_LAPORAN);
+    setVisibleCount(AWAL_LAPORAN);
   };
 
   // Galeri foto (FE-14). `fotoTerpilih` adalah indeks foto yang sedang dipilih,
@@ -329,6 +333,9 @@ export const DetailRuangPublikPage = () => {
   const filteredFacilities = detail?.fasilitas?.filter((facility) => (
     facilityFilter === 'semua' || facility.status === facilityFilter
   )) || [];
+  const fasilitasTerlihat = tampilSemuaFasilitas
+    ? filteredFacilities
+    : filteredFacilities.slice(0, AWAL_FASILITAS);
 
   const centerCoords = detail?.koordinat
     ? [detail.koordinat.lat, detail.koordinat.lng]
@@ -574,14 +581,57 @@ export const DetailRuangPublikPage = () => {
             </div>
 
             <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-              {detail.image ? (
+              {(galeriFoto[fotoTerpilih] || detail.image) ? (
                 <img
-                  src={detail.image}
-                  alt={`Foto ${detail.nama}`}
+                  src={galeriFoto[fotoTerpilih] || detail.image}
+                  alt={galeriFoto.length > 1
+                    ? `Foto ${fotoTerpilih + 1} dari ${galeriFoto.length}: ${detail.nama}`
+                    : `Foto ${detail.nama}`}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
                 <FotoRuangPlaceholder kategoriId={detail.kategori_id} iconSize={44} />
+              )}
+
+              {/* FE-61: pratinjau peta memakai foto galeri yang sedang dipilih, dengan
+                  panah yang menggeser `fotoTerpilih` supaya sinkron dua arah. */}
+              {galeriFoto.length > 1 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '8px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.55)'
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => geserFoto(-1)}
+                    disabled={fotoTerpilih <= 0}
+                    aria-label="Foto sebelumnya pada pratinjau peta"
+                    style={{ ...GAYA_TOMBOL_PANAH, opacity: fotoTerpilih <= 0 ? 0.45 : 1, cursor: fotoTerpilih <= 0 ? 'not-allowed' : 'pointer' }}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="text-caption" aria-live="polite" style={{ color: '#FFFFFF', minWidth: '108px', textAlign: 'center' }}>
+                    Foto {fotoTerpilih + 1} dari {galeriFoto.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => geserFoto(1)}
+                    disabled={fotoTerpilih >= galeriFoto.length - 1}
+                    aria-label="Foto berikutnya pada pratinjau peta"
+                    style={{ ...GAYA_TOMBOL_PANAH, opacity: fotoTerpilih >= galeriFoto.length - 1 ? 0.45 : 1, cursor: fotoTerpilih >= galeriFoto.length - 1 ? 'not-allowed' : 'pointer' }}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               )}
             </div>
           </CardBody>
@@ -653,7 +703,10 @@ export const DetailRuangPublikPage = () => {
               <SelectDropdown
                 options={opsiKondisi.labels}
                 value={opsiKondisi.labelDariNilai[facilityFilter]}
-                onChange={(label) => setFacilityFilter(opsiKondisi.nilaiDariLabel[label] ?? 'semua')}
+                onChange={(label) => {
+                  setFacilityFilter(opsiKondisi.nilaiDariLabel[label] ?? 'semua');
+                  setTampilSemuaFasilitas(false);
+                }}
                 ariaLabel="Filter kondisi fasilitas"
                 className="facility-filter-select"
               />
@@ -667,7 +720,7 @@ export const DetailRuangPublikPage = () => {
               </div>
             ) : (
               <div className="facility-list" role="list">
-                {filteredFacilities.map((fas) => (
+                {fasilitasTerlihat.map((fas) => (
                   <div className="facility-list-row" key={fas.id} role="listitem">
                     <div className="facility-list-info">
                       <div className="facility-list-title-row">
@@ -694,6 +747,15 @@ export const DetailRuangPublikPage = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            {filteredFacilities.length > AWAL_FASILITAS && (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-md) 0' }}>
+                <Button variant="outline" size="sm" onClick={() => setTampilSemuaFasilitas((v) => !v)}>
+                  {tampilSemuaFasilitas
+                    ? 'Tampilkan Lebih Sedikit'
+                    : `Tampilkan Semua (${filteredFacilities.length})`}
+                </Button>
               </div>
             )}
           </CardBody>
@@ -740,6 +802,14 @@ export const DetailRuangPublikPage = () => {
                 </div>
               )}
               <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLightboxTerbuka(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                Lihat Semua <ChevronRight size={14} aria-hidden="true" />
+              </Button>
             </div>
           </div>
 
@@ -789,7 +859,19 @@ export const DetailRuangPublikPage = () => {
               Laporan kondisi fasilitas yang sudah tayang dan dipantau bersama.
             </p>
           </div>
-          <span className="badge badge-neutral">{semuaLaporan.length} Laporan Tayang</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
+            <span className="badge badge-neutral">{semuaLaporan.length} Laporan Tayang</span>
+            {semuaLaporan.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/laporan-saya')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                Lihat Semua <ChevronRight size={14} aria-hidden="true" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {flagError && (
@@ -864,10 +946,15 @@ export const DetailRuangPublikPage = () => {
               })}
             </div>
 
-            {adaLagi && (
+            {laporanTerfilter.length > AWAL_LAPORAN && (
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-lg)' }}>
-                <Button variant="outline" onClick={() => setVisibleCount((c) => c + TAHAP_LAPORAN)}>
-                  Muat Lebih Banyak
+                <Button
+                  variant="outline"
+                  onClick={() => setVisibleCount(adaLagi ? laporanTerfilter.length : AWAL_LAPORAN)}
+                >
+                  {adaLagi
+                    ? `Tampilkan Semua (${laporanTerfilter.length})`
+                    : 'Tampilkan Lebih Sedikit'}
                 </Button>
               </div>
             )}

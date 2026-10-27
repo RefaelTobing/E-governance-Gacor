@@ -325,9 +325,9 @@ Ringkasan status:
 | FE-58 | ✅ | Foto kartu Beranda penuh tinggi tanpa strip putih |
 | FE-59 | ✅ | Jarak dan radius memakai lokasi pengguna langsung | Gerbang `dalamJakarta()`/`JAKARTA_BOUNDS` sudah hilang dari `config/constants.js`; acuan = `location` bila ada (`DaftarRuangPublikPage.jsx:87`), fallback `JAKARTA_CENTER`. Selesai lewat commit `d2c991c`. |
 | FE-60 | ✅ | Kartu daftar: kolom foto lebih lebar dan responsif | Grid `clamp(240px, 30%, 400px) 1fr`; foto mengisi tinggi baris kartu, kembali 1:1 saat kartu menumpuk. Terukur di 1330/900/760/560/390 px. Revisi Gambar 1. |
-| FE-61 | ❌ | Carousel foto pada pratinjau Peta Akses | Revisi Gambar 4. |
-| FE-62 | ❌ | Batasi 3 item + tombol Tampilkan Semua | Revisi Gambar 5. |
-| FE-63 | ❌ | Tombol Lihat Semua di galeri dan partisipasi warga | Revisi Gambar 6. |
+| FE-61 | ✅ | Carousel foto pada pratinjau Peta Akses | Pratinjau memakai `galeriFoto[fotoTerpilih]` + panah "Foto X dari Y", sinkron dua arah dengan Galeri Foto. Revisi Gambar 4. |
+| FE-62 | ✅ | Batasi 3 item + tombol Tampilkan Semua | Fasilitas & laporan tampil 3 item dulu; tombol "Tampilkan Semua (N)" / "Tampilkan Lebih Sedikit". Revisi Gambar 5. |
+| FE-63 | ✅ | Tombol Lihat Semua di galeri dan partisipasi warga | Galeri: membuka lightbox pada foto terpilih. Partisipasi: ke `/laporan-saya`. Keduanya hanya tampil bila section berisi. Revisi Gambar 6. |
 | FE-64 | ✅ | Hero Beranda: overlay lebih terang dan judul warna solid | Overlay 0.60/0.70/0.88 -> 0.22/0.32/0.50 + pita scrim area teks; gradien judul dihapus, judul putih solid. Kontras terukur 5.77:1, luminance hero naik. Revisi Gambar 7. |
 | FE-65 | ✅ | Bersihkan header admin dan tangani sesi kedaluwarsa | Badge "● Petugas Operasional" dihapus, role sidebar pakai role asli, interceptor 401 membersihkan sesi + mengarahkan ke login dengan pesan Indonesia. Revisi Gambar 8 & 9. |
 | FE-66 | ❌ | Peta admin: tombol fullscreen dan pin warna status | Revisi Gambar 10 & 11. |
@@ -2221,9 +2221,18 @@ Foto menempel tepi kiri kartu (selisih 0 px) di semua lebar. Skeleton loading me
 
 ---
 
-### FE-61. Carousel foto pada pratinjau Peta Akses (rencana)
+### FE-61. Carousel foto pada pratinjau Peta Akses
 
-**Status:** ❌ (rencana)
+**Status:** ✅
+
+**Bukti runtime (2026-10-27)** - dev server `:5174` + mock `:8001`, ruang publik dengan 4 foto:
+
+| Aksi | Hasil terukur |
+| --- | --- |
+| Muat halaman | dua label "Foto 1 dari 4" (pratinjau peta + header galeri), `aria-current` galeri di indeks 0, `src` pratinjau = `..._1.svg` |
+| Klik panah pratinjau peta | label jadi "Foto 2 dari 4" di kedua tempat, `aria-current` galeri pindah ke indeks 1, `src` pratinjau = `..._2.svg` |
+| Klik panah kiri galeri | kembali ke "Foto 1 dari 4" dan `src` `..._1.svg` (sinkron dua arah) |
+| Ruang publik 1 foto | tidak ada label "Foto X dari Y", panah pratinjau maupun galeri tidak dirender |
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
 
@@ -2243,9 +2252,21 @@ Foto menempel tepi kiri kartu (selisih 0 px) di semua lebar. Skeleton loading me
 
 ---
 
-### FE-62. Batasi 3 item + tombol Tampilkan Semua (rencana)
+### FE-62. Batasi 3 item + tombol Tampilkan Semua
 
-**Status:** ❌ (rencana)
+**Status:** ✅
+
+**Bukti runtime (2026-10-27)** - ruang publik dengan 5 fasilitas dan 5 laporan:
+
+| Aksi | Fasilitas tampil | Laporan tampil | Tombol |
+| --- | --- | --- | --- |
+| Muat halaman | 3 | 3 | "Tampilkan Semua (5)" (fasilitas), "Tampilkan Semua (5)" (laporan) |
+| Klik tombol fasilitas | 5 | 3 | "Tampilkan Lebih Sedikit" + "Tampilkan Semua (5)" |
+| Klik "Tampilkan Lebih Sedikit" | 3 | 3 | kembali ke "Tampilkan Semua (5)" |
+| Klik tombol laporan | 3 | 5 | "Tampilkan Semua (5)" + "Tampilkan Lebih Sedikit" |
+| Filter `?status=dalam_penanganan` (1 laporan) | 3 | 1 | tombol laporan tidak muncul (hanya tombol fasilitas) |
+
+Ganti filter kondisi fasilitas mereset batas ke 3 (state `tampilSemuaFasilitas` direset di handler).
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
 
@@ -2267,9 +2288,17 @@ Foto menempel tepi kiri kartu (selisih 0 px) di semua lebar. Skeleton loading me
 
 ---
 
-### FE-63. Tombol Lihat Semua di galeri dan partisipasi warga (rencana)
+### FE-63. Tombol Lihat Semua di galeri dan partisipasi warga
 
-**Status:** ❌ (rencana)
+**Status:** ✅
+
+**Bukti runtime (2026-10-27)**:
+
+| Aksi | Hasil terukur |
+| --- | --- |
+| Header Galeri Foto | tombol "Lihat Semua" ada; diklik membuka lightbox dengan judul "Foto 1 dari 4 · RPTRA Betawi Ngumpul"; tombol Tutup menutup (`role=dialog` 1 -> 0) |
+| Header Pembaruan Partisipasi Warga | tombol "Lihat Semua" ada; diklik berpindah ke `/laporan-saya` |
+| Section kosong | galeri tidak dirender saat foto <= 1; tombol partisipasi hanya dirender saat `semuaLaporan.length > 0` |
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
 
@@ -2439,6 +2468,9 @@ bukan ditambal di frontend.
 - **FE-65** — Header admin bersih + sesi kedaluwarsa ditangani terpusat
 - **FE-60** — Kartu daftar: kolom foto 30% + foto mengisi tinggi kartu
 - **FE-64** — Hero Beranda: overlay lebih terang + judul putih solid (kontras terukur)
+- **FE-61** — Carousel foto di pratinjau Peta Akses (sinkron dengan galeri)
+- **FE-62** — Batas 3 item + "Tampilkan Semua" pada fasilitas & laporan
+- **FE-63** — Tombol "Lihat Semua" di galeri & partisipasi warga
 
 ### Prioritas Berikutnya
 
@@ -2464,9 +2496,9 @@ bukan ditambal di frontend.
 20. **FE-58** — Foto kartu Beranda penuh tinggi tanpa strip putih (selesai)
 21. **FE-59** — Jarak dan radius memakai lokasi pengguna langsung (selesai)
 22. **FE-60** — Kartu daftar: kolom foto lebih lebar dan responsif (selesai)
-23. **FE-61** — Carousel foto pada pratinjau Peta Akses (rencana)
-24. **FE-62** — Batasi 3 item + tombol Tampilkan Semua (rencana)
-25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (rencana)
+23. **FE-61** — Carousel foto pada pratinjau Peta Akses (selesai)
+24. **FE-62** — Batasi 3 item + tombol Tampilkan Semua (selesai)
+25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (selesai)
 26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (selesai)
 27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
 28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (rencana)
