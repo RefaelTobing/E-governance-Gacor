@@ -330,7 +330,7 @@ Ringkasan status:
 | FE-63 | ✅ | Tombol Lihat Semua di galeri dan partisipasi warga | Galeri: membuka lightbox pada foto terpilih. Partisipasi: ke `/laporan-saya`. Keduanya hanya tampil bila section berisi. Revisi Gambar 6. |
 | FE-64 | ✅ | Hero Beranda: overlay lebih terang dan judul warna solid | Overlay 0.60/0.70/0.88 -> 0.22/0.32/0.50 + pita scrim area teks; gradien judul dihapus, judul putih solid. Kontras terukur 5.77:1, luminance hero naik. Revisi Gambar 7. |
 | FE-65 | ✅ | Bersihkan header admin dan tangani sesi kedaluwarsa | Badge "● Petugas Operasional" dihapus, role sidebar pakai role asli, interceptor 401 membersihkan sesi + mengarahkan ke login dengan pesan Indonesia. Revisi Gambar 8 & 9. |
-| FE-66 | ❌ | Peta admin: tombol fullscreen dan pin warna status | Revisi Gambar 10 & 11. |
+| FE-66 | ⚠️ | Peta admin: tombol fullscreen dan pin warna status | Pin hijau/kuning per status laporan aktif + legenda, tombol "Lihat Full" dengan `invalidateSize`. Perilaku fullscreen visual belum terverifikasi di harness (izin ditolak). Revisi Gambar 10 & 11. |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -2400,9 +2400,22 @@ bukan ditambal di frontend.
 
 ---
 
-### FE-66. Peta admin: tombol fullscreen dan pin warna status laporan (rencana)
+### FE-66. Peta admin: tombol fullscreen dan pin warna status laporan
 
-**Status:** ❌ (rencana)
+**Status:** ⚠️ (pin & legenda terverifikasi; perilaku fullscreen belum bisa diuji di harness)
+
+**Bukti runtime (2026-10-27)** - dev server `:5174` + mock `:8001`, dashboard admin:
+
+| Skenario | Hasil terukur |
+| --- | --- |
+| Ruang publik dengan laporan aktif (`menunggu_verifikasi`/`diverifikasi`/`dalam_penanganan`) | pin **kuning** `#F59E0B` dirender; popup "2 laporan aktif"; legenda "Ada laporan aktif (1)" |
+| Ruang publik hanya punya laporan `selesai` | pin **hijau** `#16A34A`; popup "Tidak ada laporan aktif"; legenda "Tanpa laporan aktif (1)" |
+| 3 ruang publik: 2 aktif, 1 tidak | legenda "Tanpa laporan aktif (1)" + "Ada laporan aktif (2)", sesuai hitungan `ruang_publik_id` unik dari 5 laporan (2 RP aktif) |
+| `GET /admin/reports` sengaja dibuat gagal (500) | semua pin hijau, legenda "Ada laporan aktif (0)", tile peta tetap termuat |
+| Tombol "Lihat Full" diklik (Fullscreen API di-stub) | `requestFullscreen` dipanggil pada wrapper peta, label berubah "Keluar Full", wrapper berganti ke `height: 100vh`; klik "Keluar Full" memanggil `exitFullscreen` dan gaya kembali `aspect-ratio: 1/1` |
+| Cluster | tetap memakai warna brand `#0F766E` (tidak diubah) |
+
+**Belum terverifikasi:** perilaku fullscreen sesungguhnya (peta memenuhi layar, Esc keluar, tanpa area abu-abu). Browser harness menolak izin dengan `TypeError: Permissions check failed` meski `document.fullscreenEnabled === true`, jadi yang terbukti hanya wiring-nya (target `requestFullscreen`, perubahan label, gaya `100vh`, dan pemanggilan `map.invalidateSize()` lewat efek `SesuaikanUkuranPeta`). Perlu sekali cek manual di browser biasa: klik "Lihat Full", pastikan peta penuh layar dan zoom/pan jalan, lalu Esc dan ukuran kembali tanpa area abu-abu.
 
 **File utama:** `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
 
@@ -2471,6 +2484,7 @@ bukan ditambal di frontend.
 - **FE-61** — Carousel foto di pratinjau Peta Akses (sinkron dengan galeri)
 - **FE-62** — Batas 3 item + "Tampilkan Semua" pada fasilitas & laporan
 - **FE-63** — Tombol "Lihat Semua" di galeri & partisipasi warga
+- **FE-66** — Peta admin: pin warna status + legenda (fullscreen: wiring saja, perlu cek manual)
 
 ### Prioritas Berikutnya
 
@@ -2501,7 +2515,7 @@ bukan ditambal di frontend.
 25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (selesai)
 26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (selesai)
 27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
-28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (rencana)
+28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (⚠️ pin/legenda selesai, cek fullscreen manual)
 
 ---
 

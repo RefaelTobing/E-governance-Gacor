@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { AlertTriangle, MapPin, RotateCcw } from 'lucide-react';
+import { AlertTriangle, MapPin, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
 import L from 'leaflet';
 import { Button, PetaZoomPinch } from '../../../components';
 import { getAllPublicSpaces } from '../../../services/ruangPublikService';
+import { getAdminReports } from '../../../services/laporanService';
 import { JAKARTA_CENTER } from '../../../config/constants';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -24,13 +25,22 @@ L.Icon.Default.mergeOptions({
 
 const DEFAULT_ZOOM = 11;
 
-const createSpaceIcon = () => L.divIcon({
+// FE-66: status yang dianggap "laporan aktif" untuk pewarnaan pin.
+const STATUS_AKTIF = ['menunggu_verifikasi', 'diverifikasi', 'dalam_penanganan'];
+const WARNA_PIN_NORMAL = '#16A34A'; // hijau: belum ada laporan aktif
+const WARNA_PIN_AKTIF = '#F59E0B'; // kuning: ada laporan aktif
+
+const buatIkonRuang = (adaLaporanAktif) => L.divIcon({
   className: '',
-  html: '<div style="width:18px;height:18px;background:#0F766E;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 5px rgba(15,23,42,.35)"></div>',
+  html: `<div style="width:18px;height:18px;background:${adaLaporanAktif ? WARNA_PIN_AKTIF : WARNA_PIN_NORMAL};border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 5px rgba(15,23,42,.35)"></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 18],
   popupAnchor: [0, -20],
 });
+
+// Dibuat sekali supaya marker tidak memasang ikon baru tiap render.
+const IKON_NORMAL = buatIkonRuang(false);
+const IKON_AKTIF = buatIkonRuang(true);
 
 // FE-08: Custom styling bubble cluster (konsisten dengan warna brand primary).
 const createClusterCustomIcon = (cluster) => {
@@ -86,10 +96,27 @@ const FitMapBounds = ({ locations }) => {
   return null;
 };
 
+// FE-66: saat keluar/masuk fullscreen ukuran kontainer berubah, Leaflet perlu
+// diberi tahu agar tidak menyisakan area abu-abu.
+const SesuaikanUkuranPeta = ({ pemicu }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = setTimeout(() => map.invalidateSize(), 120);
+    return () => clearTimeout(timer);
+  }, [pemicu, map]);
+
+  return null;
+};
+
 const PetaDashboardAdmin = () => {
   const [spaces, setSpaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  // FE-66: { ruang_publik_id: jumlah laporan aktif }.
+  const [laporanAktif, setLaporanAktif] = useState({});
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const wrapperRef = useRef(null);
 
   const muatRuangPublik = async () => {
     setIsLoading(true);
@@ -107,6 +134,51 @@ const PetaDashboardAdmin = () => {
     muatRuangPublik();
   }, []);
 
+  // FE-66: hitung laporan aktif per ruang publik. Bila gagal, biarkan kosong
+  // sehingga semua pin hijau dan peta tetap berfungsi.
+  useEffect(() => {
+    let aktif = true;
+
+    const muatLaporanAktif = async () => {
+      try {
+        const daftar = await getAdminReports({ limit: 500 });
+        if (!aktif) return;
+        const hitung = {};
+        (daftar || []).forEach((laporan) => {
+          if (!STATUS_AKTIF.includes(laporan.status)) return;
+          const idRuang = laporan.ruangPublikId || laporan.ruang_publik_id;
+          if (!idRuang) return;
+          hitung[idRuang] = (hitung[idRuang] || 0) + 1;
+        });
+        setLaporanAktif(hitung);
+      } catch {
+        if (aktif) setLaporanAktif({});
+      }
+    };
+
+    muatLaporanAktif();
+    return () => {
+      aktif = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const saatBerubah = () => setIsFullscreen(document.fullscreenElement === wrapperRef.current);
+    document.addEventListener('fullscreenchange', saatBerubah);
+    return () => document.removeEventListener('fullscreenchange', saatBerubah);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    const elemen = wrapperRef.current;
+    if (!elemen) return;
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await elemen.requestFullscreen();
+    } catch {
+      // Browser menolak (kebijakan izin / mode embedded): biarkan ukuran apa adanya.
+    }
+  };
+
   // FE-08: Seluruh titik lolos filter dirender; MarkerClusterGroup menangani
   // kepadatan tinggi tanpa perlu membatasi jumlah marker.
   const locations = useMemo(() => spaces
@@ -116,6 +188,11 @@ const PetaDashboardAdmin = () => {
       longitude: Number.parseFloat(space.longitude),
     }))
     .filter((space) => Number.isFinite(space.latitude) && Number.isFinite(space.longitude)), [spaces]);
+
+  const jumlahAktif = useMemo(
+    () => locations.filter((space) => laporanAktif[space.id]).length,
+    [locations, laporanAktif]
+  );
 
   if (isLoading) {
     return (
@@ -147,7 +224,12 @@ const PetaDashboardAdmin = () => {
   }
 
   return (
-    <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', maxHeight: '520px' }}>
+    <div
+      ref={wrapperRef}
+      style={isFullscreen
+        ? { position: 'relative', width: '100%', height: '100vh', backgroundColor: 'var(--color-surface)' }
+        : { position: 'relative', aspectRatio: '1 / 1', width: '100%', maxHeight: '520px' }}
+    >
       <MapContainer
         center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]}
         zoom={DEFAULT_ZOOM}
@@ -156,6 +238,7 @@ const PetaDashboardAdmin = () => {
       >
         <RecenterMap center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]} />
         <FitMapBounds locations={locations} />
+        <SesuaikanUkuranPeta pemicu={isFullscreen} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -169,23 +252,76 @@ const PetaDashboardAdmin = () => {
           disableClusteringAtZoom={17}
           iconCreateFunction={createClusterCustomIcon}
         >
-          {locations.map((space) => (
-            <Marker key={space.id} position={[space.latitude, space.longitude]} icon={createSpaceIcon()}>
-              <Popup minWidth={220}>
-                <div style={{ padding: '4px 0' }}>
-                  <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--color-text-main)' }}>{space.nama}</strong>
-                  <span style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.alamat || 'Alamat belum tersedia'}</span>
-                  <span style={{ display: 'block', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.wilayah || 'Wilayah belum tersedia'}</span>
-                  {space.verified && <span style={{ display: 'inline-block', marginTop: '8px', color: 'var(--color-success-text)', fontSize: '11px', fontWeight: 700 }}>Ruang publik terverifikasi</span>}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {locations.map((space) => {
+            const jmlAktif = laporanAktif[space.id] || 0;
+            return (
+              <Marker
+                key={space.id}
+                position={[space.latitude, space.longitude]}
+                icon={jmlAktif ? IKON_AKTIF : IKON_NORMAL}
+              >
+                <Popup minWidth={220}>
+                  <div style={{ padding: '4px 0' }}>
+                    <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--color-text-main)' }}>{space.nama}</strong>
+                    <span style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.alamat || 'Alamat belum tersedia'}</span>
+                    <span style={{ display: 'block', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.wilayah || 'Wilayah belum tersedia'}</span>
+                    {jmlAktif > 0 ? (
+                      <span style={{ display: 'inline-block', marginTop: '8px', color: '#B45309', fontSize: '11px', fontWeight: 700 }}>
+                        {jmlAktif} laporan aktif
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-block', marginTop: '8px', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+                        Tidak ada laporan aktif
+                      </span>
+                    )}
+                    {space.verified && <span style={{ display: 'block', marginTop: '4px', color: 'var(--color-success-text)', fontSize: '11px', fontWeight: 700 }}>Ruang publik terverifikasi</span>}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MarkerClusterGroup>
       </MapContainer>
-      <div style={{ position: 'absolute', left: '12px', bottom: '12px', zIndex: 400, background: 'var(--color-surface)', padding: '8px 10px', borderRadius: 'var(--radius-md)', boxShadow: '0 2px 8px rgba(15,23,42,.15)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-main)' }}>
-        <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-primary)' }} aria-hidden="true" />
-        Semua ruang publik ({locations.length})
+
+      {/* FE-66: kontrol fullscreen peta */}
+      <div style={{ position: 'absolute', right: '12px', top: '12px', zIndex: 400 }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleFullscreen}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--color-surface)' }}
+        >
+          {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          {isFullscreen ? 'Keluar Full' : 'Lihat Full'}
+        </Button>
+      </div>
+
+      {/* FE-66: legenda status laporan */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '12px',
+          bottom: '12px',
+          zIndex: 400,
+          background: 'var(--color-surface)',
+          padding: '8px 10px',
+          borderRadius: 'var(--radius-md)',
+          boxShadow: '0 2px 8px rgba(15,23,42,.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          fontSize: '12px',
+          color: 'var(--color-text-main)'
+        }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: WARNA_PIN_NORMAL }} aria-hidden="true" />
+          Tanpa laporan aktif ({locations.length - jumlahAktif})
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: WARNA_PIN_AKTIF }} aria-hidden="true" />
+          Ada laporan aktif ({jumlahAktif})
+        </span>
       </div>
     </div>
   );
