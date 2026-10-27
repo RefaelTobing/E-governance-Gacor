@@ -21,6 +21,10 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 - Pekerjaan yang bukan task kode (dokumen, konfigurasi) memakai label **Dokumen** / **Chore**.
 - Isi ringkas: satu baris per task. Detail teknis cukup di task guide dan commit message.
 
+## 2026-10-27
+
+- **[BE-37]** Unit test pytest menyeluruh - konsolidasi dan verifikasi penuh 16 berkas test unit di `tests/unit/` mencakup 5 modul inti: Public Space (radius Haversine, filter, jam operasional, galeri foto), Report (submit, EXIF GPS, anti fake-GPS, rate-limit, mine, WebP upload), Moderation (antrian, approve, reject + alasan, flag, enum status), Data Master (list master admin, patch manual field_source, kategori, ETL sync/log), serta Auth & Guard (login admin, logout token blacklist, route guard admin). Verifikasi: `pytest tests/unit -q` **193 passed**, 0 failed.
+
 ---
 
 ## 2026-10-14

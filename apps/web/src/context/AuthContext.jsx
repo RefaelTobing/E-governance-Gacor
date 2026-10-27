@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext();
 
@@ -34,6 +34,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
         setAuth({ user: null, token: null });
     };
+
+    // Interceptor axios membuang token yang ditolak backend (401) lalu
+    // memancarkan event ini, supaya state React ikut kosong tanpa reload.
+    useEffect(() => {
+        const sesiBerakhir = () => setAuth({ user: null, token: null });
+        window.addEventListener('ruka:sesi-berakhir', sesiBerakhir);
+        return () => window.removeEventListener('ruka:sesi-berakhir', sesiBerakhir);
+    }, []);
 
     return (
         <AuthContext.Provider value={{ user, role, token, login, logout }}>

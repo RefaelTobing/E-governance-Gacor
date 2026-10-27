@@ -270,7 +270,7 @@ Sebelum menyatakan backend selesai:
 - [x] Upload foto berfungsi (MIME + 5MB tervalidasi, URL bisa diakses)
 - [ ] CRUD data-master admin tersedia dan terproteksi
 - [x] Rate limiting laporan aktif (BE-26: 10 percobaan / 10 menit per user/IP, `POST /reports` + `POST /uploads`)
-- [ ] `pytest tests\unit` hijau di `.venv`
+- [x] `pytest tests\unit` hijau di `.venv` (193 passed, 0 failed — 2026-10-27)
 - [ ] `docs/API.md` 100% sinkron dengan Swagger
 - [ ] Semua endpoint admin manggil `get_current_admin` (audit grep)
 - [ ] Tidak ada file di `apps/web/` yang berubah karena pekerjaan backend ini

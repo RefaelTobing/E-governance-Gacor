@@ -38,10 +38,11 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 | B4 Moderation Service | 6 | 6 | 0 | 0 |
 | B5 Data Master Service | 3 | 3 | 0 | 0 |
 | B6 Admin Auth & Pemisahan Akses | 5 | 5 | 0 | 0 |
-| B7 Testing | 5 | 0 | 0 | 5 |
+| B7 Testing | 5 | 1 | 0 | 4 |
+| B8 Deployment | 4 | 0 | 0 | 4 |
 | B9 Konten Situs | 1 | 0 | 0 | 1 |
 | B10 Galeri Foto & Like | 2 | 1 | 0 | 1 |
-| **Total** | **59** | **47** | **0** | **7** |
+| **Total** | **58** | **48** | **0** | **10** |
 
 ---
 
@@ -603,7 +604,15 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 
 ## B7. Testing Backend
 
-- [ ] **[BE-37]** Unit test (pytest) menyeluruh: Public Space, Report, Moderation, Data Master, Auth.
+- [x] **[BE-37]** Unit test (pytest) menyeluruh: Public Space, Report, Moderation, Data Master, Auth.
+  - **Lokasi kode:** folder `backend/tests/unit/` (16 file test: `test_ruang_publik.py`, `test_foto_ruang_publik.py`, `test_jam_operasional.py`, `test_public_space_reports.py`, `test_laporan.py`, `test_rate_limit.py`, `test_admin_reports.py`, `test_admin_ruang_publik.py`, `test_admin_patch_ruang_publik.py`, `test_admin_sync.py`, `test_etl_run_log.py`, `test_categories.py`, `test_admin_login.py`, `test_admin_guard.py`, `test_logout.py`, `test_utils.py`).
+  - **Cakupan modul:**
+    1. **Public Space:** radius search Haversine, filter kategori/fasilitas, detail, galeri gabungan foto, dan jam operasional.
+    2. **Report:** submit laporan anonim/bernama, validasi koordinat & anti-spoofing, ekstraksi EXIF GPS foto, validasi ambang batas 100m anti fake-GPS, rate-limiting ASGI, status laporan, riwayat "Laporan Saya" (`GET /reports/mine`), upload file + WebP transcoding.
+    3. **Moderation:** antrian tinjauan admin (`GET /admin/reports`), approve (`POST /admin/reports/{id}/approve`), reject + simpan alasan (`POST /admin/reports/{id}/reject`), laporan ter-flag (`GET /admin/reports/flagged`), enum status kanonik & proteksi transisi status.
+    4. **Data Master:** list master admin (`GET /admin/public-spaces`), patch manual per-kolom & penandaan `field_source`, proteksi CRUD kategori, trigger sync manual ETL & riwayat log run ETL.
+    5. **Auth & Guard:** login admin terpisah (`POST /admin/login`), blacklist JWT saat logout (`POST /auth/logout`), guard komprehensif role `admin` di semua rute `/admin/*` dan pencegahan kebocoran endpoint tulis.
+  - **Verifikasi (2026-10-27):** `..\.venv\Scripts\python.exe -m pytest tests\unit -q` berhasil dengan **193 passed** (0 failed).
 - [ ] **[BE-38]** **Black-box testing**: uji tiap endpoint dari input-output yang diharapkan tanpa melihat kode,
       mencakup skenario normal dan edge case (input kosong, koordinat tidak valid, file bukan gambar).
 - [ ] **[BE-39]** **Testing API dengan Postman**: collection seluruh endpoint (publik & admin) beserta
@@ -611,9 +620,7 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
 - [ ] **[BE-40]** **User concurrent testing**: simulasi banyak pengguna di endpoint pencarian & submit laporan
       (Locust/JMeter/k6) - pastikan tidak ada race condition pada status laporan & merge data master.
 - [ ] **[BE-41]** Uji performa query radius search dengan volume data skala penuh (ribuan titik). *(NFR-001)*
-- **Status kelima task: belum ada sama sekali** - `backend/tests/` tidak ada dan file test masuk `.gitignore`.
-  Panduan pembuatan ulang: `docs/06-testing-strategy.md` (bagian 3).
-  Gerbang: `..\.venv\Scripts\python.exe -m pytest tests\unit -q` dari `backend/` harus 0 gagal.
+- **Status pengujian unit:** BE-37 selesai (16 file test, 193 passed). Sisa B7 (BE-38 s/d BE-41) adalah pengujian black-box, Postman, konkurensi (load), dan uji performa volume skala penuh.
 
 ---
 

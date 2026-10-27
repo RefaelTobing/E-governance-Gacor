@@ -14,12 +14,14 @@ export const AntrianModerasiPage = () => {
   const [queueList, setQueueList] = useState([]);
   const [stats, setStats] = useState(MOCK_MODERASI_STATS);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchQueue = async () => {
       setIsLoading(true);
+      setErrorMsg('');
       try {
         const [reportsData, statsData] = await Promise.all([
           getAdminReports(),
@@ -30,7 +32,9 @@ export const AntrianModerasiPage = () => {
           if (statsData) setStats(statsData);
         }
       } catch (err) {
-        console.error('Error fetching moderasi queue:', err);
+        if (isMounted) {
+          setErrorMsg(err.message || 'Antrian moderasi gagal dimuat.');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -78,19 +82,25 @@ export const AntrianModerasiPage = () => {
             Kelola dan tindaklanjuti laporan kondisi fasilitas dari warga.
           </p>
         </div>
+      </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
-          <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
-            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>PERLU TINDAKAN</span>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
-              {isLoading ? '...' : `${perluTindakanCount} Laporan`}
-            </div>
+      {errorMsg && (
+        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px' }}>
+          {errorMsg}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
+        <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
+          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>PERLU TINDAKAN</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
+            {isLoading ? '...' : `${perluTindakanCount} Laporan`}
           </div>
-          <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-success)' }}>
-            <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success-text)' }}>SELESAI PEKAN INI</span>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success-text)' }}>
-              {isLoading ? '...' : `${selesaiPekanIniCount} Fasilitas`}
-            </div>
+        </div>
+        <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-success)' }}>
+          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success-text)' }}>SELESAI PEKAN INI</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success-text)' }}>
+            {isLoading ? '...' : `${selesaiPekanIniCount} Fasilitas`}
           </div>
         </div>
       </div>

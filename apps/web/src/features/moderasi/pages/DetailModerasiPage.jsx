@@ -64,6 +64,7 @@ export const DetailModerasiPage = () => {
   const [currentStatus, setCurrentStatus] = useState('menunggu_verifikasi');
   const [catatanPetugas, setCatatanPetugas] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Status aksi (approve / PATCH status).
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +84,7 @@ export const DetailModerasiPage = () => {
 
     const fetchReport = async () => {
       setIsLoading(true);
+      setLoadError('');
       try {
         const data = await getReportDetail(laporanId);
         if (isMounted && data) {
@@ -90,7 +92,14 @@ export const DetailModerasiPage = () => {
           setCurrentStatus(data.status);
         }
       } catch (err) {
-        console.error('Error fetching moderasi report detail:', err);
+        if (!isMounted) return;
+        if (err.status === 404) {
+          setLoadError('Laporan tidak ditemukan.');
+        } else if (err.status === 403) {
+          setLoadError('Akun Anda tidak berhak melihat laporan ini.');
+        } else {
+          setLoadError(err.message || 'Gagal memuat detail laporan.');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -215,7 +224,7 @@ export const DetailModerasiPage = () => {
       <div>
         <EmptyState
           title="Laporan Tidak Ditemukan"
-          description="Data laporan untuk moderasi tidak tersedia atau ID tidak valid."
+          description={loadError || 'Data laporan untuk moderasi tidak tersedia atau ID tidak valid.'}
           actionLabel="Kembali ke Daftar Laporan"
           onAction={() => navigate('/dashboard/moderasi')}
         />

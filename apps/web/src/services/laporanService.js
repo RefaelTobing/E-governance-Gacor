@@ -199,8 +199,11 @@ export const getReportDetail = async (id) => {
     const raw = await api.get(`/api/v1/reports/${id}`);
     return transformLaporanResponse(raw);
   } catch (error) {
-    if (IS_DEV) {
-      console.info(`[laporanService] Fallback mock data laporan ID: ${id}`);
+    // 403 = laporan milik orang lain, 404 = ID tidak ada. Keduanya harus
+    // terlihat apa adanya, bukan ditutup mock yang menyesatkan.
+    if (error.status === 403 || error.status === 404) throw error;
+    if (IS_DEV && error.status == null) {
+      console.info(`[laporanService] Backend tidak terjangkau, memakai mock untuk ID: ${id}`);
       return MOCK_LAPORAN.find((item) => item.id === id) || MOCK_LAPORAN[0];
     }
     throw error;

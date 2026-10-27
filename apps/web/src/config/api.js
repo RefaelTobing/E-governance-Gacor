@@ -140,11 +140,17 @@ instance.interceptors.response.use(
       return Promise.reject(normalized);
     }
 
-    const { status, data } = error.response;
     const jalur = error.config?.url || '';
     const dariLogin = dariEndpointLogin(jalur);
 
+    // 401 dari request berotentikasi (bukan login): token kedaluwarsa atau dicabut.
+    // Kirim event ke AuthContext dan arahkan pengguna ke halaman login yang sesuai.
     if (status === 401 && !dariLogin && bacaToken()) {
+      try {
+        window.dispatchEvent(new Event('ruka:sesi-berakhir'));
+      } catch {
+        // Abaikan bila di luar konteks browser window
+      }
       tanganiSesiBerakhir();
     }
 

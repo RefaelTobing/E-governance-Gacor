@@ -112,6 +112,7 @@ Prinsip: **tulis test bersamaan saat menutup gap** di file fitur (tiap gap punya
 | 2026-10-08 | BE-29 | `tests/unit/test_admin_reports.py` | 105 passed | 7 test approve: 401 · 403 · 404 · menunggu → 200 `diverifikasi` + timeline + tayang di `GET /reports` publik · ditolak → 200 · sudah tayang (diverifikasi/selesai) → 409 · tanpa body → deskripsi default |
 | 2026-10-09 | BE-30 | `tests/unit/test_admin_reports.py` | 113 passed | 8 test reject: 401 · 403 · 404 · alasan kosong/blank 422 · menunggu → 200 `ditolak` + `alasan_penolakan` + timeline + hilang dari publik · pemilik lihat alasan · tayang → 200 diturunkan · sudah ditolak → 409 |
 | 2026-10-09 | BE-31 | `tests/unit/test_admin_reports.py` | 119 passed | 6 test flagged: 401 · 403 · kosong `[]` · urut `flag_count` desc + count benar + tak ter-flag tidak muncul · `flag_count` publik `null` · pagination `limit` |
+| 2026-10-27 | BE-37 | `tests/unit/` (16 berkas test) | 193 passed | Verifikasi unit test menyeluruh lintas modul (Public Space, Report, Moderation, Data Master, Auth & Guard) 100% passed (0 failed) |
 
 ---
 

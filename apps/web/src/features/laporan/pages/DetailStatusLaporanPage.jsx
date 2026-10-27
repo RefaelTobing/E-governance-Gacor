@@ -20,6 +20,7 @@ export const DetailStatusLaporanPage = () => {
 
   const [laporan, setLaporan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
   const [isFotoBesar, setIsFotoBesar] = useState(false);
 
   useEffect(() => {
@@ -27,13 +28,21 @@ export const DetailStatusLaporanPage = () => {
 
     const fetchReport = async () => {
       setIsLoading(true);
+      setErrorMsg('');
       try {
         const data = await getReportDetail(id);
         if (isMounted) {
           setLaporan(data);
         }
       } catch (err) {
-        console.error('Error fetching report detail:', err);
+        if (!isMounted) return;
+        if (err.status === 404) {
+          setErrorMsg('Laporan tidak ditemukan.');
+        } else if (err.status === 403) {
+          setErrorMsg('Laporan ini bukan milik akun Anda.');
+        } else {
+          setErrorMsg(err.message || 'Gagal memuat detail laporan.');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -77,8 +86,8 @@ export const DetailStatusLaporanPage = () => {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
         <EmptyState
-          title="Laporan Tidak Ditemukan"
-          description="Data detail status laporan yang Anda cari tidak tersedia."
+          title={errorMsg ? 'Laporan Tidak Bisa Ditampilkan' : 'Laporan Tidak Ditemukan'}
+          description={errorMsg || 'Data detail status laporan yang Anda cari tidak tersedia.'}
           actionLabel="Kembali ke Riwayat Laporan"
           onAction={() => navigate('/laporan-saya')}
         />

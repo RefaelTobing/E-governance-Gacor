@@ -368,16 +368,29 @@ def get_flagged_reports(
     """
     jumlah_flag = func.count(LaporanFlag.id).label("flag_count")
     flag_terakhir = func.max(LaporanFlag.created_at).label("flag_terakhir")
+
+    # Agregasi dijalankan pada subquery terpisah, lalu di-join ke Laporan.
+    # Satu query agregat dengan joinedload memaksa kolom relasi (users.*, dst)
+    # ikut SELECT tanpa GROUP BY -> Postgres menolak (GroupingError). Cara ini
+    # membuat GROUP BY hanya berisi laporan_flag, dan relasi dimuat sesudahnya.
+    agregat = (
+        select(
+            LaporanFlag.laporan_id.label("laporan_id"),
+            jumlah_flag,
+            flag_terakhir,
+        )
+        .group_by(LaporanFlag.laporan_id)
+        .subquery()
+    )
     stmt = (
-        select(Laporan, jumlah_flag, flag_terakhir)
-        .join(LaporanFlag, LaporanFlag.laporan_id == Laporan.id)
+        select(Laporan, agregat.c.flag_count, agregat.c.flag_terakhir)
+        .join(agregat, agregat.c.laporan_id == Laporan.id)
         .options(
             joinedload(Laporan.user),
             joinedload(Laporan.ruang_publik),
             joinedload(Laporan.fasilitas),
         )
-        .group_by(Laporan.id)
-        .order_by(jumlah_flag.desc(), flag_terakhir.desc())
+        .order_by(agregat.c.flag_count.desc(), agregat.c.flag_terakhir.desc())
         .offset(skip)
         .limit(limit)
     )
