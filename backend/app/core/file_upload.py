@@ -1,10 +1,41 @@
+import io
 import os
 from uuid import uuid4
 from fastapi import UploadFile, HTTPException, status
+from PIL import Image
 from supabase import create_client, Client
 from app.core.config import settings
 
 ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
+
+# Semua gambar disimpan sebagai WebP agar ringan. q82 cukup untuk foto bukti
+# laporan tanpa penurunan yang terlihat.
+WEBP_QUALITY = 82
+WEBP_METHOD = 6
+
+
+def _webp_dari(data: bytes) -> bytes:
+    """Normalkan gambar (JPEG/PNG) ke WebP.
+
+    EXIF dipertahankan supaya ekstraksi GPS bukti laporan (BE-23) tetap bekerja -
+    tanpa ini, koordinat EXIF hilang saat transcoding.
+    """
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            exif = img.info.get("exif")
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGB")
+            keluaran = io.BytesIO()
+            opsi = {"format": "WEBP", "quality": WEBP_QUALITY, "method": WEBP_METHOD}
+            if exif:
+                opsi["exif"] = exif
+            img.save(keluaran, **opsi)
+            return keluaran.getvalue()
+    except Exception as exc:  # noqa: BLE001 - semua kegagalan decode -> 400
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File gambar tidak dapat diproses (isi rusak atau bukan gambar).",
+        ) from exc
 
 
 def _deteksi_ekstensi(header: bytes) -> str | None:
@@ -64,10 +95,11 @@ def _nama_bucket(subfolder: str) -> str:
 def save_upload_file(file: UploadFile, subfolder: str) -> str:
     """Simpan file dan kembalikan URL yang bisa dipakai sebagai foto_url.
 
-    Bila `SUPABASE_URL` diisi, file diunggah ke Supabase Storage dan hasilnya
-    public URL absolut. Bila kosong (mis. saat unit test), file ditulis ke
-    filesystem lokal dan hasilnya path relatif `/uploads/...` seperti semula.
-    `subfolder` menentukan bucket/target: "laporan" atau "ruang-publik".
+    Gambar dinormalkan ke WebP (JPEG/PNG ditranscoding via Pillow, EXIF
+    dipertahankan). Bila `SUPABASE_URL` diisi, file diunggah ke Supabase Storage
+    dan hasilnya public URL absolut. Bila kosong (mis. saat unit test), file
+    ditulis ke filesystem lokal dan hasilnya path relatif `/uploads/...` seperti
+    semula. `subfolder` menentukan bucket/target: "laporan" atau "ruang-publik".
     """
     validate_image_upload(file)
 
@@ -75,17 +107,22 @@ def save_upload_file(file: UploadFile, subfolder: str) -> str:
     header = file.file.read(12)
     file.file.seek(0)
     ext = _deteksi_ekstensi(header) or ".jpg"
-    unique_filename = f"{uuid4().hex}{ext}"
     data = file.file.read()
 
+    # Semua unggahan disimpan sebagai WebP. WebP yang sudah WebP diteruskan apa
+    # adanya agar kualitas tidak turun karena re-encode.
+    if ext != ".webp":
+        data = _webp_dari(data)
+
+    unique_filename = f"{uuid4().hex}.webp"
+
     if settings.SUPABASE_URL:
-        content_type = file.content_type or "image/jpeg"
         bucket = _nama_bucket(subfolder)
         supabase = get_supabase()
         supabase.storage.from_(bucket).upload(
             path=unique_filename,
             file=data,
-            file_options={"content-type": content_type, "upsert": "true"},
+            file_options={"content-type": "image/webp", "upsert": "true"},
         )
         return supabase.storage.from_(bucket).get_public_url(unique_filename)
 
