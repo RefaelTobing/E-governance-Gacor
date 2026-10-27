@@ -125,7 +125,8 @@
 - [ ] **[BE-36]** Pastikan konfigurasi CORS (BE-07) mengizinkan domain FE Admin secara spesifik, terpisah dari domain FE Publik.
 
 ### B7. Testing Backend
-- [ ] **[BE-37]** Unit test (pytest) menyeluruh untuk seluruh service: Public Space, Report, Moderation, Data Master, Auth.
+- [x] **[BE-37]** Unit test (pytest) menyeluruh untuk seluruh service: Public Space, Report, Moderation, Data Master, Auth.
+  - Diverifikasi 2026-10-27: 16 file unit test di `tests/unit/`, 193 passed (0 failed).
 - [ ] **[BE-38]** **Black-box testing**: uji tiap endpoint berdasarkan input-output yang diharapkan tanpa melihat isi kode, mencakup skenario normal dan edge case (input kosong, koordinat tidak valid, file bukan gambar, dll).
 - [ ] **[BE-39]** **Testing API dengan Postman**: buat Postman Collection untuk seluruh endpoint (publik & admin), termasuk test script otomatis (assertion status code, struktur response) — dipakai juga untuk regression testing tiap ada perubahan endpoint.
 - [ ] **[BE-40]** **User concurrent testing**: simulasikan banyak pengguna mengakses endpoint pencarian ruang publik & submit laporan secara bersamaan (mis. pakai Locust atau JMeter) untuk memastikan API tetap responsif dan tidak terjadi race condition (khususnya di logika status laporan & merge data master).
