@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
 import { loginAdmin, getMe } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
+import { PARAM_SESI, NILAI_SESI_BERAKHIR, PESAN_SESI_BERAKHIR } from '../../../config/constants';
 
 export const LoginPemerintahPage = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export const LoginPemerintahPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Interceptor 401 menandai `?sesi=berakhir` saat mengarahkan ke halaman ini (FE-65).
+  const sesiBerakhir = searchParams.get(PARAM_SESI) === NILAI_SESI_BERAKHIR;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +52,23 @@ export const LoginPemerintahPage = () => {
           <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2xl)' }}>
             Akses verifikasi laporan kondisi fasilitas ruang terbuka DKI Jakarta.
           </p>
+
+          {sesiBerakhir && (
+            <div
+              role="status"
+              style={{
+                backgroundColor: 'var(--color-warning-light)',
+                border: '1px solid var(--color-warning)',
+                color: 'var(--color-warning-text)',
+                padding: 'var(--space-md)',
+                borderRadius: 'var(--radius-md)',
+                marginBottom: 'var(--space-lg)',
+                fontSize: '13px',
+              }}
+            >
+              {PESAN_SESI_BERAKHIR}
+            </div>
+          )}
 
           {error && (
             <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: 'var(--space-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)' }}>

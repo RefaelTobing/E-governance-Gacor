@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL as BASE_URL } from './constants';
+import { API_BASE_URL as BASE_URL, PARAM_SESI, NILAI_SESI_BERAKHIR } from './constants';
 
 /**
  * Terjemahkan pesan validasi pydantic (422) yang paling sering muncul ke
@@ -27,10 +27,26 @@ const translateFieldError = (item) => {
   return item?.msg || 'Data yang dikirim tidak valid.';
 };
 
+// Detail error backend yang masih berbahasa Inggris -> padanan Indonesia (FE-65).
+// Kunci dinormalisasi: huruf kecil, tanpa titik di akhir.
+const PETA_PESAN = {
+  'could not validate credentials': 'Sesi tidak valid atau sudah berakhir. Silakan masuk kembali.',
+  'not authenticated': 'Anda belum masuk. Silakan masuk terlebih dahulu.',
+  'not enough permissions': 'Akun Anda tidak punya akses ke tindakan ini.',
+  'insufficient permissions': 'Akun Anda tidak punya akses ke tindakan ini.',
+  forbidden: 'Anda tidak diizinkan mengakses data ini.',
+};
+
+const terjemahkanPesan = (detail) => {
+  if (typeof detail !== 'string') return null;
+  const kunci = detail.trim().toLowerCase().replace(/\.$/, '');
+  return PETA_PESAN[kunci] || null;
+};
+
 /**
  * Ubah `{ detail }` dari FastAPI menjadi pesan string.
  * - `detail` array (422) -> gabungkan pesan per-field.
- * - `detail` string      -> pakai apa adanya.
+ * - `detail` string      -> terjemahkan bila kunci dikenal, selain itu apa adanya.
  * - tanpa detail / 5xx   -> pesan generik.
  */
 const bacaPesanError = (body, status) => {
@@ -40,11 +56,55 @@ const bacaPesanError = (body, status) => {
     return detail.map(translateFieldError).join(' ') || 'Data yang dikirim tidak valid.';
   }
   if (typeof detail === 'string' && detail.trim()) {
-    return detail;
+    return terjemahkanPesan(detail) || detail;
   }
   return status >= 500
     ? 'Terjadi kesalahan di server. Coba lagi beberapa saat lagi.'
     : 'Terjadi kesalahan. Silakan coba lagi.';
+};
+
+// 401 dari endpoint login berarti kredensial salah, bukan sesi berakhir:
+// jangan bersihkan sesi atau mengarahkan ke halaman login.
+// Path nyata: /api/v1/auth/login (warga) dan /api/v1/auth/admin/login (petugas).
+const dariEndpointLogin = (jalur) => typeof jalur === 'string' && jalur.includes('/login');
+
+let sedangMengarahkan = false;
+
+const bacaToken = () => {
+  try {
+    return Boolean(localStorage.getItem('access_token'));
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Sesi ditolak backend (401 dengan token terpasang): bersihkan sesi, titipkan
+ * pesan untuk halaman login, lalu arahkan ke login yang sesuai konteks halaman.
+ * - `/dashboard*` -> /login-pemerintah (pengelola)
+ * - halaman lain  -> /login (warga)
+ */
+const tanganiSesiBerakhir = () => {
+  if (sedangMengarahkan) return;
+  sedangMengarahkan = true;
+
+  try {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+  } catch {
+    // localStorage diblokir: tidak ada yang bisa dibersihkan.
+  }
+
+  const jalur = window.location.pathname || '';
+  // Sudah di halaman login: jangan redirect berulang (pesan sudah ada di URL bila relevan).
+  if (jalur.startsWith('/login')) {
+    sedangMengarahkan = false;
+    return;
+  }
+
+  const tujuan = jalur.startsWith('/dashboard') ? '/login-pemerintah' : '/login';
+  const redirect = encodeURIComponent(jalur + (window.location.search || ''));
+  window.location.assign(`${tujuan}?redirect=${redirect}&${PARAM_SESI}=${NILAI_SESI_BERAKHIR}`);
 };
 
 // Instance axios tunggal untuk seluruh aplikasi.
@@ -80,18 +140,18 @@ instance.interceptors.response.use(
       return Promise.reject(normalized);
     }
 
-    const { status, data } = error.response;
+    const jalur = error.config?.url || '';
+    const dariLogin = dariEndpointLogin(jalur);
 
-    // 401 = token tidak ada / kedaluwarsa / sudah di-blacklist (logout).
-    // Bersihkan sesi yang tidak berlaku lagi supaya request berikutnya tidak
-    // mengulang 401 terus-menerus; pengalihan ke login ditangani RequireAuth.
-    if (status === 401) {
-      const sudahLogin = !!localStorage.getItem('access_token');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-      if (sudahLogin) {
+    // 401 dari request berotentikasi (bukan login): token kedaluwarsa atau dicabut.
+    // Kirim event ke AuthContext dan arahkan pengguna ke halaman login yang sesuai.
+    if (status === 401 && !dariLogin && bacaToken()) {
+      try {
         window.dispatchEvent(new Event('ruka:sesi-berakhir'));
+      } catch {
+        // Abaikan bila di luar konteks browser window
       }
+      tanganiSesiBerakhir();
     }
 
     const normalized = new Error(bacaPesanError(data, status));

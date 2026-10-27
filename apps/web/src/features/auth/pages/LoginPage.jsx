@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Button, Input, PasswordInput, Card, CardBody, Logo } from '../../../components';
 import { loginWarga, getMe, registerWarga } from '../../../services/authService';
 import { redirectAman } from '../../../utils/redirectAman';
+import { PARAM_SESI, NILAI_SESI_BERAKHIR, PESAN_SESI_BERAKHIR } from '../../../config/constants';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ export const LoginPage = () => {
   const redirectTujuan = redirectAman(searchParams.get('redirect'));
 
   const [isRegister, setIsRegister] = useState(isRegisterParam);
+  // Interceptor 401 menandai `?sesi=berakhir` saat mengarahkan ke halaman ini (FE-65).
+  const sesiBerakhir = searchParams.get(PARAM_SESI) === NILAI_SESI_BERAKHIR;
   const { login } = useAuth();
 
   // Form State
@@ -143,6 +146,23 @@ export const LoginPage = () => {
           </div>
 
           {/* Success Message */}
+          {sesiBerakhir && (
+            <div
+              role="status"
+              style={{
+                backgroundColor: 'var(--color-warning-light)',
+                border: '1px solid var(--color-warning)',
+                color: 'var(--color-warning-text)',
+                padding: 'var(--space-md)',
+                borderRadius: 'var(--radius-md)',
+                marginBottom: 'var(--space-lg)',
+                fontSize: '13px',
+              }}
+            >
+              {PESAN_SESI_BERAKHIR}
+            </div>
+          )}
+
           {successMsg && (
             <div style={{ padding: '12px', backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-text)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-md)', fontSize: '14px' }}>
               {successMsg}

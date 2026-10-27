@@ -14,6 +14,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
+// Label peran pengelola untuk blok akun sidebar (nilai role dari backend).
+const LABEL_ROLE = {
+  admin: 'Admin Pengelola',
+  dinas: 'Petugas Dinas',
+};
+
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -98,9 +104,11 @@ export const AdminLayout = () => {
             </div>
             <div style={{ overflow: 'hidden' }}>
               <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.name || 'Drs. H. Hendra M.'}
+                {user?.name || user?.email || 'Petugas'}
               </div>
-              <span className="text-caption" style={{ display: 'block' }}>Pengawas Distrik</span>
+              <span className="text-caption" style={{ display: 'block' }}>
+                {LABEL_ROLE[user?.role] || 'Pengelola'}
+              </span>
             </div>
           </div>
           <button
@@ -148,7 +156,6 @@ export const AdminLayout = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span className="badge badge-success">● Petugas Operasional</span>
             <Link to="/home" target="_blank" style={{ fontSize: '13px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Globe size={14} /> Lihat Situs Publik <ExternalLink size={12} />
             </Link>

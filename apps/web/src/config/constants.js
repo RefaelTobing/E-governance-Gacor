@@ -71,3 +71,40 @@ export const URUTAN_STATUS_LAPORAN = [
   STATUS_LAPORAN.DALAM_PENANGANAN,
   STATUS_LAPORAN.SELESAI,
 ];
+
+// Label status per `key`, untuk teks bantu di luar stepper (mis. status `ditolak`).
+export const LABEL_STATUS_LAPORAN = Object.fromEntries(
+  Object.values(STATUS_LAPORAN).map((s) => [s.key, s.label])
+);
+
+// Transisi status yang diizinkan backend (BE-51/BE-29/BE-30) - cermin dari
+// TRANSISI_IZIN di backend/app/schemas/laporan.py. Dipakai UI hanya untuk
+// mengaktifkan/mematikan tombol tindakan; backend tetap penjaga terakhir
+// (422 untuk transisi terlarang, 409 untuk approve/reject yang bentrok).
+export const TRANSISI_STATUS_LAPORAN = {
+  menunggu_verifikasi: ['menunggu_verifikasi', 'diverifikasi', 'dalam_penanganan', 'selesai', 'ditolak'],
+  diverifikasi: ['diverifikasi', 'dalam_penanganan', 'selesai', 'ditolak'],
+  dalam_penanganan: ['dalam_penanganan', 'selesai', 'ditolak'],
+  selesai: ['selesai', 'ditolak'],
+  ditolak: ['ditolak', 'diverifikasi'],
+};
+
+// Boleh tidaknya sebuah status tujuan diambil dari status sekarang.
+export const bolehTransisiStatus = (statusSekarang, statusTujuan) =>
+  (TRANSISI_STATUS_LAPORAN[statusSekarang] ?? []).includes(statusTujuan);
+
+// Penjaga endpoint approve/reject (BE-29/BE-30) BERBEDA dari tabel transisi PATCH:
+// approve hanya dari `menunggu_verifikasi`/`ditolak` (tinjau ulang), dan reject
+// menolak laporan yang sudah `ditolak` dengan 409. Sifat idempotent "status sama"
+// di tabel PATCH tidak berlaku di kedua endpoint ini.
+export const bolehSetujuiLaporan = (status) =>
+  status === 'menunggu_verifikasi' || status === 'ditolak';
+
+export const bolehTolakLaporan = (status) => status !== 'ditolak';
+
+// Penanda "sesi berakhir" pada query string halaman login (FE-65). Dipakai
+// interceptor 401 di config/api.js: setelah sesi dibersihkan, pengguna diarahkan
+// ke halaman login dengan `?sesi=berakhir` dan halaman menampilkan pesan ini.
+export const PARAM_SESI = 'sesi';
+export const NILAI_SESI_BERAKHIR = 'berakhir';
+export const PESAN_SESI_BERAKHIR = 'Sesi Anda telah berakhir. Silakan masuk kembali.';
