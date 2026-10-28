@@ -140,6 +140,7 @@ instance.interceptors.response.use(
       return Promise.reject(normalized);
     }
 
+    const { status, data } = error.response;
     const jalur = error.config?.url || '';
     const dariLogin = dariEndpointLogin(jalur);
 
