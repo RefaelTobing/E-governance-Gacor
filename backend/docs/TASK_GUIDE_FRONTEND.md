@@ -216,7 +216,7 @@ Status:
 | Laporan `diverifikasi`/`dalam_penanganan`/`selesai` | tombol Setujui disabled + teks alasan status |
 | Tanpa sesi admin | route dijaga, diarahkan ke `/login-pemerintah`, tombol tidak ada (permintaan tidak terkirim) |
 
-Kontrak backend asli dicek langsung: `POST /api/v1/admin/reports/{id}/approve` menjawab `401` (route hidup), dan guard `409` untuk status di luar `menunggu_verifikasi`/`ditolak` ada di `backend/app/api/v1/laporan.py:158`. **Belum diuji:** klik tombol di backend asli dengan sesi admin (kredensial tidak dipakai di sesi agen ini) - dua laporan uji `[UJI FE-25A]`/`[UJI FE-25B]` sudah dibuat di database untuk langkah itu.
+**Bukti runtime backend asli (2026-10-28):** uji ulang dilakukan dengan sesi admin nyata (`petugas@jakarta.go.id`) di backend FastAPI + database aktual, lewat Chrome headless CDP yang mengeklik UI sungguhan (bukan mock): login → buka `/dashboard/moderasi/[UJI FE-25A]` → tombol Setujui aktif (disabled=false) → klik → aplikasi kembali ke `/dashboard/moderasi` tanpa alert → buka ulang detail: badge `Diverifikasi`, timeline berisi "Laporan disetujui", tombol Setujui kini disabled (status bukan `menunggu_verifikasi`/`ditolak`). Guard backend terverifikasi langsung: `POST .../approve` pada laporan yang sudah `diverifikasi` → **409** `{detail:"Laporan tidak bisa disetujui dari status diverifikasi"}`; tanpa token → **401**. Diuji pula pada state `menunggu_verifikasi` milik user asli lewat antrian (FE-24) tanpa masalah.
 
 **File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
 
@@ -252,8 +252,7 @@ Kontrak backend asli dicek langsung: `POST /api/v1/admin/reports/{id}/approve` m
 | Reject saat backend sudah menolak laporan (409) | alert "Laporan sudah berstatus ditolak", detail dimuat ulang, tidak ada sukses palsu |
 | Laporan `ditolak` | tombol Tolak disabled + teks alasan status |
 
-Backend asli: `POST /api/v1/admin/reports/{id}/reject` menjawab `401` tanpa token (route hidup), `422` untuk alasan kosong, `409` untuk laporan yang sudah ditolak (`backend/app/api/v1/laporan.py:192`). **Belum diuji:** submit di backend asli dengan sesi admin.
-**Temuan terpisah (bukan FE-25B):** token rusak/kedaluwarsa memunculkan pesan mentah `Could not validate credentials` - itu lingkup FE-65.
+**Bukti runtime backend asli (2026-10-28):** sesi admin nyata + backend + database aktual, UI diklik lewat Chrome headless CDP: klik "Tolak Laporan (Spam / Tidak Sesuai)" → dialog `role="dialog"` buka; textarea `#alasan-tolak` kosong → tombol submit dialog disabled (permintaan tidak terkirim); alasan diketik sebagai event keyboard sungguhan → tombol aktif (disabled=false) → klik submit: dialog tertutup, badge `Ditolak`, blok "ALASAN PENOLAKAN" menampilkan alasan persis sesuai yang diketik, timeline bertambah "Laporan ditolak". Konfirmasi database: `laporan.status = 'ditolak'` + `alasan_penolakan` tersimpan + timeline terakhir "Laporan ditolak". Guard: `POST .../reject` pada laporan yang sudah `ditolak` → **409**; alasan whitespace → **422**; tanpa token → **401**.
 
 **File utama:** `apps/web/src/features/moderasi/pages/DetailModerasiPage.jsx`, `apps/web/src/services/laporanService.js`
 
