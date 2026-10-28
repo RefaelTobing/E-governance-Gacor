@@ -53,10 +53,41 @@ export const RiwayatLaporanPage = () => {
   const countSelesai = reports.filter((r) => r.status === 'selesai').length;
   const countVerifikasi = reports.filter((r) => r.status === 'menunggu_verifikasi').length;
   const countDitolak = reports.filter((r) => r.status === 'ditolak').length;
+
+  // Satu daftar tab: label + jumlah. Warna sengaja tidak disimpan per tab
+  // karena isi tab adalah filter, bukan status.
+  const daftarTab = [
+    { key: 'semua', label: 'Semua', jumlah: countSemua },
+    { key: 'dalam_penanganan', label: 'Dalam Penanganan', jumlah: countPenanganan },
+    { key: 'selesai', label: 'Selesai', jumlah: countSelesai },
+    { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', jumlah: countVerifikasi },
+    { key: 'ditolak', label: 'Ditolak', jumlah: countDitolak },
+  ];
   const distinctSpaces = new Set(reports.map((r) => r.ruangPublikId || r.ruangPublikNama)).size;
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-4xl)' }}>
+      <style>{`
+        .riwayat-ruang {
+          display: grid;
+          grid-template-columns: clamp(240px, 30%, 400px) 1fr;
+          min-height: 180px;
+        }
+        /* FE-60 (dipakai juga di DaftarRuangPublikPage): blok foto mengisi
+           tinggi baris kartu, bukan kotak 1:1 yang memotong foto dan
+           menyisakan ruang kosong. Kembali 1:1 saat kartu menumpuk. */
+        .riwayat-ruang-foto {
+          position: relative;
+          width: 100%;
+          min-height: 100%;
+          overflow: hidden;
+        }
+        @media (max-width: 599px) {
+          .riwayat-ruang { grid-template-columns: 1fr; }
+          .riwayat-ruang-foto { aspect-ratio: 1 / 1; min-height: 0; }
+        }
+      `}</style>
+
       {/* HEADER SECTION */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
         <div>
@@ -81,95 +112,33 @@ export const RiwayatLaporanPage = () => {
 
       {/* STATUS TABS */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: 'var(--space-2xl)', flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('semua')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-pill)',
-            fontWeight: 600,
-            fontSize: '14px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: activeTab === 'semua' ? 'var(--color-primary)' : 'var(--color-surface)',
-            color: activeTab === 'semua' ? 'white' : 'var(--color-text-main)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          Semua ({countSemua})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('dalam_penanganan')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-pill)',
-            fontWeight: 600,
-            fontSize: '14px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: activeTab === 'dalam_penanganan' ? 'var(--color-accent)' : 'var(--color-surface)',
-            color: activeTab === 'dalam_penanganan' ? 'white' : 'var(--color-text-main)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          Dalam Penanganan ({countPenanganan})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('selesai')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-pill)',
-            fontWeight: 600,
-            fontSize: '14px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: activeTab === 'selesai' ? 'var(--color-success)' : 'var(--color-surface)',
-            color: activeTab === 'selesai' ? 'white' : 'var(--color-text-main)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          Selesai ({countSelesai})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('menunggu_verifikasi')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-pill)',
-            fontWeight: 600,
-            fontSize: '14px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: activeTab === 'menunggu_verifikasi' ? 'var(--color-info)' : 'var(--color-surface)',
-            color: activeTab === 'menunggu_verifikasi' ? 'white' : 'var(--color-text-main)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          Menunggu Verifikasi ({countVerifikasi})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('ditolak')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-pill)',
-            fontWeight: 600,
-            fontSize: '14px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: activeTab === 'ditolak' ? 'var(--color-danger)' : 'var(--color-surface)',
-            color: activeTab === 'ditolak' ? 'white' : 'var(--color-text-main)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          Ditolak ({countDitolak})
-        </button>
+        {daftarTab.map((tab) => {
+          const aktif = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              aria-pressed={aktif}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-pill)',
+                fontWeight: 600,
+                fontSize: '14px',
+                border: '1px solid transparent',
+                cursor: 'pointer',
+                // Tab aktif selalu warna primer. Isi tab adalah filter, bukan
+                // status, jadi mewarnainya per status (oranye/hijau/biru/merah)
+                // bikin lima tombol terlihat seperti lima kategori berbeda.
+                backgroundColor: aktif ? 'var(--color-primary)' : 'var(--color-surface)',
+                color: aktif ? 'var(--color-on-primary)' : 'var(--color-text-main)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              {tab.label} ({tab.jumlah})
+            </button>
+          );
+        })}
       </div>
 
       {/* REPORT LIST CARDS with Loading & Empty State */}
@@ -177,8 +146,10 @@ export const RiwayatLaporanPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {[1, 2].map((n) => (
             <Card key={`skeleton-report-${n}`}>
-              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '180px' }}>
-                <Skeleton height="100%" borderRadius="var(--radius-lg) 0 0 var(--radius-lg)" />
+              <div className="riwayat-ruang">
+                <div className="riwayat-ruang-foto">
+                  <Skeleton height="100%" borderRadius="0" style={{ display: 'block' }} />
+                </div>
                 <CardBody style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'var(--space-lg)', gap: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -238,19 +209,20 @@ export const RiwayatLaporanPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
           {filteredLaporan.map((item) => (
             <Card key={item.id} hoverable>
-              <div className="grid-split" style={{ display: 'grid', gridTemplateColumns: '240px 1fr' }}>
+              <div className="riwayat-ruang">
                 {item.foto ? (
                   <button
                     type="button"
                     onClick={() => setFotoDiperbesar({ src: item.foto, alt: item.fasilitasNama })}
                     aria-label={`Perbesar foto bukti ${item.fasilitasNama}`}
-                    style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}
+                    className="riwayat-ruang-foto"
+                    style={{ padding: 0, border: 'none', background: 'none', cursor: 'zoom-in' }}
                   >
                     <img src={item.foto} alt={item.fasilitasNama} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   </button>
                 ) : (
-                  <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', alignSelf: 'start', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span className="text-caption" style={{ color: 'var(--color-text-muted)' }}>Tidak ada foto bukti.</span>
+                  <div className="riwayat-ruang-foto" style={{ backgroundColor: 'var(--color-bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="text-caption" style={{ color: 'var(--color-text-muted)', padding: 'var(--space-sm)', textAlign: 'center' }}>Tidak ada foto bukti.</span>
                   </div>
                 )}
 

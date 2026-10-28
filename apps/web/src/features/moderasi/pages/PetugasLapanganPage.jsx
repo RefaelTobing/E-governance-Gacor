@@ -64,7 +64,7 @@ export const PetugasLapanganPage = () => {
                     <h3 className="h3" style={{ fontSize: '16px' }}>{p.nama}</h3>
                     <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="var(--color-text-muted)" /> Wilayah: {p.wilayah}</span>
                   </div>
-                  <span className="badge badge-success">● {p.status}</span>
+                  <span className="text-caption" style={{ fontWeight: 600 }}>{p.status}</span>
                 </div>
                 <div style={{ backgroundColor: 'var(--color-bg-main)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '13px' }}>
                   <div><strong>Jumlah Anggota:</strong> {p.anggota} Orang</div>

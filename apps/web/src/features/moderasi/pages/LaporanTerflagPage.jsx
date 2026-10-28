@@ -46,9 +46,9 @@ export const LaporanTerflagPage = () => {
           </p>
         </div>
 
-        <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
-          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>TOTAL DITANDAI</span>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
+        <div style={{ backgroundColor: 'var(--color-surface)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+          <span className="text-caption" style={{ fontWeight: 700 }}>TOTAL DITANDAI</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-main)' }}>
             {isLoading ? '...' : `${list.length} Laporan`}
           </div>
         </div>
@@ -103,12 +103,14 @@ export const LaporanTerflagPage = () => {
                         </span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{(row.jenisMasalah || '').split('/')[0]}</span>
+                        <span className="text-caption">{(row.jenisMasalah || '').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}><StatusBadge status={row.status} /></td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-danger" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        {/* Warna tetap ada di sini karena penandaan memang
+                            pengecualian, tapi tanpa pil: ikon + angka. */}
+                        <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-danger-text)', fontWeight: 600 }}>
                           <Flag size={12} /> {row.flagCount} Penanda
                         </span>
                       </td>

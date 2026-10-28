@@ -121,7 +121,7 @@ export const DashboardPage = () => {
           <CardBody>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
               <span className="text-caption" style={{ fontWeight: 700 }}>TOTAL LAPORAN</span>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-neutral-light)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ClipboardList size={18} />
               </div>
             </div>
@@ -129,57 +129,50 @@ export const DashboardPage = () => {
               {isLoading ? '...' : (stats?.totalLaporan ?? laporanList.length)}
             </div>
             <span className="text-caption">Laporan Terdata</span>
-            <div style={{ marginTop: '12px' }}>
-              <span className="badge badge-info">Seluruh RTH Aktif</span>
-            </div>
           </CardBody>
         </Card>
 
+        {/* Satu-satunya kartu berwarna: menunggu verifikasi adalah antrian yang
+            menuntut tindakan, sisanya cuma angka pasif. */}
         <Card>
           <CardBody>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-              <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-info)' }}>MENUNGGU VERIFIKASI</span>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-info-light)', color: 'var(--color-info)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-info-text)' }}>MENUNGGU VERIFIKASI</span>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-info-light)', color: 'var(--color-info-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Inbox size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-info)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-info-text)', marginBottom: '4px' }}>
               {isLoading ? '...' : (stats?.menungguVerifikasi ?? laporanList.filter(l => l.status === 'menunggu_verifikasi').length)}
             </div>
             <span className="text-caption">Laporan Baru</span>
-            <div style={{ marginTop: '12px' }}>
-              <span className="badge badge-info">Perlu Tinjauan Lapangan</span>
-            </div>
           </CardBody>
         </Card>
 
         <Card>
           <CardBody>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-              <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning)' }}>DALAM PENANGANAN</span>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-warning-light)', color: 'var(--color-warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="text-caption" style={{ fontWeight: 700 }}>DALAM PENANGANAN</span>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-neutral-light)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Wrench size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-warning)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '4px' }}>
               {isLoading ? '...' : (stats?.dalamPenanganan ?? laporanList.filter(l => l.status === 'dalam_penanganan').length)}
             </div>
             <span className="text-caption">Fasilitas Sedang Dikerjakan</span>
-            <div style={{ marginTop: '12px' }}>
-              <span className="badge badge-warning">Proses Perbaikan Fisik</span>
-            </div>
           </CardBody>
         </Card>
 
         <Card>
           <CardBody>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-              <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success)' }}>SELESAI</span>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-success-light)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="text-caption" style={{ fontWeight: 700 }}>SELESAI</span>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--color-neutral-light)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CheckCircle2 size={18} />
               </div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-success)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-main)', marginBottom: '4px' }}>
               {isLoading ? '...' : (stats?.selesai ?? laporanList.filter(l => l.status === 'selesai').length)}
             </div>
             <span className="text-caption">Fasilitas Normal Kembali</span>
@@ -196,10 +189,6 @@ export const DashboardPage = () => {
               <div>
                 <h3 className="h3" style={{ fontSize: '18px' }}>Peta Sebaran Ruang Publik</h3>
                 <p className="text-caption">Seluruh ruang terbuka terdata di Jakarta beserta lokasinya.</p>
-              </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <span className="badge badge-success">Terverifikasi</span>
-                <span className="badge badge-neutral">Terdaftar</span>
               </div>
             </div>
 
@@ -295,7 +284,7 @@ export const DashboardPage = () => {
                         <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
+                        <span className="text-caption">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}>

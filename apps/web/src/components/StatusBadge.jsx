@@ -43,7 +43,6 @@ export const StatusBadge = ({ status, customLabel, className = '' }) => {
 
   return (
     <span className={`badge badge-${badgeType} ${className}`.trim()}>
-      <span className="badge-dot"></span>
       {label}
     </span>
   );

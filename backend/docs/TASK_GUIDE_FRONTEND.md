@@ -658,14 +658,30 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 **Sudah dikerjakan:**
 
 1. Komponen kecil `TombolLikeFoto` (hati + angka) tampil pada foto galeri berlabel
-   "Dokumentasi Warga" (foto laporan tayang) — baik di thumbnail grid maupun baris
-   kontrol foto utama; foto resmi tidak punya tombol like (tanda visual sumber foto
-   sudah ada lewat label kamera FE-14).
+   "Dokumentasi Warga" (foto laporan tayang) — di pil bawah thumbnail grid dan
+   sebagai pil `ukuran="besar"` di dalam lightbox, sebaris dengan badge
+   "Dokumentasi Warga". Tombol like **tidak** lagi di baris kontrol galeri
+   (sebelumnya melayang di header, tidak jelas menempel ke foto mana). Foto resmi
+   tidak punya tombol like (tanda visual sumber foto sudah ada lewat label kamera
+   FE-14).
 2. `laporanService` + `likeFoto()` / `unlikeFoto()` (BE-58) dan mapping
    `like_count` -> `likeCount`, `liked_by_me` -> `likedByMe` di `transformLaporanResponse`.
 3. `handleLike`: update optimistis (angka berubah tanpa reload penuh, state
    `semuaLaporan` diupdate), sinkron dari jawaban server, rollback + pesan galat
    bila gagal. Tanpa login diarahkan ke `/login?redirect=...` (pola FE-37).
+   Pesan galat dirender di dalam lightbox, bukan lagi di header galeri, supaya
+   tidak tertutup overlay modal.
+
+**Revisi 2026-10-29 (lightbox):**
+
+- Pil like dipindah ke dalam lightbox, tepat di bawah gambar sebaris badge
+  "Dokumentasi Warga"; pil di bawah thumbnail tetap.
+- Panel lightbox diberi `height: auto` + `maxHeight: 90vh` lewat prop baru
+  `panelStyle` di `components/Modal.jsx` (default kosong, 5 pemakai modal lain
+  tidak berubah). Sebelumnya `.card` (`height: 100%`) memaksa panel setinggi
+  viewport sehingga menyisakan ruang kosong menganga di bawah footer.
+- Klik thumbnail tetap langsung membuka lightbox; tidak ada mode "pilih dulu"
+  maupun tombol perbesar tambahan.
 
 **Acceptance criteria:**
 
@@ -2439,9 +2455,21 @@ bukan ditambal di frontend.
 
 **Tambahan implementasi:** bila browser menolak Fullscreen API, tombol tidak lagi diam: peta masuk mode penuh berbasis CSS (`position: fixed; inset: 0`), dan Esc/klik "Keluar Full" mengeluarkannya. Ini yang membuat perilaku "peta memenuhi layar" tetap bisa diuji di lingkungan yang memblokir API.
 
-**Belum terverifikasi (perlu cek manual singkat):**
-- Jalur Fullscreen API asli di browser biasa (harness menolak dengan `TypeError: Permissions check failed` walau `document.fullscreenEnabled === true`).
-- Zoom/pan saat mode penuh: di harness ini klik kontrol zoom tidak mengubah level peta, bahkan di mode normal maupun setelah reload penuh (indikasi keterbatasan harness, bukan bukti bug aplikasi), dan uji drag terakhir gagal karena CDP timeout. Cek manual: saat mode penuh, zoom +/- dan geser peta harus jalan, lalu Esc keluar tanpa area abu-abu.
+**Bug yang ketemu & diperbaiki saat pengujian ini:** `RecenterMap` menerima prop `center` berupa array baru pada setiap render, sehingga `map.setView()` jalan terus dan menendang zoom/pan pengguna. Gejalanya: klik kontrol zoom tidak mengubah level peta walau event-nya sampai. Perbaikan: pusat dijadikan konstanta stabil (`PUSAT_JAKARTA`) dan efek recenter memakai dependensi nilai `lat`/`lng`, bukan identitas array.
+
+**Bukti zoom/pan (2026-10-27, satu sesi, viewport 800x600)** - dibaca dari atribut `data-zoom`/`data-center` yang ditulis komponen `PelaporStatusPeta` pada event `zoomend`/`moveend`:
+
+| Langkah | Hasil terukur |
+| --- | --- |
+| Muat dashboard | zoom 9, pusat -6.00982,106.73189, wrapper & peta 417x417, label "Lihat Full" |
+| Klik zoom-in | zoom 9 -> 10 |
+| Geser peta (drag 120 px) | pusat berubah ke -6.01151,106.89648 (pan jalan, tidak balik ke pusat Jakarta) |
+| Klik "Lihat Full" | wrapper & peta jadi 800x600 (sama dengan viewport), label "Keluar Full" |
+| Zoom-in saat mode penuh | zoom 10 -> 11 |
+| Geser peta saat mode penuh | pusat berubah 106.89707 -> 106.80094 |
+| Tekan Esc | kembali ke 417x417, label "Lihat Full", zoom & pusat dipertahankan |
+
+**Belum terverifikasi:** jalur Fullscreen API asli di browser biasa (harness menolak dengan `TypeError: Permissions check failed` walau `document.fullscreenEnabled === true`), jadi yang terbukti jalur fallback CSS-nya. Cek manual sekali: klik "Lihat Full" di Chrome/Firefox biasa, pastikan peta penuh layar dan Esc kembali normal.
 
 **Bukti runtime backend asli (2026-10-28)** - backend FastAPI `:8000` + database aktual (1.194 ruang publik, 1 dengan laporan aktif) + sesi admin nyata, diklik lewat Chrome headless CDP:
 

@@ -155,11 +155,15 @@ export const KelolaAdminPage = () => {
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><User size={13} color="var(--color-text-muted)" /> {admin.name}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{admin.email}</td>
-                      <td style={{ padding: '12px' }}><span className="badge badge-info">{admin.role}</span></td>
+                      <td style={{ padding: '12px' }}><span className="text-caption">{admin.role}</span></td>
                       <td style={{ padding: '12px' }}>
-                        <span className={`badge ${admin.is_active !== false ? 'badge-success' : 'badge-danger'}`}>
-                          {admin.is_active !== false ? 'Aktif' : 'Nonaktif'}
-                        </span>
+                        {/* "Aktif" adalah keadaan normal, jadi netral. Hanya
+                            akun nonaktif yang diberi warna. */}
+                        {admin.is_active !== false ? (
+                          <span className="text-caption">Aktif</span>
+                        ) : (
+                          <span className="badge badge-danger">Nonaktif</span>
+                        )}
                       </td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>

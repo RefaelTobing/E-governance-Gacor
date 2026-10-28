@@ -56,11 +56,17 @@ export const JAKARTA_CENTER = { lat: -6.2088, lng: 106.8456 };
 
 // Enum status laporan, satu sumber kanonik (DESIGN.md §4.4).
 // `key` harus persis sama dengan nilai status dari backend (snake_case).
+//
+// Aturan warna (minimal exception): warna hanya menandai pengecualian, bukan
+// setiap baris. Yang berwarna tinggal `menunggu_verifikasi` (biru, menunggu
+// tindakan petugas) dan `ditolak` (merah, gagal). `diverifikasi`,
+// `dalam_penanganan`, dan `selesai` dibiarkan netral supaya mata langsung
+// tertuju ke yang butuh perhatian.
 export const STATUS_LAPORAN = {
   MENUNGGU_VERIFIKASI: { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', badgeType: 'info' },
-  DIVERIFIKASI: { key: 'diverifikasi', label: 'Diverifikasi', badgeType: 'info' },
-  DALAM_PENANGANAN: { key: 'dalam_penanganan', label: 'Dalam Penanganan', badgeType: 'warning' },
-  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'success' },
+  DIVERIFIKASI: { key: 'diverifikasi', label: 'Diverifikasi', badgeType: 'neutral' },
+  DALAM_PENANGANAN: { key: 'dalam_penanganan', label: 'Dalam Penanganan', badgeType: 'neutral' },
+  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'neutral' },
   DITOLAK: { key: 'ditolak', label: 'Ditolak', badgeType: 'danger' },
 };
 

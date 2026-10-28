@@ -90,16 +90,31 @@ export const AntrianModerasiPage = () => {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
-        <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
-          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>PERLU TINDAKAN</span>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)', flexWrap: 'wrap' }}>
+        {/* Hanya "perlu tindakan" yang berwarna, dan hanya saat benar-benar ada
+            yang menunggu. Angka selesai tidak perlu sorotan. */}
+        <div
+          style={{
+            backgroundColor: perluTindakanCount > 0 ? 'var(--color-warning-light)' : 'var(--color-surface)',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <span className="text-caption" style={{ fontWeight: 700 }}>PERLU TINDAKAN</span>
+          <div
+            style={{
+              fontSize: '18px',
+              fontWeight: 800,
+              color: perluTindakanCount > 0 ? 'var(--color-warning-text)' : 'var(--color-text-main)',
+            }}
+          >
             {isLoading ? '...' : `${perluTindakanCount} Laporan`}
           </div>
         </div>
-        <div style={{ backgroundColor: 'var(--color-success-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-success)' }}>
-          <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-success-text)' }}>SELESAI PEKAN INI</span>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success-text)' }}>
+        <div style={{ backgroundColor: 'var(--color-surface)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+          <span className="text-caption" style={{ fontWeight: 700 }}>SELESAI PEKAN INI</span>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-main)' }}>
             {isLoading ? '...' : `${selesaiPekanIniCount} Fasilitas`}
           </div>
         </div>
@@ -180,7 +195,7 @@ export const AntrianModerasiPage = () => {
                         <MapPin size={12} color="var(--color-text-muted)" /> {row.ruangPublikNama}, <span className="text-caption">{row.wilayah}</span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        <span className="badge badge-neutral">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
+                        <span className="text-caption">{(row.jenisMasalah || 'Umum').split('/')[0]}</span>
                       </td>
                       <td style={{ padding: '12px' }}>{row.tanggal}</td>
                       <td style={{ padding: '12px' }}>

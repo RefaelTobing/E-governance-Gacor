@@ -183,16 +183,22 @@ export const KelolaFasilitasPage = () => {
                           </span>
                         </td>
                         <td style={{ padding: '14px 12px' }}>
-                          <span className="badge badge-info">{ruang.kategori}</span>
+                          <span className="text-caption">{ruang.kategori}</span>
                         </td>
                         <td style={{ padding: '14px 12px', minWidth: '220px' }}>
                           <span className="text-caption">{ruang.alamat || 'Alamat belum tersedia'}</span>
                         </td>
                         <td style={{ padding: '14px 12px' }}>{ruang.wilayah || '—'}</td>
                         <td style={{ padding: '14px 12px' }}>
-                          <span className={`badge ${jumlah === STANDAR_FASILITAS.length ? 'badge-success' : jumlah > 0 ? 'badge-warning' : 'badge-neutral'}`}>
-                            {jumlah}/{STANDAR_FASILITAS.length} tersedia
-                          </span>
+                          {/* Angka kelengkapan jadi sorotan hanya kalau belum
+                              lengkap; 12/12 cukup teks biasa. */}
+                          {jumlah === STANDAR_FASILITAS.length ? (
+                            <span className="text-caption">{jumlah}/{STANDAR_FASILITAS.length} tersedia</span>
+                          ) : (
+                            <span className="badge badge-warning">
+                              {jumlah}/{STANDAR_FASILITAS.length} tersedia
+                            </span>
+                          )}
                         </td>
                         <td style={{ padding: '14px 12px' }}>
                           {diedit.length > 0 ? (
@@ -200,7 +206,7 @@ export const KelolaFasilitasPage = () => {
                               {diedit.length} kolom diedit manual
                             </span>
                           ) : (
-                            <span className="badge badge-neutral">Sumber Satu Data</span>
+                            <span className="text-caption">Sumber Satu Data</span>
                           )}
                         </td>
                         <td style={{ padding: '14px 12px', textAlign: 'right' }}>

@@ -413,19 +413,21 @@ h3, .h3 {
   width: 100%;
 }
 
-/* Badges */
+/* Badges: satu informasi, satu sinyal. Latar tipis + teks berwarna, tanpa
+   border warna, tanpa shadow, tanpa titik. Border tetap 1px transparan supaya
+   tinggi antar varian tidak bergeser. */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 11px;
   font-weight: 600;
   padding: 3px 9px;
   border-radius: var(--radius-pill);
   line-height: 1.2;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  background-color: var(--color-neutral-light);
+  color: var(--color-neutral-text);
+  border: 1px solid transparent;
 }
 
 .badge-dot {
@@ -439,7 +441,6 @@ h3, .h3 {
 .badge-success {
   background-color: var(--color-success-light);
   color: var(--color-success-text);
-  border-color: var(--color-success);
 }
 
 .badge-success .badge-dot {
@@ -449,7 +450,6 @@ h3, .h3 {
 .badge-warning {
   background-color: var(--color-warning-light);
   color: var(--color-warning-text);
-  border-color: var(--color-warning);
 }
 
 .badge-warning .badge-dot {
@@ -459,7 +459,6 @@ h3, .h3 {
 .badge-danger {
   background-color: var(--color-danger-light);
   color: var(--color-danger-text);
-  border-color: var(--color-danger);
 }
 
 .badge-danger .badge-dot {
@@ -469,7 +468,6 @@ h3, .h3 {
 .badge-info {
   background-color: var(--color-info-light);
   color: var(--color-info-text);
-  border-color: var(--color-info);
 }
 
 .badge-info .badge-dot {
@@ -479,7 +477,6 @@ h3, .h3 {
 .badge-neutral {
   background-color: var(--color-neutral-light);
   color: var(--color-neutral-text);
-  border-color: var(--color-border);
 }
 
 .badge-neutral .badge-dot {

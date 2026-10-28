@@ -55,30 +55,35 @@ const GAYA_TOMBOL_PANAH = {
 
 // Tombol like foto laporan warga di galeri (FE-44/BE-58). Tampil hanya pada
 // foto "Dokumentasi Warga"; keadaan aktif ditandai hati terisi + warna primer.
-const TombolLikeFoto = ({ likeCount = 0, likedByMe = false, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    aria-pressed={likedByMe}
-    aria-label={likedByMe ? 'Batal menyukai foto ini' : 'Sukai foto ini'}
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '4px',
-      padding: '2px 8px',
-      borderRadius: 'var(--radius-pill)',
-      border: `1px solid ${likedByMe ? 'var(--color-primary)' : 'var(--color-border)'}`,
-      backgroundColor: likedByMe ? 'var(--color-primary-light)' : 'var(--color-surface)',
-      color: likedByMe ? 'var(--color-primary)' : 'var(--color-text-muted)',
-      fontSize: '11px',
-      lineHeight: 1.4,
-      cursor: 'pointer',
-    }}
-  >
-    <Heart size={12} fill={likedByMe ? 'currentColor' : 'none'} />
-    {likeCount}
-  </button>
-);
+// `ukuran="besar"` dipakai di lightbox agar pil tetap sebanding dengan gambar
+// besar di atasnya.
+const TombolLikeFoto = ({ likeCount = 0, likedByMe = false, onClick, ukuran = 'kecil' }) => {
+  const besar = ukuran === 'besar';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={likedByMe}
+      aria-label={likedByMe ? 'Batal menyukai foto ini' : 'Sukai foto ini'}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: besar ? '6px' : '4px',
+        padding: besar ? '6px 14px' : '2px 8px',
+        borderRadius: 'var(--radius-pill)',
+        border: `1px solid ${likedByMe ? 'var(--color-primary)' : 'var(--color-border)'}`,
+        backgroundColor: likedByMe ? 'var(--color-primary-light)' : 'var(--color-surface)',
+        color: likedByMe ? 'var(--color-primary)' : 'var(--color-text-muted)',
+        fontSize: besar ? '13px' : '11px',
+        lineHeight: 1.4,
+        cursor: 'pointer',
+      }}
+    >
+      <Heart size={besar ? 16 : 12} fill={likedByMe ? 'currentColor' : 'none'} />
+      {likeCount}
+    </button>
+  );
+};
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -879,19 +884,9 @@ export const DetailRuangPublikPage = () => {
                 </div>
               )}
               <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
-              {/* FE-44: like untuk foto warga yang sedang dipilih di galeri. */}
-              {Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]) && (
-                <TombolLikeFoto
-                  likeCount={laporanDariFoto[galeriFoto[fotoTerpilih]]?.likeCount ?? 0}
-                  likedByMe={Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]?.likedByMe)}
-                  onClick={() => handleLike(galeriFoto[fotoTerpilih])}
-                />
-              )}
-              {likeError && (
-                <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-danger-text)' }}>
-                  <AlertTriangle size={12} /> {likeError}
-                </span>
-              )}
+              {/* FE-44: like tidak lagi di baris kontrol galeri. Aksi like menempel
+                  pada fotonya (pil di bawah thumbnail + pil di dalam lightbox),
+                  supaya jelas foto mana yang disukai. */}
               <Button
                 variant="outline"
                 size="sm"
@@ -1084,6 +1079,7 @@ export const DetailRuangPublikPage = () => {
         open={lightboxTerbuka}
         onClose={() => setLightboxTerbuka(false)}
         maxWidth="760px"
+        panelStyle={{ height: 'auto', maxHeight: '90vh', overflowY: 'auto' }}
         title={lightboxTerbuka ? `Foto ${fotoTerpilih + 1} dari ${galeriFoto.length} · ${detail.nama}` : ''}
         footer={
           <>
@@ -1119,8 +1115,23 @@ export const DetailRuangPublikPage = () => {
               style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
             />
             {fotoWargaSet.has(galeriFoto[fotoTerpilih]) && (
-              <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Camera size={12} /> Dokumentasi Warga
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
+                <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Camera size={12} /> Dokumentasi Warga
+                </span>
+                {/* FE-44: like tepat di bawah foto yang sedang dibuka, sebaris
+                    dengan badge sumbernya. */}
+                <TombolLikeFoto
+                  likeCount={laporanDariFoto[galeriFoto[fotoTerpilih]]?.likeCount ?? 0}
+                  likedByMe={Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]?.likedByMe)}
+                  onClick={() => handleLike(galeriFoto[fotoTerpilih])}
+                  ukuran="besar"
+                />
+              </div>
+            )}
+            {likeError && (
+              <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-danger-text)' }}>
+                <AlertTriangle size={12} /> {likeError}
               </span>
             )}
           </div>

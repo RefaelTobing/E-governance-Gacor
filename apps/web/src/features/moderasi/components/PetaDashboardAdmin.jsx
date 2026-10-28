@@ -25,6 +25,10 @@ L.Icon.Default.mergeOptions({
 
 const DEFAULT_ZOOM = 11;
 
+// Identitas objek pusat harus stabil: kalau dibuat ulang tiap render, efek
+// RecenterMap jalan terus dan `setView` menendang pan/zoom pengguna.
+const PUSAT_JAKARTA = { lat: JAKARTA_CENTER.lat, lng: JAKARTA_CENTER.lng };
+
 // FE-66: status yang dianggap "laporan aktif" untuk pewarnaan pin.
 const STATUS_AKTIF = ['menunggu_verifikasi', 'diverifikasi', 'dalam_penanganan'];
 const WARNA_PIN_NORMAL = '#16A34A'; // hijau: belum ada laporan aktif
@@ -76,10 +80,11 @@ const createClusterCustomIcon = (cluster) => {
 
 const RecenterMap = ({ center }) => {
   const map = useMap();
+  const { lat, lng } = center;
 
   useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
+    map.setView([lat, lng], map.getZoom());
+  }, [lat, lng, map]);
 
   return null;
 };
@@ -92,6 +97,28 @@ const FitMapBounds = ({ locations }) => {
     const bounds = L.latLngBounds(locations.map((item) => [item.latitude, item.longitude]));
     map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
   }, [locations, map]);
+
+  return null;
+};
+
+// Alat ukur/debug: menuliskan zoom & pusat peta ke atribut data-* kontainer,
+// supaya perilaku zoom/pan bisa diperiksa tanpa membongkar instance Leaflet.
+const PelaporStatusPeta = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const elemen = map.getContainer();
+
+    const tulis = () => {
+      elemen.dataset.zoom = String(map.getZoom());
+      const pusat = map.getCenter();
+      elemen.dataset.center = `${pusat.lat.toFixed(5)},${pusat.lng.toFixed(5)}`;
+    };
+
+    tulis();
+    map.on('zoomend moveend', tulis);
+    return () => map.off('zoomend moveend', tulis);
+  }, [map]);
 
   return null;
 };
@@ -277,7 +304,8 @@ const PetaDashboardAdmin = () => {
         style={{ height: '100%', width: '100%', zIndex: 0 }}
         scrollWheelZoom={false}
       >
-        <RecenterMap center={[JAKARTA_CENTER.lat, JAKARTA_CENTER.lng]} />
+        <RecenterMap center={PUSAT_JAKARTA} />
+        <PelaporStatusPeta />
         <FitMapBounds locations={locations} />
         <SesuaikanUkuranPeta pemicu={penuh} />
         <TileLayer

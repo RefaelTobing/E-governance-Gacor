@@ -8,6 +8,8 @@ import React, { useEffect, useRef } from 'react';
  *   elemen interaktif pertama di dalam panel saat dibuka.
  * - `title` opsional (dirender sebagai heading dengan id untuk `aria-labelledby`).
  * - `footer` opsional (mis. deretan tombol aksi).
+ * - `panelStyle` opsional untuk menimpa gaya panel per pemakaian (mis. lightbox
+ *   galeri yang perlu `height: auto` agar tidak setinggi viewport).
  */
 export const Modal = ({
   open = false,
@@ -17,6 +19,7 @@ export const Modal = ({
   footer,
   labelledBy = 'modal-title',
   maxWidth = '440px',
+  panelStyle,
 }) => {
   const panelRef = useRef(null);
 
@@ -71,6 +74,7 @@ export const Modal = ({
           maxWidth,
           padding: 'var(--space-xl)',
           boxShadow: 'var(--shadow-lg)',
+          ...panelStyle,
         }}
       >
         {title && (
