@@ -329,7 +329,7 @@ Ringkasan status:
 | FE-63 | ✅ | Tombol Lihat Semua di galeri dan partisipasi warga | Galeri: membuka lightbox pada foto terpilih. Partisipasi: ke `/laporan-saya`. Keduanya hanya tampil bila section berisi. Revisi Gambar 6. |
 | FE-64 | ✅ | Hero Beranda: overlay lebih terang dan judul warna solid | Overlay 0.60/0.70/0.88 -> 0.22/0.32/0.50 + pita scrim area teks; gradien judul dihapus, judul putih solid. Kontras terukur 5.77:1, luminance hero naik. Revisi Gambar 7. |
 | FE-65 | ✅ | Bersihkan header admin dan tangani sesi kedaluwarsa | Badge "● Petugas Operasional" dihapus, role sidebar pakai role asli, interceptor 401 membersihkan sesi + mengarahkan ke login dengan pesan Indonesia. Revisi Gambar 8 & 9. |
-| FE-66 | ⚠️ | Peta admin: tombol fullscreen dan pin warna status | Pin hijau/kuning per status laporan aktif + legenda, tombol "Lihat Full" dengan `invalidateSize`. Perilaku fullscreen visual belum terverifikasi di harness (izin ditolak). Revisi Gambar 10 & 11. |
+| FE-66 | ✅ | Peta admin: tombol fullscreen dan pin warna status | Pin hijau/kuning per status laporan aktif + legenda, tombol "Lihat Full" dengan `invalidateSize`. Terverifikasi backend asli (2026-10-28): legenda cocok DB, mode penuh = viewport, zoom 9→10→9, drag jalan, Esc keluar tanpa area abu-abu. Revisi Gambar 10 & 11. |
 
 ### FE-34. Tambah kolom alamat pada halaman Kelola Fasilitas (Admin)
 
@@ -648,24 +648,46 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 
 ---
 
-### FE-44. Tombol like foto di galeri ruang publik (rencana)
+### FE-44. Tombol like foto di galeri ruang publik
 
-**Status:** ❌ (rencana, menunggu backend BE-58)
+**Status:** ✅ (selesai 2026-10-28; BE-58 ikut dikerjakan sebagai pendukung)
 
-**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`
+**File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`,
+`apps/web/src/services/laporanService.js`
 
-**Pekerjaan:**
+**Sudah dikerjakan:**
 
-1. Tampilkan tombol like + `like_count` pada tiap foto di galeri (`detail.foto`).
-2. Panggil endpoint like/unlike (BE-58) saat diklik; pengunjung tanpa login diarahkan
-   untuk masuk lebih dulu.
-3. Tandai visual foto yang berasal dari laporan warga yang sudah dipromosikan ke galeri.
+1. Komponen kecil `TombolLikeFoto` (hati + angka) tampil pada foto galeri berlabel
+   "Dokumentasi Warga" (foto laporan tayang) — baik di thumbnail grid maupun baris
+   kontrol foto utama; foto resmi tidak punya tombol like (tanda visual sumber foto
+   sudah ada lewat label kamera FE-14).
+2. `laporanService` + `likeFoto()` / `unlikeFoto()` (BE-58) dan mapping
+   `like_count` -> `likeCount`, `liked_by_me` -> `likedByMe` di `transformLaporanResponse`.
+3. `handleLike`: update optimistis (angka berubah tanpa reload penuh, state
+   `semuaLaporan` diupdate), sinkron dari jawaban server, rollback + pesan galat
+   bila gagal. Tanpa login diarahkan ke `/login?redirect=...` (pola FE-37).
 
 **Acceptance criteria:**
 
-- Pengguna login bisa like/unlike; jumlah berubah tanpa reload penuh.
-- Pengunjung tanpa login tidak bisa like (diarahkan ke halaman masuk).
-- Foto laporan dengan like di atas ambang ikut tampil di galeri ruang publik.
+- Pengguna login bisa like/unlike; jumlah berubah tanpa reload penuh. ✅
+- Pengunjung tanpa login tidak bisa like (diarahkan ke halaman masuk). ✅
+  (route detail juga `protected: true`, jadi guest memang diarahkan login sejak awal)
+- Foto laporan dengan like di atas ambang ikut tampil di galeri. ✅
+  (semua foto laporan tayang sudah tampil di galeri; like terbanyak kini menentukan
+  foto utama — lihat catatan BE-58)
+
+**Bukti verifikasi runtime (2026-10-28, backend asli :8000 + FE dev :5173 via CDP):**
+
+- Guest membuka detail RP -> langsung diarahkan ke `/login?redirect=%2Fruang-publik%2F...`.
+- Login warga via form (akun uji terdaftar) -> kembali ke halaman detail.
+- Tombol like ada, label "Dokumentasi Warga" ada, angka awal `0`.
+- Klik like -> angka jadi `1`, `aria-pressed="true"`, penanda `window.__UJI_FE44` tetap
+  utuh (bukti tanpa reload penuh); klik lagi -> angka kembali `0`.
+- Like ulang -> persisten: `like_count=1` di `GET /public-spaces/{id}/reports` dan tetap
+  `1` + `aria-pressed="true"` setelah reload penuh.
+- Endpoint dites langsung: 401 tanpa token, 404 id tak dikenal, 409 like ganda,
+  400 laporan tanpa foto, `liked_by_me` null/false/true sesuai token.
+- Fixture uji (laporan `[uji-fe44-*]` + akun uji) dihapus setelah verifikasi.
 
 ---
 
@@ -2401,7 +2423,7 @@ bukan ditambal di frontend.
 
 ### FE-66. Peta admin: tombol fullscreen dan pin warna status laporan
 
-**Status:** ⚠️ (pin & legenda terverifikasi; perilaku fullscreen belum bisa diuji di harness)
+**Status:** ✅ (pin, legenda, fullscreen fallback, zoom/pan, dan Esc — semuanya terverifikasi; jalur Fullscreen API asli tetap tidak teruji karena browser headless menolak `requestFullscreen`)
 
 **Bukti runtime (2026-10-27)** - dev server `:5174` + mock `:8001`, dashboard admin:
 
@@ -2420,6 +2442,20 @@ bukan ditambal di frontend.
 **Belum terverifikasi (perlu cek manual singkat):**
 - Jalur Fullscreen API asli di browser biasa (harness menolak dengan `TypeError: Permissions check failed` walau `document.fullscreenEnabled === true`).
 - Zoom/pan saat mode penuh: di harness ini klik kontrol zoom tidak mengubah level peta, bahkan di mode normal maupun setelah reload penuh (indikasi keterbatasan harness, bukan bukti bug aplikasi), dan uji drag terakhir gagal karena CDP timeout. Cek manual: saat mode penuh, zoom +/- dan geser peta harus jalan, lalu Esc keluar tanpa area abu-abu.
+
+**Bukti runtime backend asli (2026-10-28)** - backend FastAPI `:8000` + database aktual (1.194 ruang publik, 1 dengan laporan aktif) + sesi admin nyata, diklik lewat Chrome headless CDP:
+
+| Skenario | Hasil terukur |
+| --- | --- |
+| Legenda vs database | UI "Tanpa laporan aktif (1193)" + "Ada laporan aktif (1)"; DB: `COUNT(DISTINCT ruang_publik_id)` laporan aktif = 1, total ruang publik 1.194. **Cocok persis.** |
+| Peta sebelum fullscreen | kontainer 416,5x416,5 px, persegi (`aspect-ratio: 1/1`) |
+| Klik "Lihat Full" | Fullscreen API tetap ditolak headless (`document.fullscreenElement` tetap null) → fallback CSS otomatis: wrapper `position: fixed` berukuran **1280x813 = viewport penuh**, label "Keluar Full", `.leaflet-container` = wrapper (tanpa celah abu-abu) |
+| Zoom saat mode penuh | level tile OSM 9 → 10 (klik `+`) → 9 (klik `-`). Zoom keluar-masuk bekerja |
+| Drag saat mode penuh | transform `.leaflet-map-pane` berubah `translate3d(390px,127px,0)` → `translate3d(1030px,457px,0)` — pan jalan |
+| Esc keluar | label kembali "Lihat Full", wrapper kembali persegi 417x417, kontainer peta = wrapper (tanpa area abu-abu), `document.fullscreenElement` null |
+| Error konsol | hanya `favicon.ico` 404 (artefak dev server, bukan kode aplikasi) |
+
+Kesimpulan: seluruh acceptance criteria FE-66 terverifikasi di jalur fallback CSS; satu-satunya yang tetap tidak bisa diuji harness adalah pemanggilan Fullscreen API asli (browser headless menolak) - jalur kodenya sendiri sudah terbukti lewat uji stub 2026-10-27.
 
 **File utama:** `apps/web/src/features/moderasi/components/PetaDashboardAdmin.jsx`
 
@@ -2488,7 +2524,7 @@ bukan ditambal di frontend.
 - **FE-61** — Carousel foto di pratinjau Peta Akses (sinkron dengan galeri)
 - **FE-62** — Batas 3 item + "Tampilkan Semua" pada fasilitas & laporan
 - **FE-63** — Tombol "Lihat Semua" di galeri & partisipasi warga
-- **FE-66** — Peta admin: pin warna status + legenda (fullscreen: wiring saja, perlu cek manual)
+- **FE-66** — Peta admin: pin warna status + legenda + fullscreen (terverifikasi di backend asli, 2026-10-28)
 
 ### Prioritas Berikutnya
 
@@ -2497,7 +2533,7 @@ bukan ditambal di frontend.
 3. **FE-25A** — Tombol Setujui integrasi BE-29 (selesai)
 4. **FE-15** — Integrasi OSRM routing (selesai)
 5. **FE-21** dan **FE-26** — Fitur flag laporan (selesai)
-6. **FE-44** — Tombol like foto galeri (menunggu BE-58)
+6. **FE-44** — Tombol like foto galeri (selesai, BE-58 ikut dikerjakan; terverifikasi di backend asli, 2026-10-28)
 7. **FE-45** — Zoom pinch trackpad di peta (selesai, terverifikasi di tiga peta)
 8. **FE-46** — Foto ruang publik jadi kotak, hapus teks di atas foto (selesai)
 9. **FE-47** — Tombol panah kiri-kanan pada galeri foto (selesai)
@@ -2519,7 +2555,7 @@ bukan ditambal di frontend.
 25. **FE-63** — Tombol Lihat Semua di galeri dan partisipasi warga (selesai)
 26. **FE-64** — Hero Beranda: overlay lebih terang dan judul warna solid (selesai)
 27. **FE-65** — Bersihkan header admin dan tangani sesi kedaluwarsa (selesai)
-28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (⚠️ pin/legenda + mode penuh CSS selesai; zoom & Fullscreen API perlu cek manual)
+28. **FE-66** — Peta admin: tombol fullscreen dan pin warna status (selesai, terverifikasi backend asli 2026-10-28: legenda=DB, fallback CSS penuh, zoom 9→10→9, drag jalan, Esc keluar tanpa area abu-abu)
 
 ---
 

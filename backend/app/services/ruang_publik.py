@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, contains_eager, joinedload, selectinload
 
 from app.models.base import utcnow
 from app.models.fasilitas import Fasilitas
+from app.models.foto_like import FotoLike
 from app.models.laporan import Laporan
 from app.models.ruang_publik import RuangPublik
 from app.models.ruang_publik_foto import RuangPublikFoto
@@ -242,24 +243,29 @@ def urutan_foto_utama(db: Session, ruang_publik_id: str) -> list[str]:
     menang; bila tak ada foto laporan ber-like, jatuh ke foto resmi terlama; lalu
     `image_url` lama. Urutan di sini = urutan prioritas, jadi pemanggil tinggal
     ambil elemen pertama yang ada.
-
-    Fitur like (BE-58) belum ada, jadi bagian "like terbanyak" belum mengubah
-    urutan: saat ini yang menentukan hanya ada/tidaknya foto. Ketika tabel
-    `foto_like` dibuat, cukup ubah query laporan di bawah agar mengurutkan
-    `like_count` menurun lebih dulu.
     """
     hasil: list[str] = []
 
-    # 1. Foto laporan tayang, terbaru dulu (nanti: urut like terbanyak lalu terbaru).
+    # 1. Foto laporan tayang: like terbanyak dulu (BE-58), lalu terbaru.
+    jumlah_like = (
+        select(FotoLike.laporan_id, func.count(FotoLike.id).label("jumlah"))
+        .group_by(FotoLike.laporan_id)
+        .subquery()
+    )
     laporan_stmt = (
         select(Laporan.foto_url)
+        .outerjoin(jumlah_like, jumlah_like.c.laporan_id == Laporan.id)
         .where(
             Laporan.ruang_publik_id == ruang_publik_id,
             Laporan.status.in_(STATUS_TAYANG),
             Laporan.foto_url.isnot(None),
             Laporan.foto_url != "",
         )
-        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
+        .order_by(
+            func.coalesce(jumlah_like.c.jumlah, 0).desc(),
+            Laporan.created_at.desc(),
+            Laporan.id.asc(),
+        )
     )
     hasil.extend(db.scalars(laporan_stmt).all())
 
@@ -281,10 +287,10 @@ def urutan_foto_utama(db: Session, ruang_publik_id: str) -> list[str]:
 def foto_utama(db: Session, ruang_publik: RuangPublik) -> Optional[str]:
     """Foto utama satu ruang publik: prioritas pertama dari `urutan_foto_utama`.
 
-    Bila ada beberapa foto, aturannya: foto dengan like user terbanyak menang;
-    kalau tidak ada foto ber-like, ambil foto pertama yang tersedia. Karena
-    like belum ada (BE-58), saat ini hasilnya foto pertama menurut urutan
-    prioritas (laporan tayang terbaru -> foto resmi terlama -> image_url).
+    Bila ada beberapa foto, aturannya: foto laporan dengan like user terbanyak
+    menang (BE-58); kalau tidak ada foto ber-like, ambil foto pertama yang
+    tersedia menurut urutan prioritas (laporan tayang terbaru -> foto resmi
+    terlama -> image_url).
     """
     kandidat = urutan_foto_utama(db, ruang_publik.id)
     return kandidat[0] if kandidat else None

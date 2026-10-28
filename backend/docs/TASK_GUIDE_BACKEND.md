@@ -669,22 +669,29 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
     Aturan: foto laporan dengan like terbanyak menang -> bila tak ada, foto resmi terlama -> `image_url`
     lama. Helper `foto_utama` / `foto_utama_per_ruang_publik` (batch, bebas N+1) di
     `app/services/ruang_publik.py`; `RuangPublikListResponse` dapat field `image_url`. Bagian
-    "like terbanyak" menyala penuh saat BE-58 (tabel `foto_like`) selesai. FE memetakan
+    "like terbanyak" kini aktif penuh lewat BE-58. FE memetakan
     `image_url` -> `image` lewat `assetUrl` di `apps/web/src/services/ruangPublikService.js`.
 
-- [ ] **[BE-58]** Fitur **like** foto user + promosi ke galeri ruang publik (rencana, belum dikerjakan).
-      Konsep: pengguna login bisa menyukai foto (foto resmi scraping maupun foto laporan warga);
-      foto dengan jumlah like melewati ambang tertentu dipromosikan muncul di galeri ruang publik
-      (mis. ikut `gabung_foto` dan/atau tampil lebih dulu).
-  - **Model/tabel baru:** `foto_like` (`id`, `foto_ref_type` [resmi/laporan], `foto_ref_id`, `user_id`,
-    `created_at`; unique `(foto_ref_type, foto_ref_id, user_id)`).
-  - **Endpoint:** `POST` / `DELETE` like (login), sertakan `like_count` pada galeri
-    `GET /public-spaces/{id}`.
-  - **Promosi:** perluas `gabung_foto()` (`app/services/ruang_publik.py`) agar foto laporan user dengan
-    `like_count >= ambang` masuk galeri; ambang di `.env` (mis. `FOTO_LIKE_THRESHOLD`).
-  - **Verifikasi:** like/unlike idempoten & satu per user; foto laporan yang melewati ambang tampil di
-    `GET /public-spaces/{id}`; `like_count` konsisten di daftar & detail.
-  - **Dibutuhkan:** task FE terkait (lihat `TASK_GUIDE_FRONTEND.md`).
+- [x] **[BE-58]** Fitur **like** foto laporan warga (selesai 2026-10-28).
+      Pengguna login bisa menyukai foto laporan tayang (foto "Dokumentasi Warga" di galeri);
+      foto dengan like terbanyak menjadi prioritas foto utama (menyala penuh bagian BE-57).
+  - **Model/tabel baru:** `foto_like` (`id`, `laporan_id`, `user_id`, `created_at`;
+    unique `(laporan_id, user_id)` — satu like per pengguna per foto).
+    Migration `b7e8c9d0a112_tabel_foto_like_be58.py` di atas head `05c54b098320`.
+  - **Endpoint:** `POST /api/v1/reports/{id}/like` (201; 409 bila sudah like),
+    `DELETE /api/v1/reports/{id}/like` (200; 404 bila belum like) — wajib login.
+    Hanya laporan tayang berfoto yang bisa dilike (400 selainnya).
+  - **Galeri:** `GET /public-spaces/{id}/reports` kini mengirim `like_count` + `liked_by_me`
+    (opsional-token: `liked_by_me` `null` tanpa Authorization). Batch 2 query, bebas N+1.
+  - **Foto utama:** `urutan_foto_utama` mengurutkan foto laporan ber-like terbanyak dulu
+    (outer-join agregat `foto_like`), lalu terbaru.
+  - **Penyimpangan dari rencana awal:** like hanya menempel pada foto laporan (bukan foto
+    resmi scraping) dan tidak pakai kolom `foto_ref_type`; promosi "ambang" tidak perlu
+    karena semua foto laporan tayang sudah ikut galeri — peran ambang digantikan urutan
+    like terbanyak untuk foto utama.
+  - **Verifikasi (2026-10-28, backend asli :8000):** 401 tanpa token; 404 id tak dikenal;
+    409 like ganda; siklus like→count 1→unlike→count 0; `liked_by_me` `null`/`false`/`true`
+    sesuai token; E2E UI (lihat FE-44 di `TASK_GUIDE_FRONTEND.md`).
 
 ---
 

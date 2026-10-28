@@ -33,6 +33,9 @@ const transformLaporanResponse = (raw) => {
     alasanPenolakan: raw.alasan_penolakan,
     // Jumlah pelapor berbeda yang menandai (hanya terisi di endpoint flagged, BE-31).
     flagCount: raw.flag_count ?? 0,
+    // Like foto laporan (BE-58): diisi endpoint daftar/detail laporan tayang.
+    likeCount: raw.like_count ?? 0,
+    likedByMe: raw.liked_by_me ?? false,
     // Field turunan dari relasi (disediakan backend pada response laporan)
     ruangPublikNama: raw.ruang_publik_nama,
     fasilitasNama: raw.fasilitas_nama,
@@ -188,6 +191,28 @@ export const getFlaggedReports = async (params = {}) => {
  */
 export const flagReport = async (id) => {
   return await api.post(`/api/v1/reports/${id}/flag`);
+};
+
+/**
+ * Like foto laporan tayang (BE-58, tombol galeri FE-44).
+ * Wajib login; satu like per pengguna (409 bila sudah menyukai).
+ *
+ * @param {string} id
+ * @returns {Promise<{laporan_id: string, like_count: number, liked_by_me: boolean}>}
+ */
+export const likeFoto = async (id) => {
+  return await api.post(`/api/v1/reports/${id}/like`);
+};
+
+/**
+ * Batal like foto laporan tayang (BE-58).
+ * Belum pernah like -> 404.
+ *
+ * @param {string} id
+ * @returns {Promise<{laporan_id: string, like_count: number, liked_by_me: boolean}>}
+ */
+export const unlikeFoto = async (id) => {
+  return await api.delete(`/api/v1/reports/${id}/like`);
 };
 
 /**

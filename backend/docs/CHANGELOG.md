@@ -21,6 +21,10 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 - Pekerjaan yang bukan task kode (dokumen, konfigurasi) memakai label **Dokumen** / **Chore**.
 - Isi ringkas: satu baris per task. Detail teknis cukup di task guide dan commit message.
 
+## 2026-10-28
+
+- **[BE-58]** Like foto laporan warga - tabel `foto_like` (migration `b7e8c9d0a112`, unique per user/laporan), endpoint `POST`/`DELETE /api/v1/reports/{id}/like` (login; 409 ganda, 404 belum like, 400 laporan tak tayang/tanpa foto), `like_count` + `liked_by_me` (opsional-token) di `GET /public-spaces/{id}/reports` (batch, bebas N+1), dan `urutan_foto_utama` kini mengurutkan foto laporan ber-like terbanyak (menyala penuh bagian like BE-57). Verifikasi: smoke 401/404/409/400 sesuai; E2E UI via CDP di FE-44 like/unlike, count 0→1→0→1 tanpa reload, persisten setelah reload; fixture uji dihapus.
+
 ## 2026-10-27
 
 - **[BE-37]** Unit test pytest menyeluruh - konsolidasi dan verifikasi penuh 16 berkas test unit di `tests/unit/` mencakup 5 modul inti: Public Space (radius Haversine, filter, jam operasional, galeri foto), Report (submit, EXIF GPS, anti fake-GPS, rate-limit, mine, WebP upload), Moderation (antrian, approve, reject + alasan, flag, enum status), Data Master (list master admin, patch manual field_source, kategori, ETL sync/log), serta Auth & Guard (login admin, logout token blacklist, route guard admin). Verifikasi: `pytest tests/unit -q` **193 passed**, 0 failed.

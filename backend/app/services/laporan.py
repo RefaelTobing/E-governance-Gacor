@@ -12,10 +12,12 @@ from app.core.utils import haversine_km
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.laporan_flag import LaporanFlag
+from app.models.foto_like import FotoLike
 from app.models.ruang_publik import RuangPublik
 from app.schemas.laporan import (
     LaporanCreate,
     LaporanFlagResponse,
+    LaporanLikeResponse,
     LaporanUpdate,
     STATUS_TAYANG,
 )
@@ -301,7 +303,8 @@ def reject_report(db: Session, laporan_id: str, alasan: str) -> Optional[Laporan
     return db_laporan
 
 def get_reports_by_ruang_publik(
-    db: Session, ruang_publik_id: str, skip: int = 0, limit: int = 100
+    db: Session, ruang_publik_id: str, skip: int = 0, limit: int = 100,
+    user_id: Optional[str] = None,
 ) -> list[Laporan]:
     stmt = (
         select(Laporan)
@@ -317,7 +320,10 @@ def get_reports_by_ruang_publik(
         .offset(skip)
         .limit(limit)
     )
-    return list(db.scalars(stmt).unique().all())
+    hasil = list(db.scalars(stmt).unique().all())
+    # BE-58: like_count + liked_by_me (bila pemanggil login) untuk tombol like galeri (FE-44).
+    _isi_agregat_like(db, hasil, user_id)
+    return hasil
 
 def get_dashboard_stats(db: Session) -> dict:
     total = db.query(Laporan).count()
@@ -445,3 +451,113 @@ def flag_laporan(db: Session, laporan_id: str, user_id: str) -> LaporanFlagRespo
         .scalar()
     )
     return LaporanFlagResponse(laporan_id=laporan_id, flag_count=int(jumlah or 0))
+
+
+def _isi_agregat_like(
+    db: Session, laporan_list: list[Laporan], user_id: Optional[str]
+) -> None:
+    """Isi `like_count` (dan `liked_by_me` bila pemanggil login) pada daftar
+    laporan secara batch (BE-58): dua query untuk seluruh daftar, bebas N+1.
+    Pola sama dengan `get_flagged_reports` untuk flag_count."""
+
+    ids = [lap.id for lap in laporan_list]
+    if not ids:
+        return
+
+    hitung = dict(
+        db.query(FotoLike.laporan_id, func.count(FotoLike.id))
+        .filter(FotoLike.laporan_id.in_(ids))
+        .group_by(FotoLike.laporan_id)
+        .all()
+    )
+    milikku = set()
+    if user_id:
+        milikku = set(
+            db.scalars(
+                select(FotoLike.laporan_id).where(
+                    FotoLike.laporan_id.in_(ids), FotoLike.user_id == user_id
+                )
+            ).all()
+        )
+
+    for lap in laporan_list:
+        lap.like_count = int(hitung.get(lap.id, 0))
+        lap.liked_by_me = (lap.id in milikku) if user_id else None
+
+
+def like_foto(db: Session, laporan_id: str, user_id: str) -> LaporanLikeResponse:
+    """Like foto laporan tayang (BE-58): satu like per pengguna per foto.
+
+    Sama seperti flag: hanya laporan tayang; pelapor bebas menyukai foto
+    laporannya sendiri (beda dengan flag yang melarang). Like ganda -> 409.
+    """
+    laporan = get_report_by_id(db, laporan_id)
+    if not laporan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan",
+        )
+
+    if laporan.status not in STATUS_TAYANG:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Hanya foto laporan yang sedang tayang yang bisa disukai",
+        )
+
+    if not laporan.foto_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Laporan ini tidak membawa foto",
+        )
+
+    sudah = (
+        db.query(FotoLike)
+        .filter(FotoLike.laporan_id == laporan_id, FotoLike.user_id == user_id)
+        .first()
+    )
+    if sudah:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Anda sudah menyukai foto ini",
+        )
+
+    db.add(FotoLike(laporan_id=laporan_id, user_id=user_id))
+    db.commit()
+
+    jumlah = (
+        db.query(func.count(FotoLike.id))
+        .filter(FotoLike.laporan_id == laporan_id)
+        .scalar()
+    )
+    return LaporanLikeResponse(laporan_id=laporan_id, like_count=int(jumlah or 0), liked_by_me=True)
+
+
+def unlike_foto(db: Session, laporan_id: str, user_id: str) -> LaporanLikeResponse:
+    """Batal like foto laporan (BE-58). Belum pernah like -> 404."""
+    laporan = get_report_by_id(db, laporan_id)
+    if not laporan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Laporan tidak ditemukan",
+        )
+
+    sudah = (
+        db.query(FotoLike)
+        .filter(FotoLike.laporan_id == laporan_id, FotoLike.user_id == user_id)
+        .first()
+    )
+    if not sudah:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Anda belum menyukai foto ini",
+        )
+
+    db.delete(sudah)
+    db.commit()
+
+    jumlah = (
+        db.query(func.count(FotoLike.id))
+        .filter(FotoLike.laporan_id == laporan_id)
+        .scalar()
+    )
+    return LaporanLikeResponse(laporan_id=laporan_id, like_count=int(jumlah or 0), liked_by_me=False)

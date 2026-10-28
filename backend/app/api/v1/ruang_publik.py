@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_admin
+from app.api.deps import get_current_admin, oauth2_scheme_optional
 from app.core.database import get_db
 from app.models.category import Category
 from app.models.ruang_publik import RuangPublik
@@ -17,6 +17,7 @@ from app.schemas.ruang_publik import (
 from app.schemas.laporan import LaporanResponse
 from app.services import ruang_publik as crud_ruang_publik
 from app.services import laporan as crud_laporan
+from app.services.token import user_dari_token
 
 router = APIRouter()
 admin_router = APIRouter()
@@ -109,16 +110,25 @@ def read_public_space_reports(
     ruang_publik_id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional),
 ):
-    """Daftar laporan yang sudah tayang untuk satu ruang publik."""
+    """Daftar laporan yang sudah tayang untuk satu ruang publik.
+
+    Token opsional: bila ada, `liked_by_me` diisi (tombol like galeri, BE-58/FE-44);
+    tanpa token, like_count tetap dikirim dan liked_by_me None.
+    """
     ruang = crud_ruang_publik.get_ruang_publik(db, ruang_publik_id)
     if ruang is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ruang publik tidak ditemukan",
         )
-    return crud_laporan.get_reports_by_ruang_publik(db, ruang_publik_id, skip=skip, limit=limit)
+    peninjau = user_dari_token(db, token) if token else None
+    return crud_laporan.get_reports_by_ruang_publik(
+        db, ruang_publik_id, skip=skip, limit=limit,
+        user_id=peninjau.id if peninjau else None,
+    )
 
 
 # Endpoint di bawah ini khusus Panel Admin (halaman /dashboard/data-master).

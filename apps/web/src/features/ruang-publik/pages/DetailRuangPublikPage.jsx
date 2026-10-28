@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Flag,
   Clock3,
-  Camera
+  Camera,
+  Heart
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -28,7 +29,7 @@ import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch, SelectDropdown } from '../../../components';
 import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
 import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
-import { getSpaceReports, flagReport } from '../../../services/laporanService';
+import { getSpaceReports, flagReport, likeFoto, unlikeFoto } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfil } from '../../../context/ProfilContext';
 import { useGeolocation } from '../../../hooks/useGeolocation';
@@ -51,6 +52,33 @@ const GAYA_TOMBOL_PANAH = {
   backgroundColor: 'var(--color-surface)',
   color: 'var(--color-text-main)',
 };
+
+// Tombol like foto laporan warga di galeri (FE-44/BE-58). Tampil hanya pada
+// foto "Dokumentasi Warga"; keadaan aktif ditandai hati terisi + warna primer.
+const TombolLikeFoto = ({ likeCount = 0, likedByMe = false, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={likedByMe}
+    aria-label={likedByMe ? 'Batal menyukai foto ini' : 'Sukai foto ini'}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '2px 8px',
+      borderRadius: 'var(--radius-pill)',
+      border: `1px solid ${likedByMe ? 'var(--color-primary)' : 'var(--color-border)'}`,
+      backgroundColor: likedByMe ? 'var(--color-primary-light)' : 'var(--color-surface)',
+      color: likedByMe ? 'var(--color-primary)' : 'var(--color-text-muted)',
+      fontSize: '11px',
+      lineHeight: 1.4,
+      cursor: 'pointer',
+    }}
+  >
+    <Heart size={12} fill={likedByMe ? 'currentColor' : 'none'} />
+    {likeCount}
+  </button>
+);
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -138,6 +166,8 @@ export const DetailRuangPublikPage = () => {
   const [tampilSemuaFasilitas, setTampilSemuaFasilitas] = useState(false);
   const [flaggedIds, setFlaggedIds] = useState([]);
   const [flagError, setFlagError] = useState('');
+  // FE-44: galat like foto galeri (mis. sesi berakhir saat mau like).
+  const [likeError, setLikeError] = useState('');
 
   // Filter status section partisipasi, tersinkron ke query string (CONVENTIONS §1.2).
   const [searchParams, setSearchParams] = useSearchParams();
@@ -261,6 +291,18 @@ export const DetailRuangPublikPage = () => {
     [semuaLaporan]
   );
 
+  // FE-44: peta URL foto -> laporan warganya, supaya tombol like di galeri
+  // tahu laporan mana yang disukai (like menempel pada laporan/foto, bukan URL).
+  // Catatan: pakai objek biasa, bukan `new Map()` — `Map` di file ini sudah
+  // dipakai nama ikon lucide-react.
+  const laporanDariFoto = useMemo(() => {
+    const peta = {};
+    semuaLaporan.forEach((lap) => {
+      if (lap.foto && !peta[lap.foto]) peta[lap.foto] = lap;
+    });
+    return peta;
+  }, [semuaLaporan]);
+
   const galeriFoto = detail?.foto ?? [];
   const tampilkanGaleri = galeriFoto.length > 1;
 
@@ -315,6 +357,41 @@ export const DetailRuangPublikPage = () => {
         return;
       }
       setFlagError(err.message || 'Gagal menandai laporan.');
+    }
+  };
+
+  // FE-44: like/batal like foto laporan warga di galeri (BE-58).
+  // Update optimistis (angka berubah tanpa reload), lalu disinkronkan dengan
+  // jawaban server; kalau gagal, angka dikembalikan.
+  const handleLike = async (url) => {
+    const lap = laporanDariFoto[url];
+    if (!lap) return;
+    setLikeError('');
+    if (!user || !token) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+
+    const sudahMenyukai = Boolean(lap.likedByMe);
+    const perubahan = (l) => (l.id === lap.id
+      ? {
+          ...l,
+          likedByMe: !sudahMenyukai,
+          likeCount: Math.max(0, (l.likeCount ?? 0) + (sudahMenyukai ? -1 : 1)),
+        }
+      : l);
+
+    const sebelum = semuaLaporan;
+    setSemuaLaporan((prev) => prev.map(perubahan));
+
+    try {
+      const hasil = sudahMenyukai ? await unlikeFoto(lap.id) : await likeFoto(lap.id);
+      setSemuaLaporan((prev) => prev.map((l) => (l.id === lap.id
+        ? { ...l, likeCount: hasil.like_count ?? l.likeCount, likedByMe: hasil.liked_by_me ?? !sudahMenyukai }
+        : l)));
+    } catch (err) {
+      setSemuaLaporan(sebelum);
+      setLikeError(err.message || 'Gagal menyukai foto.');
     }
   };
 
@@ -802,6 +879,19 @@ export const DetailRuangPublikPage = () => {
                 </div>
               )}
               <span className="badge badge-neutral">{galeriFoto.length} Foto</span>
+              {/* FE-44: like untuk foto warga yang sedang dipilih di galeri. */}
+              {Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]) && (
+                <TombolLikeFoto
+                  likeCount={laporanDariFoto[galeriFoto[fotoTerpilih]]?.likeCount ?? 0}
+                  likedByMe={Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]?.likedByMe)}
+                  onClick={() => handleLike(galeriFoto[fotoTerpilih])}
+                />
+              )}
+              {likeError && (
+                <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-danger-text)' }}>
+                  <AlertTriangle size={12} /> {likeError}
+                </span>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -836,9 +926,16 @@ export const DetailRuangPublikPage = () => {
                     />
                   </button>
                   {dariWarga && (
-                    <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                      <Camera size={11} /> Dokumentasi Warga
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                      <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        <Camera size={11} /> Dokumentasi Warga
+                      </span>
+                      <TombolLikeFoto
+                        likeCount={laporanDariFoto[url]?.likeCount ?? 0}
+                        likedByMe={Boolean(laporanDariFoto[url]?.likedByMe)}
+                        onClick={() => handleLike(url)}
+                      />
+                    </div>
                   )}
                 </div>
               );

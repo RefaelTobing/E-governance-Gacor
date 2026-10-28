@@ -36,6 +36,7 @@ class Laporan(Base):
     fasilitas = relationship("Fasilitas", back_populates="laporan")
     timeline = relationship("LaporanTimeline", back_populates="laporan", cascade="all, delete-orphan")
     flags = relationship("LaporanFlag", back_populates="laporan", cascade="all, delete-orphan")
+    likes = relationship("FotoLike", back_populates="laporan", cascade="all, delete-orphan")
 
     # Properti turunan dari relasi, dipakai untuk memperkaya response laporan.
     # Relasi perlu di-eager load agar tidak memicu query berulang (N+1).

@@ -7,6 +7,7 @@ from app.models.fasilitas import Fasilitas
 from app.models.laporan import Laporan
 from app.models.laporan_timeline import LaporanTimeline
 from app.models.laporan_flag import LaporanFlag
+from app.models.foto_like import FotoLike
 from app.models.etl_run import EtlRun
 from app.models.token_blacklist import TokenBlacklist
 
@@ -20,6 +21,7 @@ __all__ = [
     "Laporan",
     "LaporanTimeline",
     "LaporanFlag",
+    "FotoLike",
     "EtlRun",
     "TokenBlacklist",
 ]

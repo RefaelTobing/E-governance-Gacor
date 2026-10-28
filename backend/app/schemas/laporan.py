@@ -105,6 +105,10 @@ class LaporanResponse(LaporanBase):
     jarak_exif_rp: Optional[float] = None
     # Hanya diisi endpoint daftar flagged admin (BE-31); jalur publik tetap None.
     flag_count: Optional[int] = None
+    # Like foto laporan (BE-58): diisi endpoint daftar/detail laporan tayang.
+    # liked_by_me hanya terisi bila pemanggil membawa token.
+    like_count: Optional[int] = None
+    liked_by_me: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -132,3 +136,15 @@ class LaporanFlagResponse(BaseModel):
 
     laporan_id: str
     flag_count: int
+
+
+class LaporanLikeResponse(BaseModel):
+    """Hasil like/unlike foto laporan (BE-58).
+
+    `liked_by_me` menyatakan keadaan setelah aksi: True setelah like,
+    False setelah unlike. `like_count` = total like foto itu saat ini.
+    """
+
+    laporan_id: str
+    like_count: int
+    liked_by_me: bool
