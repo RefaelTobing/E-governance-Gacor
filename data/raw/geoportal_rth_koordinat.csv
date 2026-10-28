@@ -5730,8 +5730,8 @@
 6830,RTH JALAN KEBAGUSAN II,RTH,2600.00961426,,,Kebagusan,Pasar Minggu,Kota Adm. Jakarta Selatan,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JALAN KEBAGUSAN II RT. 007 RW. 07 (DALAM),,,,Y
 6831,RTH JALAN MANUNGGAL II BAWAH,RTH,10077.98786836,,,Cipinang Melayu,Makasar,Kota Adm. Jakarta Timur,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JALAN MANUNGGAL II BAWAH RW. 06,,,,Y
 6832,RTH JALAN RAWA KUNING,RTH,3620.00018274,,,Pulo Gebang,Cakung,Kota Adm. Jakarta Timur,DINAS PERTAMANAN DAN PEMAKAMAN,,,,"JALAN RAWA KUNING RW 02, (DULU PALAD)",,,,Y
-6833, ,RTH,249.00908932,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JL. KEBAGUSAN RAYA,,,,Y
-6835, ,RTH,161.00533337,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JL. KEBAGUSAN RAYA,,,,Y
+6833,"Jl. Kebagusan Raya, Kec. Pasar Minggu",Taman Rukun Tetangga (RT),249.00908932,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,JL. KEBAGUSAN RAYA,,Belum Terbangun,,Y
+6835,"Jl. Kebagusan Raya, Kec. Pasar Minggu",Taman Rukun Tetangga (RT),161.00533337,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,JL. KEBAGUSAN RAYA,,,,Y
 6837, ,RTH,19493.04742899,,,Pondok Ranggon,Cipayung,Kota Adm. Jakarta Timur,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JL. CILANGKAP BARU RT.004 RW.03,,,,Y
 6838,RTH Taman Rotanusa,Taman Kota,11498.00253335,,,Rorotan,Cilincing,Kota Adm. Jakarta Utara,Dinas Kehutanan,Aset Pemerintah,KIB A,,JALAN ROROTAN (KP KANDANG SAPI),No.00061/Rorotan,Terbangun Baik,,Y
 6839,RTH JALAN DANAU ASRI SELATAN,RTH,574.27304038,,,Sunter Jaya,Tanjung Priok,Kota Adm. Jakarta Utara,DINAS PERTAMANAN DAN PEMAKAMAN,,,,JALAN DANAU ASRI SELATAN,,,,Y
@@ -6466,6 +6466,7 @@
 19318,Jl. Muara RT 002 dan 003 RW 003,,141.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19319,Jl. Muara RT 002 dan 003 RW 003,,201.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19320,"Jl. Kp. Pulo Kel. Pinang Ranti Kec. Makasar, Jakarta",,263.0,,,Pinangranti,Makasar,Kota Adm. Jakarta Timur,Dinas Kehutanan,Aset Pemerintah,KIB A,,"Jl. Kp. Pulo Kel. Pinang Ranti Kec. Makasar, Jakarta",,Belum Terbangun,,Y
+19321,Jl. Kebagusan Raya,Taman Kota,3770.0,,,Jagakarsa,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Kebagusan Raya,,Terbangun Baik,,Y
 19628,Kampung Sawah RW 002,,1649.0,,,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Kampung Sawah RW 002,No.00120/Srengseng Sawah,Belum Terbangun,,Y
 19629,Jl. Muara RT 002 dan 003 RW 003,,302.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,,,,,Y
 19630,Jl. Muara RT 002 dan 003 RW 003,,313.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
@@ -6474,6 +6475,7 @@
 19633,Jl. Muara RT 002 dan 003 RW 003,,58.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19634,Jl. Muara RT 002 dan 003 RW 003,,266.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19635,"Jl. Kp. Pulo Kel. Pinang Ranti Kec. Makasar, Jakarta Timur.Titik Koordinat: -6.27999, 106.88257",,470.0,,,Pinangranti,Makasar,Kota Adm. Jakarta Timur,Dinas Kehutanan,Aset Pemerintah,KIB A,,"Jl. Kp. Pulo Kel. Pinang Ranti Kec. Makasar, Jakarta Timur.Titik Koordinat: -6.27999, 106.88257",,Belum Terbangun,,Y
+19636,"Jl. Kebagusan Raya, Kec. Pasar Minggu",Taman Rukun Tetangga (RT),616.0,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,"Jl. Kebagusan Raya, Kec. Pasar Minggu",,Belum Terbangun,,Y
 19644,Kampung Sawah RW 002,,636.0,,,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Kampung Sawah RW 002,No.00103/Srengseng Sawah,Belum Terbangun,,Y
 19645,Kampung Sawah RW 002,,925.0,,,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Kampung Sawah RW 002,No.00099/Srengseng Sawah,Belum Terbangun,,Y
 19646,Jl. Muara RT 002 dan 003 RW 003,,226.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
@@ -6483,6 +6485,7 @@
 19650,Jl. Muara RT 002 dan 003 RW 003,,3148.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19651,Jl. Muara RT 002 dan 003 RW 003,,53.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Jl. Muara RT 002 dan 003 RW 003,,,,Y
 19652,"Jl. Lingkungan (Gg. Melati) Kel. Pinang Ranti Kec. Makasar, Jakarta Timur.Titik Koordinat",,659.0,,,Pinangranti,Makasar,Kota Adm. Jakarta Timur,Dinas Kehutanan,Aset Pemerintah,KIB A,,"Jl. Lingkungan (Gg. Melati) Kel. Pinang Ranti Kec. Makasar, Jakarta Timur.Titik Koordinat",,Belum Terbangun,,Y
+19653,"Jl. Kebagusan Raya, Kec. Pasar Minggu",,1559.0,,,Ragunan,Pasar Minggu,Kota Adm. Jakarta Selatan,Dinas Kehutanan,,,,"Jl. Kebagusan Raya, Kec. Pasar Minggu",,Belum Terbangun,,Y
 19660,Kampung Sawah RW 002,,516.0,,,Srengseng Sawah,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,Aset Pemerintah,KIB A,,Kampung Sawah RW 002,No.00105/Srengseng Sawah,Belum Terbangun,,Y
 19661,Jl. Muara RT 002 dan 003 RW 003,,1779.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,,,,,,,,Y
 19662,Jl. Muara RT 002 dan 003 RW 003,,288.0,,,Tanjung Barat,Jagakarsa,Kota Adm. Jakarta Selatan,Dinas Kehutanan,,KIB A,,,3334,,,Y

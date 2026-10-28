@@ -90,7 +90,7 @@ export const AntrianModerasiPage = () => {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
         <div style={{ backgroundColor: 'var(--color-warning-light)', padding: '12px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-warning)' }}>
           <span className="text-caption" style={{ fontWeight: 700, color: 'var(--color-warning-text)' }}>PERLU TINDAKAN</span>
           <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning-text)' }}>

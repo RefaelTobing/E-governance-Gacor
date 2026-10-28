@@ -1,8 +1,8 @@
 {
   "dataset": "geoportal_rth_koordinat",
   "sumber": "geoportal",
-  "downloaded_at": "2026-10-07T20:05:26+07:00",
-  "total_rows": 6512,
+  "downloaded_at": "2026-10-28T16:40:35+07:00",
+  "total_rows": 6515,
   "columns": [
     "OBJECTID",
     "NAMA_OBJEK",
