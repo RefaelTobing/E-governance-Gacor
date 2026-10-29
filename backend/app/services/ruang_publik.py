@@ -1,5 +1,6 @@
 from typing import Optional, Sequence
 
+from fastapi import HTTPException, status
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, contains_eager, joinedload, selectinload
 
@@ -197,99 +198,251 @@ def tambah_foto(db: Session, ruang_publik_id: str, foto_url: str) -> RuangPublik
 
 
 def hapus_foto(db: Session, foto: RuangPublikFoto) -> None:
+    # Like menempel di URL, bukan di baris foto: bersihkan dulu supaya tidak
+    # ada like yatim yang ikut terhitung bila URL yang sama dipakai lagi.
+    db.query(FotoLike).filter(FotoLike.foto_url == foto.foto_url).delete(
+        synchronize_session=False
+    )
     db.delete(foto)
     db.commit()
 
 
-def gabung_foto(db: Session, ruang_publik: RuangPublik) -> list[str]:
-    """Galeri publik: foto resmi + foto laporan yang sudah tayang, tanpa duplikat.
-
-    Urutan stabil agar halaman FE tidak berpindah-pindah antar request:
-    foto resmi terlama lebih dulu (dengan `image_url` bila berubah setelah
-    backfill, diselipkan paling depan), lalu laporan tayang terbaru lebih dulu.
-    """
-    resmi = [foto.foto_url for foto in list_foto_resmi(db, ruang_publik.id)]
-
-    # image_url bisa diperbarui sumber data tanpa lewat tabel foto, jadi
-    # tampilkan sebagai foto pertama bila belum ada barisnya.
-    if ruang_publik.image_url and ruang_publik.image_url not in resmi:
-        resmi.insert(0, ruang_publik.image_url)
-
-    laporan_stmt = (
+def _url_laporan_tayang(db: Session, ruang_publik_id: str) -> list[str]:
+    """URL foto laporan tayang, terbaru dulu (urutan prioritas galeri)."""
+    stmt = (
         select(Laporan.foto_url)
-        .where(
-            Laporan.ruang_publik_id == ruang_publik.id,
-            Laporan.status.in_(STATUS_TAYANG),
-            Laporan.foto_url.isnot(None),
-            Laporan.foto_url != "",
-        )
-        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
-    )
-    tayang = list(db.scalars(laporan_stmt).all())
-
-    terlihat: set[str] = set()
-    hasil: list[str] = []
-    for url in resmi + tayang:
-        if url not in terlihat:
-            terlihat.add(url)
-            hasil.append(url)
-    return hasil
-
-
-def urutan_foto_utama(db: Session, ruang_publik_id: str) -> list[str]:
-    """Kandidat foto utama satu ruang publik, dari yang paling diprioritaskan.
-
-    Aturan pemilihan (lihat `foto_utama`): foto laporan yang punya like terbanyak
-    menang; bila tak ada foto laporan ber-like, jatuh ke foto resmi terlama; lalu
-    `image_url` lama. Urutan di sini = urutan prioritas, jadi pemanggil tinggal
-    ambil elemen pertama yang ada.
-    """
-    hasil: list[str] = []
-
-    # 1. Foto laporan tayang: like terbanyak dulu (BE-58), lalu terbaru.
-    jumlah_like = (
-        select(FotoLike.laporan_id, func.count(FotoLike.id).label("jumlah"))
-        .group_by(FotoLike.laporan_id)
-        .subquery()
-    )
-    laporan_stmt = (
-        select(Laporan.foto_url)
-        .outerjoin(jumlah_like, jumlah_like.c.laporan_id == Laporan.id)
         .where(
             Laporan.ruang_publik_id == ruang_publik_id,
             Laporan.status.in_(STATUS_TAYANG),
             Laporan.foto_url.isnot(None),
             Laporan.foto_url != "",
         )
-        .order_by(
-            func.coalesce(jumlah_like.c.jumlah, 0).desc(),
-            Laporan.created_at.desc(),
-            Laporan.id.asc(),
-        )
+        .order_by(Laporan.created_at.desc(), Laporan.id.asc())
     )
-    hasil.extend(db.scalars(laporan_stmt).all())
+    return list(db.scalars(stmt).all())
 
-    # 2. Foto resmi (dari tabel ruang_publik_foto), lalu 3. image_url lama.
-    hasil.extend(foto.foto_url for foto in list_foto_resmi(db, ruang_publik_id))
-    ruang = db.get(RuangPublik, ruang_publik_id)
-    if ruang is not None and ruang.image_url:
-        hasil.append(ruang.image_url)
 
+def gabung_foto_dengan_sumber(
+    db: Session, ruang_publik: RuangPublik
+) -> list[tuple[str, str]]:
+    """Galeri publik beserta asal tiap foto, tanpa duplikat.
+
+    Urutan stabil agar halaman FE tidak berpindah-pindah antar request: foto
+    resmi terlama lebih dulu (`image_url` lama diselipkan paling depan bila
+    belum punya baris), lalu laporan tayang terbaru lebih dulu.
+
+    `sumber` yang dikembalikan: `utama` untuk kolom `image_url` lama, `resmi`
+    untuk baris `ruang_publik_foto`, dan `laporan` untuk foto laporan warga.
+    """
+    hasil: list[tuple[str, str]] = []
     terlihat: set[str] = set()
-    unik: list[str] = []
-    for url in hasil:
-        if url not in terlihat:
+
+    def _tambah(url: Optional[str], sumber: str) -> None:
+        if url and url not in terlihat:
             terlihat.add(url)
-            unik.append(url)
-    return unik
+            hasil.append((url, sumber))
+
+    resmi = list_foto_resmi(db, ruang_publik.id)
+    url_resmi = {foto.foto_url for foto in resmi}
+
+    # image_url bisa diperbarui sumber data tanpa lewat tabel foto, jadi
+    # tampilkan sebagai foto pertama bila belum ada barisnya.
+    if ruang_publik.image_url and ruang_publik.image_url not in url_resmi:
+        _tambah(ruang_publik.image_url, "utama")
+    for foto in resmi:
+        _tambah(foto.foto_url, "resmi")
+    for url in _url_laporan_tayang(db, ruang_publik.id):
+        _tambah(url, "laporan")
+    return hasil
+
+
+def gabung_foto(db: Session, ruang_publik: RuangPublik) -> list[str]:
+    """Galeri publik: foto resmi + foto laporan yang sudah tayang, tanpa duplikat."""
+    return [url for url, _ in gabung_foto_dengan_sumber(db, ruang_publik)]
+
+
+def meta_foto_galeri(
+    db: Session, ruang_publik: RuangPublik, user_id: Optional[str] = None
+) -> list[dict]:
+    """Metadata galeri: url, sumber, like_count, dan liked_by_me.
+
+    Dua query agregat untuk seluruh galeri (bebas N+1), jadi aman walau
+    satu ruang publik punya puluhan foto.
+    """
+    pasangan = gabung_foto_dengan_sumber(db, ruang_publik)
+    urls = [url for url, _ in pasangan]
+    if not urls:
+        return []
+
+    hitung = dict(
+        db.query(FotoLike.foto_url, func.count(FotoLike.id))
+        .filter(FotoLike.foto_url.in_(urls))
+        .group_by(FotoLike.foto_url)
+        .all()
+    )
+    milikku: set[str] = set()
+    if user_id:
+        milikku = set(
+            db.scalars(
+                select(FotoLike.foto_url).where(
+                    FotoLike.foto_url.in_(urls), FotoLike.user_id == user_id
+                )
+            ).all()
+        )
+
+    return [
+        {
+            "url": url,
+            "sumber": sumber,
+            "like_count": int(hitung.get(url, 0)),
+            "liked_by_me": (url in milikku) if user_id else None,
+        }
+        for url, sumber in pasangan
+    ]
+
+
+def _galeri_wajib_ada(db: Session, ruang_publik_id: str) -> list[str]:
+    """URL galeri satu ruang publik, atau 404 bila ruangnya tidak ada."""
+    ruang = db.get(RuangPublik, ruang_publik_id)
+    if ruang is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ruang publik tidak ditemukan",
+        )
+    return gabung_foto(db, ruang)
+
+
+def _hitung_like(db: Session, foto_url: str) -> int:
+    jumlah = (
+        db.query(func.count(FotoLike.id))
+        .filter(FotoLike.foto_url == foto_url)
+        .scalar()
+    )
+    return int(jumlah or 0)
+
+
+def like_foto_galeri(
+    db: Session, ruang_publik_id: str, foto_url: str, user_id: str
+) -> dict:
+    """Like satu foto galeri (BE-58 revisi): satu like per pengguna per foto.
+
+    Foto boleh berasal dari laporan warga, unggahan admin, atau data resmi.
+    URL divalidasi terhadap galeri ruang publik itu supaya like tidak bisa
+    ditembakkan ke URL sembarangan. Like ganda -> 409.
+    """
+    if foto_url not in _galeri_wajib_ada(db, ruang_publik_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Foto bukan bagian galeri ruang publik ini",
+        )
+
+    sudah = (
+        db.query(FotoLike)
+        .filter(FotoLike.foto_url == foto_url, FotoLike.user_id == user_id)
+        .first()
+    )
+    if sudah:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Anda sudah menyukai foto ini",
+        )
+
+    db.add(FotoLike(foto_url=foto_url, user_id=user_id))
+    db.commit()
+    return {
+        "foto_url": foto_url,
+        "like_count": _hitung_like(db, foto_url),
+        "liked_by_me": True,
+    }
+
+
+def unlike_foto_galeri(
+    db: Session, ruang_publik_id: str, foto_url: str, user_id: str
+) -> dict:
+    """Batal like satu foto galeri (BE-58 revisi). Belum pernah like -> 404."""
+    if foto_url not in _galeri_wajib_ada(db, ruang_publik_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Foto bukan bagian galeri ruang publik ini",
+        )
+
+    sudah = (
+        db.query(FotoLike)
+        .filter(FotoLike.foto_url == foto_url, FotoLike.user_id == user_id)
+        .first()
+    )
+    if not sudah:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Anda belum menyukai foto ini",
+        )
+
+    db.delete(sudah)
+    db.commit()
+    return {
+        "foto_url": foto_url,
+        "like_count": _hitung_like(db, foto_url),
+        "liked_by_me": False,
+    }
+
+
+def _kandidat_foto_utama(db: Session, ruang_publik: RuangPublik) -> list[str]:
+    """Semua foto yang boleh jadi utama, urut prioritas dasar.
+
+    Prioritas dasar (dipakai sebagai pemecah seri saat jumlah like sama):
+    foto laporan tayang terbaru -> foto resmi terlama -> `image_url` lama.
+    """
+    hasil: list[str] = []
+    terlihat: set[str] = set()
+
+    def _tambah(url: Optional[str]) -> None:
+        if url and url not in terlihat:
+            terlihat.add(url)
+            hasil.append(url)
+
+    for url in _url_laporan_tayang(db, ruang_publik.id):
+        _tambah(url)
+    for foto in list_foto_resmi(db, ruang_publik.id):
+        _tambah(foto.foto_url)
+    _tambah(ruang_publik.image_url)
+    return hasil
+
+
+def urutan_foto_utama(db: Session, ruang_publik_id: str) -> list[str]:
+    """Kandidat foto utama satu ruang publik, dari yang paling diprioritaskan.
+
+    Aturan pemilihan (lihat `foto_utama`): foto dengan like terbanyak menang,
+    dari sumber mana pun (laporan warga, unggahan admin, atau data resmi).
+    Bila jumlah like sama, urutan prioritas dasar yang menentukan: foto
+    laporan terbaru -> foto resmi terlama -> `image_url` lama.
+    """
+    ruang = db.get(RuangPublik, ruang_publik_id)
+    if ruang is None:
+        return []
+
+    kandidat = _kandidat_foto_utama(db, ruang)
+    if not kandidat:
+        return []
+
+    hitung = dict(
+        db.query(FotoLike.foto_url, func.count(FotoLike.id))
+        .filter(FotoLike.foto_url.in_(kandidat))
+        .group_by(FotoLike.foto_url)
+        .all()
+    )
+    urut = sorted(
+        range(len(kandidat)),
+        key=lambda i: (-int(hitung.get(kandidat[i], 0)), i),
+    )
+    return [kandidat[i] for i in urut]
 
 
 def foto_utama(db: Session, ruang_publik: RuangPublik) -> Optional[str]:
     """Foto utama satu ruang publik: prioritas pertama dari `urutan_foto_utama`.
 
-    Bila ada beberapa foto, aturannya: foto laporan dengan like user terbanyak
-    menang (BE-58); kalau tidak ada foto ber-like, ambil foto pertama yang
-    tersedia menurut urutan prioritas (laporan tayang terbaru -> foto resmi
+    Bila ada beberapa foto, aturannya: foto dengan like terbanyak menang, dari
+    sumber mana pun (BE-58 revisi); bila tidak ada foto ber-like, ambil foto
+    pertama menurut urutan prioritas (laporan tayang terbaru -> foto resmi
     terlama -> image_url).
     """
     kandidat = urutan_foto_utama(db, ruang_publik.id)
@@ -300,21 +453,27 @@ def foto_utama_per_ruang_publik(db: Session, ids: Sequence[str]) -> dict[str, st
     """Versi batch `foto_utama` untuk daftar ruang publik (hindari N+1).
 
     Dipakai endpoint daftar: satu query foto laporan + satu query foto resmi +
-    satu query image_url untuk seluruh id, bukan per baris.
+    satu query image_url + satu query agregat like untuk seluruh id, bukan
+    per baris. Aturan pemenangnya sama dengan `urutan_foto_utama`: like
+    terbanyak menang, seri diputus prioritas dasar.
     """
     ids = list(ids)
     if not ids:
         return {}
 
-    hasil: dict[str, str] = {}
+    # Kandidat per ruang publik, sudah urut prioritas dasar.
+    kandidat: dict[str, list[str]] = {rp_id: [] for rp_id in ids}
+    terlihat: dict[str, set[str]] = {rp_id: set() for rp_id in ids}
 
-    def _setdefault(rp_id: str, url: Optional[str]) -> None:
-        # Hanya isi bila belum ada, supaya prioritas pertama yang tersimpan menang.
-        if url and rp_id not in hasil:
-            hasil[rp_id] = url
+    def _tambah(rp_id: str, url: Optional[str]) -> None:
+        if not url or rp_id not in kandidat:
+            return
+        if url not in terlihat[rp_id]:
+            terlihat[rp_id].add(url)
+            kandidat[rp_id].append(url)
 
-    # 1. Foto laporan tayang (terbaru dulu; nanti diurut like terbanyak).
-    laporan_rows = db.execute(
+    # 1. Foto laporan tayang (terbaru dulu).
+    for rp_id, url in db.execute(
         select(Laporan.ruang_publik_id, Laporan.foto_url)
         .where(
             Laporan.ruang_publik_id.in_(ids),
@@ -323,25 +482,44 @@ def foto_utama_per_ruang_publik(db: Session, ids: Sequence[str]) -> dict[str, st
             Laporan.foto_url != "",
         )
         .order_by(Laporan.created_at.desc(), Laporan.id.asc())
-    ).all()
-    for rp_id, url in laporan_rows:
-        _setdefault(rp_id, url)
+    ).all():
+        _tambah(rp_id, url)
 
     # 2. Foto resmi (terlama dulu, konsisten dengan list_foto_resmi).
-    resmi_rows = db.execute(
+    for rp_id, url in db.execute(
         select(RuangPublikFoto.ruang_publik_id, RuangPublikFoto.foto_url)
         .where(RuangPublikFoto.ruang_publik_id.in_(ids))
         .order_by(RuangPublikFoto.created_at.asc(), RuangPublikFoto.id.asc())
-    ).all()
-    for rp_id, url in resmi_rows:
-        _setdefault(rp_id, url)
+    ).all():
+        _tambah(rp_id, url)
 
     # 3. image_url lama sebagai jaring terakhir.
     for rp_id, image_url in db.execute(
         select(RuangPublik.id, RuangPublik.image_url).where(RuangPublik.id.in_(ids))
     ).all():
-        _setdefault(rp_id, image_url)
+        _tambah(rp_id, image_url)
 
+    semua_url = {url for urls in kandidat.values() for url in urls}
+    hitung = (
+        dict(
+            db.query(FotoLike.foto_url, func.count(FotoLike.id))
+            .filter(FotoLike.foto_url.in_(semua_url))
+            .group_by(FotoLike.foto_url)
+            .all()
+        )
+        if semua_url
+        else {}
+    )
+
+    hasil: dict[str, str] = {}
+    for rp_id, urls in kandidat.items():
+        if not urls:
+            continue
+        indeks_terbaik = max(
+            range(len(urls)),
+            key=lambda i: (int(hitung.get(urls[i], 0)), -i),
+        )
+        hasil[rp_id] = urls[indeks_terbaik]
     return hasil
 
 

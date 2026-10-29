@@ -27,9 +27,9 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, CardBody, StatusBadge, EmptyState, Skeleton, Modal, PetaZoomPinch, SelectDropdown } from '../../../components';
-import { getPublicSpaceDetail } from '../../../services/ruangPublikService';
+import { getPublicSpaceDetail, likeFotoGaleri, unlikeFotoGaleri } from '../../../services/ruangPublikService';
 import FotoRuangPlaceholder from '../components/FotoRuangPlaceholder';
-import { getSpaceReports, flagReport, likeFoto, unlikeFoto } from '../../../services/laporanService';
+import { getSpaceReports, flagReport } from '../../../services/laporanService';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfil } from '../../../context/ProfilContext';
 import { useGeolocation } from '../../../hooks/useGeolocation';
@@ -290,23 +290,17 @@ export const DetailRuangPublikPage = () => {
     };
   }, [semuaLaporan]);
 
-  // Set URL foto laporan warga (untuk melabeli galeri "Dokumentasi Warga").
-  const fotoWargaSet = useMemo(
-    () => new Set(semuaLaporan.map((lap) => lap.foto).filter(Boolean)),
-    [semuaLaporan]
-  );
-
-  // FE-44: peta URL foto -> laporan warganya, supaya tombol like di galeri
-  // tahu laporan mana yang disukai (like menempel pada laporan/foto, bukan URL).
-  // Catatan: pakai objek biasa, bukan `new Map()` — `Map` di file ini sudah
-  // dipakai nama ikon lucide-react.
-  const laporanDariFoto = useMemo(() => {
+  // FE-44 revisi: metadata galeri dari backend (url + sumber + jumlah like).
+  // Tombol hati muncul di semua foto; label "Dokumentasi Warga" hanya untuk
+  // foto yang sumbernya laporan warga. Catatan: pakai objek biasa, bukan
+  // `new Map()` — `Map` di file ini sudah dipakai nama ikon lucide-react.
+  const metaFoto = useMemo(() => {
     const peta = {};
-    semuaLaporan.forEach((lap) => {
-      if (lap.foto && !peta[lap.foto]) peta[lap.foto] = lap;
+    (detail?.fotoMeta ?? []).forEach((item) => {
+      if (item?.url) peta[item.url] = item;
     });
     return peta;
-  }, [semuaLaporan]);
+  }, [detail]);
 
   const galeriFoto = detail?.foto ?? [];
   const tampilkanGaleri = galeriFoto.length > 1;
@@ -365,37 +359,40 @@ export const DetailRuangPublikPage = () => {
     }
   };
 
-  // FE-44: like/batal like foto laporan warga di galeri (BE-58).
+  // FE-44 revisi: like/batal like satu foto galeri (BE-58).
   // Update optimistis (angka berubah tanpa reload), lalu disinkronkan dengan
-  // jawaban server; kalau gagal, angka dikembalikan.
+  // jawaban server; kalau gagal, keadaan detail dikembalikan.
   const handleLike = async (url) => {
-    const lap = laporanDariFoto[url];
-    if (!lap) return;
+    const meta = metaFoto[url];
+    if (!meta || !detail?.id) return;
     setLikeError('');
     if (!user || !token) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
 
-    const sudahMenyukai = Boolean(lap.likedByMe);
-    const perubahan = (l) => (l.id === lap.id
-      ? {
-          ...l,
-          likedByMe: !sudahMenyukai,
-          likeCount: Math.max(0, (l.likeCount ?? 0) + (sudahMenyukai ? -1 : 1)),
-        }
-      : l);
+    const sudahMenyukai = Boolean(meta.likedByMe);
+    const ubahSatu = (prev, nilai) => ({
+      ...prev,
+      fotoMeta: (prev.fotoMeta ?? []).map((item) => (item.url === url ? { ...item, ...nilai } : item)),
+    });
 
-    const sebelum = semuaLaporan;
-    setSemuaLaporan((prev) => prev.map(perubahan));
+    const sebelum = detail;
+    setDetail((prev) => ubahSatu(prev, {
+      likedByMe: !sudahMenyukai,
+      likeCount: Math.max(0, (meta.likeCount ?? 0) + (sudahMenyukai ? -1 : 1)),
+    }));
 
     try {
-      const hasil = sudahMenyukai ? await unlikeFoto(lap.id) : await likeFoto(lap.id);
-      setSemuaLaporan((prev) => prev.map((l) => (l.id === lap.id
-        ? { ...l, likeCount: hasil.like_count ?? l.likeCount, likedByMe: hasil.liked_by_me ?? !sudahMenyukai }
-        : l)));
+      const hasil = sudahMenyukai
+        ? await unlikeFotoGaleri(detail.id, url)
+        : await likeFotoGaleri(detail.id, url);
+      setDetail((prev) => ubahSatu(prev, {
+        likeCount: hasil.like_count ?? meta.likeCount,
+        likedByMe: hasil.liked_by_me ?? !sudahMenyukai,
+      }));
     } catch (err) {
-      setSemuaLaporan(sebelum);
+      setDetail(sebelum);
       setLikeError(err.message || 'Gagal menyukai foto.');
     }
   };
@@ -900,7 +897,8 @@ export const DetailRuangPublikPage = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 'var(--space-md)' }}>
             {galeriFoto.map((url, idx) => {
-              const dariWarga = fotoWargaSet.has(url);
+              const meta = metaFoto[url];
+              const dariWarga = meta?.sumber === 'laporan';
               return (
                 <div key={`${url}-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button
@@ -920,14 +918,16 @@ export const DetailRuangPublikPage = () => {
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </button>
-                  {dariWarga && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                      <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                        <Camera size={11} /> Dokumentasi Warga
-                      </span>
+                  {meta && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: dariWarga ? 'space-between' : 'flex-end', gap: '6px' }}>
+                      {dariWarga && (
+                        <span className="text-caption" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                          <Camera size={11} /> Dokumentasi Warga
+                        </span>
+                      )}
                       <TombolLikeFoto
-                        likeCount={laporanDariFoto[url]?.likeCount ?? 0}
-                        likedByMe={Boolean(laporanDariFoto[url]?.likedByMe)}
+                        likeCount={meta.likeCount}
+                        likedByMe={Boolean(meta.likedByMe)}
                         onClick={() => handleLike(url)}
                       />
                     </div>
@@ -1114,16 +1114,18 @@ export const DetailRuangPublikPage = () => {
               alt={`Foto ${detail.nama} ke-${fotoTerpilih + 1}`}
               style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
             />
-            {fotoWargaSet.has(galeriFoto[fotoTerpilih]) && (
+            {metaFoto[galeriFoto[fotoTerpilih]] && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
-                <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Camera size={12} /> Dokumentasi Warga
-                </span>
+                {metaFoto[galeriFoto[fotoTerpilih]].sumber === 'laporan' && (
+                  <span className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Camera size={12} /> Dokumentasi Warga
+                  </span>
+                )}
                 {/* FE-44: like tepat di bawah foto yang sedang dibuka, sebaris
-                    dengan badge sumbernya. */}
+                    dengan badge sumbernya. Semua foto galeri bisa disukai. */}
                 <TombolLikeFoto
-                  likeCount={laporanDariFoto[galeriFoto[fotoTerpilih]]?.likeCount ?? 0}
-                  likedByMe={Boolean(laporanDariFoto[galeriFoto[fotoTerpilih]]?.likedByMe)}
+                  likeCount={metaFoto[galeriFoto[fotoTerpilih]].likeCount}
+                  likedByMe={Boolean(metaFoto[galeriFoto[fotoTerpilih]].likedByMe)}
                   onClick={() => handleLike(galeriFoto[fotoTerpilih])}
                   ukuran="besar"
                 />

@@ -16,7 +16,6 @@ from app.schemas.laporan import (
     LaporanCreate,
     LaporanDetailResponse,
     LaporanFlagResponse,
-    LaporanLikeResponse,
     LaporanRejectRequest,
     LaporanResponse,
     LaporanStatusResponse,
@@ -280,33 +279,6 @@ def flag_report(
 ):
     """Flag laporan tayang yang dianggap tidak pantas (BE-25); aturan di `flag_laporan`."""
     return crud_laporan.flag_laporan(db, laporan_id, user_id=current_user.id)
-
-
-@router.post(
-    "/{laporan_id}/like",
-    response_model=LaporanLikeResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def like_foto(
-    laporan_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    """Like foto laporan tayang (BE-58); wajib login, satu like per pengguna."""
-    return crud_laporan.like_foto(db, laporan_id, user_id=current_user.id)
-
-
-@router.delete(
-    "/{laporan_id}/like",
-    response_model=LaporanLikeResponse,
-)
-def unlike_foto(
-    laporan_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    """Batal like foto laporan (BE-58); belum pernah like -> 404."""
-    return crud_laporan.unlike_foto(db, laporan_id, user_id=current_user.id)
 
 
 @router.patch("/{laporan_id}/status", response_model=LaporanDetailResponse)

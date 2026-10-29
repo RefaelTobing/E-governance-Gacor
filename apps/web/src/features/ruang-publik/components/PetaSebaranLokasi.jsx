@@ -89,6 +89,9 @@ const createClusterCustomIcon = (cluster) => {
 };
 
 const DEFAULT_ZOOM = 13;
+// Peta adalah fokus utama halaman daftar, jadi tingginya ikut viewport dan berhenti
+// di batas atas/bawah supaya tidak memenuhi layar pendek atau melar di layar besar.
+const TINGGI_PETA = 'clamp(420px, 55vh, 620px)';
 
 /**
  * PetaSebaranLokasi
@@ -134,7 +137,7 @@ const PetaSebaranLokasi = ({
     return (
       <div
         style={{
-          height: '320px',
+          height: TINGGI_PETA,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -153,7 +156,7 @@ const PetaSebaranLokasi = ({
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <div style={{ position: 'relative', height: '320px', width: '100%' }}>
+      <div style={{ position: 'relative', height: TINGGI_PETA, width: '100%' }}>
         {onSetManualLocation && (
           <div
             style={{

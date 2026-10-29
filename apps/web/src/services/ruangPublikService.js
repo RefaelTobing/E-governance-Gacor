@@ -175,6 +175,14 @@ export const getPublicSpaceDetail = async (id) => {
       image: fotoUtama(data),
       // Galeri: URL backend relatif, jadi dijadikan absolut untuk <img>.
       foto: (Array.isArray(data.foto) ? data.foto : []).map(assetUrl),
+      // FE-44 revisi: metadata per foto (sumber + like). URL dinormalisasi
+      // dengan helper yang sama seperti `foto` supaya kuncinya cocok persis.
+      fotoMeta: (Array.isArray(data.foto_meta) ? data.foto_meta : []).map((item) => ({
+        url: assetUrl(item.url),
+        sumber: item.sumber ?? 'resmi',
+        likeCount: item.like_count ?? 0,
+        likedByMe: item.liked_by_me ?? null,
+      })),
       fasilitas,
       deskripsi: data.deskripsi || 'Belum ada deskripsi.',
       stats: keStats(data.stats),
@@ -196,6 +204,34 @@ export const getPublicSpaceDetail = async (id) => {
     }
     throw error;
   }
+};
+
+/**
+ * Like satu foto galeri ruang publik (BE-58 revisi).
+ * Wajib login; satu like per pengguna per foto (409 bila sudah menyukai).
+ *
+ * @param {string} ruangPublikId
+ * @param {string} fotoUrl
+ * @returns {Promise<{foto_url: string, like_count: number, liked_by_me: boolean}>}
+ */
+export const likeFotoGaleri = async (ruangPublikId, fotoUrl) => {
+  return await api.post(`/api/v1/public-spaces/${ruangPublikId}/photos/like`, {
+    foto_url: fotoUrl,
+  });
+};
+
+/**
+ * Batal like satu foto galeri ruang publik (BE-58 revisi).
+ * Belum pernah like -> 404.
+ *
+ * @param {string} ruangPublikId
+ * @param {string} fotoUrl
+ * @returns {Promise<{foto_url: string, like_count: number, liked_by_me: boolean}>}
+ */
+export const unlikeFotoGaleri = async (ruangPublikId, fotoUrl) => {
+  return await api.delete(
+    `/api/v1/public-spaces/${ruangPublikId}/photos/like?foto_url=${encodeURIComponent(fotoUrl)}`
+  );
 };
 
 /**

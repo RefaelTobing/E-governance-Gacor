@@ -55,10 +55,45 @@ class RuangPublikListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class FotoGaleriItem(BaseModel):
+    """Satu foto galeri ruang publik beserta status like-nya.
+
+    `sumber`: `laporan` (dokumentasi warga), `resmi` (unggahan admin/Satu Data),
+    atau `utama` (kolom `image_url` lama yang belum punya baris foto).
+    `liked_by_me` hanya terisi bila pemanggil membawa token.
+    """
+
+    url: str
+    sumber: str
+    like_count: int = 0
+    liked_by_me: Optional[bool] = None
+
+
 class RuangPublikDetailResponse(RuangPublikResponse):
     fasilitas: List[FasilitasResponse] = []
     foto: List[str] = []
+    # FE-44 revisi: metadata per foto galeri (sumber + jumlah like) supaya
+    # tombol hati tidak perlu menebak dari daftar laporan.
+    foto_meta: List[FotoGaleriItem] = []
     stats: Dict[str, int] = {}
+
+
+class FotoLikeRequest(BaseModel):
+    """Body like foto galeri; URL harus benar-benar ada di galeri ruang publik."""
+
+    foto_url: str
+
+
+class FotoLikeResponse(BaseModel):
+    """Hasil like/unlike foto galeri (BE-58 revisi).
+
+    `liked_by_me` menyatakan keadaan setelah aksi: True setelah like,
+    False setelah unlike. `like_count` = total like foto itu saat ini.
+    """
+
+    foto_url: str
+    like_count: int
+    liked_by_me: bool
 
 
 class AdminRuangPublikResponse(RuangPublikResponse):

@@ -136,15 +136,3 @@ class LaporanFlagResponse(BaseModel):
 
     laporan_id: str
     flag_count: int
-
-
-class LaporanLikeResponse(BaseModel):
-    """Hasil like/unlike foto laporan (BE-58).
-
-    `liked_by_me` menyatakan keadaan setelah aksi: True setelah like,
-    False setelah unlike. `like_count` = total like foto itu saat ini.
-    """
-
-    laporan_id: str
-    like_count: int
-    liked_by_me: bool

@@ -653,24 +653,25 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
 **Status:** ✅ (selesai 2026-10-28; BE-58 ikut dikerjakan sebagai pendukung)
 
 **File utama:** `apps/web/src/features/ruang-publik/pages/DetailRuangPublikPage.jsx`,
-`apps/web/src/services/laporanService.js`
+`apps/web/src/services/ruangPublikService.js`
 
 **Sudah dikerjakan:**
 
-1. Komponen kecil `TombolLikeFoto` (hati + angka) tampil pada foto galeri berlabel
-   "Dokumentasi Warga" (foto laporan tayang) — di pil bawah thumbnail grid dan
-   sebagai pil `ukuran="besar"` di dalam lightbox, sebaris dengan badge
-   "Dokumentasi Warga". Tombol like **tidak** lagi di baris kontrol galeri
-   (sebelumnya melayang di header, tidak jelas menempel ke foto mana). Foto resmi
-   tidak punya tombol like (tanda visual sumber foto sudah ada lewat label kamera
-   FE-14).
-2. `laporanService` + `likeFoto()` / `unlikeFoto()` (BE-58) dan mapping
-   `like_count` -> `likeCount`, `liked_by_me` -> `likedByMe` di `transformLaporanResponse`.
-3. `handleLike`: update optimistis (angka berubah tanpa reload penuh, state
-   `semuaLaporan` diupdate), sinkron dari jawaban server, rollback + pesan galat
-   bila gagal. Tanpa login diarahkan ke `/login?redirect=...` (pola FE-37).
-   Pesan galat dirender di dalam lightbox, bukan lagi di header galeri, supaya
-   tidak tertutup overlay modal.
+1. Komponen kecil `TombolLikeFoto` (hati + angka) tampil pada **semua** foto galeri
+   (revisi 2026-10-29) — di pil bawah thumbnail grid dan sebagai pil `ukuran="besar"`
+   di dalam lightbox. Label "Dokumentasi Warga" tetap hanya muncul untuk foto yang
+   `sumber === 'laporan'`, tapi tombol like tidak lagi bergantung pada label itu.
+   Tombol like **tidak** ada di baris kontrol galeri (sebelumnya melayang di header,
+   tidak jelas menempel ke foto mana).
+2. `ruangPublikService` + `likeFotoGaleri()` / `unlikeFotoGaleri()` (BE-58 revisi),
+   memakai `POST/DELETE /public-spaces/{id}/photos/like` dengan `foto_url`.
+   `getPublicSpaceDetail` memetakan `foto_meta[]` -> `fotoMeta[]`
+   (`url`, `sumber`, `likeCount`, `likedByMe`) dan menormalkan URL lewat `assetUrl`
+   dengan helper yang sama seperti `foto[]`, supaya kunci peta cocok persis.
+3. `handleLike`: update optimistis pada `detail.fotoMeta` (angka berubah tanpa reload
+   penuh), sinkron dari jawaban server, rollback + pesan galat bila gagal. Tanpa login
+   diarahkan ke `/login?redirect=...` (pola FE-37). Pesan galat dirender di dalam
+   lightbox, bukan di header galeri, supaya tidak tertutup overlay modal.
 
 **Revisi 2026-10-29 (lightbox):**
 
@@ -682,6 +683,14 @@ adalah menghapus blok gambar dummy pada sidebar form laporan.
   viewport sehingga menyisakan ruang kosong menganga di bawah footer.
 - Klik thumbnail tetap langsung membuka lightbox; tidak ada mode "pilih dulu"
   maupun tombol perbesar tambahan.
+
+**Revisi 2026-10-29 (like untuk semua foto):**
+
+- Sebelumnya tombol hati hanya muncul di foto laporan warga, jadi 1.192 dari 1.194
+  ruang publik tidak punya tombol like sama sekali. Sekarang **semua** foto galeri
+  bisa disukai: foto laporan warga, unggahan admin, dan foto resmi Satu Data.
+- Sumber data like pindah dari `semuaLaporan` (cocok-cocokan URL -> laporan) ke
+  `detail.fotoMeta` dari backend, sehingga tombol tidak lagi menebak dari daftar laporan.
 
 **Acceptance criteria:**
 

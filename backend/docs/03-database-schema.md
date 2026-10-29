@@ -27,6 +27,7 @@ categories ──┐
 | `laporan` | `models/laporan.py` | FK `user_id` (opsional), `ruang_publik_id` (wajib), `fasilitas_id` (opsional) |
 | `laporan_timeline` | `models/laporan_timeline.py` | FK `laporan_id → laporan.id`, cascade delete |
 | `laporan_flag` | `models/laporan_flag.py` | FK `laporan_id → laporan.id` + `user_id → users.id`, unique `(laporan_id, user_id)`, cascade delete (BE-25) |
+| `foto_like` | `models/foto_like.py` | FK `user_id → users.id`; unique `(foto_url, user_id)` — like per URL foto galeri (BE-58 revisi) |
 | `etl_run` | `models/etl_run.py` | Tanpa FK; satu baris per run ETL (BE-19), dibaca `GET /admin/sync-data` |
 | `token_blacklist` | `models/token_blacklist.py` | Tanpa FK; `jti` token yang di-logout + `expires_at` (BE-55) |
 
@@ -134,6 +135,19 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `created_at` | DATETIME | Waktu flag |
 | *unique* | `(laporan_id, user_id)` | `uq_laporan_flag_pengguna` — satu pengguna satu flag per laporan |
 
+### `foto_like`
+| Kolom | Tipe | Catatan |
+|---|---|---|
+| `id` | VARCHAR(50) PK | UUID |
+| `foto_url` | TEXT NOT NULL (index) | URL foto galeri yang disukai; identitas foto, bukan `laporan.id` (BE-58 revisi) |
+| `user_id` | VARCHAR(36) FK | Ke `users.id`, index; wajib login |
+| `created_at` | DATETIME | Waktu like |
+| *unique* | `(foto_url, user_id)` | `uq_foto_like_pengguna` — satu pengguna satu like per foto |
+
+Like menempel di URL supaya foto dari laporan warga, unggahan admin, dan data resmi Satu Data
+sama-sama bisa disukai. Foto dengan like terbanyak menjadi foto utama ruang publik (`image_url`).
+`services/ruang_publik.hapus_foto` ikut menghapus like pada URL tersebut agar tidak ada like yatim.
+
 ### `etl_run`
 | Kolom | Tipe | Catatan |
 |---|---|---|
@@ -172,6 +186,8 @@ tayang tidak disimpan di sini, di-merge langsung dari tabel `laporan` oleh `gabu
 | `fe1d83da4fca_tambah_tabel_laporan_flag` | Menambah tabel `laporan_flag` + unique `(laporan_id, user_id)` — flag pengguna lain atas laporan tayang (BE-25) |
 | `a1b2c3d4e5f6_tambah_alasan_penolakan_laporan` | Menambah `laporan.alasan_penolakan` (TEXT, nullable) — alasan penolakan tersimpan, bukan hanya di timeline (BE-30) |
 | `tambah_tabel_token_blacklist` | Menambah tabel `token_blacklist` — `jti` token yang di-logout + `expires_at` (BE-55) |
+| `b7e8c9d0a112_tabel_foto_like_be58` | Menambah tabel `foto_like` + unique `(laporan_id, user_id)` — like per laporan (BE-58, digantikan revisi di bawah) |
+| `c1d2e3f4a5b6_foto_like_per_foto` | Like pindah dari `laporan_id` ke `foto_url` (backfill dari `laporan.foto_url`), unique `(foto_url, user_id)` — semua foto galeri bisa disukai (BE-58 revisi) |
 
 Aturan kerja:
 1. Ubah model → `python -m alembic revision --autogenerate -m "pesan jelas"` → periksa file hasilnya → `python -m alembic upgrade head`.

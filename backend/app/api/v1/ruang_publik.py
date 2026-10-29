@@ -3,13 +3,19 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_admin, oauth2_scheme_optional
+from app.api.deps import (
+    get_current_active_user,
+    get_current_admin,
+    oauth2_scheme_optional,
+)
 from app.core.database import get_db
 from app.models.category import Category
 from app.models.ruang_publik import RuangPublik
 from app.models.user import User
 from app.schemas.ruang_publik import (
     AdminRuangPublikResponse,
+    FotoLikeRequest,
+    FotoLikeResponse,
     RuangPublikDetailResponse,
     RuangPublikListResponse,
     RuangPublikUpdate,
@@ -81,8 +87,16 @@ def read_public_spaces_stats(
 
 
 @router.get("/{ruang_publik_id}", response_model=RuangPublikDetailResponse)
-def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
-    """Detail satu ruang publik beserta fasilitas dan foto resminya."""
+def read_public_space(
+    ruang_publik_id: str,
+    db: Session = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+):
+    """Detail satu ruang publik beserta fasilitas dan galeri fotonya.
+
+    Token opsional: bila ada, `foto_meta[].liked_by_me` terisi supaya tombol
+    hati di galeri langsung menampilkan status like pengguna.
+    """
     ruang = crud_ruang_publik.get_ruang_publik(db, ruang_publik_id)
     if ruang is None:
         raise HTTPException(
@@ -90,18 +104,60 @@ def read_public_space(ruang_publik_id: str, db: Session = Depends(get_db)):
             detail="Ruang publik tidak ditemukan",
         )
 
-    # Galeri digabung dari tabel foto resmi + laporan tayang; `image_url` lama
-    # ikut tampil lewat gabung_foto sehingga kontrak response tidak berubah.
+    peninjau = user_dari_token(db, token) if token else None
+    # Galeri digabung dari tabel foto resmi + laporan tayang + `image_url` lama;
+    # `foto_meta` membawa sumber dan jumlah like per foto (BE-58 revisi).
     foto = crud_ruang_publik.gabung_foto(db, ruang)
+    foto_meta = crud_ruang_publik.meta_foto_galeri(
+        db, ruang, user_id=peninjau.id if peninjau else None
+    )
     # `image_url` = foto utama (prioritas urutan_foto_utama), supaya hero detail
     # tidak bergantung pada asumsi FE bahwa foto[0] adalah foto terbaik.
     utama = crud_ruang_publik.foto_utama(db, ruang)
     return RuangPublikDetailResponse.model_validate(ruang, from_attributes=True).model_copy(
         update={
             "foto": foto,
+            "foto_meta": foto_meta,
             "image_url": utama or ruang.image_url,
             "stats": crud_ruang_publik.hitung_status_fasilitas(ruang.fasilitas),
         }
+    )
+
+
+@router.post(
+    "/{ruang_publik_id}/photos/like",
+    response_model=FotoLikeResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def like_foto_galeri(
+    ruang_publik_id: str,
+    payload: FotoLikeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Like satu foto galeri (BE-58 revisi); wajib login, satu like per foto.
+
+    Foto boleh berasal dari laporan warga, unggahan admin, atau data resmi.
+    URL harus ada di galeri ruang publik tersebut (400 bila bukan).
+    """
+    return crud_ruang_publik.like_foto_galeri(
+        db, ruang_publik_id, foto_url=payload.foto_url, user_id=current_user.id
+    )
+
+
+@router.delete(
+    "/{ruang_publik_id}/photos/like",
+    response_model=FotoLikeResponse,
+)
+def unlike_foto_galeri(
+    ruang_publik_id: str,
+    foto_url: str = Query(..., description="URL foto yang like-nya dibatalkan"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Batal like satu foto galeri (BE-58 revisi); belum pernah like -> 404."""
+    return crud_ruang_publik.unlike_foto_galeri(
+        db, ruang_publik_id, foto_url=foto_url, user_id=current_user.id
     )
 
 

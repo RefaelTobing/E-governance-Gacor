@@ -40,8 +40,10 @@ Swagger UI (bisa dicoba langsung): http://localhost:8000/docs
 | **Ruang Publik** ||||
 | `GET` | `/api/v1/public-spaces` | — | Daftar + pencarian + radius + filter (`fasilitas[]` ringkas + `stats{}` per baris) |
 | `GET` | `/api/v1/public-spaces/stats` | — | Metrik halaman daftar (FEAT-002) |
-| `GET` | `/api/v1/public-spaces/{id}` | — | Detail + `fasilitas[]` + `foto[]` (resmi + laporan tayang, BE-48) + `stats{}` |
+| `GET` | `/api/v1/public-spaces/{id}` | Token opsional | Detail + `fasilitas[]` + `foto[]` + `foto_meta[]` (sumber + like per foto) + `stats{}` |
 | `GET` | `/api/v1/public-spaces/{id}/reports` | — | Laporan tayang per ruang publik (filter `STATUS_TAYANG`, BE-47) |
+| `POST` | `/api/v1/public-spaces/{id}/photos/like` | **Login** | Like satu foto galeri (`{foto_url}`); `201`, `409` bila sudah like |
+| `DELETE` | `/api/v1/public-spaces/{id}/photos/like` | **Login** | Batal like (`?foto_url=`); `404` bila belum pernah like |
 | **Ruang Publik (Admin)** ||||
 | `GET` | `/api/v1/admin/public-spaces` | **Admin** | Data master lengkap + `field_source` + `jumlah_fasilitas` + `stats` (BE-32) |
 | `PATCH` | `/api/v1/admin/public-spaces/{id}` | **Admin** | Edit manual; kolom terubah ditandai `field_source` (BE-33) |
@@ -163,11 +165,45 @@ Catatan: Haversine dihitung **di SQL** (bukan Python). Baris tanpa koordinat sel
 `status_prima` = fasilitas `status="baik"`; `perlu_perhatian` = semua yang **bukan** baik (termasuk `NULL`).
 
 ### `GET /api/v1/public-spaces/{id}`
-Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` (penuh) + `foto: ["..."]` + `stats{...}` (versi penuh dari `fasilitas`, kunci sama dengan list) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit, sesuai FEAT-012). `404` bila id tak ada.
+Detail `RuangPublikDetailResponse` = field list + `kecamatan`/`kelurahan` (BE-16) + `fasilitas: [...]` (penuh) + `foto: ["..."]` + `foto_meta: [...]` + `stats{...}` (versi penuh dari `fasilitas`, kunci sama dengan list) + `field_source: {...}` (penanda kolom hasil edit admin, `null` bila belum pernah diedit, sesuai FEAT-012). `404` bila id tak ada.
 
 `foto[]` = **galeri gabungan** hasil `services/ruang_publik.gabung_foto` (BE-48): foto resmi dari tabel
 `ruang_publik_foto` (urut terlama, `image_url` lama ikut bila belum punya baris) + `foto_url` laporan
-ber-status `STATUS_TAYANG` (urut terbaru), duplikat dibuang. Kontrak tetap `list[str]`.
+ber-status `STATUS_TAYANG` (urut terbaru), duplikat dibuang. Kontrak `foto` tetap `list[str]`.
+
+`foto_meta[]` (BE-58 revisi) = metadata per foto dengan urutan sama seperti `foto[]`:
+
+```json
+[{ "url": "...", "sumber": "laporan|resmi|utama", "like_count": 3, "liked_by_me": true }]
+```
+
+`sumber` menandai asal foto (`laporan` = dokumentasi warga, `resmi` = tabel foto/unggahan admin,
+`utama` = kolom `image_url` lama). `liked_by_me` hanya terisi bila request membawa token; tanpa
+token nilainya `null`. Dua query agregat untuk seluruh galeri, bebas N+1.
+
+### Like foto galeri (BE-58 revisi)
+
+```
+POST   /api/v1/public-spaces/{id}/photos/like     body {"foto_url": "..."}
+DELETE /api/v1/public-spaces/{id}/photos/like?foto_url=...
+```
+
+Like menempel di **URL foto**, bukan di laporan, sehingga semua foto galeri bisa disukai: foto
+laporan warga, unggahan admin, maupun foto resmi Satu Data. Wajib login.
+
+| Kondisi | Status |
+|---|---|
+| Tanpa/rusak token | `401` |
+| Ruang publik tak ada | `404` |
+| `foto_url` bukan bagian galeri ruang publik itu | `400` |
+| Like dobel | `409` |
+| Unlike padahal belum like | `404` |
+
+Response: `{ "foto_url": "...", "like_count": 1, "liked_by_me": true }`.
+
+Foto dengan like terbanyak menjadi foto utama ruang publik (`image_url`), dari sumber mana pun;
+bila jumlah like sama, urutan prioritas dasar yang menentukan (laporan terbaru -> foto resmi
+terlama -> `image_url` lama). Endpoint lama `POST/DELETE /reports/{id}/like` dihapus.
 
 ### `GET /api/v1/public-spaces/{id}/reports`
 Laporan tayang untuk 1 ruang publik, query `skip`/`limit`. Filter memakai `STATUS_TAYANG`

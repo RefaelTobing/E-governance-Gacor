@@ -194,28 +194,6 @@ export const flagReport = async (id) => {
 };
 
 /**
- * Like foto laporan tayang (BE-58, tombol galeri FE-44).
- * Wajib login; satu like per pengguna (409 bila sudah menyukai).
- *
- * @param {string} id
- * @returns {Promise<{laporan_id: string, like_count: number, liked_by_me: boolean}>}
- */
-export const likeFoto = async (id) => {
-  return await api.post(`/api/v1/reports/${id}/like`);
-};
-
-/**
- * Batal like foto laporan tayang (BE-58).
- * Belum pernah like -> 404.
- *
- * @param {string} id
- * @returns {Promise<{laporan_id: string, like_count: number, liked_by_me: boolean}>}
- */
-export const unlikeFoto = async (id) => {
-  return await api.delete(`/api/v1/reports/${id}/like`);
-};
-
-/**
  * Ambil detail satu laporan berdasarkan ID.
  * @param {string} id
  */

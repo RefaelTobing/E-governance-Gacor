@@ -21,6 +21,12 @@ Changelog ini ditulis **bersamaan** dengan saat task dicentang di
 - Pekerjaan yang bukan task kode (dokumen, konfigurasi) memakai label **Dokumen** / **Chore**.
 - Isi ringkas: satu baris per task. Detail teknis cukup di task guide dan commit message.
 
+## 2026-10-29
+
+- **[BE-58 revisi]** Like per foto galeri, bukan per laporan - target like pindah dari `laporan_id` ke `foto_url` (migration `c1d2e3f4a5b6`, backfill dari `laporan.foto_url`, unique `(foto_url, user_id)`), sehingga foto laporan warga, unggahan admin, dan foto resmi Satu Data sama-sama bisa disukai. Endpoint lama `POST`/`DELETE /reports/{id}/like` dihapus, diganti `POST`/`DELETE /public-spaces/{id}/photos/like` (400 bila URL bukan bagian galeri ruang publik itu; 409/404 seperti sebelumnya). `GET /public-spaces/{id}` menambah `foto_meta[]` (`url`, `sumber`, `like_count`, `liked_by_me`) + token opsional; `foto[]` tetap `list[str]`. `urutan_foto_utama` dan `foto_utama_per_ruang_publik` memilih foto utama dari sumber mana pun; `hapus_foto` ikut membersihkan like pada URL tersebut. Verifikasi: upgrade -> downgrade -> upgrade bersih (like lama utuh); 401/400/201/409/200/404 sesuai; foto resmi ber-2 like menggantikan foto laporan sebagai `image_url` di detail dan daftar; `npm run build` sukses.
+
+---
+
 ## 2026-10-28
 
 - **[BE-58]** Like foto laporan warga - tabel `foto_like` (migration `b7e8c9d0a112`, unique per user/laporan), endpoint `POST`/`DELETE /api/v1/reports/{id}/like` (login; 409 ganda, 404 belum like, 400 laporan tak tayang/tanpa foto), `like_count` + `liked_by_me` (opsional-token) di `GET /public-spaces/{id}/reports` (batch, bebas N+1), dan `urutan_foto_utama` kini mengurutkan foto laporan ber-like terbanyak (menyala penuh bagian like BE-57). Verifikasi: smoke 401/404/409/400 sesuai; E2E UI via CDP di FE-44 like/unlike, count 0→1→0→1 tanpa reload, persisten setelah reload; fixture uji dihapus.
