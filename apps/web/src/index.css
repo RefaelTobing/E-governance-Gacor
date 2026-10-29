@@ -4,6 +4,9 @@
    ========================================================================== */
 
 :root {
+  /* Scrollbar, kontrol form bawaan, dan daftar opsi <select> ikut tema. */
+  color-scheme: light;
+
   /* Color Tokens */
   --color-primary: #0F766E;
   --color-primary-hover: #0D655E;
@@ -29,6 +32,14 @@
   --color-neutral-light: #F1F5F9;
   --color-neutral-text: #475569;
   --color-on-primary: #FFFFFF;
+  /* Teks di atas --color-accent (amber). Amber terang butuh teks gelap di
+     mode gelap; nilai terang tetap putih agar tampilan light tidak berubah. */
+  --color-on-accent: #FFFFFF;
+  --color-danger-border: #FCA5A5;
+  /* Merah pekat untuk latar yang memuat teks putih. --color-danger terlalu
+     terang untuk itu: putih di atasnya cuma 3,76:1. */
+  --color-danger-solid: #DC2626;
+  --color-danger-solid-hover: #B91C1C;
 
   /* Neutral Tokens */
   --color-text-main: #0F172A;
@@ -74,6 +85,8 @@
    Dark Mode Token Override (lolos R-34 & WCAG AA)
    ========================================================================== */
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --color-bg-main: #0B1120;
   --color-surface: #1E293B;
   --color-text-main: #F1F5F9;
@@ -101,6 +114,14 @@
   --color-neutral-light: rgba(148, 163, 184, 0.15);
   --color-neutral-text: #CBD5E1;
   --color-on-primary: #042F2C;
+  --color-on-accent: #042F2C;
+  --color-danger-border: rgba(239, 68, 68, 0.45);
+
+  /* Bayangan versi gelap butuh opasitas lebih tinggi; nilai terang hampir
+     tidak terlihat di atas permukaan #1E293B sehingga elevasi kartu hilang. */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
 }
 
 /* Base Reset */
@@ -208,7 +229,7 @@ h3, .h3 {
 
 .btn-primary {
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -217,7 +238,7 @@ h3, .h3 {
 
 .btn-secondary {
   background-color: var(--color-accent, #F59E0B);
-  color: #FFFFFF;
+  color: var(--color-on-accent);
   border-color: var(--color-accent, #F59E0B);
 }
 
@@ -235,7 +256,7 @@ h3, .h3 {
   border-radius: var(--radius-pill);
   background-color: var(--color-accent, #F59E0B);
   border-color: var(--color-accent, #F59E0B);
-  color: #FFFFFF;
+  color: var(--color-on-accent);
 }
 
 .ruang-publik-detail-button:hover:not(:disabled) {
@@ -250,7 +271,7 @@ h3, .h3 {
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: rgba(15, 23, 42, 0.05);
+  background-color: var(--color-neutral-light);
 }
 
 .btn-ghost {
@@ -263,12 +284,12 @@ h3, .h3 {
 }
 
 .btn-danger {
-  background-color: var(--color-danger);
+  background-color: var(--color-danger-solid);
   color: #FFFFFF;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #DC2626;
+  background-color: var(--color-danger-solid-hover);
 }
 
 .btn-sm {
@@ -675,7 +696,7 @@ h3, .h3 {
 }
 
 .form-input::placeholder, .form-textarea::placeholder {
-  color: var(--color-text-light);
+  color: var(--color-text-muted);
 }
 
 /* Slider bawaan browser membawa latar putih; track digambar terpisah. */
@@ -713,7 +734,7 @@ input[type="range"] {
   width: 32px;
   height: 32px;
   background-color: var(--color-primary);
-  color: white;
+  color: var(--color-on-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -794,7 +815,7 @@ input[type="range"] {
   height: 26px;
   border-radius: 50%;
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1226,7 +1247,7 @@ input[type="range"] {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   background-color: var(--color-primary);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
@@ -1757,7 +1778,7 @@ input[type="range"] {
 
 /* Footer Styles */
 .public-footer {
-  background-color: #F1F5F9;
+  background-color: var(--color-neutral-light);
   border-top: 1px solid var(--color-border);
   margin-top: auto;
   padding-top: var(--space-3xl);
@@ -1850,11 +1871,29 @@ input[type="range"] {
   gap: var(--space-lg);
 }
 
+/* Empat tautan utilitas tidak muat sebaris di layar sempit; biarkan membungkus
+   dan tumpuk baris copyright di atasnya. */
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .footer-bottom-links {
+    flex-wrap: wrap;
+    gap: var(--space-md) var(--space-lg);
+  }
+}
+
 /* ==========================================================================
    Akun Warga — Shell layout, sidebar, dan drawer mobile
    ========================================================================== */
 
 .akun-shell {
+  /* Header sidebar dan topbar wajib setinggi ini supaya garis bawahnya
+     menyambung lurus. */
+  --akun-header-h: 64px;
   display: flex;
   min-height: 100vh;
   background-color: var(--color-bg-main);
@@ -1881,7 +1920,9 @@ input[type="range"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 16px;
+  height: var(--akun-header-h);
+  flex-shrink: 0;
+  padding: 0 16px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1921,7 +1962,7 @@ input[type="range"] {
   min-width: 40px;
   border-radius: 50%;
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1999,7 +2040,7 @@ input[type="range"] {
 
 .akun-menu-item.active {
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   font-weight: 600;
 }
 
@@ -2025,7 +2066,7 @@ input[type="range"] {
   min-height: 44px;
   width: 100%;
   padding: 0 12px;
-  border: 1px solid #FCA5A5;
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-pill);
   background-color: var(--color-danger-light);
   color: var(--color-danger-text);
@@ -2036,9 +2077,9 @@ input[type="range"] {
 }
 
 .akun-logout-button:hover {
-  background-color: var(--color-danger);
+  background-color: var(--color-danger-solid);
   color: #FFFFFF;
-  border-color: var(--color-danger);
+  border-color: var(--color-danger-solid);
 }
 
 .akun-logout-button:focus-visible {
@@ -2058,7 +2099,8 @@ input[type="range"] {
   position: sticky;
   top: 0;
   z-index: 30;
-  height: 64px;
+  height: var(--akun-header-h);
+  flex-shrink: 0;
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -2181,7 +2223,7 @@ input[type="range"] {
   min-width: 72px;
   border-radius: 50%;
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2379,7 +2421,7 @@ input[type="range"] {
   flex-direction: column;
   gap: 4px;
   background-color: var(--color-danger-light);
-  border: 1px solid #FCA5A5;
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
   padding: var(--space-md) var(--space-lg);
   margin-bottom: var(--space-xl);
@@ -2450,7 +2492,7 @@ input[type="range"] {
 
 .profil-remove-button:hover {
   background-color: var(--color-danger-light);
-  border-color: #FCA5A5;
+  border-color: var(--color-danger-border);
 }
 
 .profil-remove-button:focus-visible {
@@ -2716,4 +2758,102 @@ input[type="range"] {
 .profile-dropdown-logout:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
+}
+
+/* ==========================================================================
+   Peta Leaflet di mode gelap
+   Sumber tile tetap OpenStreetMap, jadi atribusi tidak berubah. Tile dibalik
+   luminansinya lewat filter, sedangkan kontrol dan popup bawaan Leaflet yang
+   selalu putih diwarnai ulang memakai token.
+   Catatan: Leaflet sendiri memberi `.leaflet-tile { filter: inherit }`, jadi
+   filter dipasang di elemen tile, bukan di pane, agar tidak terbalik dua kali.
+   ========================================================================== */
+[data-theme="dark"] .leaflet-container {
+  background-color: var(--color-bg-main);
+}
+
+[data-theme="dark"] .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.75);
+}
+
+[data-theme="dark"] .leaflet-bar a,
+[data-theme="dark"] .leaflet-bar a:hover {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .leaflet-bar a:hover {
+  background-color: var(--color-bg-main);
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .leaflet-bar a.leaflet-disabled {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-light);
+}
+
+[data-theme="dark"] .leaflet-control-attribution {
+  background-color: rgba(11, 17, 32, 0.8);
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .leaflet-control-attribution a {
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .leaflet-popup-content-wrapper,
+[data-theme="dark"] .leaflet-popup-tip {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .leaflet-popup-content-wrapper {
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button:hover,
+[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button:focus {
+  color: var(--color-text-main);
+}
+
+[data-theme="dark"] .leaflet-control-scale-line {
+  border-color: var(--color-text-muted);
+  background-color: rgba(11, 17, 32, 0.7);
+  color: var(--color-text-muted);
+}
+
+/* Cluster penanda: latar dibuat hampir pekat supaya angka di dalamnya tetap
+   terbaca dengan teks gelap di atas peta gelap. */
+[data-theme="dark"] .marker-cluster {
+  color: #0F172A;
+}
+
+[data-theme="dark"] .marker-cluster-small {
+  background-color: rgba(181, 226, 140, 0.85);
+}
+
+[data-theme="dark"] .marker-cluster-small div {
+  background-color: rgba(110, 204, 57, 0.95);
+}
+
+[data-theme="dark"] .marker-cluster-medium {
+  background-color: rgba(241, 211, 87, 0.85);
+}
+
+[data-theme="dark"] .marker-cluster-medium div {
+  background-color: rgba(240, 194, 12, 0.95);
+}
+
+[data-theme="dark"] .marker-cluster-large {
+  background-color: rgba(253, 156, 115, 0.85);
+}
+
+[data-theme="dark"] .marker-cluster-large div {
+  background-color: rgba(241, 128, 23, 0.95);
 }

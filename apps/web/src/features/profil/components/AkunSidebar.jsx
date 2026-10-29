@@ -34,7 +34,7 @@ export const AkunSidebar = ({ isOpen, onClose }) => {
   const nama = user?.name || 'Warga Jakarta';
   const email = user?.email || '-';
 
-  const sidebarContent = (
+  const sidebarContent = (denganTombolTutup) => (
     <div
       ref={sidebarRef}
       className="akun-sidebar"
@@ -44,14 +44,18 @@ export const AkunSidebar = ({ isOpen, onClose }) => {
       {/* Header brand */}
       <div className="akun-sidebar-header">
         <Logo size="sm" to="/home" subtitle="PORTAL WARGA" />
-        <button
-          type="button"
-          className="akun-sidebar-close"
-          onClick={onClose}
-          aria-label="Tutup menu akun"
-        >
-          <X size={18} />
-        </button>
+        {/* Tombol tutup hanya relevan di drawer mobile; di sidebar desktop
+            tidak ada yang bisa ditutup. */}
+        {denganTombolTutup && (
+          <button
+            type="button"
+            className="akun-sidebar-close"
+            onClick={onClose}
+            aria-label="Tutup menu akun"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Mini profil */}
@@ -116,12 +120,12 @@ export const AkunSidebar = ({ isOpen, onClose }) => {
         aria-label="Menu akun warga"
         aria-hidden={!isOpen}
       >
-        {sidebarContent}
+        {sidebarContent(true)}
       </aside>
 
       {/* Sidebar permanen untuk desktop */}
       <aside className="akun-sidebar-desktop" aria-label="Menu akun warga">
-        {sidebarContent}
+        {sidebarContent(false)}
       </aside>
     </>
   );

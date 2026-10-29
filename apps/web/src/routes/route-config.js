@@ -23,6 +23,8 @@ export const routes = [
   { path: "/laporan-saya", component: "features/laporan/pages/RiwayatLaporanPage", layout: "public", protected: true },
   { path: "/laporan-saya/:id", component: "features/laporan/pages/DetailStatusLaporanPage", layout: "public", protected: true },
   { path: "/tentang", component: "features/tentang/pages/TentangPage", layout: "public" },
+  // Tema bisa diakses tanpa login: preferensi tampilan bukan data pribadi.
+  { path: "/pengaturan-tema", component: "features/profil/pages/PengaturanTemaPage", layout: "public" },
   { path: "/login", component: "features/auth/pages/LoginPage", layout: "public" },
   { path: "/login-pemerintah", component: "features/auth/pages/LoginPemerintahPage", layout: "public" },
 

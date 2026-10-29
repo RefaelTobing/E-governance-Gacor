@@ -143,6 +143,7 @@ export const PublicLayout = () => {
               © 2025 Pemerintah Provinsi DKI Jakarta · RuangTerbuka. Hak Cipta Dilindungi.
             </div>
             <div className="footer-bottom-links">
+              <Link to="/pengaturan-tema" className="footer-link">Pengaturan Tema</Link>
               <a href="#privasi" className="footer-link">Kebijakan Privasi</a>
               <a href="#syarat" className="footer-link">Syarat & Ketentuan</a>
               <a href="#situs" className="footer-link">Peta Situs</a>

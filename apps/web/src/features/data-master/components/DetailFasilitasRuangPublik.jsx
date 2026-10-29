@@ -262,7 +262,7 @@ export const DetailFasilitasRuangPublik = ({ ruangPublik, fasilitas, isLoading, 
 
       {modal && (
         <div style={gayaModal} role="dialog" aria-modal="true" aria-label="Form fasilitas">
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: 'var(--radius-lg)', width: '440px', maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ backgroundColor: 'var(--color-surface)', padding: '24px', borderRadius: 'var(--radius-lg)', width: '440px', maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ margin: 0 }}>{modal === 'tambah' ? 'Tambah Fasilitas' : 'Ubah Fasilitas'}</h3>
               <button type="button" onClick={tutupModal} aria-label="Tutup" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>

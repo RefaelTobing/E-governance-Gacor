@@ -335,7 +335,7 @@ const PetaDashboardAdmin = () => {
                     <span style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.alamat || 'Alamat belum tersedia'}</span>
                     <span style={{ display: 'block', color: 'var(--color-text-muted)', fontSize: '12px' }}>{space.wilayah || 'Wilayah belum tersedia'}</span>
                     {jmlAktif > 0 ? (
-                      <span style={{ display: 'inline-block', marginTop: '8px', color: '#B45309', fontSize: '11px', fontWeight: 700 }}>
+                      <span style={{ display: 'inline-block', marginTop: '8px', color: 'var(--color-warning-text)', fontSize: '11px', fontWeight: 700 }}>
                         {jmlAktif} laporan aktif
                       </span>
                     ) : (

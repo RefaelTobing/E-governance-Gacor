@@ -240,11 +240,11 @@ export const HomePage = () => {
               marginBottom: '24px',
               width: '100%',
               maxWidth: '680px',
-              backgroundColor: 'rgba(255, 255, 255, 0.97)',
+              backgroundColor: 'var(--color-surface)',
               padding: '5px',
               borderRadius: 'var(--radius-pill)',
               boxShadow: '0 16px 32px -8px rgba(0, 0, 0, 0.3)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              border: '1px solid var(--color-border)'
             }}
           >
             <SearchInput

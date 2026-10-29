@@ -32,15 +32,18 @@ export const ProfilProvider = ({ children }) => {
     }
   });
 
-  // Tema aplikasi (light | dark | system)
+  // Tema aplikasi (light | dark | system). Pengguna baru mengikuti tema OS;
+  // setelah itu pilihannya disimpan dan dihormati.
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('rt_theme') || 'light';
+    return localStorage.getItem('rt_theme') || 'system';
   });
 
   // Tema yang benar-benar dipasang: mode "system" di-resolve ke light/dark
   // berdasarkan preferensi OS, lalu dipantau saat OS berganti tema.
+  // matchMedia dijaga opsional agar tidak melempar di lingkungan tanpa dukungan.
   const resolveSystemTheme = () =>
     typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
@@ -90,6 +93,7 @@ export const ProfilProvider = ({ children }) => {
     document.documentElement.setAttribute('data-theme', next);
 
     if (theme !== 'system') return undefined;
+    if (typeof window.matchMedia !== 'function') return undefined;
 
     // Mode "system": ikuti perubahan tema OS secara langsung.
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

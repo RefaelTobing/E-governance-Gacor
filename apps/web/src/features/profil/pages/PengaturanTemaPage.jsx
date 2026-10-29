@@ -12,7 +12,7 @@ export const PengaturanTemaPage = () => {
   const { theme, setTheme } = useProfil();
 
   return (
-    <div className="container" style={{ maxWidth: '820px', padding: 0 }}>
+    <div className="container" style={{ maxWidth: '820px', paddingTop: 'var(--space-3xl)', paddingBottom: 'var(--space-4xl)' }}>
       <div className="profil-section-head">
         <h2 className="h2">Pengaturan Tema</h2>
       </div>

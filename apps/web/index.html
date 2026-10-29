@@ -4,6 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tema dipasang sebelum cat pertama supaya pengguna mode gelap tidak
+         melihat kedipan putih. Logikanya harus sama dengan
+         src/context/ProfilContext.jsx. -->
+    <script>
+      (function () {
+        // Pengguna baru mengikuti tema OS, sama seperti ProfilContext.
+        var tema = 'system';
+        try {
+          var tersimpan = localStorage.getItem('rt_theme');
+          if (tersimpan === 'light' || tersimpan === 'dark' || tersimpan === 'system') {
+            tema = tersimpan;
+          }
+        } catch (e) {
+          // localStorage bisa diblokir; jatuh ke tema OS.
+        }
+        if (tema === 'system') {
+          var osGelap =
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+          tema = osGelap ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', tema);
+      })();
+    </script>
     <title>RuangTerbuka DKI Jakarta — Platform Pengelolaan Fasilitas Kota</title>
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
