@@ -692,6 +692,25 @@ Label tampilan ada di FE (`apps/web/src/components/StatusBadge.jsx`).
   - **Verifikasi (2026-10-28, backend asli :8000):** 401 tanpa token; 404 id tak dikenal;
     409 like ganda; siklus like→count 1→unlike→count 0; `liked_by_me` `null`/`false`/`true`
     sesuai token; E2E UI (lihat FE-44 di `TASK_GUIDE_FRONTEND.md`).
+  - **Revisi 2026-10-29 — like per foto, bukan per laporan.** Target like dipindah dari
+    `laporan_id` ke `foto_url` supaya **semua** foto galeri bisa disukai, termasuk unggahan
+    admin dan foto resmi Satu Data, bukan hanya dokumentasi warga.
+    - Migration `c1d2e3f4a5b6_foto_like_per_foto.py` di atas `b7e8c9d0a112`: tambah `foto_url`,
+      backfill dari `laporan.foto_url`, hapus baris tanpa foto, drop `laporan_id`,
+      unique baru `(foto_url, user_id)`. Down-grade mengembalikan kolom lama.
+    - Endpoint lama `POST/DELETE /reports/{id}/like` **dihapus**; penggantinya
+      `POST /public-spaces/{id}/photos/like` (body `{foto_url}`; `400` bila URL bukan bagian
+      galeri ruang publik itu) dan `DELETE /public-spaces/{id}/photos/like?foto_url=...`.
+    - `GET /public-spaces/{id}` menambah `foto_meta[]` (`url`, `sumber`, `like_count`,
+      `liked_by_me`) dan menerima token opsional; `foto[]` tetap `list[str]`.
+    - `urutan_foto_utama` / `foto_utama_per_ruang_publik` kini menghitung like per URL untuk
+      semua kandidat (bukan hanya foto laporan). Seri diputus prioritas lama.
+    - `hapus_foto` ikut menghapus like pada URL tersebut; `_isi_agregat_like` di laporan
+      memetakan like lewat `foto_url` sehingga response laporan tidak berubah.
+    - **Verifikasi (2026-10-29, backend asli :8000):** migration upgrade → downgrade → upgrade
+      bersih (like lama tetap utuh); 401 tanpa token; 400 URL asing; 201 like foto resmi;
+      409 like dobel; 200 unlike; 404 unlike ganda; 404 ruang publik tak ada; foto resmi
+      dengan 2 like menggantikan foto laporan sebagai `image_url` di endpoint detail dan daftar.
 
 ---
 
