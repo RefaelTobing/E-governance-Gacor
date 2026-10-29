@@ -141,12 +141,6 @@ export const MOCK_LAPORAN = [
   }
 ];
 
-export const MOCK_PETUGAS = [
-  { id: 1, nama: 'Petugas 01 - Taman Suropati', anggota: 4, wilayah: 'Jakarta Pusat', status: 'Aktif di Lapangan', tugas: 'Perbaikan Lampu Jalur Selatan' },
-  { id: 2, nama: 'Petugas 02 - Tebet Eco Park', anggota: 3, wilayah: 'Jakarta Selatan', status: 'Standby Pos', tugas: 'Pemeliharaan Wastafel' },
-  { id: 3, nama: 'Petugas 03 - Kalijodo', anggota: 5, wilayah: 'Jakarta Barat', status: 'Inspeksi Rutin', tugas: 'Pembersihan Vandalisme' }
-];
-
 export default {
   HERO_SLIDES,
   MOCK_STATISTICS,
@@ -156,6 +150,5 @@ export default {
   MOCK_CATEGORIES,
   MOCK_WILAYAH,
   MOCK_RUANG_PUBLIK,
-  MOCK_LAPORAN,
-  MOCK_PETUGAS
+  MOCK_LAPORAN
 };

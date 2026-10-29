@@ -43,7 +43,6 @@ export const routes = [
   { path: "/dashboard/data-master", redirectTo: "/dashboard/fasilitas" },
   { path: "/dashboard/fasilitas", component: "features/data-master/pages/KelolaFasilitasPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/fasilitas/:ruangPublikId", component: "features/data-master/pages/DetailFasilitasRuangPublikPage", layout: "admin", protected: true, role: "admin" },
-  { path: "/dashboard/petugas", component: "features/moderasi/pages/PetugasLapanganPage", layout: "admin", protected: true, role: "admin" },
   { path: "/dashboard/kelola-admin", component: "features/moderasi/pages/KelolaAdminPage", layout: "admin", protected: true, role: "admin" },
 
   // ---- FALLBACK 404 ----

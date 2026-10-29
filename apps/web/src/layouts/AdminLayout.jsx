@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   ClipboardList,
   Trees,
-  HardHat,
   User,
   LogOut,
   Globe,
@@ -80,18 +79,11 @@ export const AdminLayout = () => {
                 <Trees size={18} /> Kelola Fasilitas
               </NavLink>
               <NavLink
-                to="/dashboard/petugas"
-                className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
-              >
-                <HardHat size={18} /> Petugas Lapangan
-              </NavLink>
-              <NavLink
                 to="/dashboard/kelola-admin"
                 className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
               >
                 <User size={18} /> Kelola Admin
               </NavLink>
-
             </nav>
           </div>
         </div>
