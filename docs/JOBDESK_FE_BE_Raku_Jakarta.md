@@ -27,13 +27,15 @@
 - [ ] **[FE-06]** Integrasi Leaflet + tile OpenStreetMap, render peta dasar. *(FEAT-001)*
 - [ ] **[FE-07]** Ambil lokasi pengguna (browser Geolocation API) dengan fallback input lokasi manual jika ditolak/gagal. *(FEAT-001)*
 - [ ] **[FE-08]** Render marker ruang publik di peta dari hasil API, dengan clustering untuk kepadatan tinggi (mis. `react-leaflet-cluster`). *(FEAT-001)*
-- [ ] **[FE-09]** Komponen kontrol radius pencarian (slider/dropdown, default ±10 km). *(FEAT-001)*
+- [x] **[FE-09]** Komponen kontrol radius pencarian (slider/dropdown, default ±10 km). *(FEAT-001)*
+  - Slider `type="range"` di `DaftarRuangPublikPage.jsx:499-513`, nilai tersimpan di query `?radius=` (`radiusDariUrl`, `:35`). Default dipusatkan di `DEFAULT_RADIUS_KM` (`config/constants.js`). **Diperbaiki 2026-10-31**: default tadinya 700 km (praktis tidak menyaring apa pun), kini 10 km di `constants.js`, `.env.example`, dan `.env.production`.
 - [ ] **[FE-10]** Komponen List View ruang publik, sinkron dengan hasil di peta, urut berdasarkan jarak. *(FEAT-002)*
 - [ ] **[FE-11]** Komponen filter kategori: **Taman Kota, Taman Interaktif, Taman Lingkungan, RPTRA**. *(FEAT-004)*
 - [ ] **[FE-12]** Komponen filter fasilitas (multi-select: area bermain anak, toilet umum, jalur lari, area parkir, dll — daftar dari API). *(FEAT-005)*
 - [ ] **[FE-13]** Halaman Detail Ruang Publik: nama, kategori, alamat/kelurahan, jam operasional, deskripsi, daftar fasilitas. Tampilkan eksplisit "data tidak tersedia" untuk field kosong. *(FEAT-006)*
 - [ ] **[FE-14]** Galeri foto di halaman detail (gabungan foto resmi + foto dari laporan yang sudah tayang). *(FEAT-007)*
-- [ ] **[FE-15]** Integrasi routing OSRM (instance publik): tombol "Minta Arah", gambar rute di atas peta, tampilkan estimasi jarak/waktu tempuh. *(FEAT-003)*
+- [x] **[FE-15]** Integrasi routing OSRM (instance publik): tombol "Minta Arah", gambar rute di atas peta, tampilkan estimasi jarak/waktu tempuh. *(FEAT-003)*
+  - Rute digambar sebagai `Polyline` (`DetailRuangPublikPage.jsx`), dihitung `hooks/useRuteOsrm.js`. **Diperbaiki 2026-10-31**: `distance`/`duration` dari OSRM tadinya diabaikan; hook kini mengembalikan `jarakMeter`/`durasiDetik` dan halaman menampilkan ringkasan "2,5 km · sekitar 9 menit berkendara".
 
 ### A2. Modul Publik — Lapor Fasilitas (FEAT-008, 009, 010, sisi klien FEAT-013)
 > **Dependency:** butuh endpoint Backend `POST /reports` (lihat B3) sudah tersedia.
@@ -42,10 +44,14 @@
   - Mengganti simulasi kamera modal di `FormLaporPage.jsx` dengan input file native, validasi klien JPEG/PNG/WebP <= 5MB, preview gambar & tombol hapus, sequential upload ke `POST /uploads` sebelum submit laporan.
 - [x] **[FE-17]** Ambil koordinat lokasi pengguna saat submit (browser Geolocation API) untuk dikirim bersama laporan, dipakai Backend untuk validasi lokasi. *(FEAT-013)*
   - Mengambil geolokasi via `navigator.geolocation.getCurrentPosition` (timeout 5s) saat submit, dikirim sebagai `lat_user` & `long_user` tanpa membocorkan angka presisi di UI publik. Sifat koordinat opsional (gagal/ditolak browser tetap lanjut submit).
-- [ ] **[FE-18]** Komponen pilihan mode identitas: **Anonim** atau **Tampilkan Nama** (wajib dipilih, default Anonim). *(FEAT-009)*
-- [ ] **[FE-19]** Tampilkan status hasil submit ke pengguna: "Laporan tayang" (jika langsung lolos validasi lokasi) atau "Menunggu tinjauan admin" (jika tertandai) — sesuai respons Backend. *(FEAT-010, FEAT-013)*
-- [ ] **[FE-20]** Halaman/section riwayat laporan yang terikat ke tiap ruang publik, ditampilkan di halaman detail (FEAT-13). Tampilkan badge status per laporan (Tayang / Menunggu Tinjauan / Ditolak).
-- [ ] **[FE-21]** Fitur flag/lapor laporan tayang yang dianggap tidak pantas oleh pengguna lain (lapisan tambahan moderasi). *(FEAT-011)*
+- [x] **[FE-18]** Komponen pilihan mode identitas: **Anonim** atau **Tampilkan Nama** (wajib dipilih, default Anonim). *(FEAT-009)*
+  - Radio di `FormLaporPage.jsx:478-500`; state `modeIdentitas` default `'anonim'` (`:69`), divalidasi sebelum submit (`:232-233`), dikirim sebagai `mode_identitas` (`:265`).
+- [x] **[FE-19]** Tampilkan status hasil submit ke pengguna: "Laporan tayang" (jika langsung lolos validasi lokasi) atau "Menunggu tinjauan admin" (jika tertandai) — sesuai respons Backend. *(FEAT-010, FEAT-013)*
+  - `features/laporan/components/StatusHasilSubmit.jsx`: dua panel (tayang vs menunggu tinjauan), `role="status"` + fokus ke heading, daftar alasan kualitatif yang tidak membocorkan presisi lokasi.
+- [x] **[FE-20]** Halaman/section riwayat laporan yang terikat ke tiap ruang publik, ditampilkan di halaman detail (FEAT-13). Tampilkan badge status per laporan (Tayang / Menunggu Tinjauan / Ditolak).
+  - Section "Pembaruan Partisipasi Warga" di `DetailRuangPublikPage.jsx:942-1055`; data `getSpaceReports` (`:236`), badge `<StatusBadge>` (`:1014`), filter status (`:975-985`), empty state (`:993-1002`).
+- [x] **[FE-21]** Fitur flag/lapor laporan tayang yang dianggap tidak pantas oleh pengguna lain (lapisan tambahan moderasi). *(FEAT-011)*
+  - `handleFlag` (`DetailRuangPublikPage.jsx:338-360`) memanggil `flagReport` dari `services/laporanService.js`; 409 dibaca sebagai "sudah ditandai". Tombol disembunyikan untuk laporan sendiri (`:1008`, `:1024`).
 
 ### A3. FE Admin — Panel Admin Terpisah (aplikasi/URL berbeda)
 > **Dependency:** butuh endpoint Backend khusus admin (auth admin, moderasi, data master — lihat B4, B5, B6). Ini project React **terpisah** dari FE Publik (boleh reuse komponen lewat shared package kalau mau, tapi build & deploy-nya beda).
@@ -54,13 +60,16 @@
 - [ ] **[FE-23]** Halaman Login Admin (form email/password → JWT), simpan token, redirect kalau belum login. *(FEAT-014)*
 - [ ] **[FE-24]** Dashboard daftar laporan yang **tertandai** ("perlu verifikasi lokasi") — menunggu tinjauan. *(FEAT-011)*
 - [ ] **[FE-25]** Halaman detail laporan tertandai: tampilkan foto, deskripsi, koordinat pengguna vs koordinat ruang publik (idealnya divisualisasikan di mini-map), tombol Setujui/Tolak + alasan. *(FEAT-011)*
-- [ ] **[FE-26]** Halaman daftar laporan yang di-flag pengguna lain (dari FE-21), untuk ditinjau ulang admin. *(FEAT-011)*
-- [ ] **[FE-27]** Halaman Manajemen Data Master Ruang Publik: tabel data ruang publik, form edit manual per field, indikator field yang "pernah diedit manual" (beda visual dari field hasil ETL). *(FEAT-012)*
+- [x] **[FE-26]** Halaman daftar laporan yang di-flag pengguna lain (dari FE-21), untuk ditinjau ulang admin. *(FEAT-011)*
+  - `LaporanTerflagPage.jsx:11-143` memanggil `getFlaggedReports()` (`:21`), urut `flagCount`. Aksi "Periksa" (`:118-120`) membawa admin ke halaman detail tempat approve/reject dilakukan — sengaja tidak diduplikasi di daftar.
+- [x] **[FE-27]** Halaman Manajemen Data Master Ruang Publik: tabel data ruang publik, form edit manual per field, indikator field yang "pernah diedit manual" (beda visual dari field hasil ETL). *(FEAT-012)*
+  - Form per field: `EditRuangPublikModal.jsx:8-16` (9 field) + render `:198-271`, plus preview kolom yang akan ditandai (`:274-283`). Indikator visual: badge "N kolom diedit manual" vs teks "Sumber Satu Data" di `KelolaFasilitasPage.jsx:204-210`, sumbernya `fieldSource` dari `services/ruangPublikService.js:307`.
 - [x] **[FE-28]** Tombol trigger manual sinkronisasi ETL (opsional) dari panel admin, dengan status/log hasil sinkronisasi terakhir. *(FEAT-012)*
   - Sudah tersambung ke `POST /admin/sync-data` (BE-18) lewat `services/syncService.js`; panel status menampilkan hasil run yang baru dijalankan (per tahap + log). Hasil lintas sesi lewat `GET /admin/sync-data` (BE-19): `riwayatSync()` memuat 10 run terakhir di `DataMasterPage` (status, waktu, durasi, hitung insert/update/skip, log per tahap).
 
 ### A4. Testing Frontend
-- [ ] **[FE-29]** Unit test komponen kritikal (form validasi, filter, komponen status laporan) — React Testing Library.
+- [x] **[FE-29]** Unit test komponen kritikal (form validasi, filter, komponen status laporan) — React Testing Library.
+  - **2026-10-31: 8 file, 50 tes, semua lolos.** `Button`, `Input`, `Modal`, `MultiSelectDropdown`, `StatusBadge`, `useRuteOsrm`, `redirectAman`, dan **filter `DaftarRuangPublikPage`** (radius default 10 km, radius/kategori/kata kunci dari query string, empty state). Filter sebelumnya tidak punya tes padahal disebut eksplisit di task ini.
 - [ ] **[FE-30]** Uji manual cross-browser & responsif (desktop/mobile) untuk seluruh halaman publik dan admin. *(NFR-003)*
 - [ ] **[FE-31]** Uji alur end-to-end manual: cari ruang publik → detail → lapor → cek status; serta login admin → tinjau laporan → setujui/tolak.
 
@@ -125,8 +134,8 @@
 - [ ] **[BE-36]** Pastikan konfigurasi CORS (BE-07) mengizinkan domain FE Admin secara spesifik, terpisah dari domain FE Publik.
 
 ### B7. Testing Backend
-- [x] **[BE-37]** Unit test (pytest) menyeluruh untuk seluruh service: Public Space, Report, Moderation, Data Master, Auth.
-  - Diverifikasi 2026-10-27: 16 file unit test di `tests/unit/`, 193 passed (0 failed).
+- [ ] **[BE-37]** Unit test (pytest) menyeluruh untuk seluruh service: Public Space, Report, Moderation, Data Master, Auth.
+  - **Koreksi 2026-10-31:** sebelumnya item ini tercentang dengan klaim "16 file unit test di `tests/unit/`, 193 passed (0 failed)". Klaim itu **tidak terbukti**: `backend/tests/` tidak ada, dan grep `test_`/`pytest` di seluruh `backend/**/*.py` tidak menemukan apa pun. Centang dikembalikan ke `[ ]` sampai suite benar-benar dibuat dan dijalankan.
 - [ ] **[BE-38]** **Black-box testing**: uji tiap endpoint berdasarkan input-output yang diharapkan tanpa melihat isi kode, mencakup skenario normal dan edge case (input kosong, koordinat tidak valid, file bukan gambar, dll).
 - [ ] **[BE-39]** **Testing API dengan Postman**: buat Postman Collection untuk seluruh endpoint (publik & admin), termasuk test script otomatis (assertion status code, struktur response) — dipakai juga untuk regression testing tiap ada perubahan endpoint.
 - [ ] **[BE-40]** **User concurrent testing**: simulasikan banyak pengguna mengakses endpoint pencarian ruang publik & submit laporan secara bersamaan (mis. pakai Locust atau JMeter) untuk memastikan API tetap responsif dan tidak terjadi race condition (khususnya di logika status laporan & merge data master).
@@ -163,3 +172,29 @@ Supaya gak saling nunggu tanpa arah, ini urutan yang disarankan biar FE & BE bis
 - [ ] Kuesioner TAM sudah disebar, data sudah dianalisis (regresi linear berganda, sesuai PRD bagian 8), hasil siap dimasukkan ke laporan akhir.
 - [ ] FE Publik dan FE Admin sudah live di domain masing-masing, saling terhubung ke Backend production yang sama.
 - [ ] ETL Worker sudah terjadwal jalan otomatis di server production, minimal satu kali sinkronisasi berhasil tercatat.
+
+---
+
+## E. Catatan Status per 2026-10-31
+
+Ringkasan pekerjaan yang diverifikasi langsung ke kode pada tanggal ini.
+
+**Diperbaiki (frontend `apps/web/`):**
+
+| Hal | Sebelum | Sesudah |
+|---|---|---|
+| Logo & favicon di build production | `LogoRuka.png` ada di root `apps/web/`, Vite hanya menyalin `public/` (huruf kecil) → logo pecah di setiap build | Dipindah ke `apps/web/public/`, `favicon.ico` ditambahkan; keduanya terverifikasi muncul di `dist/` |
+| Radius pencarian default | 700 km → filter jarak praktis tidak menyaring | 10 km (sesuai FE-09), di `constants.js` + kedua `.env` |
+| Estimasi rute OSRM | `distance`/`duration` diabaikan | `jarakMeter`/`durasiDetik` dipakai, tampil sebagai ringkasan jarak & menit |
+| Badge status `selesai` | `neutral` (abu-abu) | `success` (hijau), konsisten dengan stepper & `DetailModerasiPage` |
+| Umpan balik aksi admin & bagikan | `alert()` dan `confirm()` bawaan browser | Error inline dengan `role="alert"`; tombol bagikan berubah label jadi "Tautan tersalin" |
+| Test frontend | 7 file, 41/42 lolos (1 gagal) | 8 file, **50/50 lolos** |
+
+**Belum dikerjakan dan tidak bisa dikerjakan dari sisi frontend:**
+
+- **Deploy (FE-32, FE-33, BE-42 s/d BE-45).** Tidak ada artefak deployment di repo (Dockerfile, nginx, docker-compose) dan tidak ada target hosting yang ditentukan. `.env.production:6` masih `https://api.example.com`.
+- **Uji manual & E2E (FE-30, FE-31).** Template ada di `backend/docs/CHECKLIST_UJI_MANUAL-2026-10-10.md` dan `CHECKLIST_E2E_FE31-2026-10-10.md`, tetapi kolom Hasil masih kosong. Harus dijalankan manusia dengan backend hidup.
+- **BE-37 s/d BE-41.** Tidak ada suite test backend sama sekali. Klaim lama soal "16 file, 193 passed" sudah dikoreksi.
+- **UAT & kuesioner TAM** (bagian D). Butuh responden.
+
+**Perlu keputusan produk:** `.btn-danger` memakai putih di atas `#EF4444` (3,76:1), di bawah ambang WCAG AA 4,5:1. Diperbaiki untuk `.btn-danger` lewat token `--color-danger-solid` (#DC2626, 4,83:1), tetapi tombol hapus lain yang memakai `--color-danger` langsung masih perlu ditinjau.

@@ -10,7 +10,9 @@ import { routes } from './routes/route-config';
 
 // Semua halaman di-load otomatis dari route-config (satu sumber kebenaran,
 // CONVENTIONS.md §1.1). Vite men-split tiap halaman jadi chunk sendiri.
-const pageModules = import.meta.glob('./features/**/pages/*.jsx');
+// File *.test.jsx di folder pages sengaja dikecualikan: tanpa ini Vite ikut
+// membundel tes (dan semua devDependency-nya) ke build production.
+const pageModules = import.meta.glob(['./features/**/pages/*.jsx', '!./features/**/pages/*.test.jsx']);
 
 // Cache React.lazy agar komponen tidak dibuat ulang (dan tidak remount) tiap render.
 const lazyCache = {};

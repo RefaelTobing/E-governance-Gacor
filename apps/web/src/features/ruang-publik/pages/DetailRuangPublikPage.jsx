@@ -21,7 +21,8 @@ import {
   Flag,
   Clock3,
   Camera,
-  Heart
+  Heart,
+  Check
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -430,6 +431,8 @@ export const DetailRuangPublikPage = () => {
   const tujuanRute = centerCoords ? { lat: centerCoords[0], lng: centerCoords[1] } : null;
   const {
     rute,
+    jarakMeter: ruteJarakMeter,
+    durasiDetik: ruteDurasiDetik,
     isLoading: ruteLoading,
     galat: ruteGalat,
     tidakDitemukan: ruteTidakDitemukan,
@@ -438,12 +441,43 @@ export const DetailRuangPublikPage = () => {
     showMap ? tujuanRute : null
   );
 
+  // Ringkasan perjalanan untuk teks rute (FE-15). Dibulatkan supaya tidak
+  // menampilkan angka desimal yang tidak berguna bagi warga.
+  const ringkasanRute = (() => {
+    if (ruteJarakMeter == null || ruteDurasiDetik == null) return '';
+    const km = ruteJarakMeter / 1000;
+    const jarak = km < 1 ? `${Math.round(ruteJarakMeter)} m` : `${km.toFixed(1)} km`;
+    const menit = Math.max(1, Math.round(ruteDurasiDetik / 60));
+    return `${jarak} · sekitar ${menit} menit berkendara`;
+  })();
+
   const handleSaveSpace = () => {
     if (!user || !token) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     toggleSaveSpace(detail.id);
+  };
+
+  // Salin tautan halaman: umpan balik lewat label tombol, bukan alert().
+  // Clipboard bisa ditolak (non-secure context / izin), jadi kegagalannya
+  // ditampilkan apa adanya dan tombol kembali normal setelah 2 detik.
+  const [tautanTersalin, setTautanTersalin] = useState(false);
+  const [salinGagal, setSalinGagal] = useState(false);
+
+  const handleSalinTautan = async () => {
+    const url = window.location.href;
+    try {
+      if (!navigator.clipboard) throw new Error('Clipboard tidak tersedia');
+      await navigator.clipboard.writeText(url);
+      setSalinGagal(false);
+      setTautanTersalin(true);
+      window.setTimeout(() => setTautanTersalin(false), 2000);
+    } catch {
+      setTautanTersalin(false);
+      setSalinGagal(true);
+      window.setTimeout(() => setSalinGagal(false), 3000);
+    }
   };
 
   if (isLoading) {
@@ -514,8 +548,14 @@ export const DetailRuangPublikPage = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Button variant="outline" size="sm" onClick={() => alert('Link telah disalin!')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <Share2 size={14} /> Bagikan
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSalinTautan}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            {tautanTersalin ? <Check size={14} /> : <Share2 size={14} />}
+            {tautanTersalin ? 'Tautan tersalin' : salinGagal ? 'Gagal menyalin' : 'Bagikan'}
           </Button>
           <Button variant="outline" size="sm" onClick={handleSaveSpace} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <Bookmark size={14} /> {isSaved ? 'Tersimpan' : 'Simpan Ruang'}
@@ -568,7 +608,7 @@ export const DetailRuangPublikPage = () => {
                   <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-sm)', flexWrap: 'wrap', marginBottom: 'var(--space-sm)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
                     <span>
                       {ruteLoading && 'Menghitung rute dari lokasi Anda...'}
-                      {!ruteLoading && rute && 'Rute dari lokasi Anda ditampilkan pada peta.'}
+                      {!ruteLoading && rute && (ringkasanRute || 'Rute dari lokasi Anda ditampilkan pada peta.')}
                       {!ruteLoading && ruteGalat && `Rute gagal dihitung. ${ruteGalat} Gunakan tombol Petunjuk Arah (Google Maps).`}
                       {!ruteLoading && !ruteGalat && ruteTidakDitemukan && 'Rute ke lokasi ini belum ditemukan. Gunakan tombol Petunjuk Arah (Google Maps).'}
                       {!ruteLoading && lokasiError && `Lokasi Anda belum bisa dibaca. ${lokasiError}`}

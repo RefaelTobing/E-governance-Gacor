@@ -76,4 +76,58 @@ describe('useRuteOsrm', () => {
     await waitFor(() => expect(result.current.galat).not.toBe(''));
     expect(result.current.rute).toBeNull();
   });
+
+  // FE-15: estimasi jarak/waktu tempuh wajib ikut terbaca dari OSRM.
+  it('meneruskan distance dan duration dari OSRM', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        code: 'Ok',
+        routes: [{
+          distance: 2460.7,
+          duration: 512.4,
+          geometry: { type: 'LineString', coordinates: [[106.8456, -6.2088], [106.8272, -6.1951]] },
+        }],
+      }),
+    });
+
+    const { result } = renderHook(() => useRuteOsrm(ASAL, TUJUAN));
+
+    await waitFor(() => expect(result.current.rute).not.toBeNull());
+    expect(result.current.jarakMeter).toBeCloseTo(2460.7);
+    expect(result.current.durasiDetik).toBeCloseTo(512.4);
+  });
+
+  it('mengosongkan ringkasan jarak saat tidak ada rute', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ code: 'NoRoute', routes: [] }),
+    });
+
+    const { result } = renderHook(() => useRuteOsrm(ASAL, TUJUAN));
+
+    await waitFor(() => expect(result.current.tidakDitemukan).toBe(true));
+    expect(result.current.jarakMeter).toBeNull();
+    expect(result.current.durasiDetik).toBeNull();
+  });
+
+  it('tidak menyimpan jarak/durasi yang bukan angka', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        code: 'Ok',
+        routes: [{
+          distance: null,
+          duration: undefined,
+          geometry: { type: 'LineString', coordinates: [[106.8456, -6.2088]] },
+        }],
+      }),
+    });
+
+    const { result } = renderHook(() => useRuteOsrm(ASAL, TUJUAN));
+
+    await waitFor(() => expect(result.current.rute).not.toBeNull());
+    expect(result.current.jarakMeter).toBeNull();
+    expect(result.current.durasiDetik).toBeNull();
+  });
 });

@@ -23,10 +23,14 @@ const titikValid = (titik) =>
  *
  * @param {{lat:number,lng:number}|null} asal   - lokasi pengguna
  * @param {{lat:number,lng:number}|null} tujuan - lokasi tujuan
- * @returns {{ rute: Array<[number,number]>|null, isLoading: boolean, galat: string, tidakDitemukan: boolean }}
+ * @returns {{ rute: Array<[number,number]>|null, jarakMeter: number|null, durasiDetik: number|null, isLoading: boolean, galat: string, tidakDitemukan: boolean }}
  */
 export const useRuteOsrm = (asal, tujuan) => {
   const [rute, setRute] = useState(null);
+  // Ringkasan perjalanan dari OSRM (`routes[0].distance`/`.duration`).
+  // Null saat belum ada rute supaya UI bisa membedakan "belum dihitung" dari 0.
+  const [jarakMeter, setJarakMeter] = useState(null);
+  const [durasiDetik, setDurasiDetik] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [galat, setGalat] = useState('');
   const [tidakDitemukan, setTidakDitemukan] = useState(false);
@@ -37,6 +41,8 @@ export const useRuteOsrm = (asal, tujuan) => {
     // Belum ada titik lengkap -> tak ada rute, tak ada request.
     if (!siap) {
       setRute(null);
+      setJarakMeter(null);
+      setDurasiDetik(null);
       setIsLoading(false);
       setGalat('');
       setTidakDitemukan(false);
@@ -51,6 +57,8 @@ export const useRuteOsrm = (asal, tujuan) => {
       setGalat('');
       setTidakDitemukan(false);
       setRute(null);
+      setJarakMeter(null);
+      setDurasiDetik(null);
 
       // OSRM: urutan WAJIB {lng},{lat}. Jangan ditukar.
       const url = `${OSRM_BASE_URL}/route/v1/driving/${asal.lng},${asal.lat};${tujuan.lng},${tujuan.lat}?overview=full&geometries=geojson`;
@@ -74,6 +82,11 @@ export const useRuteOsrm = (asal, tujuan) => {
         // GeoJSON [lng,lat] -> Leaflet [lat,lng].
         const koordinat = jalur.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
         setRute(koordinat);
+
+        // Ringkasan hanya dipakai bila angkanya sah; OSRM selalu mengirim
+        // keduanya, tapi jangan sampai NaN menyusup ke UI.
+        setJarakMeter(Number.isFinite(jalur.distance) ? jalur.distance : null);
+        setDurasiDetik(Number.isFinite(jalur.duration) ? jalur.duration : null);
       } catch (err) {
         if (!masihBerlaku || err.name === 'AbortError') return;
         setGalat(err.message || 'Rute gagal dihitung.');
@@ -90,7 +103,7 @@ export const useRuteOsrm = (asal, tujuan) => {
     };
   }, [siap, asal?.lat, asal?.lng, tujuan?.lat, tujuan?.lng]);
 
-  return { rute, isLoading, galat, tidakDitemukan };
+  return { rute, jarakMeter, durasiDetik, isLoading, galat, tidakDitemukan };
 };
 
 export default useRuteOsrm;

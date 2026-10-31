@@ -65,17 +65,27 @@ Repo sudah **jauh melampaui** gambaran di `docs/WORKFLOWFE.md` dan `docs/Structu
 - **Peta**: `leaflet` + `react-leaflet` sudah terpasang → komponen `features/ruang-publik/components/PetaSebaranLokasi.jsx`.
 - `lucide-react` (ikon) dan `swiper` (hero slider) sudah terpasang.
 
-**Ketidaksesuaian yang sudah teridentifikasi (target perbaikan Fase 1–3):**
+**Ketidaksesuaian yang sudah teridentifikasi.**
 
-1. **`App.jsx` tidak memakai `route-config.js`.** `CONVENTIONS.md` §1.1 mewajibkan `route-config.js` sebagai satu-satunya sumber route, tetapi `App.jsx` mendefinisikan `<Routes>` manual. Dua sumber kebenaran route = bug jangka panjang.
-2. **`route-config.js` menunjuk file yang tidak ada**: `features/data-master/pages/EditRuangPublikPage.jsx` dan `features/shared/pages/NotFoundPage.jsx` belum dibuat. Route `/tentang` juga belum ada di config padahal ada di `App.jsx`.
-3. **`LoginPage.jsx` mem-hardcode `http://localhost:8000/...`** — melanggar `CONVENTIONS.md` §7 (wajib lewat `config/api.js` / `VITE_API_BASE_URL`). Registrasi & login juga menggabung dua panggilan di tempat, bukan lewat `authService.js`.
-4. **`config/categories.js` masih mock** (`MOCK_CATEGORIES`) padahal endpoint `GET /api/v1/categories` sudah ada.
-5. **Foto lapor terkirim**: `FormLaporPage` telah terhubung penuh ke `POST /api/v1/uploads` (FE-16, FE-17, BE-20, BE-49). Menggunakan input file asli, validasi tipe file (JPEG/PNG/WebP) dan ukuran berkas (<= 5MB), sequential upload multipart, serta pengambilan koordinat geolokasi browser saat submit. Foto terunggah tampil di Riwayat Laporan dan Detail Moderasi admin.
-6. **"Laporan Saya" belum per-pengguna**: `getUserReports()` hanya meneruskan ke `getReports()` tanpa filter pemilik (butuh dukungan endpoint — ada di Fase 1a workflow backend).
-7. **`config/constants.js` masih placeholder** (`export const CONSTANTS = {};`) — enum status belum dipusatkan (rekomendasi DESIGN.md §3.2.4).
-8. **`EDIT DATA MASTER`**: `KelolaFasilitasPage` sudah terhubung ke `/api/v1/admin/facilities` (daftar, tambah, edit, hapus, impor CSV — BE-53). `DataMasterPage` masih baca-saja karena endpoint tulis ruang publik (`PATCH /public-spaces/{id}`) belum ada; tombol "Edit Master" dan "Impor Data Satu Data" masih `alert()` — pertahankan pesan yang jujur, jangan simulasi sukses palsu.
-9. **404**: `App.jsx` me-redirect `*` ke `/home` — belum ada halaman NotFound.
+> **Status diperbarui 2026-10-31.** Daftar ini sudah cukup tua. Butir yang terbukti selesai di kode dicoret dan diberi bukti, supaya agent berikutnya tidak mengerjakan ulang.
+
+1. ~~**`App.jsx` tidak memakai `route-config.js`.**~~ **SELESAI.** `App.jsx` kini hanya me-render `routes` dari `route-config.js` lewat `renderRoutesForLayout` (`App.jsx:53-58`). Tidak ada `<Route>` manual lagi.
+2. ~~**`route-config.js` menunjuk file yang tidak ada.**~~ **SELESAI.** `NotFoundPage.jsx` sudah ada (`features/shared/pages/NotFoundPage.jsx`) dan terdaftar sebagai route `*`. Entri `EditRuangPublikPage` sudah tidak ada di config. `/tentang` sudah masuk config (`route-config.js`).
+3. ~~**`LoginPage.jsx` mem-hardcode `http://localhost:8000/...`**~~ **SELESAI.** Grep `localhost:8000` di `apps/web/src` hanya menyisakan satu kemunculan, yaitu fallback sah di `config/constants.js:24` (`API_BASE_URL`). Tidak ada `fetch()` langsung di komponen.
+4. ~~**`config/categories.js` masih mock**~~ **SELESAI.** `services/categoryService.js` memanggil `GET /api/v1/categories` dengan fallback `MOCK_CATEGORIES` hanya di mode dev.
+5. **Foto lapor terkirim**: `FormLaporPage` terhubung penuh ke `POST /api/v1/uploads` (FE-16, FE-17, BE-20, BE-49). Input file asli, validasi JPEG/PNG/WebP <= 5MB, upload multipart sekuensial, koordinat geolokasi saat submit.
+6. ~~**"Laporan Saya" belum per-pengguna**~~ **SELESAI.** `GET /api/v1/reports/mine` dipakai lewat `getUserReports()`.
+7. ~~**`config/constants.js` masih placeholder**~~ **SELESAI.** Enum `STATUS_LAPORAN` (termasuk `badgeType`), `URUTAN_STATUS_LAPORAN`, dan `LABEL_STATUS_LAPORAN` sudah terpusat di `config/constants.js`.
+8. **Data master**: `KelolaFasilitasPage` terhubung `/api/v1/admin/facilities` (daftar, tambah, edit, hapus, impor CSV — BE-53), dan edit ruang publik per field lewat `EditRuangPublikModal` + indikator kolom yang pernah diedit manual.
+9. ~~**404**: `App.jsx` me-redirect `*` ke `/home`~~ **SELESAI.** Route `*` kini memakai `NotFoundPage`, bukan redirect diam-diam.
+
+**Temuan baru 2026-10-31 (sudah diperbaiki):**
+
+- `LogoRuka.png` berada di root `apps/web/`, bukan `public/`, sehingga tidak ikut `npm run build` dan logo pecah di setiap build production. Dipindah ke `public/` beserta `favicon.ico`.
+- `DEFAULT_RADIUS_KM` bernilai 700 km, bukan ±10 km seperti diminta FE-09. Kini 10 km.
+- `useRuteOsrm` mengabaikan `distance`/`duration` dari OSRM, padahal FE-15 meminta estimasi jarak/waktu. Kini dikembalikan sebagai `jarakMeter`/`durasiDetik`.
+- `alert()`/`confirm()` masih dipakai di `KelolaAdminPage` dan tombol bagikan `DetailRuangPublikPage`. Diganti error inline dan label tombol.
+- Test frontend: 7 file / 41 dari 42 lolos. Kini 8 file / **50 dari 50**, dengan tambahan tes filter `DaftarRuangPublikPage` yang sebelumnya tidak ada.
 
 ---
 
@@ -106,7 +116,7 @@ Repo sudah **jauh melampaui** gambaran di `docs/WORKFLOWFE.md` dan `docs/Structu
 
 ## 7. Inventaris Halaman (baseline — perbarui kolom Status saat mengerjakan)
 
-Route diambil dari `App.jsx` (sumber yang benar saat ini; rekonsiliasi dengan `route-config.js` di Fase 1).
+Route diambil dari `src/routes/route-config.js` (satu-satunya sumber, sejak Fase 1 selesai).
 
 | # | Peran | Halaman | Route | File (sudah ada?) | Ref Figma | Status |
 |---|---|---|---|---|---|---|
@@ -122,12 +132,12 @@ Route diambil dari `App.jsx` (sumber yang benar saat ini; rekonsiliasi dengan `r
 | 10 | Pemerintah | Dashboard | `/dashboard` | `features/moderasi/pages/DashboardPage.jsx` ✓ | `Screen 10` | Ada — verifikasi visual (F4) |
 | 11 | Pemerintah | Daftar Laporan | `/dashboard/moderasi` | `features/moderasi/pages/AntrianModerasiPage.jsx` ✓ | `Screen 11` | Ada — verifikasi visual (F4) |
 | 12 | Pemerintah | Detail Laporan | `/dashboard/moderasi/:laporanId` | `features/moderasi/pages/DetailModerasiPage.jsx` ✓ | `Screen 12` | Ada — verifikasi visual (F4) |
-| — | Warga | Tentang | `/tentang` | `features/tentang/pages/TentangPage.jsx` ✓ | — | Ada di App.jsx, belum di route-config |
+| — | Warga | Tentang | `/tentang` | `features/tentang/pages/TentangPage.jsx` ✓ | — | Ada di route-config |
 | — | Admin | Data Master | `/dashboard/data-master` | `features/data-master/pages/DataMasterPage.jsx` ✓ | sidebar Screen 10-12 | Read-only (butuh BE Fase 3) |
 | — | Admin | Kelola Fasilitas | `/dashboard/fasilitas` | `features/data-master/pages/KelolaFasilitasPage.jsx` ✓ | sidebar | Terhubung API (BE-53): daftar + Tambah/Edit/Hapus + impor CSV |
-| — | Admin | Petugas Lapangan | `/dashboard/petugas` | `features/moderasi/pages/PetugasLapanganPage.jsx` ✓ | sidebar | Ada |
+| — | — | Pengaturan Tema | `/pengaturan-tema` | `features/profil/pages/PengaturanTemaPage.jsx` ✓ | — | Ada, terbuka untuk tamu (juga di `/profil/tema`) |
 | — | Admin | Kelola Admin | `/dashboard/kelola-admin` | `features/moderasi/pages/KelolaAdminPage.jsx` ✓ | sidebar | Ada |
-| — | — | 404 | `*` | **belum ada** (`features/shared/pages/NotFoundPage.jsx`) | — | Buat di F1 |
+| — | — | 404 | `*` | `features/shared/pages/NotFoundPage.jsx` ✓ | — | Ada (bukan redirect) |
 
 Halaman `Detail Fasilitas` (layar 5): di `DESIGN.md` dipetakan ke `/ruang-publik/:id` bersama Screen 04/05. Sebelum mengimplementasi, putuskan eksplisit apakah jadi sub-view halaman detail atau route terpisah, dan **catat keputusannya** — jangan digabung atau dipisah diam-diam.
 
@@ -202,7 +212,7 @@ Sebelum membuat komponen baru: **"Apakah komponen existing sudah menyelesaikan i
 
 ## 11. Checklist Penyelesaian Frontend
 
-- [ ] Route jadi satu sumber (`route-config.js`), guards bekerja, 404 ada
+- [x] Route jadi satu sumber (`route-config.js`), guards bekerja, 404 ada
 - [ ] Tidak ada `fetch`/URL hardcode di luar `config/` + `services/`
 - [ ] Kategori & data real dari API (mock hanya fallback dev)
 - [x] Alur laporan terhubung backend (foto upload via POST /uploads, koordinat geolokasi, integrasi FormLaporPage)

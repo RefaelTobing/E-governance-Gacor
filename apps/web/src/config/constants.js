@@ -34,7 +34,7 @@ export const OSRM_BASE_URL = bacaString(
 // Radius pencarian default slider (km) pada halaman daftar ruang publik.
 export const DEFAULT_RADIUS_KM = bacaAngka(
   import.meta.env.VITE_DEFAULT_RADIUS_KM,
-  700,
+  10,
   'VITE_DEFAULT_RADIUS_KM'
 );
 
@@ -66,7 +66,7 @@ export const STATUS_LAPORAN = {
   MENUNGGU_VERIFIKASI: { key: 'menunggu_verifikasi', label: 'Menunggu Verifikasi', badgeType: 'info' },
   DIVERIFIKASI: { key: 'diverifikasi', label: 'Diverifikasi', badgeType: 'neutral' },
   DALAM_PENANGANAN: { key: 'dalam_penanganan', label: 'Dalam Penanganan', badgeType: 'neutral' },
-  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'neutral' },
+  SELESAI: { key: 'selesai', label: 'Selesai', badgeType: 'success' },
   DITOLAK: { key: 'ditolak', label: 'Ditolak', badgeType: 'danger' },
 };
 

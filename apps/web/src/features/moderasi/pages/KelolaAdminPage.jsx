@@ -9,6 +9,8 @@ export const KelolaAdminPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errorMsg, setErrorMsg] = useState('');
+  // Error aksi di luar modal (nonaktifkan/aktifkan) tampil inline, bukan alert().
+  const [aksiError, setAksiError] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', password: '' });
@@ -45,21 +47,22 @@ export const KelolaAdminPage = () => {
   };
 
   const handleDeleteAdmin = async (id) => {
-    if (!confirm('Yakin ingin menonaktifkan admin ini?')) return;
+    setAksiError('');
     try {
       await api.delete(`/api/v1/users/${id}`);
       fetchAdmins();
     } catch (err) {
-      alert(err.message || 'Gagal menonaktifkan admin.');
+      setAksiError(err.message || 'Gagal menonaktifkan admin.');
     }
   };
 
   const handleActivateAdmin = async (id) => {
+    setAksiError('');
     try {
       await api.post(`/api/v1/users/${id}/activate`);
       fetchAdmins();
     } catch (err) {
-      alert(err.message || 'Gagal mengaktifkan admin.');
+      setAksiError(err.message || 'Gagal mengaktifkan admin.');
     }
   };
 
@@ -121,6 +124,19 @@ export const KelolaAdminPage = () => {
       {loadError && (
         <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px' }}>
           {loadError}
+        </div>
+      )}
+
+      {aksiError && (
+        <div role="alert" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-lg)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
+          <span>{aksiError}</span>
+          <button
+            type="button"
+            onClick={() => setAksiError('')}
+            style={{ background: 'none', border: 'none', color: 'inherit', fontWeight: 700, cursor: 'pointer', font: 'inherit', textDecoration: 'underline' }}
+          >
+            Tutup
+          </button>
         </div>
       )}
 
